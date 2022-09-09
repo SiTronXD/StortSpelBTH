@@ -346,3 +346,6 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+build/.cmake/api/v1/query/client-vscode/query.json
+
+build/*
