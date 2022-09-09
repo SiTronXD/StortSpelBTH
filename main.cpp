@@ -1,9 +1,13 @@
 #include <cstdlib>
 
-#include <assimp/aabb.h>
+
+
+
 #include "tracy/Tracy.hpp"
-#include "src/Engine.h"
-#include "src/TestScene.h"
+//#include "eng/src/Engine.h"
+#include "Engine.h"
+#include "TestScene.h"
+//#include "src/TestScene.h"
 
 
 int main(int argc, char* argv[])
