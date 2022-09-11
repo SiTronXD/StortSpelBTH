@@ -39,6 +39,7 @@ FetchContent_Declare(
     GIT_SHALLOW     TRUE
     GIT_PROGRESS    TRUE
 )
+set(VENGINE_USE_PROFILING true)
 set(VENGINE_INSTALL_ASSETS_PATH          ${CMAKE_SOURCE_DIR}        CACHE INTERNAL "Installation location of the assets folder")
 set(VENGINE_SYMLINK_TO_ASSETS_PATH       ${CMAKE_BINARY_DIR}        CACHE INTERNAL "Creates a symllink from the assets path to the build dir, so no copying of assets is needed")
 set(VENGINE_INSTALL_VENGINE_HELPER_PATH  ${CMAKE_SOURCE_DIR}/cmake  CACHE INTERNAL "Installation of vengine_helpers.cmake which contains cmake functions to build shaders.")
@@ -63,3 +64,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set_target_properties(3D_VEngine_GameDemo PROPERTIES  
         VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")        
 endif()
+
+
+add_test(NAME sanitizer_test COMMAND vengine)
+set_tests_properties(sanitizer_test PROPERTIES WILL_FAIL True)
