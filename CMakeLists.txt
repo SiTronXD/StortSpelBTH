@@ -35,7 +35,7 @@ include(FetchContent)
 FetchContent_Declare(
     vengine_fetch
     GIT_REPOSITORY  https://github.com/SiTronXD/StortSpelBTH_Engine.git
-    GIT_TAG         Cmake_Fixes_reworking_history                               
+    GIT_TAG         main                               
     GIT_SHALLOW     TRUE
     GIT_PROGRESS    TRUE
 )
