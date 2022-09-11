@@ -3,6 +3,8 @@ project(3D_VEngine_GameDemo VERSION 0.0.1
                     DESCRIPTION "Demo using 3D_Vengine library"
                     LANGUAGES CXX)
 
+# Show download status during fetch
+Set(FETCHCONTENT_QUIET FALSE)
 
 # Compile with CCache if available to speed up compilation
 find_program(CCACHE_PROGRAM ccache)
@@ -33,7 +35,7 @@ include(FetchContent)
 FetchContent_Declare(
     vengine_fetch
     GIT_REPOSITORY  https://github.com/SiTronXD/StortSpelBTH_Engine.git
-    GIT_TAG         cmake_fixes_new_thing                               
+    GIT_TAG         Cmake_Fixes_reworking_history                               
     GIT_SHALLOW     TRUE
     GIT_PROGRESS    TRUE
 )
@@ -46,7 +48,7 @@ list(APPEND CMAKE_MODULE_PATH ${vengine_SOURCE_DIR}/cmake)
 include(cmake/vengine_helpers.cmake)    # This file will be installed to VENGINE_INSTALL_VENGINE_HELPER_PATH. It will first be available after cmake has done a configure...
 build_shaders(3D_VEngine_GameDemo ${CMAKE_SOURCE_DIR}/assets ${CMAKE_SOURCE_DIR}/assets) # Build shaders, source files and compiled files will be in the same folder
 
-target_link_libraries(3D_VEngine_GameDemo PUBLIC vengine::vengine)
+target_link_libraries(3D_VEngine_GameDemo PUBLIC vengine::vengine) 
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
