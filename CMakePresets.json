@@ -1,0 +1,94 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 23,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "debug_unix_base",
+            "hidden": true,
+            "displayName": "Configure Debug - unix",
+            "description": "Build in debug mode using Ninja generator",
+            "binaryDir": "build/${presetName}",
+            "installDir": "${sourceDir}/install",
+            "generator": "Ninja",
+
+            "cacheVariables": {                
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/install"                
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }            
+        },
+        {
+            "name": "debug_unix_lldb",
+            "displayName": "debug_unix",
+            "description": "Build with clang to debug with lldb",
+            "inherits":[ "debug_unix_base"],
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "VENGINE_USE_PROFILING": true
+                
+            }
+        },     
+        {
+            "name": "release_unix_lldb",
+            "displayName": "release_unix",
+            "description": "Build with clang to release with lldb",
+            "inherits":[ "debug_unix_base"],
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_BUILD_TYPE": "Release"
+                
+            }
+        },   
+        {
+            "name": "debug_win32",
+            "displayName": "Configure Debug - win32",
+            "description": "Build in debug mode using windows default generator",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "generator": "Visual Studio 17 2022",
+            "installDir": "${sourceDir}/install",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/install",
+                "CMAKE_BUILD_TYPE": "Debug"
+                
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "build debug_win32",
+            "description": "presets for debug",
+            "displayName": "vengine demo",            
+            "configurePreset": "debug_win32"
+        },
+        {
+            "name": "build debug_unix_lldb",
+            "description": "presets for debug",
+            "displayName": "vengine demo",
+            "configurePreset": "debug_unix_lldb"        
+                  
+        },
+        {
+            "name": "build release_unix_lldb",
+            "description": "presets for release",
+            "displayName": "vengine demo",
+            "configurePreset": "release_unix_lldb"            
+                  
+        }
+
+    ],
+    "testPresets": []
+}

@@ -349,3 +349,5 @@ MigrationBackup/
 build/.cmake/api/v1/query/client-vscode/query.json
 
 build/*
+imgui.ini
+Tracy-release
