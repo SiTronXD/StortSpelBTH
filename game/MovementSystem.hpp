@@ -2,8 +2,6 @@
 
 #include <vengine.h>
 #include "Movement.h"
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 class MovementSystem : public System
 {
@@ -14,19 +12,20 @@ private:
 
 public:
 
-	MovementSystem(Scene* scene) :
-		scene(scene)
+	MovementSystem(Scene* scene) 
+		:scene(scene)
 	{
 	}
 
 	bool update(entt::registry& reg, float deltaTime) final
 	{
 		auto view = reg.view<Transform, Movement>();
-		view.each([&](Transform& transform, Movement& movement)
-			{
-				move(movement, transform);
-				rotate(movement, transform);
-			});
+		auto foo = [&](Transform& transform, Movement& movement)
+		{
+			move(movement, transform);
+			rotate(movement, transform);
+		};
+		view.each(foo);
 
 		return false;
 	}

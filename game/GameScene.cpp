@@ -2,9 +2,10 @@
 
 //#include "TestSystem.h"
 #include "MovementSystem.hpp"
+#include "CombatSystem.hpp"
 
 GameScene::GameScene():
-	camEntity(-1), enitity(-1)
+	camEntity(-1), entity(-1)
 {
 	this->createSystem<MovementSystem>(this);
 }
@@ -23,10 +24,12 @@ void GameScene::init()
 	Transform& camTransform = this->getComponent<Transform>(this->camEntity);
 	camTransform.position = glm::vec3(1.0f);
 
-	this->enitity = this->createEntity();
-	this->setComponent<MeshComponent>(this->enitity);
-	this->setComponent<Movement>(this->enitity);
-	Transform& transform = this->getComponent<Transform>(this->enitity);
+	this->entity = this->createEntity();
+	this->setComponent<MeshComponent>(this->entity);
+	this->setComponent<Movement>(this->entity);
+	this->setComponent<Combat>(this->entity);
+	this->createSystem<CombatSystem>(this, entity);
+	Transform& transform = this->getComponent<Transform>(this->entity);
 	transform.position = glm::vec3(0.0f, 0.0f, 20.0f);
 	transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
 	transform.scale = glm::vec3(5.0f);
