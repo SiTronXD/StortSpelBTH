@@ -1,8 +1,12 @@
 #include "GameScene.h"
 
+//#include "TestSystem.h"
+#include "MovementSystem.hpp"
+
 GameScene::GameScene():
 	camEntity(-1), enitity(-1)
 {
+	this->createSystem<MovementSystem>(this);
 }
 
 GameScene::~GameScene()
@@ -11,6 +15,8 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
+	//this->createSystem<TestSystem>();
+
 	this->camEntity = this->createEntity();
 	this->setComponent<Camera>(this->camEntity, 1.0f);
 	this->setMainCamera(this->camEntity);
@@ -19,6 +25,7 @@ void GameScene::init()
 
 	this->enitity = this->createEntity();
 	this->setComponent<MeshComponent>(this->enitity);
+	this->setComponent<Movement>(this->enitity);
 	Transform& transform = this->getComponent<Transform>(this->enitity);
 	transform.position = glm::vec3(0.0f, 0.0f, 20.0f);
 	transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
@@ -27,12 +34,12 @@ void GameScene::init()
 
 void GameScene::update()
 {
-	glm::vec3 move = glm::vec3(
-		Input::isKeyDown(Keys::D) - Input::isKeyDown(Keys::A), 
-		Input::isKeyDown(Keys::Q) - Input::isKeyDown(Keys::E),
-		Input::isKeyDown(Keys::W) - Input::isKeyDown(Keys::S));
-	Transform& transform = this->getComponent<Transform>(this->enitity);
+	//glm::vec3 move = glm::vec3(
+	//	Input::isKeyDown(Keys::D) - Input::isKeyDown(Keys::A), 
+	//	Input::isKeyDown(Keys::Q) - Input::isKeyDown(Keys::E),
+	//	Input::isKeyDown(Keys::W) - Input::isKeyDown(Keys::S));
+	//Transform& transform = this->getComponent<Transform>(this->enitity);
 
-	transform.position += (move.x * transform.right() + move.y * transform.forward() + move.z * transform.up()) * 25.0f * Time::getDT();
-	transform.rotation.z += 10.0f * Time::getDT();
+	//transform.position += (move.x * transform.right() + move.y * transform.forward() + move.z * transform.up()) * 25.0f * Time::getDT();
+	//transform.rotation.z += 10.0f * Time::getDT();
 }
