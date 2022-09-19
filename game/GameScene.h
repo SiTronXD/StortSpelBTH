@@ -6,7 +6,7 @@ class GameScene : public Scene
 {
 private:
 	int camEntity;
-	int enitity;
+	int entity;
 public:
 	GameScene();
 	virtual ~GameScene();
