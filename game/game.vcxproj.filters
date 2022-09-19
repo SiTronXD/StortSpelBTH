@@ -26,9 +26,6 @@
     <ClInclude Include="GameScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TestSystem.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MovementSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

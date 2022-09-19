@@ -9,7 +9,7 @@ class CombatSystem : public System
 private:
 
 	Scene* scene;
-	float gotHit = true;
+	bool gotHit = true;
 
 public:
 
@@ -77,8 +77,8 @@ public:
 			}
 			else
 			{
-				std::cout << "Light attack already in use\n";
-				Log::write(std::to_string(combat.hitTimer.count()) + " Over 3 seconds and you can attack again\n" + combat.comboOrder + "\n\n");
+				//std::cout << "Light attack already in use\n";
+				//Log::write(std::to_string(combat.hitTimer.count()) + " Over 3 seconds and you can attack again\n" + combat.comboOrder + "\n\n");
 			}
 			break;
 		case heavyActive:
@@ -94,8 +94,8 @@ public:
 			}
 			else
 			{
-				std::cout << "Heavy attack already in use\n";
-				Log::write(std::to_string(combat.hitTimer.count()) + " Over 5 seconds and you can attack again\n" + "\n\n");
+				//std::cout << "Heavy attack already in use\n";
+				//Log::write(std::to_string(combat.hitTimer.count()) + " Over 5 seconds and you can attack again\n" + "\n\n");
 			}
 			break;
 		case comboActive:
@@ -105,8 +105,8 @@ public:
 			}
 			else
 			{
-				std::cout << "Combo attack already in use\n";
-				Log::write(std::to_string(combat.hitTimer.count()) + " Over 7 seconds and you can attack again\n" + "\n\n");
+				//std::cout << "Combo attack already in use\n";
+				//Log::write(std::to_string(combat.hitTimer.count()) + " Over 7 seconds and you can attack again\n" + "\n\n");
 			}
 		}
 	};
@@ -138,9 +138,8 @@ public:
 				else
 				{
 					combat.health -= combat.lightHit;
-					std::cout << combat.comboOrder + "\nYou hit the enemy! New health is " + std::to_string(combat.health) + "\n\n";
+					//std::cout << combat.comboOrder + "\nYou hit the enemy! New health is " + std::to_string(combat.health) + "\n\n";
 					return true;
-
 				}
 			}
 		}
@@ -156,24 +155,18 @@ public:
 			combat.timer = std::chrono::system_clock::now();
 			combat.comboOrder.append("Heavy ");
 
-			// If combo starts with hh, there can be no combo, combo is reset.
-			if (combat.comboOrder == "Heavy Heavy ")
-			{
-				combat.comboOrder.clear();
-			}
+			// If combo starts with Heavy Heavy , there can be no combo, combo is reset.
+			if (combat.comboOrder == "Heavy Heavy ") { combat.comboOrder.clear(); }
 
 			combat.activeAttack = heavyActive;
 
 			if (gotHit)
 			{
-				if (checkCombo(combat))
-				{
-					return true;
-				}
+				if (checkCombo(combat)) { return true; }
 				else
 				{
 					combat.health -= combat.heavyHit;
-					std::cout << combat.comboOrder + "\nYou hit the enemy! New health is " + std::to_string(combat.health) + "\n\n";
+					//std::cout << combat.comboOrder + "\nYou hit the enemy! New health is " + std::to_string(combat.health) + "\n\n";
 					return true;
 				}
 			}
@@ -188,21 +181,21 @@ public:
 		if (idx == 0)
 		{
 			combat.health -= combat.comboLightHit;
-			std::cout << "You hit the enemy with a light combo! New health is " + std::to_string(combat.health) + "\n\n";
+			//std::cout << "You hit the enemy with a light combo! New health is " + std::to_string(combat.health) + "\n\n";
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive;
 		}
 		else if (idx == 1)
 		{
 			combat.health -= combat.comboMixHit;
-			std::cout << "You hit the enemy with a mix combo! New health is " + std::to_string(combat.health) + "\n\n";
+			//std::cout << "You hit the enemy with a mix combo! New health is " + std::to_string(combat.health) + "\n\n";
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive;
 		}
 		else if (idx == 2)
 		{
 			combat.health -= combat.comboHeavyHit;
-			std::cout << "You hit the enemy with a heavy combo! New health is " + std::to_string(combat.health) + "\n\n";
+			//std::cout << "You hit the enemy with a heavy combo! New health is " + std::to_string(combat.health) + "\n\n";
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive;
 		}

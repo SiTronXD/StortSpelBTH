@@ -37,12 +37,4 @@ void GameScene::init()
 
 void GameScene::update()
 {
-	//glm::vec3 move = glm::vec3(
-	//	Input::isKeyDown(Keys::D) - Input::isKeyDown(Keys::A), 
-	//	Input::isKeyDown(Keys::Q) - Input::isKeyDown(Keys::E),
-	//	Input::isKeyDown(Keys::W) - Input::isKeyDown(Keys::S));
-	//Transform& transform = this->getComponent<Transform>(this->enitity);
-
-	//transform.position += (move.x * transform.right() + move.y * transform.forward() + move.z * transform.up()) * 25.0f * Time::getDT();
-	//transform.rotation.z += 10.0f * Time::getDT();
 }
