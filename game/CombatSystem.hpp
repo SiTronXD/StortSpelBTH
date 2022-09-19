@@ -18,9 +18,19 @@ public:
 	{
 		if (scene->hasComponents<Combat>(playerID))
 		{
-			scene->getComponent<Combat>(playerID).combos.emplace_back("Light Light ");
-			scene->getComponent<Combat>(playerID).combos.emplace_back("Light Heavy Light ");
-			scene->getComponent<Combat>(playerID).combos.emplace_back("Heavy Light Heavy ");
+			Combat& combat = scene->getComponent<Combat>(playerID);
+			combat.combos.emplace_back("Light Light ");
+			combat.combos.emplace_back("Light Heavy Light ");
+			combat.combos.emplace_back("Heavy Light Heavy ");
+			combat.health = 100.f;
+			combat.lightHit = 15.f;
+			combat.heavyHit = 20.f;
+			combat.comboLightHit = 30.f;
+			combat.comboMixHit = 40.f;
+			combat.comboHeavyHit = 50.f;
+			combat.lightAttackTime = 3.f;
+			combat.heavyAttackTime = 5.f;
+			combat.comboAttackTime = 7.f;
 		}
 	}
 
