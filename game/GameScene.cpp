@@ -47,15 +47,16 @@ void GameScene::generateRoom()
 	placeRoomPiece(glm::vec2(0, 0), placedPieces, 0);
 
 
+
 	//TODO: ONLY FOR VISUALIZING ROOM LAYOUT. REMOVE LATER
-	std::cout << "______________\n";
-	for (int i = -3; i <= 3; i++)
+	std::cout << " -----------------\n";
+	for (int i = -4; i <= 4; i++)
 	{
 		std::cout << "|";
-		for (int j = -3; j <= 3; j++)
+		for (int j = -4; j <= 4; j++)
 		{
 			if(j == 0 && i == 0)
-				std::cout << "O ";
+				std::cout << "  ";
 			else if (std::find(placedPieces.begin(), placedPieces.end(), glm::vec2(j, i)) != placedPieces.end())
 				std::cout << "  ";
 			else
@@ -64,7 +65,7 @@ void GameScene::generateRoom()
 		std::cout << "|\n";
 	}
 
-	std::cout << "______________\n";
+	std::cout << " -----------------\n";
 	
 }
 
@@ -72,28 +73,44 @@ void GameScene::generateRoom()
 void GameScene::placeRoomPiece(glm::vec2 position, std::vector<glm::vec2> &placedPieces, int depth)
 {
 	//add piece only if tile is within max range of center
-	if (abs(position.x) <= 3 && abs(position.y) <= 3)
+	if (abs(position.x) <= 4 && abs(position.y) <= 4)
 	{
-		int pieceID = this->createEntity();
-		//this->setComponent<MeshComponent>(pieceID);
-		Transform& transform = this->getComponent<Transform>(pieceID);
-		transform.position.x = position.x;
-		transform.position.z = position.y;
-
-		this->roomPieces.push_back(pieceID);
-		placedPieces.push_back(position);
-
-
 		std::random_device rd;	//obtain random number from hardware
 		std::mt19937 gen(rd());	//seed generator
-		std::uniform_int_distribution<> distr(0, depth * 2);	//smaller chance of creating new piece the deeper we are in the tree
+		if (std::find(placedPieces.begin(), placedPieces.end(), position) == placedPieces.end())
+		{
+			std::uniform_int_distribution<> tileTypeRange(1, 1);
+			int tileType = tileTypeRange(gen);
+
+			int pieceID = this->createEntity();
+			//this->setComponent<MeshComponent>(pieceID);
+			Transform& transform = this->getComponent<Transform>(pieceID);
+
+			switch (tileType)
+			{
+			case 1:
+				transform.position.x = position.x;
+				transform.position.z = position.y;
+
+				this->roomPieces.push_back(pieceID);
+				placedPieces.push_back(position);
+				break;
+			case 2:
+
+				break;
+			case 3:
+				break;
+			case 4:
+				break;
+			}
+		}
+		
+		std::uniform_int_distribution<> distr(0, depth * 3);	//smaller chance of creating new piece the deeper we are in the tree
 
 		//GENERATE PIECE UP
-		//if generated number == 0 and position is not already taken, generate new piece
 		int newPiece = (distr(gen));
 		glm::vec2 nextPos = position + glm::vec2(0, 1);
-		bool emptyTile = std::find(placedPieces.begin(), placedPieces.end(), nextPos) == placedPieces.end();
-		if (newPiece <= 1 && emptyTile)
+		if (newPiece <= 1)
 		{
 			placeRoomPiece(nextPos, placedPieces, depth + 1);
 		}
@@ -101,8 +118,7 @@ void GameScene::placeRoomPiece(glm::vec2 position, std::vector<glm::vec2> &place
 		//GENERATE PIECE RIGHT
 		newPiece = (distr(gen));
 		nextPos = position + glm::vec2(1, 0);
-		emptyTile = std::find(placedPieces.begin(), placedPieces.end(), nextPos) == placedPieces.end();
-		if (newPiece <= 1 && emptyTile)
+		if (newPiece <= 1)
 		{
 			placeRoomPiece(nextPos, placedPieces, depth + 1);
 		}
@@ -110,8 +126,7 @@ void GameScene::placeRoomPiece(glm::vec2 position, std::vector<glm::vec2> &place
 		//GENERATE PIECE DOWN
 		newPiece = (distr(gen));
 		nextPos = position + glm::vec2(0, -1);
-		emptyTile = std::find(placedPieces.begin(), placedPieces.end(), nextPos) == placedPieces.end();
-		if (newPiece <= 1 && emptyTile)
+		if (newPiece <= 1)
 		{
 			placeRoomPiece(nextPos, placedPieces, depth + 1);
 		}
@@ -119,8 +134,7 @@ void GameScene::placeRoomPiece(glm::vec2 position, std::vector<glm::vec2> &place
 		//GENERATE PIECE LEFT
 		newPiece = (distr(gen));
 		nextPos = position + glm::vec2(-1, 0);
-		emptyTile = std::find(placedPieces.begin(), placedPieces.end(), nextPos) == placedPieces.end();
-		if (newPiece <= 1 && emptyTile)
+		if (newPiece <= 1)
 		{
 			placeRoomPiece(nextPos, placedPieces, depth + 1);
 		}
