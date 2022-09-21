@@ -7,7 +7,6 @@
 GameScene::GameScene():
 	camEntity(-1), entity(-1)
 {
-	this->createSystem<MovementSystem>(this);
 }
 
 GameScene::~GameScene()
@@ -16,8 +15,6 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
-	//this->createSystem<TestSystem>();
-
 	this->camEntity = this->createEntity();
 	this->setComponent<Camera>(this->camEntity, 1.0f);
 	this->setMainCamera(this->camEntity);
@@ -27,6 +24,7 @@ void GameScene::init()
 	this->entity = this->createEntity();
 	this->setComponent<MeshComponent>(this->entity);
 	this->setComponent<Movement>(this->entity);
+	this->createSystem<MovementSystem>(this, entity);
 	this->setComponent<Combat>(this->entity);
 	this->createSystem<CombatSystem>(this, entity);
 	Transform& transform = this->getComponent<Transform>(this->entity);
