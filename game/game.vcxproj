@@ -122,11 +122,11 @@
       <AdditionalDependencies>vengine.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir vengine_assets
-robocopy $(SolutionDir)deps\vengine\src\vengine\vengine_assets vengine_assets /s
+      <Command>mkdir vengine_assets\
+robocopy $(SolutionDir)deps\vengine\src\vengine\vengine_assets vengine_assets\ /s
 
-mkdir $(OutDir)assets
-robocopy $(ProjectDir)assets $(OutDir)assets /s</Command>
+mkdir $(OutDir)assets\
+robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -149,11 +149,11 @@ robocopy $(ProjectDir)assets $(OutDir)assets /s</Command>
       <AdditionalDependencies>vengine.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir vengine_assets
-robocopy $(SolutionDir)deps\vengine\src\vengine\vengine_assets vengine_assets /s
+      <Command>mkdir vengine_assets\
+robocopy $(SolutionDir)deps\vengine\src\vengine\vengine_assets vengine_assets\ /s
 
-mkdir $(OutDir)assets
-robocopy $(ProjectDir)assets $(OutDir)assets /s</Command>
+mkdir $(OutDir)assets\
+robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
