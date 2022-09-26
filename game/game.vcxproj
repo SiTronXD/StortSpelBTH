@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Room.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Combat.h" />
@@ -154,6 +155,7 @@
     <ClInclude Include="MovementSystem.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="Room.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
