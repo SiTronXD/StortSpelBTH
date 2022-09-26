@@ -72,11 +72,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)build\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)build\$(Configuration)\int\</IntDir>
+    <IntDir>$(SolutionDir)build\int\$(Configuration)\game\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)build\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)build\$(Configuration)\int\</IntDir>
+    <IntDir>$(SolutionDir)build\int\$(Configuration)\game\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -113,14 +113,21 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)deps\vengine\src\deps\sdl\include\SDL2\;$(SolutionDir)deps\vengine\src\deps\assimp\include\;$(SolutionDir)deps\vengine\src\deps\assimp\src\include\;$(SolutionDir)deps\vengine\src\deps\EnTT\src\single_include\entt\;$(SolutionDir)deps\vengine\src\deps\glm\src\;$(SolutionDir)deps\vengine\src\deps\imgui\src\backends\;$(SolutionDir)deps\vengine\src\deps\imgui\src\;$(SolutionDir)deps\vengine\src\deps\vma\src\include\;$(SolutionDir)deps\vengine\src\deps\tracy\src\public\;$(SolutionDir)deps\vengine\src\deps\stb\src\;$(SolutionDir)deps\vengine\src\deps\sdl\include\;$(VULKAN_SDK)\Include\;$(SolutionDir)deps\vengine\src\vengine\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)deps\vengine\src\vengine\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)deps\vengine\src\deps\vma\lib\;$(SolutionDir)deps\vengine\src\deps\sdl\lib\;$(SolutionDir)deps\vengine\src\deps\tracy\lib\;$(SolutionDir)deps\vengine\src\deps\assimp\lib\;$(VULKAN_SDK)\Lib\;$(SolutionDir)build\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>TracyProfiler.lib;assimp-vc143-mtd.lib;SDL2.lib;SDL2main.lib;vulkan-1.lib;vengine.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)build\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vengine.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>mkdir vengine_assets\
+robocopy $(SolutionDir)deps\vengine\src\vengine\vengine_assets vengine_assets\ /s
+
+mkdir $(OutDir)assets\
+robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -131,31 +138,44 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)deps\vengine\src\deps\sdl\include\SDL2\;$(SolutionDir)deps\vengine\src\deps\assimp\include\;$(SolutionDir)deps\vengine\src\deps\assimp\src\include\;$(SolutionDir)deps\vengine\src\deps\EnTT\src\single_include\entt\;$(SolutionDir)deps\vengine\src\deps\glm\src\;$(SolutionDir)deps\vengine\src\deps\imgui\src\backends\;$(SolutionDir)deps\vengine\src\deps\imgui\src\;$(SolutionDir)deps\vengine\src\deps\vma\src\include\;$(SolutionDir)deps\vengine\src\deps\tracy\src\public\;$(SolutionDir)deps\vengine\src\deps\stb\src\;$(SolutionDir)deps\vengine\src\deps\sdl\include\;$(VULKAN_SDK)\Include\;$(SolutionDir)deps\vengine\src\vengine\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)deps\vengine\src\vengine\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)deps\vengine\src\deps\vma\lib\;$(SolutionDir)deps\vengine\src\deps\sdl\lib\;$(SolutionDir)deps\vengine\src\deps\tracy\lib\;$(SolutionDir)deps\vengine\src\deps\assimp\lib\;$(VULKAN_SDK)\Lib\;$(SolutionDir)build\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>TracyProfiler.lib;assimp-vc143-mt.lib;SDL2.lib;SDL2main.lib;vulkan-1.lib;vengine.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)build\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vengine.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>mkdir vengine_assets\
+robocopy $(SolutionDir)deps\vengine\src\vengine\vengine_assets vengine_assets\ /s
+
+mkdir $(OutDir)assets\
+robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Room.cpp" />
+    <ClCompile Include="src\Scenes\GameScene.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Combat.h" />
-    <ClInclude Include="CombatSystem.hpp" />
-    <ClInclude Include="GameScene.h" />
-    <ClInclude Include="Movement.h" />
-    <ClInclude Include="MovementSystem.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="Room.h" />
+    <ClInclude Include="Components\Combat.h" />
+    <ClInclude Include="Components\Movement.h" />
+    <ClInclude Include="src\Components\Combat.h" />
+    <ClInclude Include="src\Components\Movement.h" />
+    <ClInclude Include="src\Scenes\GameScene.h" />
+    <ClInclude Include="src\Systems\CombatSystem.hpp" />
+    <ClInclude Include="src\Systems\MovementSystem.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\deps\vengine\src\vengine\vengine.vcxproj">
+      <Project>{5183abad-3d6d-4833-8316-9e2d1dc83d1f}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".clang-format" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

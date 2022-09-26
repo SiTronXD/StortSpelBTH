@@ -18,7 +18,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameScene.cpp">
+    <ClCompile Include="src\Scenes\GameScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Room.cpp">
@@ -26,23 +26,32 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GameScene.h">
+    <ClInclude Include="Components\Movement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MovementSystem.hpp">
+    <ClInclude Include="Components\Combat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Movement.h">
+    <ClInclude Include="src\Components\Combat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Combat.h">
+    <ClInclude Include="src\Components\Movement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CombatSystem.hpp">
+    <ClInclude Include="src\Scenes\GameScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Systems\CombatSystem.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Systems\MovementSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Room.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".clang-format" />
   </ItemGroup>
 </Project>
