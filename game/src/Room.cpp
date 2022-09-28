@@ -8,8 +8,8 @@ void Room::generateRoom()
 	room = new int[ROOM_SIZE * ROOM_SIZE];
 
 	memset(room, 0, sizeof(int) * ROOM_SIZE * ROOM_SIZE);
-	//generate first room piece in middle (4,4) and depth 0
-	addPiece(glm::vec2(HALF_ROOM, HALF_ROOM), 0);
+	//generate first room piece in middle (0,0) and depth 0
+	addPiece(glm::vec2(0, 0), 0);
 
 	//TODO: ONLY FOR VISUALIZING ROOM LAYOUT. REMOVE LATER
 	std::cout << " -----------------\n";
@@ -32,10 +32,10 @@ void Room::addPiece(glm::vec2 position, int depth)
 {
 	int x = position.x;
 	int y = position.y;
-	int index = getIndexFromVec2(x, y);
+	int index = getArrayIndexFromPosition(x, y);
 
 	//add piece only if tile is within room bounds
-	if (abs(x - HALF_ROOM) < HALF_ROOM && abs(y - HALF_ROOM) < HALF_ROOM)
+	if (abs(x) < HALF_ROOM && abs(y) < HALF_ROOM)
 	{
 		std::random_device rd;	//obtain random number from hardware
 		std::mt19937 gen(rd());	//seed generator
@@ -56,7 +56,7 @@ void Room::addPiece(glm::vec2 position, int depth)
 				if (dY != 0)
 				{
 					placeTile(tileType, position, position + glm::vec2(0, 0.5 * dY));
-					room[getIndexFromVec2(x, y + dY)] = tileType;
+					room[getArrayIndexFromPosition(x, y + dY)] = tileType;
 					break;
 				}
 			}
@@ -66,7 +66,7 @@ void Room::addPiece(glm::vec2 position, int depth)
 				if (dX != 0)
 				{
 					placeTile(tileType, position, position + glm::vec2(0.5 * dX, 0));
-					room[getIndexFromVec2(x + dX, y)] = tileType;
+					room[getArrayIndexFromPosition(x + dX, y)] = tileType;
 					break;
 				}
 			}
@@ -76,9 +76,9 @@ void Room::addPiece(glm::vec2 position, int depth)
 				if (dir.x != 0)
 				{
 					placeTile(tileType, position, position + glm::vec2(0.5 * dir.x, 0.5 * dir.y));
-					room[getIndexFromVec2(x + dir.x, y)] = tileType;
-					room[getIndexFromVec2(x, y + dir.y)] = tileType;
-					room[getIndexFromVec2(x + dir.x, y + dir.y)] = tileType;
+					room[getArrayIndexFromPosition(x + dir.x, y)] = tileType;
+					room[getArrayIndexFromPosition(x, y + dir.y)] = tileType;
+					room[getArrayIndexFromPosition(x + dir.x, y + dir.y)] = tileType;
 					break;
 				}
 			}
@@ -108,7 +108,7 @@ void Room::addPiece(glm::vec2 position, int depth)
 
 void Room::placeTile(int tileType, glm::vec2 gridPosition, glm::vec2 worldPosition)
 {
-	room[getIndexFromVec2(gridPosition.x, gridPosition.y)] = tileType;
+	room[getArrayIndexFromPosition(gridPosition.x, gridPosition.y)] = tileType;
 }
 
 glm::vec2 Room::getFreeLarge(glm::vec2 position)
@@ -117,34 +117,34 @@ glm::vec2 Room::getFreeLarge(glm::vec2 position)
 	int y = position.y;
 
 	int dY = 1;
-	if (room[getIndexFromVec2(x, y + dY)] < 1)	//first check adjacent tile in Y
+	if (room[getArrayIndexFromPosition(x, y + dY)] < 1)	//first check tile above
 	{
 		int dX = 1;
-		if (room[getIndexFromVec2(x + dX, y)] < 1 && room[getIndexFromVec2(x + dX, y + dY)] < 1)
+		if (room[getArrayIndexFromPosition(x + dX, y)] < 1 && room[getArrayIndexFromPosition(x + dX, y + dY)] < 1)
 			return glm::vec2(dX, dY);
 		dX = -1;
-		if (room[getIndexFromVec2(x + dX, y)] < 1 && room[getIndexFromVec2(x + dX, y + dY)] < 1)
+		if (room[getArrayIndexFromPosition(x + dX, y)] < 1 && room[getArrayIndexFromPosition(x + dX, y + dY)] < 1)
 			return glm::vec2(dX, dY);
 	}
 	dY = -1;
-	if (room[getIndexFromVec2(x, y + dY)] < 1)
+	if (room[getArrayIndexFromPosition(x, y + dY)] < 1) //then below
 	{
 		int dX = 1;
-		if (room[getIndexFromVec2(x + dX, y)] < 1 && room[getIndexFromVec2(x + dX, y + dY)] < 1)
+		if (room[getArrayIndexFromPosition(x + dX, y)] < 1 && room[getArrayIndexFromPosition(x + dX, y + dY)] < 1)
 			return glm::vec2(dX, dY);
 		dX = -1;
-		if (room[getIndexFromVec2(x + dX, y)] < 1 && room[getIndexFromVec2(x + dX, y + dY)] < 1)
+		if (room[getArrayIndexFromPosition(x + dX, y)] < 1 && room[getArrayIndexFromPosition(x + dX, y + dY)] < 1)
 			return glm::vec2(dX, dY);
 	}
-	return glm::vec2(0);
+	return glm::vec2(0); //if no direction has free space, return 0,0
 }
 
 glm::vec2 Room::getFreeAdjacent(glm::vec2 position, glm::vec2 dir)
 {
-	if (room[getIndexFromVec2(position.x + dir.x, position.y + dir.y)] < 1)
+	if (room[getArrayIndexFromPosition(position.x + dir.x, position.y + dir.y)] < 1)
 		return dir;
 	dir *= -1;
-	if (room[getIndexFromVec2(position.x + dir.x, position.y + dir.y)] < 1)
+	if (room[getArrayIndexFromPosition(position.x + dir.x, position.y + dir.y)] < 1)
 		return dir;
 	return glm::vec2(0);
 }

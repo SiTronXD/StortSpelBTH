@@ -12,7 +12,7 @@ private:
 
 	int* room;
 
-	int getIndexFromVec2(int x, int y) { return y * ROOM_SIZE + x; }
+	int getArrayIndexFromPosition(int x, int y) { return (y + HALF_ROOM) * ROOM_SIZE + (x + HALF_ROOM); }
 
 	void addPiece(glm::vec2 position, int depth);
 	void placeTile(int tileType, glm::vec2 gridPosition, glm::vec2 worldPosition);
