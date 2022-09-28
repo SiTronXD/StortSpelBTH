@@ -2,7 +2,6 @@
 
 #include "../Systems/MovementSystem.hpp"
 #include "../Systems/CombatSystem.hpp"
-#include "../Room.h"
 
 GameScene::GameScene() :
 	camEntity(-1), entity(-1)
@@ -32,8 +31,7 @@ void GameScene::init()
 	transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
 	transform.scale = glm::vec3(5.0f);
 
-	Room room;
-	room.generateRoom();
+	roomHandler.generateRoom();
 
 }
 

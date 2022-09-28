@@ -158,7 +158,7 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="src\Room.cpp" />
+    <ClCompile Include="src\RoomHandler.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -166,7 +166,7 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
     <ClInclude Include="Components\Movement.h" />
     <ClInclude Include="src\Components\Combat.h" />
     <ClInclude Include="src\Components\Movement.h" />
-    <ClInclude Include="src\Room.h" />
+    <ClInclude Include="src\RoomHandler.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
     <ClInclude Include="src\Systems\CombatSystem.hpp" />
     <ClInclude Include="src\Systems\MovementSystem.hpp" />
