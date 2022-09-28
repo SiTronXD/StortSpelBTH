@@ -1,6 +1,12 @@
 #include "RoomHandler.h"
 #include <iostream> //TODO: ONLY FOR VISUALIZING ROOM LAYOUT. REMOVE LATER
 
+RoomHandler::RoomHandler()
+{
+    //create 2d array representing room and set all room pieces to 0
+    room = new int[ROOM_SIZE * ROOM_SIZE];
+    memset(room, 0, sizeof(int) * ROOM_SIZE * ROOM_SIZE);
+}
 RoomHandler::~RoomHandler() 
 {
     delete[] room;
@@ -8,10 +14,6 @@ RoomHandler::~RoomHandler()
 
 void RoomHandler::generateRoom()
 {
-    //create 2d array representing room and set all room pieces to 0
-    room = new int[ROOM_SIZE * ROOM_SIZE];
-
-    memset(room, 0, sizeof(int) * ROOM_SIZE * ROOM_SIZE);
     //generate first room piece in middle (0,0) and depth 0
     addPiece(glm::vec2(0, 0), 0);
 

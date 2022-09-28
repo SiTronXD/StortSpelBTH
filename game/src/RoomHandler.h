@@ -22,6 +22,12 @@ class RoomHandler {
     glm::vec2 getFreeAdjacent(glm::vec2 position, glm::vec2 dir);
 
   public:
+    RoomHandler();
     ~RoomHandler();
     void generateRoom();
+
+    int getRoomTile(int index)
+    {
+        return room[index];
+    }
 };
