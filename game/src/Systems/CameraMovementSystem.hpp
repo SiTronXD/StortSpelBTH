@@ -2,11 +2,24 @@
 
 #include <vengine.h>
 #include "../Components/CameraMovement.h"
+#include "glm/gtc/quaternion.hpp";
 
 class CameraMovementSystem: public System {
   private:
 
     Scene* scene;
+
+    static glm::vec3 GetRandVec(float scalar)
+    {
+        return glm::vec3((rand() % 200) * 0.01f - 1.f * scalar,
+                         ((rand() % 200) * 0.01f - 1.f) * scalar,
+                         ((rand() % 200) * 0.01f - 1.f) * scalar);
+    }
+
+    glm::vec3 qrot(glm::vec4 q, glm::vec3 v)
+    {
+        return v + (2.f * glm::cross(glm::vec3(q.x, q.y, q.z), glm::cross(glm::vec3(q.x, q.y, q.z), v) + q.w * v));
+    }
 
   public:
 
@@ -18,14 +31,14 @@ class CameraMovementSystem: public System {
 
       bool update(entt::registry& reg, float deltaTime) final {
           auto view = reg.view<Transform, CameraMovement>();
-          auto foo  = [&](Transform& transform, CameraMovement& cameraMovement) {
-              basicMovement(transform, deltaTime);
+          auto foo  = [&](Transform& camTransform, Transform& playerTransform, CameraMovement& cameraMovement) {
+              basicMovement(playerTransform, deltaTime);
           };
           view.each(foo);
           return false;
       }
 
-      void basicMovement(Transform& transform, float deltaTime)
+      void basicMovement(Transform& playerTransform, float deltaTime)
       {
           static float speed = 20.f;
 
@@ -46,14 +59,14 @@ class CameraMovementSystem: public System {
                                                                : 0.f;
           const float frameSpeed = speed * deltaTime;
 
-          glm::vec3 yasFwd = transform.up();
+          glm::vec3 yasFwd = playerTransform.up();
           yasFwd.y         = 0.f;
           yasFwd           = glm::normalize(yasFwd) * (frameSpeed * ZInput);
 
-          glm::vec3 yasSide = glm::normalize(glm::cross(transform.forward(), transform.up())) *
+          glm::vec3 yasSide = glm::normalize(glm::cross(playerTransform.forward(), playerTransform.up())) *
                               (frameSpeed * XInput);
 
-          transform.position += yasFwd + yasSide;
+          playerTransform.position += yasFwd + yasSide;
       }
 
       void camMovement(CameraMovement& camMovement, Transform& transform, float deltaTime) {
@@ -102,21 +115,18 @@ class CameraMovementSystem: public System {
                   camMovement.shaking    = false;
               }
               else {
-                  targetPos = XMVectorAdd(targetPos, GetRandVec(shakeScalar));
+                  targetPos = targetPos + GetRandVec(camMovement.shakeScalar);
               }
           }
 
-          XMVECTOR vector =
-              XMQuaternionNormalize(XMQuaternionRotationRollPitchYaw(camRot.x, camRot.y, 0.f));
-          fwd = XMVector3Normalize(XMVector3Rotate(Okay::FORWARD, vector));
-          up  = XMVector3Normalize(XMVector3Rotate(Okay::UP, vector));
-          pos = XMVectorAdd(targetPos, XMVectorScale(fwd, -camDist));
+          glm::quat vector = glm::vec3(camRot.x, camRot.y, 0.f);
+          glm::vec4 hej              = { vector.x, vector.y, vector.z, vector.w };
+          glm::vec3 fwd    = glm::normalize(qrot(hej, transform.forward()));
+          glm::vec3 up               = glm::normalize(qrot(hej, transform.up()));
+          glm::vec3 pos = targetPos + (transform.forward() * -camMovement.camDist);
 
           /*printf("Tar: %f, %f, %f\nCam: %f, %f, %f\n\n",
         tra.position.x, tra.position.y, tra.position.z,
         pos.m128_f32[0], pos.m128_f32[1], pos.m128_f32[2]);*/
-
-
-          cam.Update(pos, targetPos, up);
       }
 };
