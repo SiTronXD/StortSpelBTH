@@ -4,10 +4,16 @@
 #include "../Components/CameraMovement.h"
 #include "glm/gtc/quaternion.hpp";
 
-class CameraMovementSystem: public System {
-  private:
+// temp
+constexpr float RADIAN = 57.2957795f;
 
+class CameraMovementSystem: public System 
+{
+private:
+
+    //SceneHandler* hScene;
     Scene* scene;
+    int playerID;
 
     static glm::vec3 GetRandVec(float scalar)
     {
@@ -16,29 +22,27 @@ class CameraMovementSystem: public System {
                          ((rand() % 200) * 0.01f - 1.f) * scalar);
     }
 
-    glm::vec3 qrot(glm::vec4 q, glm::vec3 v)
+    static glm::vec3 qrot(glm::vec4 q, glm::vec3 v)
     {
         return v + (2.f * glm::cross(glm::vec3(q.x, q.y, q.z), glm::cross(glm::vec3(q.x, q.y, q.z), v) + q.w * v));
     }
 
-  public:
+public:
 
-      CameraMovementSystem(Scene* scene, int playerID) : scene(scene) {
-          if (scene->hasComponents<CameraMovement>(playerID)) {
-              CameraMovement& cameraMovement = scene->getComponent<CameraMovement>(playerID);
-          }
+      CameraMovementSystem(Scene* scene, int playerID): scene(scene), playerID(playerID)
+      {
+          auto q = scene->getComponent<Transform>(scene->getMainCameraID());
       }
 
       bool update(entt::registry& reg, float deltaTime) final {
-          auto view = reg.view<Transform, CameraMovement>();
-          auto foo  = [&](Transform& camTransform, Transform& playerTransform, CameraMovement& cameraMovement) {
-              basicMovement(playerTransform, deltaTime);
-          };
-          view.each(foo);
+
+          basicMovement(deltaTime);
+          camMovement(deltaTime);
+
           return false;
       }
 
-      void basicMovement(Transform& playerTransform, float deltaTime)
+      void basicMovement(float deltaTime)
       {
           static float speed = 20.f;
 
@@ -51,25 +55,28 @@ class CameraMovementSystem: public System {
           }
           ImGui::End();
 
-          const float ZInput     = Input::isKeyDown(Keys::W)   ? 1.f
-                                   : Input::isKeyDown(Keys::S) ? -1.f
-                                                               : 0.f;
-          const float XInput     = Input::isKeyDown(Keys::D)   ? 1.f
-                                   : Input::isKeyDown(Keys::A) ? -1.f
-                                                               : 0.f;
+          const float ZInput = Input::isKeyDown(Keys::W) ? 1.f : Input::isKeyDown(Keys::S) ? -1.f : 0.f;
+          const float XInput = Input::isKeyDown(Keys::D) ? 1.f : Input::isKeyDown(Keys::A) ? -1.f : 0.f;
           const float frameSpeed = speed * deltaTime;
 
-          glm::vec3 yasFwd = playerTransform.up();
-          yasFwd.y         = 0.f;
-          yasFwd           = glm::normalize(yasFwd) * (frameSpeed * ZInput);
+          Transform&      camTra = scene->getComponent<Transform>(scene->getMainCameraID());
+          const glm::vec3 camFwd = camTra.forward();
+          const glm::vec3 camUp  = camTra.up();
 
-          glm::vec3 yasSide = glm::normalize(glm::cross(playerTransform.forward(), playerTransform.up())) *
-                              (frameSpeed * XInput);
+          glm::vec3 yasFwd  = camFwd;
+          yasFwd.y = 0.f;
+          yasFwd = glm::normalize(yasFwd) * (frameSpeed * ZInput);
 
-          playerTransform.position += yasFwd + yasSide;
+          glm::vec3 finalVec = glm::normalize(glm::cross(camFwd, camUp)) * (frameSpeed * XInput) + yasFwd;
+
+          scene->getComponent<Transform>(playerID).position += finalVec;
       }
 
-      void camMovement(CameraMovement& camMovement, Transform& transform, float deltaTime) {
+      void camMovement(float deltaTime)
+      {
+          Transform& camTransform = scene->getComponent<Transform>(scene->getMainCameraID());
+          CameraMovement& camMovement = scene->getComponent<CameraMovement>(scene->getMainCameraID()); 
+
           if (ImGui::Begin("yas")) {
               ImGui::PushItemWidth(-100.f);
 
@@ -88,24 +95,35 @@ class CameraMovementSystem: public System {
           }
           ImGui::End();
 
-          if (Input::isKeyDown(Keys::Q) && !camMovement.shaking) camMovement.shaking = true;
+          if (Input::isKeyDown(Keys::Q) && !camMovement.shaking) {
+              camMovement.shaking = true;
+          }
 
-          const float XInput = Input::getMouseDeltaX();
-          const float YInput = Input::getMouseDeltaY();
+          //const float XInput = Input::getMouseDeltaX();
+          //const float YInput = Input::getMouseDeltaY();
+          
+          // temp input
+          const float XInput = Input::isKeyDown(Keys::LEFT) ? 1.f : Input::isKeyDown(Keys::RIGHT) ? -1.f : 0.f;
+          const float YInput = Input::isKeyDown(Keys::UP)   ? 1.f : Input::isKeyDown(Keys::DOWN)  ? -1.f : 0.f;
+          
+          camMovement.camRot.x += camMovement.sens * YInput * deltaTime;
+          camMovement.camRot.y += camMovement.sens * XInput * deltaTime;
 
-          glm::vec2 camRot;
-          camRot.x += camMovement.sens * YInput * deltaTime;
-          camRot.y += camMovement.sens * XInput * deltaTime;
+          // Temp debug
+          if (Input::isKeyDown(Keys::E)) {
+              camMovement.camRot.x = 0.f; 
+              camMovement.camRot.y = 0.f;
+          }
 
-          printf("DT: %f\nX Input: %f\nY Input: %f\n", deltaTime, XInput, YInput);
+          if (camMovement.camRot.x >= camMovement.maxXRot) {
+              camMovement.camRot.x = camMovement.maxXRot;
+          }
+          else if (camMovement.camRot.x <= camMovement.minXRot) {
+              camMovement.camRot.x = camMovement.minXRot;
+          }
 
-          if (camRot.x >= camMovement.maxXRot) camRot.x = camMovement.maxXRot;
-          else if (camRot.x <= camMovement.minXRot)
-              camRot.x = camMovement.minXRot;
 
-          //printf("X Rot: %f\nY Rot: %f\n\n", camRot.x, camRot.y);
-
-          glm::vec3 targetPos = transform.position;
+          glm::vec3 targetPos = scene->getComponent<Transform>(playerID).position;
           targetPos.y += camMovement.camHeight;
 
           if (camMovement.shaking) {
@@ -119,14 +137,19 @@ class CameraMovementSystem: public System {
               }
           }
 
-          glm::quat vector = glm::vec3(camRot.x, camRot.y, 0.f);
-          glm::vec4 hej              = { vector.x, vector.y, vector.z, vector.w };
-          glm::vec3 fwd    = glm::normalize(qrot(hej, transform.forward()));
-          glm::vec3 up               = glm::normalize(qrot(hej, transform.up()));
-          glm::vec3 pos = targetPos + (transform.forward() * -camMovement.camDist);
+          glm::quat quat = glm::quat(camMovement.camRot);
+          glm::vec3 fwd = glm::normalize(qrot(glm::vec4(quat.x, quat.y, quat.z, quat.w), glm::vec3(0.f, 0.f, 1.f)));
 
-          /*printf("Tar: %f, %f, %f\nCam: %f, %f, %f\n\n",
-        tra.position.x, tra.position.y, tra.position.z,
-        pos.m128_f32[0], pos.m128_f32[1], pos.m128_f32[2]);*/
+          camTransform.position = targetPos + (fwd * -camMovement.camDist);
+          camTransform.rotation = glm::eulerAngles(quat) * RADIAN;
+
+          //printf("Fwd: (%f, %f, %f)\n", fwd.x, fwd.y, fwd.z);
+          //printf("Vec rot: (%f, %f)\n", camMovement.camRot.x, camMovement.camRot.y);
+          printf("Cam rot: (%f, %f, %f)\n", camTransform.rotation.x, camTransform.rotation.y, camTransform.rotation.z);
+          //printf("Cam pos: (%f, %f, %f)\n", camTransform.position.x, camTransform.position.y, camTransform.position.z);
+          //printf("Tar pos: (%f, %f, %f)\n", targetPos.x, targetPos.y, targetPos.z);
+          //printf("Cam dist: %f\n", glm::distance(pos, targetPos));
+
+          //printf("\n");
       }
 };
