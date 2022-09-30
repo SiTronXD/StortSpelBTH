@@ -3,6 +3,11 @@
 #include "vengine.h"
 #include <random>
 
+struct Tile {
+    int type = 0;
+    glm::vec2 position;
+};
+
 class RoomHandler {
   private:
     int TILE_TYPES = 4; //TODO: get from config
@@ -10,6 +15,7 @@ class RoomHandler {
     int HALF_ROOM  = ROOM_SIZE / 2;
 
     int* room;
+    std::vector<Tile> tiles;
 
     int getArrayIndexFromPosition(int x, int y)
     {
@@ -26,8 +32,18 @@ class RoomHandler {
     ~RoomHandler();
     void generateRoom();
 
-    int getRoomTile(int index)
+    int getRoomTile(int index) 
     {
         return room[index];
+    }
+
+    int getNrTiles()
+    {
+        return tiles.size();
+    }
+
+    Tile getTile(int index) 
+    {
+        return tiles[index];
     }
 };

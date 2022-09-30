@@ -6,6 +6,7 @@
 GameScene::GameScene() :
 	camEntity(-1), entity(-1)
 {
+    roomPieces = std::vector<int>();
 }
 
 GameScene::~GameScene()
@@ -18,7 +19,7 @@ void GameScene::init()
 	this->setComponent<Camera>(this->camEntity, 1.0f);
 	this->setMainCamera(this->camEntity);
 	Transform& camTransform = this->getComponent<Transform>(this->camEntity);
-	camTransform.position = glm::vec3(1.0f);
+	camTransform.position = glm::vec3(0.0f);
 
     roomHandler.generateRoom();
 
@@ -34,21 +35,30 @@ void GameScene::init()
 
     std::cout << " -----------------\n";
 
-	this->entity = this->createEntity();
-	this->setComponent<MeshComponent>(this->entity);
-    MeshComponent& mesh = this->getComponent<MeshComponent>(this->entity);
-    std::string path = "room_piece_";
-    path += std::to_string(roomHandler.getRoomTile(40));
-    path += ".obj";
-    memcpy(mesh.filePath, path.c_str(), sizeof(mesh.filePath));
-            
-	this->setComponent<Movement>(this->entity);
-	this->createSystem<MovementSystem>(this, entity);
-	this->setComponent<Combat>(this->entity);
-	this->createSystem<CombatSystem>(this, entity);
-	Transform& transform = this->getComponent<Transform>(this->entity);
-	transform.position = glm::vec3(0.0f, 0.0f, 100.0f);
-	transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
+
+	for (int i = 0; i < roomHandler.getNrTiles(); i++) 
+	{
+        int pieceID = this->createEntity();
+        this->setComponent<MeshComponent>(pieceID);
+        MeshComponent& mesh = this->getComponent<MeshComponent>(pieceID);
+
+        std::string path = "room_piece_" + std::to_string(roomHandler.getTile(i).type) + ".obj";
+        memcpy(mesh.filePath, path.c_str(), sizeof(mesh.filePath));
+
+        Transform& transform = this->getComponent<Transform>(pieceID);
+        transform.position =
+            glm::vec3(roomHandler.getTile(i).position.x, roomHandler.getTile(i).position.y, 4.f);
+        transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
+        transform.scale = glm::vec3(0.04f);
+
+        roomPieces.push_back(pieceID);
+	}
+                
+	//this->setComponent<Movement>(this->entity);
+	//this->createSystem<MovementSystem>(this, entity);
+	//this->setComponent<Combat>(this->entity);
+	//this->createSystem<CombatSystem>(this, entity);
+	
 	//transform.scale = glm::vec3(5.0f);
 
 

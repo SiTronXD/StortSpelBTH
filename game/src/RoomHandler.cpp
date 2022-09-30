@@ -6,6 +6,7 @@ RoomHandler::RoomHandler()
     //create 2d array representing room and set all room pieces to 0
     room = new int[ROOM_SIZE * ROOM_SIZE];
     memset(room, 0, sizeof(int) * ROOM_SIZE * ROOM_SIZE);
+    tiles = std::vector<Tile>();
 }
 RoomHandler::~RoomHandler() 
 {
@@ -41,7 +42,7 @@ void RoomHandler::addPiece(glm::vec2 position, int depth)
         std::random_device rd; //obtain random number from hardware
         std::mt19937       gen(rd()); //seed generator
         if (room[index] < 1) {
-            std::uniform_int_distribution<> tileTypeRange(1, 4); //TODO: change to nr tile types
+            std::uniform_int_distribution<> tileTypeRange(1, 10); //TODO: change to nr tile types
             int                             tileType = tileTypeRange(gen);
 
             //TODO: clean up code
@@ -105,6 +106,10 @@ void RoomHandler::addPiece(glm::vec2 position, int depth)
 void RoomHandler::placeTile(int tileType, glm::vec2 gridPosition, glm::vec2 worldPosition)
 {
     room[getArrayIndexFromPosition(gridPosition.x, gridPosition.y)] = tileType;
+    Tile t;
+    t.type = tileType;
+    t.position = worldPosition;
+    tiles.push_back(t);
 }
 
 glm::vec2 RoomHandler::getFreeLarge(glm::vec2 position)

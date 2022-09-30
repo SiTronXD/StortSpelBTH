@@ -7,6 +7,7 @@ class GameScene: public Scene {
   private:
     int camEntity;
     int entity;
+    std::vector<int> roomPieces;
 
     RoomHandler roomHandler;
 
