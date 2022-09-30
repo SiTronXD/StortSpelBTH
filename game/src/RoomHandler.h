@@ -11,7 +11,7 @@ struct Tile {
 class RoomHandler {
   private:
     int TILE_TYPES = 4; //TODO: get from config
-    int ROOM_SIZE  = 9; //TODO: get from config
+    int ROOM_SIZE  = 10; //TODO: get from config
     int HALF_ROOM  = ROOM_SIZE / 2;
 
     int* room;

@@ -18,17 +18,17 @@ void RoomHandler::generateRoom()
     //generate first room piece in middle (0,0) and depth 0
     addPiece(glm::vec2(0, 0), 0);
 
-    //TODO: ONLY FOR VISUALIZING ROOM LAYOUT. REMOVE LATER
-    std::cout << " -----------------\n";
+    //Add border pieces
     for (int i = 0; i < ROOM_SIZE; i++) {
-        std::cout << "|";
         for (int j = 0; j < ROOM_SIZE; j++) {
-            std::cout << room[i * ROOM_SIZE + j] << " ";
+            if (room[i * ROOM_SIZE + j] == 0) {
+                Tile t;
+                t.type     = 0;
+                t.position = glm::vec2(j - HALF_ROOM, i - HALF_ROOM);
+                tiles.push_back(t);
+            }
         }
-        std::cout << "|\n";
     }
-
-    std::cout << " -----------------\n";
 }
 
 void RoomHandler::addPiece(glm::vec2 position, int depth)
