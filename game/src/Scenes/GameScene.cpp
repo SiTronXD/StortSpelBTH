@@ -25,7 +25,7 @@ void GameScene::init()
 	transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
 	transform.scale = glm::vec3(5.0f);
 	//this->createSystem<CombatSystem>(this, entity);
-	//this->createSystem<MovementSystem>(this, entity);
+	this->createSystem<MovementSystem>(this, this->entity);
 
 	int floor = this->createEntity();
     this->setComponent<MeshComponent>(floor);
@@ -43,6 +43,52 @@ void GameScene::init()
     this->createSystem<CameraMovementSystem>(this, this->entity);
 }
 
+// foo() & foo2() used for decreasing fps to help with debugging
+double foo(double value);
+double foo2(double value);
+
 void GameScene::update()
 {
+
+	// Decrease fps based on num
+	
+	double result = 12341241.0;
+	static int num = 0;
+
+	if (ImGui::Begin("FPS decrease"))
+		ImGui::InputInt("num", &num);
+    ImGui::End();     
+
+	for (int i = 0; i < num; i++)
+		result /= foo((double)i);
+}
+
+double foo(double value)
+{
+	double result = 1234567890.0;
+	for (size_t i = 0; i < 100; i++)
+	{
+		result /= std::sqrt(foo2(result / value));
+		result /= std::sqrt(foo2(result / value));
+		result /= std::sqrt(foo2(result / value));
+		result /= std::sqrt(foo2(result / value));
+		result /= std::sqrt(foo2(result / value));
+
+	}
+	return result;
+}
+
+double foo2(double value)
+{
+	double result = 1234567890.0;
+	for (size_t i = 0; i < 100; i++)
+	{
+		result /= std::sqrt(std::sqrt(std::sqrt(std::sqrt(value * 0.892375892))));
+		result /= std::sqrt(std::sqrt(std::sqrt(std::sqrt(value * 1.476352734))));
+		result /= std::sqrt(std::sqrt(std::sqrt(std::sqrt(value * 2.248923885))));
+		result /= std::sqrt(std::sqrt(std::sqrt(std::sqrt(value * 3.691284908))));
+		result /= std::sqrt(std::sqrt(std::sqrt(std::sqrt(value * 3.376598278))));
+	}
+	
+	return result;
 }
