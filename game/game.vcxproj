@@ -159,6 +159,7 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
+    <ClCompile Include="src\Scenes\NetworkAI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -166,6 +167,7 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
     <ClInclude Include="src\Components\Combat.h" />
     <ClInclude Include="src\Components\Movement.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
+    <ClInclude Include="src\Scenes\NetworkAI.h" />
     <ClInclude Include="src\Systems\CombatSystem.hpp" />
     <ClInclude Include="src\Systems\MovementSystem.hpp" />
   </ItemGroup>
