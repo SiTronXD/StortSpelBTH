@@ -27,13 +27,14 @@ void NetworkAI::init()
     transform.scale      = glm::vec3(5.0f);
 }
 
+#include "../ServerGames/TheServerGame.h"
 void NetworkAI::update()
 {
     Transform& transform = this->getComponent<Transform>(this->entity);
     this->getNetworkHandler()->sendUDPDataToClient(transform.position, transform.rotation);
 
     if (Input::isKeyPressed(Keys::H)) {
-        this->getNetworkHandler()->createServer();
+        this->getNetworkHandler()->createServer(new TheServerGame());
         this->getNetworkHandler()->createClient();
         this->getNetworkHandler()->connectClientToThis();
         Transform& transform = this->getComponent<Transform>(this->entity);
