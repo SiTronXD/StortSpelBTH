@@ -26,7 +26,7 @@ private:
                          ((rand() % 201) * 0.01f - 1.f) * scalar);
     }
 
-    static glm::vec3 qrot(glm::vec4 q, glm::vec3 v)
+    static glm::vec3 qrot(const glm::quat& q, const glm::vec3& v)
     {
         return v + (2.f * glm::cross(glm::vec3(q.x, q.y, q.z), glm::cross(glm::vec3(q.x, q.y, q.z), v) + q.w * v));
     }
@@ -40,39 +40,8 @@ public:
       bool update(entt::registry& reg, float deltaTime) final {
 
           camMovement(deltaTime);
-          //basicMovement(deltaTime);
 
           return false;
-      }
-
-      void basicMovement(float deltaTime)
-      {
-          static float speed = 20.f;
-
-          if (ImGui::Begin("Cam variables")) {
-              ImGui::PushItemWidth(-100.f);
-
-              ImGui::DragFloat("Player speed", &speed, 0.01f);
-
-              ImGui::PopItemWidth();
-          }
-          ImGui::End();
-
-          const float ZInput = Input::isKeyDown(Keys::W) ? 1.f : Input::isKeyDown(Keys::S) ? -1.f : 0.f;
-          const float XInput = Input::isKeyDown(Keys::D) ? 1.f : Input::isKeyDown(Keys::A) ? -1.f : 0.f;
-          const float frameSpeed = speed * deltaTime;
-
-          Transform&      camTra = scene->getComponent<Transform>(scene->getMainCameraID());
-          const glm::vec3 camFwd = camTra.forward();
-          const glm::vec3 camUp  = camTra.up();
-
-          glm::vec3 yasFwd  = camFwd;
-          yasFwd.y = 0.f;
-          yasFwd = glm::normalize(yasFwd) * (frameSpeed * ZInput);
-
-          glm::vec3 finalVec = glm::normalize(glm::cross(camFwd, camUp)) * (frameSpeed * XInput) + yasFwd;
-
-          scene->getComponent<Transform>(playerID).position += finalVec;
       }
 
       void camMovement(float deltaTime)
@@ -80,20 +49,21 @@ public:
           Transform& camTransform = scene->getComponent<Transform>(scene->getMainCameraID());
           CameraMovement& camMovement = scene->getComponent<CameraMovement>(scene->getMainCameraID()); 
 
-          if (ImGui::Begin("Cam variables")) {
+          if (ImGui::Begin("Movement")) {
               ImGui::PushItemWidth(-100.f);
+              ImGui::Text("Camera (Shake key: Q)");
 
               ImGui::DragFloat("Sens", &camMovement.sens, 0.01f, 0.f, 50.f);
-              ImGui::DragFloat("Cam Distance", &camMovement.camDist, 0.01f);
-              ImGui::DragFloat("Cam Height", &camMovement.camHeight, 0.01f);
+              ImGui::DragFloat("Distance", &camMovement.camDist, 0.01f);
+              ImGui::DragFloat("Height", &camMovement.camHeight, 0.01f);
 
               ImGui::DragFloat("Max Rotation", &camMovement.maxXRot, 0.001f);
               ImGui::DragFloat("Min Rotation", &camMovement.minXRot, 0.001f);
 
               ImGui::DragFloat("Shake Scalar", &camMovement.shakeScalar, 0.0005f, 0.f, 20.f);
               ImGui::DragFloat("Shake Duration", &camMovement.shakeDuration, 0.001f);
-              ImGui::Text("Shake key: Q");
 
+              ImGui::Separator();
               ImGui::PopItemWidth();
           }
           ImGui::End();
@@ -105,8 +75,8 @@ public:
 
           //const float XInput = (float)Input::getMouseDeltaX();
           //const float YInput = -(float)Input::getMouseDeltaY();
-          const float XInput = 1.f;//Input::isKeyDown(Keys::LEFT) ? 1.f : Input::isKeyDown(Keys::RIGHT) ? -1.f : 0.f;
-          const float YInput = 0.f;//Input::isKeyDown(Keys::DOWN) ? 1.f : Input::isKeyDown(Keys::UP)  ? -1.f : 0.f;
+          const float XInput = Input::isKeyDown(Keys::LEFT) ? 1.f : Input::isKeyDown(Keys::RIGHT) ? -1.f : 0.f;
+          const float YInput = Input::isKeyDown(Keys::DOWN) ? 1.f : Input::isKeyDown(Keys::UP)  ? -1.f : 0.f;
           
 
           camMovement.camRot.x += camMovement.sens * YInput * deltaTime;
@@ -133,12 +103,17 @@ public:
               }
           }
 
-          const glm::quat quat = glm::quat(camMovement.camRot);
-          const glm::vec3 scaledFwd = glm::normalize(qrot(glm::vec4(quat.x, quat.y, quat.z, quat.w), glm::vec3(0.f, 0.f, 1.f))) * -camMovement.camDist;
 
+          const glm::quat quat = glm::quat(camMovement.camRot);
+          const glm::vec3 scaledFwd = glm::normalize(qrot(quat, glm::vec3(0.f, 0.f, 1.f))) * -camMovement.camDist;
+
+          camTransform.position = targetPos + scaledFwd;
+
+          //camTransform.rotation.y = camMovement.camRot.y * RADIAN;
+          //camTransform.rotation.x = camMovement.camRot.x * RADIAN;
           glm::extractEulerAngleXYZ(glm::mat4_cast(quat), camTransform.rotation.x, camTransform.rotation.y, camTransform.rotation.z);
           camTransform.rotation *= RADIAN;
-          camTransform.position = targetPos + scaledFwd;
+          
 
           //printf("Fwd: (%f, %f, %f)\n", fwd.x, fwd.y, fwd.z);
           //printf("Vec rot: (%f, %f)\n", camMovement.camRot.x, camMovement.camRot.y);

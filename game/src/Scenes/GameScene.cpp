@@ -3,6 +3,7 @@
 #include "../Systems/MovementSystem.hpp"
 #include "../Systems/CombatSystem.hpp"
 #include "../Systems/CameraMovementSystem.hpp"
+#include "vengine/systems/UpdateMatricesSystem.hpp"
 
 GameScene::GameScene():
 	camEntity(-1), entity(-1)
@@ -41,6 +42,7 @@ void GameScene::init()
 	camTransform.position = glm::vec3(1.0f);
 
     this->createSystem<CameraMovementSystem>(this, this->entity);
+	this->createSystem<UpdateMatricesSystem>();
 }
 
 // foo() & foo2() used for decreasing fps to help with debugging
@@ -56,7 +58,7 @@ void GameScene::update()
 	static int num = 0;
 
 	if (ImGui::Begin("FPS decrease"))
-		ImGui::InputInt("num", &num);
+		ImGui::InputInt("loops", &num);
     ImGui::End();     
 
 	for (int i = 0; i < num; i++)
