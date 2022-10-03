@@ -43,4 +43,14 @@ void NetworkAI::update()
     if (Input::isKeyPressed(Keys::K)) {
         this->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent { GameEvents::START });
     }
+    if (Input::isKeyPressed(Keys::J)) {
+        this->getNetworkHandler()->createClient("Cli");
+        std::cout << "ip : ";
+        std::string ip;
+        std::cin >> ip;
+        if (ip == "a") {
+            ip = "192.168.1.104";
+        }
+        this->getNetworkHandler()->connectClient(ip);
+    }
 }
