@@ -7,10 +7,11 @@ class MovementSystem: public System {
   private:
 
     Scene* scene;
+    int playerID;
 
   public:
 
-    MovementSystem(Scene* scene, int playerID): scene(scene)
+    MovementSystem(Scene* scene, int playerID): scene(scene), playerID(playerID)
     {
         if (!scene->hasComponents<Movement>(playerID)) {
             scene->setComponent<Movement>(playerID);
@@ -19,30 +20,56 @@ class MovementSystem: public System {
         Movement& movement     = scene->getComponent<Movement>(playerID);
         movement.maxSpeed      = 50.f;
         movement.speedIncrease = 200.f;
-        movement.slowDown      = 1.2f;
+        movement.slowDown      = 180.f;
         movement.currentSpeed  = glm::vec2(0.f);
         movement.turnSpeed     = 200.f;
     }
 
     bool update(entt::registry& reg, float deltaTime) final
     {
+        // Reference currently only used for ImGui
+        Movement& movement = scene->getComponent<Movement>(playerID);
+
+        static bool moveSystem0 = true;
+
+        if (ImGui::Begin("Movement")) {
+            ImGui::PushItemWidth(-100.f);
+            ImGui::Text("Player");
+
+            ImGui::Checkbox("Move system switch", &moveSystem0);
+            ImGui::DragFloat("Max speed", &movement.maxSpeed, 0.05f, 0.f, 200.f);
+            ImGui::DragFloat("Speed inc", &movement.speedIncrease, 0.05f);
+            ImGui::DragFloat("Slow down", &movement.slowDown, 0.05f, 0.0001f);
+
+            ImGui::Text("Z,X Speed: (%f, %f)", movement.currentSpeed.y, movement.currentSpeed.x);
+
+            ImGui::Separator();
+            ImGui::PopItemWidth();
+        }
+        ImGui::End();
+
+
         Transform& camTra = scene->getComponent<Transform>(scene->getMainCameraID());
 
-        /*auto view = reg.view<Transform, Movement>();
-		auto foo = [&](Transform& transform, Movement& movement)
-		{
-            move(movement, transform, deltaTime);
-            rotate(movement, transform, deltaTime);
-		};
-		view.each(foo);*/
-
-        auto view       = reg.view<Transform, Movement>();
-        auto playerMove = [&](Transform& transform, Movement& movement) {
-            move2(movement, transform, camTra, deltaTime);
-            //rotate2(movement, transform, camTra, deltaTime);
-        };
-        view.each(playerMove);
-
+        if (moveSystem0) 
+        {
+            auto playerView = reg.view<Transform, Movement>();
+            auto moveLambda = [&](Transform& transform, Movement& movement) {
+                move(movement, transform, deltaTime);
+                rotate(movement, transform, deltaTime);
+            };
+            playerView.each(moveLambda);
+        }
+        else 
+        {
+            auto playerView = reg.view<Transform, Movement>();
+            auto moveLambda = [&](Transform& transform, Movement& movement) {
+                move2(movement, transform, camTra, deltaTime);
+                rotate2(movement, transform, camTra, deltaTime);
+            };
+            playerView.each(moveLambda);
+        }
+        
         return false;
     }
 
@@ -68,7 +95,14 @@ class MovementSystem: public System {
             movement.currentSpeed.y += movement.speedIncrease * movement.moveDir.y * deltaTime;
         }
 
-        transform.position += (movement.currentSpeed.y * transform.up());
+        if (movement.currentSpeed.y > movement.maxSpeed) {
+            movement.currentSpeed.y = movement.maxSpeed;
+        }
+        else if (movement.currentSpeed.y < -movement.maxSpeed) {
+            movement.currentSpeed.y = -movement.maxSpeed;
+        }
+
+        transform.position += (movement.currentSpeed.y * transform.up()) * deltaTime;
     };
 
     void rotate(Movement& movement, Transform& transform, float deltaTime)
@@ -92,51 +126,22 @@ class MovementSystem: public System {
         movement.moveDir.y = (float)(Input::isKeyDown(Keys::W) - Input::isKeyDown(Keys::S));
         movement.moveDir.x = (float)(Input::isKeyDown(Keys::A) - Input::isKeyDown(Keys::D));
 
-        movement.currentSpeed.y += movement.moveDir.y * movement.speedIncrease * deltaTime;
-        movement.currentSpeed.x += movement.moveDir.x * movement.speedIncrease * deltaTime;
+        movement.currentSpeed.x = movement.moveDir.x * movement.maxSpeed;
+        movement.currentSpeed.y = movement.moveDir.y * movement.maxSpeed;
 
-        if (movement.moveDir.y == 0.f) {
-            movement.currentSpeed.y = 0.f;
-        }
-        if (movement.moveDir.x == 0.f) {
-            movement.currentSpeed.x = 0.f;
-        }
+        if (movement.moveDir.x && movement.moveDir.y)
+            movement.currentSpeed = glm::normalize(movement.currentSpeed) * movement.maxSpeed;
 
-        const float speed = glm::length(movement.currentSpeed);
-        if (speed > movement.maxSpeed) {
-            movement.currentSpeed = (movement.currentSpeed / speed) * movement.maxSpeed;
-        }
-        /*else if (speed < 0.00001f) {
-            movement.currentSpeed = glm::vec2(0.f);
-        }*/
-        
-        Transform&      camTra = scene->getComponent<Transform>(scene->getMainCameraID());
+        Transform& camTra = scene->getComponent<Transform>(scene->getMainCameraID());
         const glm::vec3 camFwd = camTra.forward();
 
         glm::vec3 moveFwd = camFwd;
-        moveFwd.y         = 0.f;
+        moveFwd.y = 0.f;
 
         // += forward + side
         transform.position +=
             glm::normalize(moveFwd) * (movement.currentSpeed.y * deltaTime) +
-            glm::normalize(glm::cross(camTra.up(), camFwd)) * (movement.currentSpeed.x * deltaTime);
-
-
-        if (ImGui::Begin("Movement")) {
-            ImGui::PushItemWidth(-100.f);
-            ImGui::Text("Player");
-
-            ImGui::DragFloat("Max speed", &movement.maxSpeed, 0.05f, 0.f, 200.f);
-            ImGui::DragFloat("Speed inc", &movement.speedIncrease, 0.05f);
-            //ImGui::DragFloat("Slow down", &movement.slowDown, 0.05f, 0.0001f);
-
-            ImGui::Text("Speed b4 normalize: %f", speed);
-            ImGui::Text("Z,X Speed: (%f, %f)", movement.currentSpeed.y, movement.currentSpeed.x);
-
-            ImGui::Separator();
-            ImGui::PopItemWidth();
-        }
-        ImGui::End();
+            glm::normalize(glm::cross(camTra.up(), camFwd)) * (movement.currentSpeed.x * deltaTime); 
     }
 
     void rotate2(Movement& movement, Transform& transform, Transform& camTransform, float deltaTime)

@@ -16,7 +16,6 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
-
 	this->entity = this->createEntity();
 	this->setComponent<MeshComponent>(this->entity);
 	this->setComponent<Movement>(this->entity);
@@ -25,7 +24,7 @@ void GameScene::init()
 	transform.position = glm::vec3(0.0f, 0.0f, 20.0f);
 	transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
 	transform.scale = glm::vec3(5.0f);
-	//this->createSystem<CombatSystem>(this, entity);
+	this->createSystem<CombatSystem>(this, entity);
 	this->createSystem<MovementSystem>(this, this->entity);
 
 	int floor = this->createEntity();
@@ -42,6 +41,8 @@ void GameScene::init()
 	camTransform.position = glm::vec3(1.0f);
 
     this->createSystem<CameraMovementSystem>(this, this->entity);
+
+
 	this->createSystem<UpdateMatricesSystem>();
 }
 
@@ -61,8 +62,9 @@ void GameScene::update()
 		ImGui::InputInt("loops", &num);
     ImGui::End();     
 
-	for (int i = 0; i < num; i++)
+	for (int i = 0; i < num; i++) {
 		result /= foo((double)i);
+	}
 }
 
 double foo(double value)

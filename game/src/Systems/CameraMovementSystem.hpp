@@ -103,17 +103,16 @@ public:
               }
           }
 
-
           const glm::quat quat = glm::quat(camMovement.camRot);
           const glm::vec3 scaledFwd = glm::normalize(qrot(quat, glm::vec3(0.f, 0.f, 1.f))) * -camMovement.camDist;
 
           camTransform.position = targetPos + scaledFwd;
 
-          //camTransform.rotation.y = camMovement.camRot.y * RADIAN;
-          //camTransform.rotation.x = camMovement.camRot.x * RADIAN;
-          glm::extractEulerAngleXYZ(glm::mat4_cast(quat), camTransform.rotation.x, camTransform.rotation.y, camTransform.rotation.z);
-          camTransform.rotation *= RADIAN;
+          camTransform.rotation.y = camMovement.camRot.y * RADIAN;
+          camTransform.rotation.x = camMovement.camRot.x * RADIAN;
           
+          //glm::extractEulerAngleXYZ(glm::mat4_cast(quat), camTransform.rotation.x, camTransform.rotation.y, camTransform.rotation.z);
+          //camTransform.rotation *= RADIAN;
 
           //printf("Fwd: (%f, %f, %f)\n", fwd.x, fwd.y, fwd.z);
           //printf("Vec rot: (%f, %f)\n", camMovement.camRot.x, camMovement.camRot.y);
