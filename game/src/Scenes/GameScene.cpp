@@ -20,6 +20,7 @@ void GameScene::init()
 	this->setMainCamera(this->camEntity);
 	Transform& camTransform = this->getComponent<Transform>(this->camEntity);
 	camTransform.position = glm::vec3(0);
+    
 
     roomHandler.generateRoom();
 
