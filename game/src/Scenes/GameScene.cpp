@@ -5,7 +5,7 @@
 #include "../Systems/CameraMovementSystem.hpp"
 
 // decreaseFps used for testing game with different framerates
-double decreaseFps(double value);
+void decreaseFps();
 double heavyFunction(double value);
 
 GameScene::GameScene():
@@ -50,10 +50,10 @@ void GameScene::update()
 {
 
 	static double value = 1234567890.0;
-	value = decreaseFps(value);
+	decreaseFps();
 }
 
-double decreaseFps(double value)
+void decreaseFps()
 {
 	static double result = 1234567890.0;
 
@@ -67,14 +67,12 @@ double decreaseFps(double value)
 
     for (int i = 0; i < num; i++) 
 	{
-		result /= std::sqrt(heavyFunction(result / value));
-		result /= std::sqrt(heavyFunction(result / value));
-		result /= std::sqrt(heavyFunction(result / value));
-		result /= std::sqrt(heavyFunction(result / value));
-		result /= std::sqrt(heavyFunction(result / value));
+		result /= std::sqrt(heavyFunction(result));
+		result /= std::sqrt(heavyFunction(result));
+		result /= std::sqrt(heavyFunction(result));
+		result /= std::sqrt(heavyFunction(result));
+		result /= std::sqrt(heavyFunction(result));
     }
-
-	return result;
 }
 
 double heavyFunction(double value)
