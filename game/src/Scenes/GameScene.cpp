@@ -3,7 +3,10 @@
 #include "../Systems/MovementSystem.hpp"
 #include "../Systems/CombatSystem.hpp"
 #include "../Systems/CameraMovementSystem.hpp"
-#include "vengine/systems/UpdateMatricesSystem.hpp"
+
+// decreaseFps used for testing game with different framerates
+double decreaseFps(double value);
+double heavyFunction(double value);
 
 GameScene::GameScene():
 	camEntity(-1), entity(-1)
@@ -41,51 +44,43 @@ void GameScene::init()
 	camTransform.position = glm::vec3(1.0f);
 
     this->createSystem<CameraMovementSystem>(this, this->entity);
-
-
-	this->createSystem<UpdateMatricesSystem>();
 }
-
-// foo() & foo2() used for decreasing fps to help with debugging
-double foo(double value);
-double foo2(double value);
 
 void GameScene::update()
 {
 
-	// Decrease fps based on num
-	
-	double result = 12341241.0;
-	static int num = 0;
-
-	if (ImGui::Begin("FPS decrease"))
-		ImGui::InputInt("loops", &num);
-    ImGui::End();     
-
-	for (int i = 0; i < num; i++) {
-		result /= foo((double)i);
-	}
+	static double value = 1234567890.0;
+	value = decreaseFps(value);
 }
 
-double foo(double value)
+double decreaseFps(double value)
 {
-	double result = 1234567890.0;
-	for (size_t i = 0; i < 100; i++)
-	{
-		result /= std::sqrt(foo2(result / value));
-		result /= std::sqrt(foo2(result / value));
-		result /= std::sqrt(foo2(result / value));
-		result /= std::sqrt(foo2(result / value));
-		result /= std::sqrt(foo2(result / value));
+	static double result = 1234567890.0;
 
-	}
+	static int num = 0;
+    if (ImGui::Begin("FPS decrease")) 
+	{
+		ImGui::Text("Fps %f", 1.f / Time::getDT());
+        ImGui::InputInt("Loops", &num);
+    }
+    ImGui::End(); 
+
+    for (int i = 0; i < num; i++) 
+	{
+		result /= std::sqrt(heavyFunction(result / value));
+		result /= std::sqrt(heavyFunction(result / value));
+		result /= std::sqrt(heavyFunction(result / value));
+		result /= std::sqrt(heavyFunction(result / value));
+		result /= std::sqrt(heavyFunction(result / value));
+    }
+
 	return result;
 }
 
-double foo2(double value)
+double heavyFunction(double value)
 {
 	double result = 1234567890.0;
-	for (size_t i = 0; i < 100; i++)
+	for (size_t i = 0; i < 3000; i++)
 	{
 		result /= std::sqrt(std::sqrt(std::sqrt(std::sqrt(value * 0.892375892))));
 		result /= std::sqrt(std::sqrt(std::sqrt(std::sqrt(value * 1.476352734))));

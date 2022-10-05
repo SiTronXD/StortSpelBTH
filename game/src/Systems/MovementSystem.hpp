@@ -3,17 +3,19 @@
 #include <vengine.h>
 #include "../Components/Movement.h"
 
-class MovementSystem: public System {
-  private:
+class MovementSystem: public System 
+{
+private:
 
     Scene* scene;
     int playerID;
 
-  public:
+public:
 
     MovementSystem(Scene* scene, int playerID): scene(scene), playerID(playerID)
     {
-        if (!scene->hasComponents<Movement>(playerID)) {
+        if (!scene->hasComponents<Movement>(playerID)) 
+        {
             scene->setComponent<Movement>(playerID);
         }
 
@@ -75,30 +77,39 @@ class MovementSystem: public System {
 
     void move(Movement& movement, Transform& transform, float deltaTime)
     {
+        movement.currentSpeed.x = 0.f;
         movement.moveDir.y = (float)(Input::isKeyDown(Keys::W) - Input::isKeyDown(Keys::S));
 
-        if (movement.currentSpeed.y > movement.maxSpeed) {
+        if (movement.currentSpeed.y > movement.maxSpeed) 
+        {
             movement.currentSpeed.y = movement.maxSpeed;
         }
-        if (!movement.moveDir.y && movement.currentSpeed.y != 0.f) {
-            if (movement.currentSpeed.y < 0.001f && movement.currentSpeed.y > -0.001f) {
+        if (!movement.moveDir.y && movement.currentSpeed.y != 0.f) 
+        {
+            if (movement.currentSpeed.y < 0.001f && movement.currentSpeed.y > -0.001f)
+            {
                 movement.currentSpeed.y = 0.f;
             }
-            else if (movement.currentSpeed.y > 0.f) {
+            else if (movement.currentSpeed.y > 0.f) 
+            {
                 movement.currentSpeed.y -= movement.slowDown * deltaTime;
             }
-            else if (movement.currentSpeed.y < 0.f) {
+            else if (movement.currentSpeed.y < 0.f) 
+            {
                 movement.currentSpeed.y += movement.slowDown * deltaTime;
             }
         }
-        else {
+        else 
+        {
             movement.currentSpeed.y += movement.speedIncrease * movement.moveDir.y * deltaTime;
         }
 
-        if (movement.currentSpeed.y > movement.maxSpeed) {
+        if (movement.currentSpeed.y > movement.maxSpeed) 
+        {
             movement.currentSpeed.y = movement.maxSpeed;
         }
-        else if (movement.currentSpeed.y < -movement.maxSpeed) {
+        else if (movement.currentSpeed.y < -movement.maxSpeed)
+        {
             movement.currentSpeed.y = -movement.maxSpeed;
         }
 
@@ -109,13 +120,16 @@ class MovementSystem: public System {
     {
         movement.moveDir.x = (float)(Input::isKeyDown(Keys::A) - Input::isKeyDown(Keys::D));
 
-        if (transform.rotation.y > 359.5f && transform.rotation.y != 0.f) {
+        if (transform.rotation.y > 359.5f && transform.rotation.y != 0.f)
+        {
             transform.rotation.y = 0.f;
         }
-        if (movement.moveDir.x > 0) {
+        if (movement.moveDir.x > 0)
+        {
             transform.rotation.y += movement.turnSpeed * deltaTime;
         }
-        else if (movement.moveDir.x < 0) {
+        else if (movement.moveDir.x < 0)
+        {
             transform.rotation.y -= movement.turnSpeed * deltaTime;
         }
     }
@@ -130,7 +144,9 @@ class MovementSystem: public System {
         movement.currentSpeed.y = movement.moveDir.y * movement.maxSpeed;
 
         if (movement.moveDir.x && movement.moveDir.y)
+        {
             movement.currentSpeed = glm::normalize(movement.currentSpeed) * movement.maxSpeed;
+        }
 
         Transform& camTra = scene->getComponent<Transform>(scene->getMainCameraID());
         const glm::vec3 camFwd = camTra.forward();
@@ -148,19 +164,23 @@ class MovementSystem: public System {
     {
         // +180.f current cuz model is flipped wrong way ):<
 
-        if (movement.moveDir.y > 0.f) {
+        if (movement.moveDir.y > 0.f)
+        {
             transform.rotation.y = (camTransform.rotation.y + 180.f) + 45.f * movement.moveDir.x;
         }
 
-        else if (movement.moveDir.y < 0.f) {
+        else if (movement.moveDir.y < 0.f)
+        {
             transform.rotation.y = (camTransform.rotation.y) - 45.f * movement.moveDir.x;
         }
 
-        else if (movement.moveDir.x > 0.f) {
+        else if (movement.moveDir.x > 0.f) 
+        {
             transform.rotation.y = camTransform.rotation.y + 90.f;
         }
         
-        else if (movement.moveDir.x < 0.f) {
+        else if (movement.moveDir.x < 0.f)
+        {
             transform.rotation.y = camTransform.rotation.y - 90.f;
         }
     }

@@ -4,32 +4,14 @@
 #include "../Components/CameraMovement.h"
 #include "glm/gtc/quaternion.hpp";
 #include "glm/gtx/euler_angles.hpp"
-
-// temp
-constexpr float RADIAN = 57.2957795f;
+#include "vengine/VengineMath.hpp"
 
 class CameraMovementSystem: public System 
 {
 private:
 
-    //SceneHandler* hScene;
     Scene* scene;
     int playerID;
-
-    static glm::vec3 GetRandVec(float scalar)
-    {
-        // rand() % 201 -> 0 - 200
-        // * 0.01f      -> 0.00f - 2.00f
-        // - 1.f        -> -1.f - 1.f
-        return glm::vec3(((rand() % 201) * 0.01f - 1.f) * scalar,
-                         ((rand() % 201) * 0.01f - 1.f) * scalar,
-                         ((rand() % 201) * 0.01f - 1.f) * scalar);
-    }
-
-    static glm::vec3 qrot(const glm::quat& q, const glm::vec3& v)
-    {
-        return v + (2.f * glm::cross(glm::vec3(q.x, q.y, q.z), glm::cross(glm::vec3(q.x, q.y, q.z), v) + q.w * v));
-    }
 
 public:
 
@@ -37,8 +19,8 @@ public:
       {
       }
 
-      bool update(entt::registry& reg, float deltaTime) final {
-
+      bool update(entt::registry& reg, float deltaTime) final 
+      {
           camMovement(deltaTime);
 
           return false;
@@ -49,7 +31,8 @@ public:
           Transform& camTransform = scene->getComponent<Transform>(scene->getMainCameraID());
           CameraMovement& camMovement = scene->getComponent<CameraMovement>(scene->getMainCameraID()); 
 
-          if (ImGui::Begin("Movement")) {
+          if (ImGui::Begin("Movement")) 
+          {
               ImGui::PushItemWidth(-100.f);
               ImGui::Text("Camera (Shake key: Q)");
 
@@ -69,58 +52,49 @@ public:
           ImGui::End();
 
 
-          if (Input::isKeyDown(Keys::Q)) {
+          if (Input::isKeyDown(Keys::Q))
+          {
               camMovement.shaking = true;
           }
 
-          //const float XInput = (float)Input::getMouseDeltaX();
-          //const float YInput = -(float)Input::getMouseDeltaY();
           const float XInput = Input::isKeyDown(Keys::LEFT) ? 1.f : Input::isKeyDown(Keys::RIGHT) ? -1.f : 0.f;
           const float YInput = Input::isKeyDown(Keys::DOWN) ? 1.f : Input::isKeyDown(Keys::UP)  ? -1.f : 0.f;
-          
 
           camMovement.camRot.x += camMovement.sens * YInput * deltaTime;
           camMovement.camRot.y += camMovement.sens * XInput * deltaTime;
 
-          if (camMovement.camRot.x >= camMovement.maxXRot) {
+          if (camMovement.camRot.x >= camMovement.maxXRot)
+          {
               camMovement.camRot.x = camMovement.maxXRot;
           }
-          else if (camMovement.camRot.x <= camMovement.minXRot) {
+          else if (camMovement.camRot.x <= camMovement.minXRot) 
+          {
               camMovement.camRot.x = camMovement.minXRot;
           }
 
           glm::vec3 targetPos = scene->getComponent<Transform>(playerID).position;
           targetPos.y += camMovement.camHeight;
 
-          if (camMovement.shaking) {
+          if (camMovement.shaking) 
+          {
               camMovement.shakeTimer += deltaTime;
-              if (camMovement.shakeTimer >= camMovement.shakeDuration) {
+              if (camMovement.shakeTimer >= camMovement.shakeDuration)
+              {
                   camMovement.shakeTimer = 0.f;
                   camMovement.shaking = false;
               }
-              else {
-                  targetPos = targetPos + GetRandVec(camMovement.shakeScalar);
+              else 
+              {
+                  targetPos = targetPos + SMath::getRandomVector(camMovement.shakeScalar);
               }
           }
 
           const glm::quat quat = glm::quat(camMovement.camRot);
-          const glm::vec3 scaledFwd = glm::normalize(qrot(quat, glm::vec3(0.f, 0.f, 1.f))) * -camMovement.camDist;
+          const glm::vec3 scaledFwd = glm::normalize(SMath::rotateVectorByQuaternion(quat, glm::vec3(0.f, 0.f, 1.f))) * -camMovement.camDist;
 
           camTransform.position = targetPos + scaledFwd;
 
-          camTransform.rotation.y = camMovement.camRot.y * RADIAN;
-          camTransform.rotation.x = camMovement.camRot.x * RADIAN;
-          
-          //glm::extractEulerAngleXYZ(glm::mat4_cast(quat), camTransform.rotation.x, camTransform.rotation.y, camTransform.rotation.z);
-          //camTransform.rotation *= RADIAN;
-
-          //printf("Fwd: (%f, %f, %f)\n", fwd.x, fwd.y, fwd.z);
-          //printf("Vec rot: (%f, %f)\n", camMovement.camRot.x, camMovement.camRot.y);
-          //printf("Cam rot: (%f, %f, %f)\n", camTransform.rotation.x, camTransform.rotation.y, camTransform.rotation.z);
-          //printf("Cam pos: (%f, %f, %f)\n", camTransform.position.x, camTransform.position.y, camTransform.position.z);
-          //printf("Tar pos: (%f, %f, %f)\n", targetPos.x, targetPos.y, targetPos.z);
-          //printf("Cam dist: %f\n", glm::length(scaledFwd));
-          //
-          //printf("\n");
+          camTransform.rotation.y = camMovement.camRot.y * (180.f / (float)M_PI);
+          camTransform.rotation.x = camMovement.camRot.x * (180.f / (float)M_PI);
       }
 };
