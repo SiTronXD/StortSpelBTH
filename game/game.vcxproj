@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -158,18 +158,31 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\AI\cone_of_vision.cpp" />
+    <ClCompile Include="src\AI\PathFinding.cpp" />
+    <ClCompile Include="src\AI\path_finder.cpp" />
+    <ClCompile Include="src\AI\point.cpp" />
+    <ClCompile Include="src\AI\polygon.cpp" />
+    <ClCompile Include="src\AI\segment.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
     <ClCompile Include="src\Scenes\NetworkAI.cpp" />
-    <ClCompile Include="src\ServerGames\TheServerGame.cpp" />
+    <ClCompile Include="src\ServerGameModes\TheServerGame.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
     <ClInclude Include="Components\Movement.h" />
+    <ClInclude Include="src\AI\cone_of_vision.h" />
+    <ClInclude Include="src\AI\PathFinding.h" />
+    <ClInclude Include="src\AI\path_finder.h" />
+    <ClInclude Include="src\AI\point.h" />
+    <ClInclude Include="src\AI\pointf.h" />
+    <ClInclude Include="src\AI\polygon.h" />
+    <ClInclude Include="src\AI\segment.h" />
     <ClInclude Include="src\Components\Combat.h" />
     <ClInclude Include="src\Components\Movement.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
     <ClInclude Include="src\Scenes\NetworkAI.h" />
-    <ClInclude Include="src\ServerGames\TheServerGame.h" />
+    <ClInclude Include="src\ServerGameModes\TheServerGame.h" />
     <ClInclude Include="src\Systems\CombatSystem.hpp" />
     <ClInclude Include="src\Systems\MovementSystem.hpp" />
   </ItemGroup>

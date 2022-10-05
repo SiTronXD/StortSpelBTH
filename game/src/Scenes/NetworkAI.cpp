@@ -27,7 +27,7 @@ void NetworkAI::init()
     transform.scale      = glm::vec3(5.0f);
 }
 
-#include "../ServerGames/TheServerGame.h"
+#include "../ServerGameModes/TheServerGame.h"
 void NetworkAI::update()
 {
     Transform& transform = this->getComponent<Transform>(this->entity);
