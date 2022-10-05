@@ -21,7 +21,13 @@
     <ClCompile Include="src\Scenes\GameScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\RoomHandler.cpp">
+    <ClCompile Include="src\World Handling\Randomizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\World Handling\Room.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\World Handling\RoomHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -47,16 +53,19 @@
     <ClInclude Include="src\Systems\MovementSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\RoomHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Components\CameraMovement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Systems\CameraMovementSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\WorldLayout.h">
+    <ClInclude Include="src\World Handling\Randomizer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\World Handling\Room.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\World Handling\RoomHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
