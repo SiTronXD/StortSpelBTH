@@ -164,10 +164,12 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
     <ClInclude Include="Components\Movement.h" />
+    <ClInclude Include="src\Components\CameraMovement.h" />
     <ClInclude Include="src\Components\Combat.h" />
     <ClInclude Include="src\Components\Movement.h" />
     <ClInclude Include="src\RoomHandler.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
+    <ClInclude Include="src\Systems\CameraMovementSystem.hpp" />
     <ClInclude Include="src\Systems\CombatSystem.hpp" />
     <ClInclude Include="src\Systems\MovementSystem.hpp" />
   </ItemGroup>

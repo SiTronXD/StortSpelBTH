@@ -48,6 +48,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\RoomHandler.h">
+	  <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Components\CameraMovement.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Systems\CameraMovementSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
