@@ -20,12 +20,17 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
+	int player = this->createEntity();
+	this->setComponent<MeshComponent>(player);
+	this->setComponent<Movement>(player);
+	this->getComponent<Transform>(player).rotation.x = -90.f;
+	this->getComponent<Transform>(player).position.y = 2.5f;
+	this->createSystem<MovementSystem>(this, player);
+
 	this->camEntity = this->createEntity();
 	this->setComponent<Camera>(this->camEntity, 1.0f);
 	this->setMainCamera(this->camEntity);
-	Transform& camTransform = this->getComponent<Transform>(this->camEntity);
-	camTransform.position = glm::vec3(0);
-    
+    this->createSystem<CameraMovementSystem>(this, player);
 
     roomHandler.generateRoom();
 
@@ -42,6 +47,9 @@ void GameScene::init()
     std::cout << " -----------------\n";
 
     //add tile enities
+
+	const float TILE_SCALE = 25.f;
+
 	for (int i = 0; i < roomHandler.getNrTiles(); i++) 
 	{
         int pieceID = this->createEntity();
@@ -52,9 +60,7 @@ void GameScene::init()
         memcpy(mesh.filePath, path.c_str(), sizeof(mesh.filePath));
 
         Transform& transform = this->getComponent<Transform>(pieceID);
-        transform.position = glm::vec3(roomHandler.getTile(i).position.x, roomHandler.getTile(i).position.y, 4.f);
-        transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
-        transform.scale = glm::vec3(0.04f);
+        transform.position = glm::vec3(roomHandler.getTile(i).position.x * TILE_SCALE, 0.f, roomHandler.getTile(i).position.y * TILE_SCALE);
 
         roomPieces.push_back(pieceID);
 	}
@@ -62,8 +68,6 @@ void GameScene::init()
 
 void GameScene::update()
 {
-
-	static double value = 1234567890.0;
 	decreaseFps();
 }
 

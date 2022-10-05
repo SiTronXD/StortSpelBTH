@@ -172,6 +172,7 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
     <ClInclude Include="src\Systems\CameraMovementSystem.hpp" />
     <ClInclude Include="src\Systems\CombatSystem.hpp" />
     <ClInclude Include="src\Systems\MovementSystem.hpp" />
+    <ClInclude Include="src\WorldLayout.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\deps\vengine\src\vengine\vengine.vcxproj">

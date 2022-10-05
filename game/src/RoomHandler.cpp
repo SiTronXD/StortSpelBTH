@@ -19,9 +19,12 @@ void RoomHandler::generateRoom()
     addPiece(glm::vec2(0, 0), 0);
 
     //Add border pieces
-    for (int i = 0; i < ROOM_SIZE; i++) {
-        for (int j = 0; j < ROOM_SIZE; j++) {
-            if (room[i * ROOM_SIZE + j] == 0) {
+    for (int i = 0; i < ROOM_SIZE; i++) 
+    {
+        for (int j = 0; j < ROOM_SIZE; j++) 
+        {
+            if (room[i * ROOM_SIZE + j] == 0)
+            {
                 Tile t;
                 t.type     = 0;
                 t.position = glm::vec2(j - HALF_ROOM, i - HALF_ROOM);
@@ -38,7 +41,8 @@ void RoomHandler::addPiece(glm::vec2 position, int depth)
     int index = getArrayIndexFromPosition(x, y);
 
     //add piece only if tile is within room bounds
-    if (abs(x) < HALF_ROOM && abs(y) < HALF_ROOM) {
+    if (abs(x) < HALF_ROOM && abs(y) < HALF_ROOM) 
+    {
         std::random_device rd; //obtain random number from hardware
         std::mt19937       gen(rd()); //seed generator
         if (room[index] < 1) {
@@ -46,7 +50,8 @@ void RoomHandler::addPiece(glm::vec2 position, int depth)
             int                             tileType = tileTypeRange(gen);
 
             //TODO: clean up code
-            switch (tileType) {
+            switch (tileType)
+            {
                 case 1: //Simple 1x1 piece
                     placeTile(tileType, position, position);
                     break;
@@ -86,17 +91,19 @@ void RoomHandler::addPiece(glm::vec2 position, int depth)
             }
         }
 
-        std::uniform_int_distribution<> distr(
-            0, depth * 3); //smaller chance of creating new piece the deeper we are in the tree
+        std::uniform_int_distribution<> distr( 0, depth * 3); //smaller chance of creating new piece the deeper we are in the tree
+
         //check if should place tiles above, below, right and left
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) 
+        {
             //use sin and cos to check adjacent tiles in clockwise order
             int dirX = sin(i * M_PI / 2);
             int dirY = cos(i * M_PI / 2);
 
             int       newPiece = (distr(gen));
             glm::vec2 nextPos  = position + glm::vec2(dirX, dirY);
-            if (newPiece <= 1) {
+            if (newPiece <= 1) 
+            {
                 addPiece(nextPos, depth + 1);
             }
         }
