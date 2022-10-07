@@ -164,6 +164,7 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
     <ClCompile Include="src\AI\point.cpp" />
     <ClCompile Include="src\AI\polygon.cpp" />
     <ClCompile Include="src\AI\segment.cpp" />
+    <ClCompile Include="src\Scenes\CreateAPuzzle.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
     <ClCompile Include="src\Scenes\NetworkAI.cpp" />
     <ClCompile Include="src\ServerGameModes\TheServerGame.cpp" />
@@ -171,6 +172,7 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
     <ClInclude Include="Components\Movement.h" />
+    <ClInclude Include="src\Components\CameraMovement.h" />
     <ClInclude Include="src\AI\cone_of_vision.h" />
     <ClInclude Include="src\AI\PathFinding.h" />
     <ClInclude Include="src\AI\path_finder.h" />
@@ -180,9 +182,13 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
     <ClInclude Include="src\AI\segment.h" />
     <ClInclude Include="src\Components\Combat.h" />
     <ClInclude Include="src\Components\Movement.h" />
+    <ClInclude Include="src\FileMaker.hpp" />
+    <ClInclude Include="src\Puzzle.h" />
+    <ClInclude Include="src\Scenes\CreateAPuzzle.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
     <ClInclude Include="src\Scenes\NetworkAI.h" />
     <ClInclude Include="src\ServerGameModes\TheServerGame.h" />
+    <ClInclude Include="src\Systems\CameraMovementSystem.hpp" />
     <ClInclude Include="src\Systems\CombatSystem.hpp" />
     <ClInclude Include="src\Systems\MovementSystem.hpp" />
   </ItemGroup>

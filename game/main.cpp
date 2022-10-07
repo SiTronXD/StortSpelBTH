@@ -8,6 +8,7 @@
 
 #include "vengine.h"
 #include "src/Scenes/GameScene.h"
+#include "src/Scenes/CreateAPuzzle.h"
 #include "src/Scenes/NetworkAI.h"
 
 int main(int argc, char* argv[])
