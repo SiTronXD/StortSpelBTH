@@ -1,31 +1,42 @@
 #include "RoomHandler.h"
 #include <iostream> //TODO: ONLY FOR VISUALIZING ROOM LAYOUT. REMOVE LATER
 
+RoomHandler::RoomHandler()
+{
+    //create 2d array representing room and set all room pieces to 0
+    tiles = std::vector<Tile>();
+}
 RoomHandler::~RoomHandler() 
 {
     delete[] room;
 }
+void RoomHandler::init(int roomSize, int tileTypes)
+{
+    ROOM_SIZE = roomSize;
+    TILE_TYPES = tileTypes;
+    room = new int[ROOM_SIZE * ROOM_SIZE];
+    memset(room, 0, sizeof(int) * ROOM_SIZE * ROOM_SIZE);
+}
 
 void RoomHandler::generateRoom()
 {
-    //create 2d array representing room and set all room pieces to 0
-    room = new int[ROOM_SIZE * ROOM_SIZE];
-
-    memset(room, 0, sizeof(int) * ROOM_SIZE * ROOM_SIZE);
     //generate first room piece in middle (0,0) and depth 0
     addPiece(glm::vec2(0, 0), 0);
 
-    //TODO: ONLY FOR VISUALIZING ROOM LAYOUT. REMOVE LATER
-    std::cout << " -----------------\n";
-    for (int i = 0; i < ROOM_SIZE; i++) {
-        std::cout << "|";
-        for (int j = 0; j < ROOM_SIZE; j++) {
-            std::cout << room[i * ROOM_SIZE + j] << " ";
+    //Add border pieces
+    for (int i = 0; i < ROOM_SIZE; i++) 
+    {
+        for (int j = 0; j < ROOM_SIZE; j++) 
+        {
+            if (room[i * ROOM_SIZE + j] == 0)
+            {
+                Tile t;
+                t.type     = 0;
+                t.position = glm::vec2(j - HALF_ROOM, i - HALF_ROOM);
+                tiles.push_back(t);
+            }
         }
-        std::cout << "|\n";
     }
-
-    std::cout << " -----------------\n";
 }
 
 void RoomHandler::addPiece(glm::vec2 position, int depth)
@@ -35,15 +46,17 @@ void RoomHandler::addPiece(glm::vec2 position, int depth)
     int index = getArrayIndexFromPosition(x, y);
 
     //add piece only if tile is within room bounds
-    if (abs(x) < HALF_ROOM && abs(y) < HALF_ROOM) {
+    if (abs(x) < HALF_ROOM && abs(y) < HALF_ROOM) 
+    {
         std::random_device rd; //obtain random number from hardware
         std::mt19937       gen(rd()); //seed generator
         if (room[index] < 1) {
-            std::uniform_int_distribution<> tileTypeRange(1, 4); //TODO: change to nr tile types
+            std::uniform_int_distribution<> tileTypeRange(1, 10); //TODO: Update when more pieces exists
             int                             tileType = tileTypeRange(gen);
 
             //TODO: clean up code
-            switch (tileType) {
+            switch (tileType)
+            {
                 case 1: //Simple 1x1 piece
                     placeTile(tileType, position, position);
                     break;
@@ -83,17 +96,19 @@ void RoomHandler::addPiece(glm::vec2 position, int depth)
             }
         }
 
-        std::uniform_int_distribution<> distr(
-            0, depth * 3); //smaller chance of creating new piece the deeper we are in the tree
+        std::uniform_int_distribution<> distr( 0, depth * 3); //smaller chance of creating new piece the deeper we are in the tree
+
         //check if should place tiles above, below, right and left
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) 
+        {
             //use sin and cos to check adjacent tiles in clockwise order
             int dirX = sin(i * M_PI / 2);
             int dirY = cos(i * M_PI / 2);
 
             int       newPiece = (distr(gen));
             glm::vec2 nextPos  = position + glm::vec2(dirX, dirY);
-            if (newPiece <= 1) {
+            if (newPiece <= 1) 
+            {
                 addPiece(nextPos, depth + 1);
             }
         }
@@ -103,6 +118,10 @@ void RoomHandler::addPiece(glm::vec2 position, int depth)
 void RoomHandler::placeTile(int tileType, glm::vec2 gridPosition, glm::vec2 worldPosition)
 {
     room[getArrayIndexFromPosition(gridPosition.x, gridPosition.y)] = tileType;
+    Tile t;
+    t.type = tileType;
+    t.position = worldPosition;
+    tiles.push_back(t);
 }
 
 glm::vec2 RoomHandler::getFreeLarge(glm::vec2 position)

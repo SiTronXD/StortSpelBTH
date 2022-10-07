@@ -32,16 +32,19 @@ public:
         // Reference currently only used for ImGui
         Movement& movement = scene->getComponent<Movement>(playerID);
 
-        static bool moveSystem0 = true;
+        static bool moveSystem0 = false;
 
         if (ImGui::Begin("Movement")) {
             ImGui::PushItemWidth(-100.f);
             ImGui::Text("Player");
 
-            ImGui::Checkbox("Move system switch", &moveSystem0);
             ImGui::DragFloat("Max speed", &movement.maxSpeed, 0.05f, 0.f, 200.f);
-            ImGui::DragFloat("Speed inc", &movement.speedIncrease, 0.05f);
-            ImGui::DragFloat("Slow down", &movement.slowDown, 0.05f, 0.0001f);
+
+            if (!ImGui::Checkbox("Move system switch", &moveSystem0))
+            {
+                ImGui::DragFloat("Speed inc", &movement.speedIncrease, 0.05f);
+                ImGui::DragFloat("Slow down", &movement.slowDown, 0.05f, 0.0001f);
+            }
 
             ImGui::Text("Z,X Speed: (%f, %f)", movement.currentSpeed.y, movement.currentSpeed.x);
 
