@@ -8,8 +8,8 @@
 void decreaseFps();
 double heavyFunction(double value);
 
-GameScene::GameScene() :
-	camEntity(-1), entity(-1)
+GameScene::GameScene()
+    : camEntity(-1), entity(-1)
 {
     roomPieces = std::vector<int>();
 }
@@ -20,6 +20,8 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
+    roomHandler.init(this->getConfigValue<int>(ROOM_SIZE), this->getConfigValue<int>(TILE_TYPES));
+
 	int player = this->createEntity();
 	this->setComponent<MeshComponent>(player);
 	this->setComponent<Movement>(player);
@@ -45,15 +47,15 @@ void GameScene::init()
 		*/
 	}
 
-
     roomHandler.generateRoom();
 
 	//TODO: ONLY FOR VISUALIZING ROOM LAYOUT. REMOVE LATER
+    int roomsizse = this->getConfigValue<int>(ROOM_SIZE);
     std::cout << " -----------------\n";
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < roomsizse; i++) {
         std::cout << "|";
-        for (int j = 0; j < 10; j++) {
-            std::cout << roomHandler.getRoomTile(i * 10 + j) << " ";
+        for (int j = 0; j < roomsizse; j++) {
+            std::cout << roomHandler.getRoomTile(i * roomsizse + j) << " ";
         }
         std::cout << "|\n";
     }

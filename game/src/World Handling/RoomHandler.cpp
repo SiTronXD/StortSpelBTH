@@ -4,13 +4,18 @@
 RoomHandler::RoomHandler()
 {
     //create 2d array representing room and set all room pieces to 0
-    room = new int[ROOM_SIZE * ROOM_SIZE];
-    memset(room, 0, sizeof(int) * ROOM_SIZE * ROOM_SIZE);
     tiles = std::vector<Tile>();
 }
 RoomHandler::~RoomHandler() 
 {
     delete[] room;
+}
+void RoomHandler::init(int roomSize, int tileTypes)
+{
+    ROOM_SIZE = roomSize;
+    TILE_TYPES = tileTypes;
+    room = new int[ROOM_SIZE * ROOM_SIZE];
+    memset(room, 0, sizeof(int) * ROOM_SIZE * ROOM_SIZE);
 }
 
 void RoomHandler::generateRoom()
@@ -46,7 +51,7 @@ void RoomHandler::addPiece(glm::vec2 position, int depth)
         std::random_device rd; //obtain random number from hardware
         std::mt19937       gen(rd()); //seed generator
         if (room[index] < 1) {
-            std::uniform_int_distribution<> tileTypeRange(1, 10); //TODO: change to nr tile types
+            std::uniform_int_distribution<> tileTypeRange(1, 10); //TODO: Update when more pieces exists
             int                             tileType = tileTypeRange(gen);
 
             //TODO: clean up code

@@ -10,8 +10,8 @@ struct Tile {
 
 class RoomHandler {
   private:
-    int TILE_TYPES = 4; //TODO: get from config
-    int ROOM_SIZE  = 10; //TODO: get from config
+    int TILE_TYPES;
+    int ROOM_SIZE;
     int HALF_ROOM  = ROOM_SIZE / 2;
 
     int* room;
@@ -30,6 +30,7 @@ class RoomHandler {
   public:
     RoomHandler();
     ~RoomHandler();
+    void init(int roomSize, int tileTypes);
     void generateRoom();
 
     int getRoomTile(int index) 
