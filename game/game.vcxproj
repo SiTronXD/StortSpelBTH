@@ -158,6 +158,7 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\RoomHandler.cpp" />
     <ClCompile Include="src\AI\cone_of_vision.cpp" />
     <ClCompile Include="src\AI\PathFinding.cpp" />
     <ClCompile Include="src\AI\path_finder.cpp" />
@@ -182,6 +183,7 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
     <ClInclude Include="src\AI\segment.h" />
     <ClInclude Include="src\Components\Combat.h" />
     <ClInclude Include="src\Components\Movement.h" />
+    <ClInclude Include="src\RoomHandler.h" />
     <ClInclude Include="src\FileMaker.hpp" />
     <ClInclude Include="src\Puzzle.h" />
     <ClInclude Include="src\Scenes\CreateAPuzzle.h" />
