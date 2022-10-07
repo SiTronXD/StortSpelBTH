@@ -4,7 +4,7 @@
 #include "../Systems/CombatSystem.hpp"
 #include "../Systems/CameraMovementSystem.hpp"
 #include "../FileMaker.hpp"
-#include <misc/cpp/imgui_stdlib.h>
+
 
 // decreaseFps used for testing game with different framerates
 
@@ -29,7 +29,7 @@ void PuzzleCreator::init()
     }
 
     //Filesystem
-    puzzleObject = readPuzzle("puzzle_T");
+    puzzleObject = readPuzzle("YesaTestPuzzle");
     puzzleObject.offset = glm::vec2(20, 0);
     puzzleObject.addToScene(this, objectID);
 
@@ -68,7 +68,6 @@ static int a; //change this later
 void PuzzleCreator::update()
 {
     if (ImGui::Begin("Add prefabs")) {
-        //ImGui::InputText("PuzzleName", &puzzleName);
 
         if (a < ObjNames.size()) {
             ImGui::InputInt(("Add " + ObjNames[a]).c_str(), &a);
@@ -109,8 +108,12 @@ void PuzzleCreator::update()
             }
         }
         if (ImGui::Button("Save")) {
-
-            createPuzzel(this, &objectID, "puzzle_T");
+            std::cout << "Name of Puzzle:" << std::endl;
+            std::cin >> puzzleName;
+            if (puzzleName == "") {
+                puzzleName = "puzzle_T";
+            }
+            createPuzzel(this, &objectID, puzzleName);
         }
     }
     ImGui::End();
