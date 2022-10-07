@@ -24,10 +24,13 @@
     <ClCompile Include="src\World Handling\Randomizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\World Handling\Room.cpp">
+    <ClCompile Include="src\World Handling\Room Generator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\World Handling\RoomHandler.cpp">
+    <ClCompile Include="src\World Handling\Room Layout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\World Handling\Room Handler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -62,10 +65,16 @@
     <ClInclude Include="src\World Handling\Randomizer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\World Handling\Room.hpp">
+    <ClInclude Include="src\Components\Room.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\World Handling\RoomHandler.h">
+    <ClInclude Include="src\World Handling\Room Generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\World Handling\Room Handler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\World Handling\Room Layout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

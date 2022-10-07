@@ -1,56 +1,62 @@
-#pragma once
-#include "Room.hpp"
+#include "Room Layout.h"
+#include "vengine/application/Input.hpp"
+#include "vengine/application/Time.hpp"
 
-std::string typeToString(ROOM_TYPE type)
+RoomLayout::RoomLayout(Scene* scene)
+	:scene(scene)
 {
-	std::string ret;
-	switch (type)
+	foundBoss = false;
+	bossHealth = 100;
+	roomID = 0;
+
+	boss = scene->createEntity();
+	//this->setComponent<MeshComponent>(boss);
+	scene->getComponent<Transform>(boss).position = glm::vec3(-1000.0f, -1000.0f, -1000.0f);
+	for (int i = 0; i < 4; i++)
 	{
-	case START_ROOM:
-		ret = "Start";
-		break;
-	case NORMAL_ROOM:
-		ret = "Normal";
-		break;
-	case HARD_ROOM:
-		ret = "Hard";
-		break;
-	case BOSS_ROOM:
-		ret = "Boss";
-		break;
-	case EXIT_ROOM:
-		ret = "Exit";
-		break;
-	default:
-		ret = "?";
-		break;
+		doors[i] = scene->createEntity();
+		//this->setComponent<MeshComponent>(doors[i]);
 	}
-	return ret;
+	initRooms(roomID);
+
+	std::cout << "Num rooms: " << rooms.size() << std::endl;
+	std::cout << "Slow: WASD" << std::endl << "Fast: HBNM" << std::endl;
 }
 
-void initRooms(Scene& scene, std::vector<int>& rooms, int doors[], int roomID)
+RoomLayout::~RoomLayout()
 {
-	int numRooms = setUpRooms(scene, rooms);
+}
+
+std::string RoomLayout::typeToString(Room::ROOM_TYPE type)
+{
+	return std::string();
+}
+
+void RoomLayout::initRooms(int roomID)
+{
+	srand((unsigned)time(0));
+
+	int numRooms = setUpRooms();
 	int numBranches = rand() % 5 + 2;
-	for (int i = 0; i < numBranches; i++)
+	/*for (int i = 0; i < numBranches; i++)
 	{
 		if (!setRandomBranch(scene, rooms, numRooms)) {
 			std::cout << "Room: Could not create branch.\n";
 		}
 	}
-	if (!setBoss(scene, rooms, numRooms)) {
+	if (!setBoss(numRooms)) {
 		std::cout << "Room: Could not create boss room.\n";
 	}
-	if (!setExit(scene, rooms)) {
+	if (!setExit()) {
 		std::cout << "Room: Could not create exit.\n";
 	}
-	if (!setShortcut(scene, rooms, numBranches, numRooms)) {
+	if (!setShortcut(numBranches, numRooms)) {
 		std::cout << "Room: Could not create shortcut.\n";
 	}
-	placeDoors(scene, rooms, doors, roomID);
+	placeDoors(roomID);*/
 }
 
-int setUpRooms(Scene& scene, std::vector<int>& rooms)
+int RoomLayout::setUpRooms()
 {
 	const float MIN_WIDTH = 50.0f;
 	const float MAX_WIDTH = 200.0f;
@@ -60,27 +66,28 @@ int setUpRooms(Scene& scene, std::vector<int>& rooms)
 	const float MAX_DEPTH = 200.0f;
 
 
-	const float MIN_X_POS_SPREAD = -50.0f;
-	const float MAX_X_POS_SPREAD = 50.0f;
-	const float MIN_Y_POS_SPREAD = 0.0f;
-	const float MAX_Y_POS_SPREAD = 0.0f;
-	const float MIN_Z_POS_SPREAD = 0.0f;
-	const float MAX_Z_POS_SPREAD = 20.0f;
+	const float MIN_X_POS_SPREAD = 0.f;//-50.0f;
+	const float MAX_X_POS_SPREAD = 0.f;//50.0f;
+	const float MIN_Y_POS_SPREAD = 0.f;//0.0f;
+	const float MAX_Y_POS_SPREAD = 0.f;//0.0f;
+	const float MIN_Z_POS_SPREAD = 0.f;//0.0f;
+	const float MAX_Z_POS_SPREAD = 0.f;//20.0f;
 
 
 	int numRooms = rand() % 7 + 4;
 
 
 	glm::vec3 offset = glm::vec3(0.0f, 0.0f, 0.0f);
+	const glm::vec3 ROOM_DIMS = glm::vec3(50.f);
 
 	for (int i = 0; i < numRooms; i++)
 	{
 		// Create entity (already has transform)
-		rooms.push_back(scene.createEntity());
-		scene.setComponent<Room>(rooms[i]);
+		rooms.push_back(scene->createEntity());
+		scene->setComponent<Room>(rooms[i]);
 
-		Room& curRoom = scene.getComponent<Room>(rooms[i]);
-		Transform& curTransform = scene.getComponent<Transform>(rooms[i]);
+		Room& curRoom = scene->getComponent<Room>(rooms[i]);
+		Transform& curTransform = scene->getComponent<Transform>(rooms[i]);
 		glm::vec3& curPos = curTransform.position;
 		glm::vec3& dimensions = curRoom.dimensions;
 
@@ -88,8 +95,9 @@ int setUpRooms(Scene& scene, std::vector<int>& rooms)
 		if (i == 0)
 		{
 			curPos = glm::vec3(0.0f, 0.0f, 0.0f);
-			curRoom.dimensions = getRandomVec3(MIN_WIDTH, MAX_WIDTH, MIN_HEIGHT, MAX_HEIGHT, MIN_DEPTH, MAX_DEPTH);
-			curRoom.type = ROOM_TYPE::START_ROOM;
+			//dimensions = getRandomVec3(MIN_WIDTH, MAX_WIDTH, MIN_HEIGHT, MAX_HEIGHT, MIN_DEPTH, MAX_DEPTH);
+			dimensions = ROOM_DIMS;	
+			curRoom.type = Room::ROOM_TYPE::START_ROOM;
 		}
 		else
 		{
@@ -97,54 +105,61 @@ int setUpRooms(Scene& scene, std::vector<int>& rooms)
 			//one in five to become a hard room
 			if (rand() % 5 == 0)
 			{
-				curRoom.type = ROOM_TYPE::HARD_ROOM;
+				curRoom.type = Room::ROOM_TYPE::HARD_ROOM;
 			}
 			else
 			{
-				curRoom.type = ROOM_TYPE::NORMAL_ROOM;
+				curRoom.type = Room::ROOM_TYPE::NORMAL_ROOM;
 			}
 
-			curRoom.dimensions = getRandomVec3(MIN_WIDTH, MAX_WIDTH, MIN_HEIGHT, MAX_HEIGHT, MIN_DEPTH, MAX_DEPTH);
-			offset.x = dimensions.x / 2.0f + scene.getComponent<Room>(rooms[i - 1]).dimensions.x / 2.0f;
-			offset.y = 0.0f;// dimensions.y / 2.0f + scene.getComponent<Room>(rooms[i - 1]).dimensions.y / 2.0f;
-			offset.z = dimensions.z / 2.0f + scene.getComponent<Room>(rooms[i - 1]).dimensions.z / 2.0f;
+			//continue;
 
-			float minX = curPos.x - offset.x + MIN_X_POS_SPREAD;
+#if LOGICAL_LAYOUT == 1
+			dimensions = getRandomVec3(MIN_WIDTH, MAX_WIDTH, MIN_HEIGHT, MAX_HEIGHT, MIN_DEPTH, MAX_DEPTH);
+			//dimensions = ROOM_DIMS;	
+
+			offset.x = dimensions.x / 2.0f + scene->getComponent<Room>(rooms[i - 1]).dimensions.x / 2.0f;
+			offset.y = 0.0f;// dimensions.y / 2.0f + scene->getComponent<Room>(rooms[i - 1]).dimensions.y / 2.0f;
+			offset.z = dimensions.z / 2.0f + scene->getComponent<Room>(rooms[i - 1]).dimensions.z / 2.0f;
+
+			float minX = curPos.x - offset.x - MIN_X_POS_SPREAD;
 			float maxX = curPos.x + offset.x + MAX_X_POS_SPREAD;
-			float minY = curPos.y + offset.y + MIN_Y_POS_SPREAD;
+			float minY = curPos.y - offset.y - MIN_Y_POS_SPREAD;
 			float maxY = curPos.y + offset.y + MAX_Y_POS_SPREAD;
-			float minZ = curPos.z + offset.z + MIN_Z_POS_SPREAD;
+			float minZ = curPos.z - offset.z - MIN_Z_POS_SPREAD;
 			float maxZ = curPos.z + offset.z + MAX_Z_POS_SPREAD;
 
 			curPos = getRandomVec3(minX, maxX, minY, maxY, minZ, maxZ);
+			//curPos = glm::vec3((minX + maxX) * 0.5f, (minY + maxY) * 0.5f, (minZ + maxZ) * 0.5f);
+#endif
 		}
 
 
 
 		if (i > 0)
 		{
-			scene.getComponent<Room>(rooms[i - 1]).up = i;
-			scene.getComponent<Room>(rooms[i]).down = i - 1;
+			scene->getComponent<Room>(rooms[i - 1]).up = i;
+			scene->getComponent<Room>(rooms[i]).down = i - 1;
 		}
 
 	}
 
 	return numRooms;
 }
-
-bool setRandomBranch(Scene& scene, std::vector<int>& rooms, int numRooms)
+#if BRANCH == 1
+bool RoomLayout::setRandomBranch(int numRooms)
 {
 	int branchSize = rand() % 3 + 1;
 	bool foundSpot = false;
 	int numMainRooms = numRooms;
 	int spot = rand() % (numMainRooms - 1);
 	int numTest = 0;
-	if (scene.getComponent<Room>(rooms[spot]).left != -1 && scene.getComponent<Room>(rooms[spot]).right != -1)
+	if (scene->getComponent<Room>(rooms[spot]).left != -1 && scene->getComponent<Room>(rooms[spot]).right != -1)
 	{
 		//Keep looking for a spot to place branch
 		while (!foundSpot)
 		{
-			if (scene.getComponent<Room>(rooms[spot]).left == -1 || scene.getComponent<Room>(rooms[spot]).right == -1)
+			if (scene->getComponent<Room>(rooms[spot]).left == -1 || scene->getComponent<Room>(rooms[spot]).right == -1)
 			{
 				foundSpot = true;
 				break;
@@ -159,33 +174,33 @@ bool setRandomBranch(Scene& scene, std::vector<int>& rooms, int numRooms)
 		}
 	}
 	//Found spot
-	if (scene.getComponent<Room>(rooms[spot]).branch) {
+	if (scene->getComponent<Room>(rooms[spot]).branch) {
 		int test = 0;
 	}
-	if (scene.getComponent<Room>(rooms[spot]).left == -1 && scene.getComponent<Room>(rooms[spot]).right == -1)
+	if (scene->getComponent<Room>(rooms[spot]).left == -1 && scene->getComponent<Room>(rooms[spot]).right == -1)
 	{
 		if (rand() % 2 == 0)
 		{
-			setBranch(scene, rooms, spot, true, branchSize);
+			setBranch(spot, true, branchSize);
 		}
 		else
 		{
-			setBranch(scene, rooms, spot, false, branchSize);
+			setBranch(spot, false, branchSize);
 		}
 	}
-	else if (scene.getComponent<Room>(rooms[spot]).left == -1)
+	else if (scene->getComponent<Room>(rooms[spot]).left == -1)
 	{
-		setBranch(scene, rooms, spot, true, branchSize);
+		setBranch(spot, true, branchSize);
 	}
 	else
 	{
-		setBranch(scene, rooms, spot, false, branchSize);
+		setBranch(spot, false, branchSize);
 	}
 
 	return true;
 }
 
-void setBranch(Scene& scene, std::vector<int>& rooms, int index, bool left, int size)
+void RoomLayout::setBranch(int index, bool left, int size)
 {
 	const float MIN_WIDTH = 50.0f;
 	const float MAX_WIDTH = 200.0f;
@@ -202,29 +217,29 @@ void setBranch(Scene& scene, std::vector<int>& rooms, int index, bool left, int 
 	const float MIN_Z_POS_SPREAD = -10.0f;
 	const float MAX_Z_POS_SPREAD = 10.0f;
 
-	ROOM_TYPE roomType = ROOM_TYPE::NORMAL_ROOM;
+	Room::ROOM_TYPE roomType = Room::ROOM_TYPE::NORMAL_ROOM;
 
 	glm::vec3 offset = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	glm::vec3& position = scene.getComponent<Transform>(rooms[index]).position;
+	glm::vec3& position = scene->getComponent<Transform>(rooms[index]).position;
 	glm::vec3 dimensions = getRandomVec3(MIN_WIDTH, MAX_WIDTH, MIN_HEIGHT, MAX_HEIGHT, MIN_DEPTH, MAX_DEPTH);
 
 	if (rand() % 5 == 0)
 	{
-		roomType = ROOM_TYPE::HARD_ROOM;
+		roomType = Room::ROOM_TYPE::HARD_ROOM;
 	}
 	else
 	{
-		roomType = ROOM_TYPE::NORMAL_ROOM;
+		roomType = Room::ROOM_TYPE::NORMAL_ROOM;
 	}
 
 	if (left)
 	{
 		for (int i = 0; i < size; i++)
 		{
-			offset.x = dimensions.x / 2.0f + scene.getComponent<Room>(rooms[index]).dimensions.x / 2.0f;
-			offset.y = 0.0f;// dimensions.y / 2.0f + scene.getComponent<Room>(rooms[index]).dimensions.y / 2.0f;
-			offset.z = dimensions.z / 2.0f + scene.getComponent<Room>(rooms[index]).dimensions.z / 2.0f;
+			offset.x = dimensions.x / 2.0f + scene->getComponent<Room>(rooms[index]).dimensions.x / 2.0f;
+			offset.y = 0.0f;// dimensions.y / 2.0f + scene->getComponent<Room>(rooms[index]).dimensions.y / 2.0f;
+			offset.z = dimensions.z / 2.0f + scene->getComponent<Room>(rooms[index]).dimensions.z / 2.0f;
 
 			float minX = position.x - offset.x - MIN_X_POS_SPREAD;
 			float maxX = position.x + offset.x - MAX_X_POS_SPREAD;
@@ -235,10 +250,10 @@ void setBranch(Scene& scene, std::vector<int>& rooms, int index, bool left, int 
 
 			position = getRandomVec3(minX, maxX, minY, maxY, minZ, maxZ);
 
-			rooms.push_back(scene.createEntity());
-			scene.setComponent<Room>(rooms[rooms.size() - 1]);
-			Room& roomRef = scene.getComponent<Room>(rooms[rooms.size() - 1]);
-			glm::vec3 posRef = scene.getComponent<Transform>(rooms[rooms.size() - 1]).position;
+			rooms.push_back(scene->createEntity());
+			scene->setComponent<Room>(rooms[rooms.size() - 1]);
+			Room& roomRef = scene->getComponent<Room>(rooms[rooms.size() - 1]);
+			glm::vec3 posRef = scene->getComponent<Transform>(rooms[rooms.size() - 1]).position;
 			roomRef.branch = true;
 			if (i == size - 1)
 			{
@@ -253,15 +268,15 @@ void setBranch(Scene& scene, std::vector<int>& rooms, int index, bool left, int 
 			{
 				curRoomIndex = index;
 				curRoomLeft = (int)rooms.size() - 1;
-				scene.getComponent<Room>(rooms[curRoomIndex]).left = curRoomLeft;
-				scene.getComponent<Room>(rooms[curRoomLeft]).right = curRoomIndex;
+				scene->getComponent<Room>(rooms[curRoomIndex]).left = curRoomLeft;
+				scene->getComponent<Room>(rooms[curRoomLeft]).right = curRoomIndex;
 			}
 			else
 			{
 				curRoomIndex = (int)rooms.size() - 2;
 				curRoomLeft = (int)rooms.size() - 1;
-				scene.getComponent<Room>(rooms[curRoomIndex]).left = curRoomLeft;
-				scene.getComponent<Room>(rooms[curRoomLeft]).right = curRoomIndex;
+				scene->getComponent<Room>(rooms[curRoomIndex]).left = curRoomLeft;
+				scene->getComponent<Room>(rooms[curRoomLeft]).right = curRoomIndex;
 			}
 
 		}
@@ -271,9 +286,9 @@ void setBranch(Scene& scene, std::vector<int>& rooms, int index, bool left, int 
 
 		for (int i = 0; i < size; i++)
 		{
-			offset.x = dimensions.x / 2.0f + scene.getComponent<Room>(rooms[index]).dimensions.x / 2.0f;
-			offset.y = 0.0f;// dimensions.y / 2.0f + scene.getComponent<Room>(rooms[index]).dimensions.y / 2.0f;
-			offset.z = dimensions.z / 2.0f + scene.getComponent<Room>(rooms[index]).dimensions.z / 2.0f;
+			offset.x = dimensions.x / 2.0f + scene->getComponent<Room>(rooms[index]).dimensions.x / 2.0f;
+			offset.y = 0.0f;// dimensions.y / 2.0f + scene->getComponent<Room>(rooms[index]).dimensions.y / 2.0f;
+			offset.z = dimensions.z / 2.0f + scene->getComponent<Room>(rooms[index]).dimensions.z / 2.0f;
 
 			float minX = position.x - offset.x + MIN_X_POS_SPREAD;
 			float maxX = position.x + offset.x + MAX_X_POS_SPREAD;
@@ -284,10 +299,10 @@ void setBranch(Scene& scene, std::vector<int>& rooms, int index, bool left, int 
 
 			position = getRandomVec3(minX, maxX, minY, maxY, minZ, maxZ);
 
-			rooms.push_back(scene.createEntity());
-			scene.setComponent<Room>(rooms[rooms.size() - 1]);
-			Room& roomRef = scene.getComponent<Room>(rooms[rooms.size() - 1]);
-			glm::vec3 posRef = scene.getComponent<Transform>(rooms[rooms.size() - 1]).position;
+			rooms.push_back(scene->createEntity());
+			scene->setComponent<Room>(rooms[rooms.size() - 1]);
+			Room& roomRef = scene->getComponent<Room>(rooms[rooms.size() - 1]);
+			glm::vec3 posRef = scene->getComponent<Transform>(rooms[rooms.size() - 1]).position;
 			roomRef.branch = true;
 			if (i == size - 1) {
 				roomRef.branchEnd = true;
@@ -301,27 +316,27 @@ void setBranch(Scene& scene, std::vector<int>& rooms, int index, bool left, int 
 			{
 				curRoomIndex = index;
 				curRoomRight = (int)rooms.size() - 1;
-				scene.getComponent<Room>(rooms[curRoomIndex]).right = curRoomRight;
-				scene.getComponent<Room>(rooms[curRoomRight]).left = curRoomIndex;
+				scene->getComponent<Room>(rooms[curRoomIndex]).right = curRoomRight;
+				scene->getComponent<Room>(rooms[curRoomRight]).left = curRoomIndex;
 			}
 			else
 			{
 				curRoomIndex = (int)rooms.size() - 2;
 				curRoomRight = (int)rooms.size() - 1;
-				scene.getComponent<Room>(rooms[curRoomIndex]).right = curRoomRight;
-				scene.getComponent<Room>(rooms[curRoomRight]).left = curRoomIndex;
+				scene->getComponent<Room>(rooms[curRoomIndex]).right = curRoomRight;
+				scene->getComponent<Room>(rooms[curRoomRight]).left = curRoomIndex;
 			}
 
 		}
 	}
 }
-
-bool setBoss(Scene& scene, std::vector<int>& rooms, int numRooms)
+#endif
+bool RoomLayout::setBoss(int numRooms)
 {
 	int left = -1;
 	int bossIndex = rand() % (numRooms / 2) + numRooms / 2;
 	int numTest = 0;
-	while (scene.getComponent<Room>(rooms[bossIndex]).left != -1 && scene.getComponent<Room>(rooms[bossIndex]).right != -1)
+	while (scene->getComponent<Room>(rooms[bossIndex]).left != -1 && scene->getComponent<Room>(rooms[bossIndex]).right != -1)
 	{
 		if (++bossIndex > numRooms)
 		{
@@ -331,11 +346,11 @@ bool setBoss(Scene& scene, std::vector<int>& rooms, int numRooms)
 			return false;
 		}
 	}
-	if (scene.getComponent<Room>(rooms[bossIndex]).left == -1 && scene.getComponent<Room>(rooms[bossIndex]).right == -1)
+	if (scene->getComponent<Room>(rooms[bossIndex]).left == -1 && scene->getComponent<Room>(rooms[bossIndex]).right == -1)
 	{
 		left = rand() % 2;
 	}
-	else if (scene.getComponent<Room>(rooms[bossIndex]).left == -1)
+	else if (scene->getComponent<Room>(rooms[bossIndex]).left == -1)
 	{
 		left = 1;
 	}
@@ -343,17 +358,19 @@ bool setBoss(Scene& scene, std::vector<int>& rooms, int numRooms)
 	{
 		left = 0;
 	}
+#if BRANCH == 1
 	setBranch(scene, rooms, bossIndex, left, rand() % 3 + 1);
-	scene.getComponent<Room>(rooms[rooms.size() - 1]).type = ROOM_TYPE::BOSS_ROOM;
+#endif
+	scene->getComponent<Room>(rooms[rooms.size() - 1]).type = Room::ROOM_TYPE::BOSS_ROOM;
 
 	return true;
 }
 
-bool setExit(Scene& scene, std::vector<int>& rooms)
+bool RoomLayout::setExit()
 {
 	int exitIndex = rand() % (rooms.size() - 1) + 1;
 	int numTests = 0;
-	while (scene.getComponent<Room>(rooms[exitIndex]).type == ROOM_TYPE::BOSS_ROOM || scene.getComponent<Room>(rooms[exitIndex]).type == ROOM_TYPE::START_ROOM)
+	while (scene->getComponent<Room>(rooms[exitIndex]).type == Room::ROOM_TYPE::BOSS_ROOM || scene->getComponent<Room>(rooms[exitIndex]).type == Room::ROOM_TYPE::START_ROOM)
 	{
 		if (++exitIndex >= rooms.size())
 		{
@@ -363,7 +380,7 @@ bool setExit(Scene& scene, std::vector<int>& rooms)
 			return false;
 		}
 	}
-	while (scene.getComponent<Room>(rooms[exitIndex]).left != -1 && scene.getComponent<Room>(rooms[scene.getComponent<Room>(rooms[exitIndex]).left]).type == ROOM_TYPE::BOSS_ROOM)
+	while (scene->getComponent<Room>(rooms[exitIndex]).left != -1 && scene->getComponent<Room>(rooms[scene->getComponent<Room>(rooms[exitIndex]).left]).type == Room::ROOM_TYPE::BOSS_ROOM)
 	{
 		if (++exitIndex >= rooms.size())
 		{
@@ -373,7 +390,7 @@ bool setExit(Scene& scene, std::vector<int>& rooms)
 			return false;
 		}
 	}
-	while (scene.getComponent<Room>(rooms[exitIndex]).right != -1 && scene.getComponent<Room>(rooms[scene.getComponent<Room>(rooms[exitIndex]).right]).type == ROOM_TYPE::BOSS_ROOM)
+	while (scene->getComponent<Room>(rooms[exitIndex]).right != -1 && scene->getComponent<Room>(rooms[scene->getComponent<Room>(rooms[exitIndex]).right]).type == Room::ROOM_TYPE::BOSS_ROOM)
 	{
 		if (++exitIndex >= rooms.size())
 		{
@@ -383,35 +400,35 @@ bool setExit(Scene& scene, std::vector<int>& rooms)
 			return false;
 		}
 	}
-	scene.getComponent<Room>(rooms[exitIndex]).type = ROOM_TYPE::EXIT_ROOM;
+	scene->getComponent<Room>(rooms[exitIndex]).type = Room::ROOM_TYPE::EXIT_ROOM;
 
 	return true;
 }
 
-bool setShortcut(Scene& scene, std::vector<int>& rooms, int numBranches, int numRooms)
+bool RoomLayout::setShortcut(int numBranches, int numRooms)
 {
-	int one = getEndWithLeftAvaliable(scene, rooms);
-	int two = getEndWithRightAvaliable(scene, rooms);
+	int one = getEndWithLeftAvaliable();
+	int two = getEndWithRightAvaliable();
 	if (one == -1 || two == -1)
 	{
 		return false;
 	}
-	scene.getComponent<Room>(rooms[one]).shortcut = true;
-	scene.getComponent<Room>(rooms[one]).branchEnd = false;
-	scene.getComponent<Room>(rooms[one]).left = two;
-	scene.getComponent<Room>(rooms[two]).shortcut = true;
-	scene.getComponent<Room>(rooms[two]).branchEnd = false;
-	scene.getComponent<Room>(rooms[two]).right = one;
+	scene->getComponent<Room>(rooms[one]).shortcut = true;
+	scene->getComponent<Room>(rooms[one]).branchEnd = false;
+	scene->getComponent<Room>(rooms[one]).left = two;
+	scene->getComponent<Room>(rooms[two]).shortcut = true;
+	scene->getComponent<Room>(rooms[two]).branchEnd = false;
+	scene->getComponent<Room>(rooms[two]).right = one;
 
 	return true;
 }
 
-int numEnds(Scene& scene, std::vector<int>& rooms)
+int RoomLayout::numEnds()
 {
 	int ret = 0;
 	for (int i = 0; i < rooms.size(); i++)
 	{
-		if (scene.getComponent<Room>(rooms[i]).branchEnd)
+		if (scene->getComponent<Room>(rooms[i]).branchEnd)
 		{
 			ret++;
 		}
@@ -419,12 +436,12 @@ int numEnds(Scene& scene, std::vector<int>& rooms)
 	return ret;
 }
 
-int getEndWithRightAvaliable(Scene& scene, std::vector<int>& rooms)
+int RoomLayout::getEndWithRightAvaliable()
 {
 	int ret = -1;
 	for (int i = 0; i < rooms.size(); i++)
 	{
-		Room& curRoom = scene.getComponent<Room>(rooms[i]);
+		Room& curRoom = scene->getComponent<Room>(rooms[i]);
 		if (curRoom.branchEnd && curRoom.right == -1)
 		{
 			ret = i;
@@ -434,12 +451,12 @@ int getEndWithRightAvaliable(Scene& scene, std::vector<int>& rooms)
 	return ret;
 }
 
-int getEndWithLeftAvaliable(Scene& scene, std::vector<int>& rooms)
+int RoomLayout::getEndWithLeftAvaliable()
 {
 	int ret = -1;
 	for (int i = 0; i < rooms.size(); i++)
 	{
-		Room& curRoom = scene.getComponent<Room>(rooms[i]);
+		Room& curRoom = scene->getComponent<Room>(rooms[i]);
 		if (curRoom.branchEnd && curRoom.left == -1)
 		{
 			ret = i;
@@ -449,12 +466,12 @@ int getEndWithLeftAvaliable(Scene& scene, std::vector<int>& rooms)
 	return ret;
 }
 
-void traverseRoomsConsole(Scene& scene, std::vector<int>& rooms)
+void RoomLayout::traverseRoomsConsole()
 {
 	std::string input;
 
 	int id = 0;
-	Room* curRoom = &scene.getComponent<Room>(rooms[id]);
+	Room* curRoom = &scene->getComponent<Room>(rooms[id]);
 	bool exit = false;
 	bool foundBoss = false;
 	while (!exit)
@@ -496,34 +513,34 @@ void traverseRoomsConsole(Scene& scene, std::vector<int>& rooms)
 		if (input == "down" && curRoom->down != -1)
 		{
 			id = curRoom->down;
-			curRoom = &scene.getComponent<Room>(rooms[curRoom->down]);
+			curRoom = &scene->getComponent<Room>(rooms[curRoom->down]);
 		}
 		else if (input == "left" && curRoom->left != -1)
 		{
 			id = curRoom->left;
-			curRoom = &scene.getComponent<Room>(rooms[curRoom->left]);
+			curRoom = &scene->getComponent<Room>(rooms[curRoom->left]);
 		}
 		else if (input == "right" && curRoom->right != -1)
 		{
 			id = curRoom->right;
-			curRoom = &scene.getComponent<Room>(rooms[curRoom->right]);
+			curRoom = &scene->getComponent<Room>(rooms[curRoom->right]);
 		}
 		else if (input == "up" && curRoom->up != -1)
 		{
 			id = curRoom->up;
-			curRoom = &scene.getComponent<Room>(rooms[curRoom->up]);
+			curRoom = &scene->getComponent<Room>(rooms[curRoom->up]);
 		}
 		else if (input == "exit" || input == "end")
 		{
 			break;
 		}
 
-		if ((curRoom->type == ROOM_TYPE::BOSS_ROOM) && !foundBoss)
+		if ((curRoom->type == Room::ROOM_TYPE::BOSS_ROOM) && !foundBoss)
 		{
 			foundBoss = true;
 		}
 
-		if ((curRoom->type == ROOM_TYPE::EXIT_ROOM) && foundBoss)
+		if ((curRoom->type == Room::ROOM_TYPE::EXIT_ROOM) && foundBoss)
 		{
 			system("cls");
 			std::cout << "You found the exit!\nDo you want to exit? Y/n" << std::endl;
@@ -536,53 +553,53 @@ void traverseRoomsConsole(Scene& scene, std::vector<int>& rooms)
 	}
 }
 
-bool traverseRooms(Scene& scene, std::vector<int>& rooms, int doors[], int& roomID, int& boss, int& bossHealth, bool& foundBoss, float delta)
+bool RoomLayout::traverseRooms(int& roomID, int& boss, int& bossHealth, bool& foundBoss, float delta)
 {
 	bool ret = false;
-	Room curRoom = scene.getComponent<Room>(rooms[roomID]);
+	Room curRoom = scene->getComponent<Room>(rooms[roomID]);
 
-	if (canGoForward(scene, doors) || (curRoom.up != -1 && Input::isKeyPressed(Keys::H))) {
+	if (canGoForward() || (curRoom.up != -1 && Input::isKeyPressed(Keys::H))) {
 		roomID = curRoom.up;
-		placeDoors(scene, rooms, doors, roomID);
+		placeDoors(roomID);
 	}
-	else if (canGoBack(scene, doors) || (curRoom.down != -1 && Input::isKeyPressed(Keys::N))) {
+	else if (canGoBack() || (curRoom.down != -1 && Input::isKeyPressed(Keys::N))) {
 		roomID = curRoom.down;
-		placeDoors(scene, rooms, doors, roomID);
+		placeDoors(roomID);
 	}
-	else if (canGoLeft(scene, doors) || (curRoom.left != -1 && Input::isKeyPressed(Keys::M))) {
+	else if (canGoLeft() || (curRoom.left != -1 && Input::isKeyPressed(Keys::M))) {
 		roomID = curRoom.left;
-		placeDoors(scene, rooms, doors, roomID);
+		placeDoors(roomID);
 	}
-	else if (canGoRight(scene, doors) || (curRoom.right != -1 && Input::isKeyPressed(Keys::B))) {
+	else if (canGoRight() || (curRoom.right != -1 && Input::isKeyPressed(Keys::B))) {
 		roomID = curRoom.right;
-		placeDoors(scene, rooms, doors, roomID);
+		placeDoors(roomID);
 	}
 
-	if (curRoom.type == ROOM_TYPE::BOSS_ROOM && bossHealth > 0)
+	if (curRoom.type == Room::ROOM_TYPE::BOSS_ROOM && bossHealth > 0)
 	{
-		fightBoss(scene, rooms, doors, boss, bossHealth, roomID, foundBoss);
+		fightBoss(boss, bossHealth, roomID, foundBoss);
 	}
 	else
 	{
-		Transform& transform = scene.getComponent<Transform>(boss);
+		Transform& transform = scene->getComponent<Transform>(boss);
 		transform.position = glm::vec3(-1000.0f, -1000.0f, -1000.0f);
 	}
-	if (curRoom.type == ROOM_TYPE::BOSS_ROOM && foundBoss == false) {
+	if (curRoom.type == Room::ROOM_TYPE::BOSS_ROOM && foundBoss == false) {
 		foundBoss = true;
 	}
-	else if (curRoom.type == ROOM_TYPE::EXIT_ROOM && foundBoss) {
+	else if (curRoom.type == Room::ROOM_TYPE::EXIT_ROOM && foundBoss) {
 		ret = true;
 	}
 	return ret;
 }
 
-void placeDoors(Scene& scene, std::vector<int>& rooms, int doors[], int& roomID)
+void RoomLayout::placeDoors(int& roomID)
 {
-	Room& curRoom = scene.getComponent<Room>(rooms[roomID]);
-	glm::vec3 curPos = scene.getComponent<Transform>(rooms[roomID]).position;
-	glm::vec3& camPos = scene.getComponent<Transform>(scene.getMainCameraID()).position;
+	Room& curRoom = scene->getComponent<Room>(rooms[roomID]);
+	glm::vec3 curPos = scene->getComponent<Transform>(rooms[roomID]).position;
+	glm::vec3& camPos = scene->getComponent<Transform>(scene->getMainCameraID()).position;
 
-	printDoorOptions(scene, rooms, roomID);
+	printDoorOptions(roomID);
 
 	camPos = curPos;
 
@@ -602,16 +619,16 @@ void placeDoors(Scene& scene, std::vector<int>& rooms, int doors[], int& roomID)
 	if (curRoom.down != -1) {
 		posDown = glm::vec3(curPos.x, 0.0f, curPos.z - curRoom.dimensions.z / 2);
 	}
-	scene.getComponent<Transform>(doors[0]).position = posLeft;
-	scene.getComponent<Transform>(doors[1]).position = posRight;
-	scene.getComponent<Transform>(doors[2]).position = posUp;
-	scene.getComponent<Transform>(doors[3]).position = posDown;
+	scene->getComponent<Transform>(doors[0]).position = posLeft;
+	scene->getComponent<Transform>(doors[1]).position = posRight;
+	scene->getComponent<Transform>(doors[2]).position = posUp;
+	scene->getComponent<Transform>(doors[3]).position = posDown;
 }
 
-bool canGoForward(Scene& scene, int doors[])
+bool RoomLayout::canGoForward()
 {
-	glm::vec3 doorPos = scene.getComponent<Transform>(doors[2]).position;
-	glm::vec3 camPos = scene.getComponent<Transform>(scene.getMainCameraID()).position;
+	glm::vec3 doorPos = scene->getComponent<Transform>(doors[2]).position;
+	glm::vec3 camPos = scene->getComponent<Transform>(scene->getMainCameraID()).position;
 	bool ret = false;
 	float radius = 10.0f;
 	glm::vec3 diff = glm::abs(doorPos - camPos);
@@ -621,10 +638,10 @@ bool canGoForward(Scene& scene, int doors[])
 	return ret;
 }
 
-bool canGoBack(Scene& scene, int doors[])
+bool RoomLayout::canGoBack()
 {
-	glm::vec3 doorPos = scene.getComponent<Transform>(doors[3]).position;
-	glm::vec3 camPos = scene.getComponent<Transform>(scene.getMainCameraID()).position;
+	glm::vec3 doorPos = scene->getComponent<Transform>(doors[3]).position;
+	glm::vec3 camPos = scene->getComponent<Transform>(scene->getMainCameraID()).position;
 	bool ret = false;
 	float radius = 10.0f;
 	glm::vec3 diff = glm::abs(doorPos - camPos);
@@ -635,10 +652,10 @@ bool canGoBack(Scene& scene, int doors[])
 	return ret;
 }
 
-bool canGoLeft(Scene& scene, int doors[])
+bool RoomLayout::canGoLeft()
 {
-	glm::vec3 doorPos = scene.getComponent<Transform>(doors[0]).position;
-	glm::vec3 camPos = scene.getComponent<Transform>(scene.getMainCameraID()).position;
+	glm::vec3 doorPos = scene->getComponent<Transform>(doors[0]).position;
+	glm::vec3 camPos = scene->getComponent<Transform>(scene->getMainCameraID()).position;
 	bool ret = false;
 	float radius = 10.0f;
 	glm::vec3 diff = glm::abs(doorPos - camPos);
@@ -648,10 +665,10 @@ bool canGoLeft(Scene& scene, int doors[])
 	return ret;
 }
 
-bool canGoRight(Scene& scene, int doors[])
+bool RoomLayout::canGoRight()
 {
-	glm::vec3 doorPos = scene.getComponent<Transform>(doors[1]).position;
-	glm::vec3 camPos = scene.getComponent<Transform>(scene.getMainCameraID()).position;
+	glm::vec3 doorPos = scene->getComponent<Transform>(doors[1]).position;
+	glm::vec3 camPos = scene->getComponent<Transform>(scene->getMainCameraID()).position;
 	bool ret = false;
 	float radius = 10.0f;
 	glm::vec3 diff = glm::abs(doorPos - camPos);
@@ -661,10 +678,10 @@ bool canGoRight(Scene& scene, int doors[])
 	return ret;
 }
 
-void fightBoss(Scene& scene, std::vector<int>& rooms, int doors[], int& boss, int& bossHealth, int& roomID, bool& foundBoss)
+void RoomLayout::fightBoss(int& boss, int& bossHealth, int& roomID, bool& foundBoss)
 {
-	Transform& transform = scene.getComponent<Transform>(boss);
-	transform.position = scene.getComponent<Transform>(rooms[roomID]).position + glm::vec3(cos(Time::getTimeSinceStart() * 100), sin(Time::getTimeSinceStart() * 100), 20.0f);
+	Transform& transform = scene->getComponent<Transform>(boss);
+	transform.position = scene->getComponent<Transform>(rooms[roomID]).position + glm::vec3(cos(Time::getTimeSinceStart() * 100), sin(Time::getTimeSinceStart() * 100), 20.0f);
 	transform.scale = glm::vec3(10.0f, 5.0f, 5.0f);
 	transform.rotation = glm::vec3(transform.rotation.x + (Time::getDT() * 50), transform.rotation.y + (Time::getDT() * 50), transform.rotation.z + (Time::getDT() * 50));
 	if (!foundBoss)
@@ -726,13 +743,13 @@ void fightBoss(Scene& scene, std::vector<int>& rooms, int doors[], int& boss, in
 	}
 	if (bossHealth <= 0)
 	{
-		placeDoors(scene, rooms, doors, roomID);
+		placeDoors(roomID);
 	}
 }
 
-void printDoorOptions(Scene& scene, std::vector<int>& rooms, int& roomID)
+void RoomLayout::printDoorOptions(int& roomID)
 {
-	Room& curRoom = scene.getComponent<Room>(rooms[roomID]);
+	Room& curRoom = scene->getComponent<Room>(rooms[roomID]);
 
 	system("cls");
 	if (curRoom.branch) {

@@ -1,16 +1,16 @@
-#include "RoomHandler.h"
+#include "Room Generator.h"
 #include <iostream> //TODO: ONLY FOR VISUALIZING ROOM LAYOUT. REMOVE LATER
 
-RoomHandler::RoomHandler()
+RoomGenerator::RoomGenerator()
 {
     //create 2d array representing room and set all room pieces to 0
     tiles = std::vector<Tile>();
 }
-RoomHandler::~RoomHandler() 
+RoomGenerator::~RoomGenerator() 
 {
     delete[] room;
 }
-void RoomHandler::init(int roomSize, int tileTypes)
+void RoomGenerator::init(int roomSize, int tileTypes)
 {
     ROOM_SIZE = roomSize;
     TILE_TYPES = tileTypes;
@@ -18,7 +18,7 @@ void RoomHandler::init(int roomSize, int tileTypes)
     memset(room, 0, sizeof(int) * ROOM_SIZE * ROOM_SIZE);
 }
 
-void RoomHandler::generateRoom()
+void RoomGenerator::generateRoom()
 {
     //generate first room piece in middle (0,0) and depth 0
     addPiece(glm::vec2(0, 0), 0);
@@ -39,7 +39,7 @@ void RoomHandler::generateRoom()
     }
 }
 
-void RoomHandler::addPiece(glm::vec2 position, int depth)
+void RoomGenerator::addPiece(glm::vec2 position, int depth)
 {
     int x     = position.x;
     int y     = position.y;
@@ -52,7 +52,7 @@ void RoomHandler::addPiece(glm::vec2 position, int depth)
         std::mt19937       gen(rd()); //seed generator
         if (room[index] < 1) {
             std::uniform_int_distribution<> tileTypeRange(1, 10); //TODO: Update when more pieces exists
-            int                             tileType = tileTypeRange(gen);
+            int tileType = tileTypeRange(gen);
 
             //TODO: clean up code
             switch (tileType)
@@ -115,7 +115,7 @@ void RoomHandler::addPiece(glm::vec2 position, int depth)
     }
 }
 
-void RoomHandler::placeTile(int tileType, glm::vec2 gridPosition, glm::vec2 worldPosition)
+void RoomGenerator::placeTile(int tileType, glm::vec2 gridPosition, glm::vec2 worldPosition)
 {
     room[getArrayIndexFromPosition(gridPosition.x, gridPosition.y)] = tileType;
     Tile t;
@@ -124,7 +124,7 @@ void RoomHandler::placeTile(int tileType, glm::vec2 gridPosition, glm::vec2 worl
     tiles.push_back(t);
 }
 
-glm::vec2 RoomHandler::getFreeLarge(glm::vec2 position)
+glm::vec2 RoomGenerator::getFreeLarge(glm::vec2 position)
 {
     int x = position.x;
     int y = position.y;
@@ -156,7 +156,7 @@ glm::vec2 RoomHandler::getFreeLarge(glm::vec2 position)
     return glm::vec2(0); //if no direction has free space, return 0,0
 }
 
-glm::vec2 RoomHandler::getFreeAdjacent(glm::vec2 position, glm::vec2 dir)
+glm::vec2 RoomGenerator::getFreeAdjacent(glm::vec2 position, glm::vec2 dir)
 {
     if (room[getArrayIndexFromPosition(position.x + dir.x, position.y + dir.y)] < 1) return dir;
     dir *= -1;

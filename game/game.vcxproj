@@ -162,10 +162,9 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
     <ClCompile Include="src\World Handling\Randomizer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\World Handling\Room.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="src\World Handling\RoomHandler.cpp">
+    <ClCompile Include="src\World Handling\Room Handler.cpp" />
+    <ClCompile Include="src\World Handling\Room Layout.cpp" />
+    <ClCompile Include="src\World Handling\Room Generator.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
   </ItemGroup>
@@ -182,12 +181,14 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
     <ClInclude Include="src\World Handling\Randomizer.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="src\World Handling\Room.hpp">
+    <ClInclude Include="src\World Handling\Room Layout.h" />
+    <ClInclude Include="src\Components\Room.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="src\World Handling\RoomHandler.h">
+    <ClInclude Include="src\World Handling\Room Generator.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="src\World Handling\Room Handler.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\deps\vengine\src\vengine\vengine.vcxproj">

@@ -8,7 +8,7 @@ struct Tile {
     glm::vec2 position;
 };
 
-class RoomHandler {
+class RoomGenerator {
   private:
     int TILE_TYPES;
     int ROOM_SIZE;
@@ -28,8 +28,8 @@ class RoomHandler {
     glm::vec2 getFreeAdjacent(glm::vec2 position, glm::vec2 dir);
 
   public:
-    RoomHandler();
-    ~RoomHandler();
+    RoomGenerator();
+    ~RoomGenerator();
     void init(int roomSize, int tileTypes);
     void generateRoom();
 
@@ -40,11 +40,17 @@ class RoomHandler {
 
     int getNrTiles()
     {
-        return tiles.size();
+        return (int)tiles.size();
     }
 
     Tile getTile(int index) 
     {
         return tiles[index];
+    }
+    
+    void clear()
+    {
+        memset(room, 0, sizeof(int) * ROOM_SIZE * ROOM_SIZE);
+        tiles.clear();
     }
 };
