@@ -21,7 +21,7 @@
     <ClCompile Include="src\Scenes\GameScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Scenes\CreateAPuzzel.cpp">
+    <ClCompile Include="src\Scenes\CreateAPuzzle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -53,7 +53,13 @@
     <ClInclude Include="src\Systems\CameraMovementSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Scenes\CreateAPuzzel.h">
+    <ClInclude Include="src\Scenes\CreateAPuzzle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\FileMaker.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Puzzle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
