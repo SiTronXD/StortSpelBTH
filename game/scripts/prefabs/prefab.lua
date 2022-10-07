@@ -5,5 +5,5 @@ return {
 		scale = vector.fill(1)
 	},
 	Mesh = "assets/models/ghost.obj",
-	Script = "assets/scripts/script.lua"
+	Script = "scripts/script.lua"
 }

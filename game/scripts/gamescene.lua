@@ -1,9 +1,9 @@
 local ghost = resources.addMesh("assets/models/ghost.obj")
 print(ghost)
 
-local cam = scene.createEntity()
-scene.setComponent(cam, CompType.Camera)
-scene.setMainCamera(cam)
+--local cam = scene.createEntity()
+--scene.setComponent(cam, CompType.Camera)
+--scene.setMainCamera(cam)
 
 local p = scene.createPrefab("scripts/prefabs/prefab.lua")
 

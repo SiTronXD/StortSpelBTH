@@ -135,7 +135,8 @@ mkdir $(OutDir)assets
 robocopy $(ProjectDir)assets $(OutDir)assets\ /s
 
 mkdir $(OutDir)scripts
-robocopy $(ProjectDir)scripts $(OutDir)scripts\ /s</Command>
+robocopy $(ProjectDir)scripts $(OutDir)scripts\ /s
+SET ERRORLEVEL=0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -169,7 +170,8 @@ mkdir $(OutDir)assets
 robocopy $(ProjectDir)assets $(OutDir)assets\ /s
 
 mkdir $(OutDir)scripts
-robocopy $(ProjectDir)scripts $(OutDir)scripts\ /s</Command>
+robocopy $(ProjectDir)scripts $(OutDir)scripts\ /s
+SET ERRORLEVEL=0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
