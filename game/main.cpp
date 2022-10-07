@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
 
     {
         Engine engine;
-        engine.run(new GameScene());
+        engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
     }
 
     return EXIT_SUCCESS;

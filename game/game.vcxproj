@@ -73,10 +73,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)build\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\int\$(Configuration)\game\</IntDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)build\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\int\$(Configuration)\game\</IntDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -122,12 +128,19 @@
       <AdditionalDependencies>vengine.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir vengine_assets\
+      <Command>mkdir $(ProjectDir)vengine_assets
 robocopy $(SolutionDir)deps\vengine\src\vengine\vengine_assets vengine_assets\ /s
 
-mkdir $(OutDir)assets\
-robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
+mkdir $(OutDir)assets
+robocopy $(ProjectDir)assets $(OutDir)assets\ /s
+
+mkdir $(OutDir)scripts
+robocopy $(ProjectDir)scripts $(OutDir)scripts\ /s</Command>
     </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -149,12 +162,19 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
       <AdditionalDependencies>vengine.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir vengine_assets\
+      <Command>mkdir $(ProjectDir)vengine_assets
 robocopy $(SolutionDir)deps\vengine\src\vengine\vengine_assets vengine_assets\ /s
 
-mkdir $(OutDir)assets\
-robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
+mkdir $(OutDir)assets
+robocopy $(ProjectDir)assets $(OutDir)assets\ /s
+
+mkdir $(OutDir)scripts
+robocopy $(ProjectDir)scripts $(OutDir)scripts\ /s</Command>
     </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
