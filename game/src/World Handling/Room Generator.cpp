@@ -14,6 +14,7 @@ void RoomGenerator::init(int roomSize, int tileTypes)
 {
     ROOM_SIZE = roomSize;
     TILE_TYPES = tileTypes;
+    HALF_ROOM = ROOM_SIZE / 2;
     room = new int[ROOM_SIZE * ROOM_SIZE];
     memset(room, 0, sizeof(int) * ROOM_SIZE * ROOM_SIZE);
 }

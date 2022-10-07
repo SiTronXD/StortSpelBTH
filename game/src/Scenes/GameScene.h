@@ -7,7 +7,7 @@ class GameScene: public Scene
 {
 private:
 
-    RoomGenerator roomCreator;
+    RoomHandler roomHandler;
 
 
 public:

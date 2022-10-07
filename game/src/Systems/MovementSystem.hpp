@@ -48,6 +48,9 @@ public:
 
             ImGui::Text("Z,X Speed: (%f, %f)", movement.currentSpeed.y, movement.currentSpeed.x);
 
+            glm::vec3 playerPos = scene->getComponent<Transform>(playerID).position;
+            ImGui::Text("Pos: (%f, %f, %f)", playerPos.x, playerPos.y, playerPos.z);
+
             ImGui::Separator();
             ImGui::PopItemWidth();
         }

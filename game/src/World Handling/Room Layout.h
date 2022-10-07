@@ -1,11 +1,12 @@
 #pragma once
 #include <vector>
-#include "vengine/application/Scene.hpp"
-
+#include <string>
 #include "../Components/Room.h"
 
 #define LOGICAL_LAYOUT 0
 #define BRANCH 0
+
+class Scene;
 
 class RoomLayout
 {
@@ -14,14 +15,13 @@ private:
 	std::vector<int> rooms;
 	int doors[4];
 	bool foundBoss;
-	int bossHealth;
 	int roomID;
 
 	Scene* scene;
 
 	// Private Functions
-
-	void initRooms(int roomID);
+	int setUpRooms();
+	void initRooms();
 #if BRANCH == 1
 	bool setRandomBranch(int numRooms);
 	void setBranch(int index, bool left, int size);
@@ -52,8 +52,13 @@ private:
 	static std::string typeToString(Room::ROOM_TYPE type);
 
 public:
-	RoomLayout(Scene* scene);
+	RoomLayout();
 	virtual ~RoomLayout();
+
+	void setScene(Scene* scene);
+
+	void generate();
+	void clear();
 
 	int getRoomID(int index)
 	{
@@ -64,8 +69,5 @@ public:
 		return (int)rooms.size();
 	}
 
-	int setUpRooms();
 	bool traverseRooms(int& roomID, int& boss, int& bossHealth, bool& foundBoss, float delta);
-
-
 };

@@ -1,12 +1,25 @@
 #include "Room Layout.h"
+#include "vengine/application/Scene.hpp"
 #include "vengine/application/Input.hpp"
 #include "vengine/application/Time.hpp"
 
-RoomLayout::RoomLayout(Scene* scene)
-	:scene(scene)
+RoomLayout::RoomLayout()
+{
+	
+}
+
+RoomLayout::~RoomLayout()
+{
+}
+
+void RoomLayout::setScene(Scene* scene)
+{
+	this->scene = scene;
+}
+
+void RoomLayout::generate()
 {
 	foundBoss = false;
-	bossHealth = 100;
 	roomID = 0;
 
 	boss = scene->createEntity();
@@ -17,14 +30,27 @@ RoomLayout::RoomLayout(Scene* scene)
 		doors[i] = scene->createEntity();
 		//this->setComponent<MeshComponent>(doors[i]);
 	}
-	initRooms(roomID);
+	initRooms();
 
 	std::cout << "Num rooms: " << rooms.size() << std::endl;
-	std::cout << "Slow: WASD" << std::endl << "Fast: HBNM" << std::endl;
+	//std::cout << "Slow: WASD" << std::endl << "Fast: HBNM" << std::endl;
 }
 
-RoomLayout::~RoomLayout()
+void RoomLayout::clear()
 {
+	scene->removeEntity(doors[0]);
+	scene->removeEntity(doors[1]);
+	scene->removeEntity(doors[2]);
+	scene->removeEntity(doors[3]);
+	scene->removeEntity(boss);
+
+	for (int entity : rooms)
+	{
+		scene->removeEntity(entity);
+	}
+
+	rooms.clear();
+	foundBoss = false;
 }
 
 std::string RoomLayout::typeToString(Room::ROOM_TYPE type)
@@ -32,13 +58,13 @@ std::string RoomLayout::typeToString(Room::ROOM_TYPE type)
 	return std::string();
 }
 
-void RoomLayout::initRooms(int roomID)
+void RoomLayout::initRooms()
 {
 	srand((unsigned)time(0));
 
 	int numRooms = setUpRooms();
-	int numBranches = rand() % 5 + 2;
-	/*for (int i = 0; i < numBranches; i++)
+	/*int numBranches = rand() % 5 + 2;
+	for (int i = 0; i < numBranches; i++)
 	{
 		if (!setRandomBranch(scene, rooms, numRooms)) {
 			std::cout << "Room: Could not create branch.\n";

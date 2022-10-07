@@ -19,7 +19,11 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
-    roomCreator.init(this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
+    roomHandler.init(this, this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
+
+	int camEntity = this->createEntity();
+	this->setComponent<Camera>(camEntity, 1.0f);
+	this->setMainCamera(camEntity);
 
 	int playerID = this->createEntity();
 	this->setComponent<MeshComponent>(playerID);
@@ -27,17 +31,19 @@ void GameScene::init()
 	this->getComponent<Transform>(playerID).rotation.x = -90.f;
 	this->getComponent<Transform>(playerID).position.y = 2.5f;
 	this->createSystem<MovementSystem>(this, playerID);
-
-	int camEntity = this->createEntity();
-	this->setComponent<Camera>(camEntity, 1.0f);
-	this->setMainCamera(camEntity);
     this->createSystem<CameraMovementSystem>(this, playerID);
-
-
+	roomHandler.generate();
 }
 
 void GameScene::update()
 {
+	roomHandler.update();
+
+	// Temp
+	if (Input::isKeyPressed(Keys::R))
+	{
+		roomHandler.reload();
+	}
 
 	decreaseFps();
 }
