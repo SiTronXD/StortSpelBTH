@@ -8,6 +8,7 @@
 
 #include "vengine.h"
 #include "src/Scenes/GameScene.h"
+#include "src/Scenes/CreateAPuzzel.h"
 
 int main(int argc, char* argv[])
 {
@@ -18,7 +19,7 @@ int main(int argc, char* argv[])
 
     {
         Engine engine;
-        engine.run(new GameScene());
+        engine.run(new PuzzelCreator());
     }
 
     return EXIT_SUCCESS;
