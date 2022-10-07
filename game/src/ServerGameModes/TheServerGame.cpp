@@ -3,7 +3,7 @@
 
 TheServerGame::TheServerGame() 
 {
-  
+  roomHandler.generateRoom();
 }
 #include <iostream>
 void TheServerGame::update(float dt) 
