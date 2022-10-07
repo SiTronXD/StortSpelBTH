@@ -42,7 +42,8 @@ void GameScene::update()
 	// Temp
 	if (Input::isKeyPressed(Keys::R))
 	{
-		roomHandler.reload();
+		// Bröken kröken fröken jöken göken löken söken möten
+		//roomHandler.reload();
 	}
 
 	decreaseFps();
