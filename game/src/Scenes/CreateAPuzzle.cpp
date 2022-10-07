@@ -36,6 +36,8 @@ void PuzzleCreator::init()
     //ground
     this->ground = this->createEntity();
     this->setComponent<MeshComponent>(this->ground);
+    MeshComponent& m = this->getComponent<MeshComponent>(this->ground);
+    memcpy(m.filePath, "Cube.fbx", sizeof(m.filePath));
     Transform& transform2 = this->getComponent<Transform>(this->ground);
     transform2.position   = glm::vec3(0.0f, -10.0f, 0.0f);
     transform2.scale      = glm::vec3(100.f, 0.1f, 100.f);

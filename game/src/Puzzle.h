@@ -2,9 +2,13 @@
 #include "vengine.h"
 
 struct Puzzle {
+    //objects
     int                        nrOfObjects;
     std::vector<Transform>     transforms;
     std::vector<MeshComponent> meshes;
+    //need to add there collision boxes here
+
+    //the puzzels offset
     glm::vec2                  offset = glm::vec2(0,0);
 
     void addToScene(Scene* scene, glm::vec2 offset)
