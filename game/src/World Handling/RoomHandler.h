@@ -40,7 +40,7 @@ class RoomHandler {
 
     int getNrTiles()
     {
-        return tiles.size();
+        return (int)tiles.size();
     }
 
     Tile getTile(int index) 

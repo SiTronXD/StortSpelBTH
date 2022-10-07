@@ -158,7 +158,6 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="src\RoomHandler.cpp" />
     <ClCompile Include="src\AI\cone_of_vision.cpp" />
     <ClCompile Include="src\AI\PathFinding.cpp" />
     <ClCompile Include="src\AI\path_finder.cpp" />
@@ -169,6 +168,7 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
     <ClCompile Include="src\Scenes\GameScene.cpp" />
     <ClCompile Include="src\Scenes\NetworkAI.cpp" />
     <ClCompile Include="src\ServerGameModes\TheServerGame.cpp" />
+    <ClCompile Include="src\World Handling\PuzzleHandler.cpp" />
     <ClCompile Include="src\World Handling\Randomizer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
@@ -201,6 +201,7 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
     <ClInclude Include="src\Systems\CameraMovementSystem.hpp" />
     <ClInclude Include="src\Systems\CombatSystem.hpp" />
     <ClInclude Include="src\Systems\MovementSystem.hpp" />
+    <ClInclude Include="src\World Handling\PuzzleHandler.h" />
     <ClInclude Include="src\World Handling\Randomizer.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>

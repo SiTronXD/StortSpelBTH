@@ -40,7 +40,6 @@ void GameScene::init()
 	this->camEntity = this->createEntity();
 	this->setComponent<Camera>(this->camEntity, 1.0f);
 	this->setMainCamera(this->camEntity);
-    this->createSystem<CameraMovementSystem>(this, player);
 
     this->createSystem<CameraMovementSystem>(this, this->entity);
 }

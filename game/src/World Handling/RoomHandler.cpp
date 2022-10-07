@@ -14,6 +14,7 @@ void RoomHandler::init(int roomSize, int tileTypes)
 {
     ROOM_SIZE = roomSize;
     TILE_TYPES = tileTypes;
+    HALF_ROOM = ROOM_SIZE / 2;
     room = new int[ROOM_SIZE * ROOM_SIZE];
     memset(room, 0, sizeof(int) * ROOM_SIZE * ROOM_SIZE);
 }
@@ -41,8 +42,8 @@ void RoomHandler::generateRoom()
 
 void RoomHandler::addPiece(glm::vec2 position, int depth)
 {
-    int x     = position.x;
-    int y     = position.y;
+    int x     = (int)position.x;
+    int y     = (int)position.y;
     int index = getArrayIndexFromPosition(x, y);
 
     //add piece only if tile is within room bounds
@@ -62,7 +63,7 @@ void RoomHandler::addPiece(glm::vec2 position, int depth)
                     break;
                 case 2: //1x2 piece, need to check if adjecent tile is free
                     {
-                        int dY = getFreeAdjacent(position, glm::vec2(0, 1)).y;
+                        int dY = (int)getFreeAdjacent(position, glm::vec2(0, 1)).y;
                         if (dY != 0) {
                             placeTile(tileType, position, position + glm::vec2(0, 0.5 * dY));
                             room[getArrayIndexFromPosition(x, y + dY)] = tileType;
@@ -71,7 +72,7 @@ void RoomHandler::addPiece(glm::vec2 position, int depth)
                     }
                 case 3: //2x1
                     {
-                        int dX = getFreeAdjacent(position, glm::vec2(1, 0)).x;
+                        int dX = (int)getFreeAdjacent(position, glm::vec2(1, 0)).x;
                         if (dX != 0) {
                             placeTile(tileType, position, position + glm::vec2(0.5 * dX, 0));
                             room[getArrayIndexFromPosition(x + dX, y)] = tileType;
@@ -83,10 +84,10 @@ void RoomHandler::addPiece(glm::vec2 position, int depth)
                         glm::vec2 dir = getFreeLarge(position);
                         if (dir.x != 0) {
                             placeTile(tileType, position,
-                                      position + glm::vec2(0.5 * dir.x, 0.5 * dir.y));
-                            room[getArrayIndexFromPosition(x + dir.x, y)]         = tileType;
-                            room[getArrayIndexFromPosition(x, y + dir.y)]         = tileType;
-                            room[getArrayIndexFromPosition(x + dir.x, y + dir.y)] = tileType;
+                                      position + glm::vec2(0.5f * dir.x, 0.5f * dir.y));
+                            room[getArrayIndexFromPosition((int)(x + dir.x), (int)y)]           = tileType;
+                            room[getArrayIndexFromPosition((int)x, (int)(y + dir.y))]           = tileType;
+                            room[getArrayIndexFromPosition((int)(x + dir.x), (int)(y + dir.y))] = tileType;
                             break;
                         }
                     }
@@ -158,8 +159,8 @@ glm::vec2 RoomHandler::getFreeLarge(glm::vec2 position)
 
 glm::vec2 RoomHandler::getFreeAdjacent(glm::vec2 position, glm::vec2 dir)
 {
-    if (room[getArrayIndexFromPosition(position.x + dir.x, position.y + dir.y)] < 1) return dir;
+    if (room[getArrayIndexFromPosition((int)(position.x + dir.x), (int)(position.y + dir.y))] < 1) return dir;
     dir *= -1;
-    if (room[getArrayIndexFromPosition(position.x + dir.x, position.y + dir.y)] < 1) return dir;
+    if (room[getArrayIndexFromPosition((int)(position.x + dir.x), (int)(position.y + dir.y))] < 1) return dir;
     return glm::vec2(0);
 }

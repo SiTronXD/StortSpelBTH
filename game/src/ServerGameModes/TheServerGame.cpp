@@ -3,6 +3,7 @@
 
 TheServerGame::TheServerGame() 
 {
+  roomHandler.init(5, 4);
   roomHandler.generateRoom();
 }
 #include <iostream>
@@ -20,13 +21,13 @@ void TheServerGame::update(float dt)
     }
 
     for (int i = 0; i < serverEntities.size(); i++) {
-        serverEntities[i].rotation.x += dt * 5 * ((i * 0.25) + 1);
+        serverEntities[i].rotation.x += dt * 5.f * ((i * 0.25f) + 1.f);
         if (serverEntities[i].rotation.x > 360) {
             serverEntities[i].rotation.x = 0;
         }
         glm::vec3 dir =
             pfm.getDirTo(serverEntities[i].position, players[0].position) *
-            (dt * 40);
+            (dt * 20);
         std::cout << dir.x << ", " << dir.z << std::endl;
         serverEntities[i].position += dir;
     }

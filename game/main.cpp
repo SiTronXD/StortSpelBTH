@@ -20,7 +20,8 @@ int main(int argc, char* argv[])
 
     {
         Engine engine;
-        engine.run(new NetworkAI());
+        //engine.run(new NetworkAI());
+        engine.run(new PuzzleCreator());
     }
 
     return EXIT_SUCCESS;
