@@ -36,9 +36,16 @@ void NetworkAI::update()
     if (Input::isKeyPressed(Keys::H)) {
         this->getNetworkHandler()->createServer(new TheServerGame());
         this->getNetworkHandler()->createClient();
-        this->getNetworkHandler()->connectClientToThis();
-        Transform& transform = this->getComponent<Transform>(this->entity);
-        transform.rotation   += glm::vec3(15, 0, 0);
+        if (this->getNetworkHandler()->connectClientToThis())
+          {
+            std::cout << "connect" << std::endl;
+          }
+        else
+          {
+            std::cout << "no Connect" << std::endl;
+        }
+        //no visulation that we connected
+        
     }
     if (Input::isKeyPressed(Keys::K)) {
         this->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent { GameEvents::START });

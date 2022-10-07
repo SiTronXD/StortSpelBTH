@@ -3,12 +3,7 @@
 
 TheServerGame::TheServerGame() 
 {
-  NavMesh::Polygon a;
-  a.AddPoint(NavMesh::Point(-20, 50));
-  a.AddPoint(NavMesh::Point(20, 50));
-  a.AddPoint(NavMesh::Point(-20, 20));
-  a.AddPoint(NavMesh::Point(20, 20));
-  pfm.addPolygon(a);
+  
 }
 #include <iostream>
 void TheServerGame::update(float dt) 
@@ -19,6 +14,9 @@ void TheServerGame::update(float dt)
         serverEntities.push_back(
             ServerEntity { glm::vec3(0, 0, 200), glm::vec3(0, 0, 0), 1 });
         addEvent({ (int)GameEvents::SpawnEnemy, 1 }, { 0.f, 0.f, 200.f});
+        serverEntities.push_back(ServerEntity{
+            glm::vec3(20, 0, 200), glm::vec3(0, 0, 0), 1});
+        addEvent({(int)GameEvents::SpawnEnemy, 1}, {20.f, 0.f, 200.f});
     }
 
     for (int i = 0; i < serverEntities.size(); i++) {
