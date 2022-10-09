@@ -2,8 +2,13 @@
 #include "vengine/application/Scene.hpp"
 #include "vengine/application/Input.hpp"
 #include "vengine/application/Time.hpp"
+#include "vengine/components/MeshComponent.hpp"
+#include "Randomizer.hpp"
+
+#include <ctime>
 
 RoomLayout::RoomLayout()
+	:boss(-1), doors{-1, -1, -1, -1}, foundBoss(false), roomID(-1), roomDims(100.f)
 {
 	
 }
@@ -12,9 +17,10 @@ RoomLayout::~RoomLayout()
 {
 }
 
-void RoomLayout::setScene(Scene* scene)
+void RoomLayout::init(Scene* scene, const glm::vec3& roomDims)
 {
 	this->scene = scene;
+	this->roomDims = roomDims;
 }
 
 void RoomLayout::generate()
@@ -25,24 +31,27 @@ void RoomLayout::generate()
 	boss = scene->createEntity();
 	//this->setComponent<MeshComponent>(boss);
 	scene->getComponent<Transform>(boss).position = glm::vec3(-1000.0f, -1000.0f, -1000.0f);
+
 	for (int i = 0; i < 4; i++)
 	{
 		doors[i] = scene->createEntity();
-		//this->setComponent<MeshComponent>(doors[i]);
+		scene->setComponent<MeshComponent>(doors[i]);
+		scene->getComponent<Transform>(doors[i]).scale.y = 50.f;
 	}
 	initRooms();
 
-	std::cout << "Num rooms: " << rooms.size() << std::endl;
 	//std::cout << "Slow: WASD" << std::endl << "Fast: HBNM" << std::endl;
 }
 
 void RoomLayout::clear()
 {
-	scene->removeEntity(doors[0]);
-	scene->removeEntity(doors[1]);
-	scene->removeEntity(doors[2]);
-	scene->removeEntity(doors[3]);
+	for (int i = 0; i < 4; i++)
+	{
+		scene->removeEntity(doors[i]);
+		doors[i] = -1;
+	}
 	scene->removeEntity(boss);
+	boss = -1;
 
 	for (int entity : rooms)
 	{
@@ -60,13 +69,16 @@ std::string RoomLayout::typeToString(Room::ROOM_TYPE type)
 
 void RoomLayout::initRooms()
 {
-	srand((unsigned)time(0));
+	std::srand((unsigned)time(0));
 
 	int numRooms = setUpRooms();
-	/*int numBranches = rand() % 5 + 2;
+	int numBranches = rand() % numRooms + 1;
+
+	printf("Main rooms: %d, branches: %d\n", numRooms, numBranches);
+
 	for (int i = 0; i < numBranches; i++)
 	{
-		if (!setRandomBranch(scene, rooms, numRooms)) {
+		if (!setRandomBranch(numRooms)) {
 			std::cout << "Room: Could not create branch.\n";
 		}
 	}
@@ -79,7 +91,7 @@ void RoomLayout::initRooms()
 	if (!setShortcut(numBranches, numRooms)) {
 		std::cout << "Room: Could not create shortcut.\n";
 	}
-	placeDoors(roomID);*/
+	//placeDoors(roomID);
 }
 
 int RoomLayout::setUpRooms()
@@ -91,20 +103,17 @@ int RoomLayout::setUpRooms()
 	const float MIN_DEPTH = 50.0f;
 	const float MAX_DEPTH = 200.0f;
 
+	const float MIN_X_POS_SPREAD = -50.0f;
+	const float MAX_X_POS_SPREAD = 50.0f;
+	const float MIN_Y_POS_SPREAD = 0.0f;
+	const float MAX_Y_POS_SPREAD = 0.0f;
+	const float MIN_Z_POS_SPREAD = 0.0f;
+	const float MAX_Z_POS_SPREAD = 20.0f;
 
-	const float MIN_X_POS_SPREAD = 0.f;//-50.0f;
-	const float MAX_X_POS_SPREAD = 0.f;//50.0f;
-	const float MIN_Y_POS_SPREAD = 0.f;//0.0f;
-	const float MAX_Y_POS_SPREAD = 0.f;//0.0f;
-	const float MIN_Z_POS_SPREAD = 0.f;//0.0f;
-	const float MAX_Z_POS_SPREAD = 0.f;//20.0f;
-
-
-	int numRooms = rand() % 7 + 4;
-
+	// 3 - 6
+	int numRooms = rand() % 2 + 4;
 
 	glm::vec3 offset = glm::vec3(0.0f, 0.0f, 0.0f);
-	const glm::vec3 ROOM_DIMS = glm::vec3(50.f);
 
 	for (int i = 0; i < numRooms; i++)
 	{
@@ -117,17 +126,29 @@ int RoomLayout::setUpRooms()
 		glm::vec3& curPos = curTransform.position;
 		glm::vec3& dimensions = curRoom.dimensions;
 
+		if (i > 0)
+		{
+			scene->getComponent<Room>(rooms[i - 1]).up = i;
+			scene->getComponent<Room>(rooms[i]).down = i - 1;
+		}
+
+#if RANDOM_POSITION
+		dimensions = getRandomVec3(MIN_WIDTH, MAX_WIDTH, MIN_HEIGHT, MAX_HEIGHT, MIN_DEPTH, MAX_DEPTH);
+#else
+		dimensions = roomDims;
+		curPos.z = i * roomDims.z * 1.5f;
+#endif
+
+
 		//First room is alwas the start room
 		if (i == 0)
 		{
-			curPos = glm::vec3(0.0f, 0.0f, 0.0f);
-			//dimensions = getRandomVec3(MIN_WIDTH, MAX_WIDTH, MIN_HEIGHT, MAX_HEIGHT, MIN_DEPTH, MAX_DEPTH);
-			dimensions = ROOM_DIMS;	
 			curRoom.type = Room::ROOM_TYPE::START_ROOM;
+			curPos = glm::vec3(0.0f, 0.0f, 0.0f);
+
 		}
 		else
 		{
-
 			//one in five to become a hard room
 			if (rand() % 5 == 0)
 			{
@@ -138,44 +159,30 @@ int RoomLayout::setUpRooms()
 				curRoom.type = Room::ROOM_TYPE::NORMAL_ROOM;
 			}
 
-			//continue;
-
-#if LOGICAL_LAYOUT == 1
-			dimensions = getRandomVec3(MIN_WIDTH, MAX_WIDTH, MIN_HEIGHT, MAX_HEIGHT, MIN_DEPTH, MAX_DEPTH);
-			//dimensions = ROOM_DIMS;	
-
+#if RANDOM_POSITION
 			offset.x = dimensions.x / 2.0f + scene->getComponent<Room>(rooms[i - 1]).dimensions.x / 2.0f;
 			offset.y = 0.0f;// dimensions.y / 2.0f + scene->getComponent<Room>(rooms[i - 1]).dimensions.y / 2.0f;
 			offset.z = dimensions.z / 2.0f + scene->getComponent<Room>(rooms[i - 1]).dimensions.z / 2.0f;
 
-			float minX = curPos.x - offset.x - MIN_X_POS_SPREAD;
+			float minX = curPos.x - offset.x + MIN_X_POS_SPREAD;
 			float maxX = curPos.x + offset.x + MAX_X_POS_SPREAD;
-			float minY = curPos.y - offset.y - MIN_Y_POS_SPREAD;
+			float minY = curPos.y + offset.y + MIN_Y_POS_SPREAD;
 			float maxY = curPos.y + offset.y + MAX_Y_POS_SPREAD;
-			float minZ = curPos.z - offset.z - MIN_Z_POS_SPREAD;
+			float minZ = curPos.z + offset.z + MIN_Z_POS_SPREAD;
 			float maxZ = curPos.z + offset.z + MAX_Z_POS_SPREAD;
 
-			curPos = getRandomVec3(minX, maxX, minY, maxY, minZ, maxZ);
-			//curPos = glm::vec3((minX + maxX) * 0.5f, (minY + maxY) * 0.5f, (minZ + maxZ) * 0.5f);
+			curPos = getRandomVec3(minX, maxX, minY, maxY, minZ, maxZ);		
 #endif
 		}
-
-
-
-		if (i > 0)
-		{
-			scene->getComponent<Room>(rooms[i - 1]).up = i;
-			scene->getComponent<Room>(rooms[i]).down = i - 1;
-		}
-
 	}
 
 	return numRooms;
 }
-#if BRANCH == 1
+
 bool RoomLayout::setRandomBranch(int numRooms)
 {
-	int branchSize = rand() % 3 + 1;
+	int branchSize = rand() % 2 + 1;
+
 	bool foundSpot = false;
 	int numMainRooms = numRooms;
 	int spot = rand() % (numMainRooms - 1);
@@ -247,8 +254,11 @@ void RoomLayout::setBranch(int index, bool left, int size)
 
 	glm::vec3 offset = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	glm::vec3& position = scene->getComponent<Transform>(rooms[index]).position;
+	glm::vec3 position = scene->getComponent<Transform>(rooms[index]).position;
+
+#if RANDOM_POSITION
 	glm::vec3 dimensions = getRandomVec3(MIN_WIDTH, MAX_WIDTH, MIN_HEIGHT, MAX_HEIGHT, MIN_DEPTH, MAX_DEPTH);
+#endif
 
 	if (rand() % 5 == 0)
 	{
@@ -263,6 +273,7 @@ void RoomLayout::setBranch(int index, bool left, int size)
 	{
 		for (int i = 0; i < size; i++)
 		{
+#if RANDOM_POSITION
 			offset.x = dimensions.x / 2.0f + scene->getComponent<Room>(rooms[index]).dimensions.x / 2.0f;
 			offset.y = 0.0f;// dimensions.y / 2.0f + scene->getComponent<Room>(rooms[index]).dimensions.y / 2.0f;
 			offset.z = dimensions.z / 2.0f + scene->getComponent<Room>(rooms[index]).dimensions.z / 2.0f;
@@ -275,19 +286,28 @@ void RoomLayout::setBranch(int index, bool left, int size)
 			float maxZ = position.z + offset.z + MAX_Z_POS_SPREAD;
 
 			position = getRandomVec3(minX, maxX, minY, maxY, minZ, maxZ);
+#else
+			position.x += roomDims.x * 1.5f;
+#endif
 
 			rooms.push_back(scene->createEntity());
 			scene->setComponent<Room>(rooms[rooms.size() - 1]);
 			Room& roomRef = scene->getComponent<Room>(rooms[rooms.size() - 1]);
-			glm::vec3 posRef = scene->getComponent<Transform>(rooms[rooms.size() - 1]).position;
+			glm::vec3& posRef = scene->getComponent<Transform>(rooms[rooms.size() - 1]).position;
 			roomRef.branch = true;
 			if (i == size - 1)
 			{
 				roomRef.branchEnd = true;
 			}
 			roomRef.type = roomType;
-			roomRef.dimensions = dimensions;
 			posRef = position;
+
+#if RANDOM_POSITION
+			roomRef.dimensions = dimensions;
+#else
+			roomRef.dimensions = roomDims;
+#endif
+
 			int curRoomLeft, curRoomIndex;
 
 			if (i == 0)
@@ -312,6 +332,7 @@ void RoomLayout::setBranch(int index, bool left, int size)
 
 		for (int i = 0; i < size; i++)
 		{
+#if RANDOM_POSITION
 			offset.x = dimensions.x / 2.0f + scene->getComponent<Room>(rooms[index]).dimensions.x / 2.0f;
 			offset.y = 0.0f;// dimensions.y / 2.0f + scene->getComponent<Room>(rooms[index]).dimensions.y / 2.0f;
 			offset.z = dimensions.z / 2.0f + scene->getComponent<Room>(rooms[index]).dimensions.z / 2.0f;
@@ -324,19 +345,27 @@ void RoomLayout::setBranch(int index, bool left, int size)
 			float maxZ = position.z + offset.z + MAX_Z_POS_SPREAD;
 
 			position = getRandomVec3(minX, maxX, minY, maxY, minZ, maxZ);
+#else
+			position.x -= roomDims.x * 1.5f;
+#endif
 
 			rooms.push_back(scene->createEntity());
 			scene->setComponent<Room>(rooms[rooms.size() - 1]);
 			Room& roomRef = scene->getComponent<Room>(rooms[rooms.size() - 1]);
-			glm::vec3 posRef = scene->getComponent<Transform>(rooms[rooms.size() - 1]).position;
+			glm::vec3& posRef = scene->getComponent<Transform>(rooms[rooms.size() - 1]).position;
 			roomRef.branch = true;
 			if (i == size - 1) {
 				roomRef.branchEnd = true;
 			}
 			roomRef.type = roomType;
-			roomRef.dimensions = dimensions;
-
 			posRef = position;
+
+#if RANDOM_POSITION
+			roomRef.dimensions = dimensions;
+#else
+			roomRef.dimensions = roomDims;
+#endif
+
 			int curRoomRight, curRoomIndex;
 			if (i == 0)
 			{
@@ -356,7 +385,7 @@ void RoomLayout::setBranch(int index, bool left, int size)
 		}
 	}
 }
-#endif
+
 bool RoomLayout::setBoss(int numRooms)
 {
 	int left = -1;
@@ -385,7 +414,7 @@ bool RoomLayout::setBoss(int numRooms)
 		left = 0;
 	}
 #if BRANCH == 1
-	setBranch(scene, rooms, bossIndex, left, rand() % 3 + 1);
+	setBranch(bossIndex, left, rand() % 3 + 1);
 #endif
 	scene->getComponent<Room>(rooms[rooms.size() - 1]).type = Room::ROOM_TYPE::BOSS_ROOM;
 

@@ -3,8 +3,7 @@
 #include <string>
 #include "../Components/Room.h"
 
-#define LOGICAL_LAYOUT 0
-#define BRANCH 0
+#define RANDOM_POSITION 0
 
 class Scene;
 
@@ -19,13 +18,17 @@ private:
 
 	Scene* scene;
 
+#if !RANDOM_POSITION
+	glm::vec3 roomDims;
+#endif
+
 	// Private Functions
 	int setUpRooms();
 	void initRooms();
-#if BRANCH == 1
+
 	bool setRandomBranch(int numRooms);
 	void setBranch(int index, bool left, int size);
-#endif
+
 	bool setBoss(int numRooms);
 	bool setExit();
 	bool setShortcut(int numBranches, int numRooms);
@@ -55,7 +58,7 @@ public:
 	RoomLayout();
 	virtual ~RoomLayout();
 
-	void setScene(Scene* scene);
+	void init(Scene* scene, const glm::vec3& roomDims);
 
 	void generate();
 	void clear();

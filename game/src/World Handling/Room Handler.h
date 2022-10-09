@@ -4,17 +4,24 @@
 
 class Scene;
 
+#define REAL_LAYOUT 1
+
 class RoomHandler
 {
+public:
+	static const float OUT_OF_BOUNDS;
+	static const float ROOM_WIDTH;
+
 private:
-	// temp
-	const float OUT_OF_BOUNDS = 1000;
 
 	RoomGenerator generator;
 	RoomLayout roomLayout;
 	Scene* scene;
 
 	int activeRoomIdx;
+	float roomWidth;
+
+	float roomGridSize;
 
 	// Temp
 	struct RoomStorage
@@ -28,12 +35,15 @@ private:
 	// return type value temp (should be void)
 	int setActiveRoom(int index);
 
+#ifdef _DEBUG
+	void reload();
+#endif
+
 public:
 	RoomHandler();
 
 	void init(Scene* scene, int roomSize, int tileTypes);
 
-	void reload();
 	void generate();
 	void update();
 };

@@ -39,25 +39,19 @@ void GameScene::update()
 {
 	roomHandler.update();
 
-	// Temp
-	if (Input::isKeyPressed(Keys::R))
-	{
-		// Bröken kröken fröken jöken göken löken söken möten
-		//roomHandler.reload();
-	}
-
 	decreaseFps();
 }
 
 void decreaseFps()
 {
 	static double result = 1234567890.0;
-
 	static int num = 0;
-    if (ImGui::Begin("FPS decrease")) 
+    if (ImGui::Begin("Debug")) 
 	{
+		ImGui::Text("Performance");
 		ImGui::Text("Fps %f", 1.f / Time::getDT());
         ImGui::InputInt("Loops", &num);
+		ImGui::Separator();
     }
     ImGui::End(); 
 
