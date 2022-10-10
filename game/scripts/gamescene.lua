@@ -5,6 +5,9 @@ print(ghost)
 --scene.setComponent(cam, CompType.Camera)
 --scene.setMainCamera(cam)
 
+local cam = scene.createPrefab("scripts/prefabs/CameraPrefab.lua")
+scene.setMainCamera(cam)
+
 local p = scene.createPrefab("scripts/prefabs/prefab.lua")
 
 local prefab = {

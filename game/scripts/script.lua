@@ -1,8 +1,10 @@
 local script = {}
 
+script.health = 100
+
 function script:init()
 	print("init with ID: " .. self.ID)
-	self.speed = 5
+	self.speed = math.random(1, 5)
 end
 
 function script:update(dt)
