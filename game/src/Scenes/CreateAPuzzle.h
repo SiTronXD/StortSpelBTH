@@ -1,23 +1,34 @@
 #pragma once
 
-#include "vengine.h"
 #include "../Puzzle.h"
+#include "vengine.h"
+#include <map>
 
-class PuzzleCreator: public Scene {
-  private:
-    int                      camEntity;
-    int                      ground;
-    int                      mover;
-    Puzzle                   puzzleObject; // in here we should only change one puzzel
-    std::vector<int>         objectID;
-    std::vector<std::string> ObjNames;
-    std::string              puzzleName;
+class PuzzleCreator : public Scene
+{
+ private:
 
-  public:
-    PuzzleCreator();
-    virtual ~PuzzleCreator();
+  int camEntity;
+  int ground;
+  int puzzleCreator;
+  int talkWithLua;
+  //int mover;
+  //Puzzle puzzleObject;  // in here we should only change one puzzel
+  //std::vector<int> objectID;
+  //std::vector<std::string> objectNames;
+  //std::vector<std::string> objectFilePath;
+  //std::map<std::string, int> meshes;
+  //std::string puzzleName;
+  //int prefabSpawner;
+  //int numberOfEntities;
+  //
+  //void getObjectFileNames();
 
-    // Inherited via Scene
-    virtual void init() override;
-    virtual void update() override;
+ public:
+  PuzzleCreator();
+  virtual ~PuzzleCreator();
+
+  // Inherited via Scene
+  virtual void init() override;
+  virtual void update() override;
 };

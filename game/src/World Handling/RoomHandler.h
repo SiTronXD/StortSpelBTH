@@ -26,12 +26,14 @@ class RoomHandler {
     void      placeTile(int tileType, glm::vec2 gridPosition, glm::vec2 worldPosition);
     glm::vec2 getFreeLarge(glm::vec2 position);
     glm::vec2 getFreeAdjacent(glm::vec2 position, glm::vec2 dir);
+    int seed;
 
   public:
     RoomHandler();
     ~RoomHandler();
     void init(int roomSize, int tileTypes);
     void generateRoom();
+    void setSeed(int seed);
 
     int getRoomTile(int index) 
     {

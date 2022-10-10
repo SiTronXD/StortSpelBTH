@@ -219,6 +219,7 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
+    <None Include="src\Scenes\PuzzleCreatorLua.lua" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

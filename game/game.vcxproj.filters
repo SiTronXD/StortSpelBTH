@@ -140,5 +140,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
+    <None Include="src\Scenes\PuzzleCreatorLua.lua" />
   </ItemGroup>
 </Project>

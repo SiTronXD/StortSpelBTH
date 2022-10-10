@@ -11,6 +11,8 @@
 #include "src/Scenes/CreateAPuzzle.h"
 #include "src/Scenes/NetworkAI.h"
 
+#include <fstream>
+
 int main(int argc, char* argv[])
 {
     // Set flags for tracking CPU memory leaks
@@ -21,7 +23,8 @@ int main(int argc, char* argv[])
     {
         Engine engine;
         //engine.run(new NetworkAI());
-        engine.run(new PuzzleCreator());
+        engine.run("penis", "", new PuzzleCreator());
+
     }
 
     return EXIT_SUCCESS;
