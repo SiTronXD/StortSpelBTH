@@ -10,7 +10,7 @@
 RoomLayout::RoomLayout()
 	:boss(-1), doors{-1, -1, -1, -1}, foundBoss(false), roomID(-1), roomDims(100.f)
 {
-	
+	std::srand((unsigned)time(0));	
 }
 
 RoomLayout::~RoomLayout()
@@ -35,8 +35,7 @@ void RoomLayout::generate()
 	for (int i = 0; i < 4; i++)
 	{
 		doors[i] = scene->createEntity();
-		scene->setComponent<MeshComponent>(doors[i]);
-		scene->getComponent<Transform>(doors[i]).scale.y = 50.f;
+		//scene->setComponent<MeshComponent>(doors[i]);
 	}
 	initRooms();
 
@@ -69,13 +68,18 @@ std::string RoomLayout::typeToString(Room::ROOM_TYPE type)
 
 void RoomLayout::initRooms()
 {
-	std::srand((unsigned)time(0));
+	/*
+		main rooms: 3 - 5
+		branches: 1 - (numRooms + 1)
+		branch size: 1-2
+	*/
 
-	int numRooms = setUpRooms();
-	int numBranches = rand() % numRooms + 1;
+	int numRooms = rand() % 3 + 3; 
+	int numBranches = rand() % (numRooms + 1) + 1; 
 
 	printf("Main rooms: %d, branches: %d\n", numRooms, numBranches);
 
+	setUpRooms(numRooms);
 	for (int i = 0; i < numBranches; i++)
 	{
 		if (!setRandomBranch(numRooms)) {
@@ -94,7 +98,7 @@ void RoomLayout::initRooms()
 	//placeDoors(roomID);
 }
 
-int RoomLayout::setUpRooms()
+void RoomLayout::setUpRooms(int numRooms)
 {
 	const float MIN_WIDTH = 50.0f;
 	const float MAX_WIDTH = 200.0f;
@@ -109,9 +113,6 @@ int RoomLayout::setUpRooms()
 	const float MAX_Y_POS_SPREAD = 0.0f;
 	const float MIN_Z_POS_SPREAD = 0.0f;
 	const float MAX_Z_POS_SPREAD = 20.0f;
-
-	// 3 - 6
-	int numRooms = rand() % 2 + 4;
 
 	glm::vec3 offset = glm::vec3(0.0f, 0.0f, 0.0f);
 
@@ -175,8 +176,6 @@ int RoomLayout::setUpRooms()
 #endif
 		}
 	}
-
-	return numRooms;
 }
 
 bool RoomLayout::setRandomBranch(int numRooms)
@@ -184,8 +183,7 @@ bool RoomLayout::setRandomBranch(int numRooms)
 	int branchSize = rand() % 2 + 1;
 
 	bool foundSpot = false;
-	int numMainRooms = numRooms;
-	int spot = rand() % (numMainRooms - 1);
+	int spot = rand() % (numRooms - 1);
 	int numTest = 0;
 	if (scene->getComponent<Room>(rooms[spot]).left != -1 && scene->getComponent<Room>(rooms[spot]).right != -1)
 	{
@@ -197,7 +195,7 @@ bool RoomLayout::setRandomBranch(int numRooms)
 				foundSpot = true;
 				break;
 			}
-			if (++spot >= numMainRooms)
+			if (++spot >= numRooms)
 			{
 				spot = 0;
 			}

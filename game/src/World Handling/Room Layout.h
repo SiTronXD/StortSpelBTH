@@ -23,7 +23,7 @@ private:
 #endif
 
 	// Private Functions
-	int setUpRooms();
+	void setUpRooms(int numRooms);
 	void initRooms();
 
 	bool setRandomBranch(int numRooms);
