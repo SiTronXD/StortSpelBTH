@@ -16,9 +16,10 @@ int main(int argc, char* argv[])
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif // _WIN32 && _DEBUG
 
+    srand((unsigned int)time(0));
     {
         Engine engine;
-        engine.run(new GameScene());
+        engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
     }
 
     return EXIT_SUCCESS;
