@@ -19,8 +19,6 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
-    roomHandler.init(this, this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
-
 	int camEntity = this->createEntity();
 	this->setComponent<Camera>(camEntity, 1.0f);
 	this->setMainCamera(camEntity);
@@ -32,6 +30,8 @@ void GameScene::init()
 	this->getComponent<Transform>(playerID).position.y = 2.5f;
 	this->createSystem<MovementSystem>(this, playerID);
     this->createSystem<CameraMovementSystem>(this, playerID);
+
+    roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
 	roomHandler.generate();
 }
 

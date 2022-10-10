@@ -9,11 +9,13 @@ RoomHandler::RoomHandler()
 {
 }
 
-void RoomHandler::init(Scene* scene, int roomSize, int tileTypes)
+void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize, int tileTypes)
 {
 	generator.init(roomSize, tileTypes);
 	roomLayout.init(scene, glm::vec3(roomWidth));
+	
 	this->scene = scene;
+	this->resourceMan = resourceMan;
 	this->roomGridSize = (float)roomSize;
 }
 
@@ -84,11 +86,10 @@ void RoomHandler::generate()
 		{
 			int pieceID = scene->createEntity();
 			scene->setComponent<MeshComponent>(pieceID);
-			MeshComponent& mesh = scene->getComponent<MeshComponent>(pieceID);
 
-			std::string path = "room_piece_" + std::to_string(generator.getTile(j).type) + ".obj";
-			memcpy(mesh.filePath, path.c_str(), sizeof(mesh.filePath));
-			
+			uint32_t id = resourceMan->addMesh("assets/models/room_piece_" + std::to_string(generator.getTile(j).type) + ".obj");
+			scene->getComponent<MeshComponent>(pieceID).meshID = id;
+
 			Transform& transform = scene->getComponent<Transform>(pieceID);
 			transform.scale = glm::vec3(0.04f) * TILE_SCALE;
 			transform.position = glm::vec3(

@@ -28,14 +28,15 @@ void RoomLayout::generate()
 	foundBoss = false;
 	roomID = 0;
 
-	boss = scene->createEntity();
+	//boss = scene->createEntity();
 	//this->setComponent<MeshComponent>(boss);
-	scene->getComponent<Transform>(boss).position = glm::vec3(-1000.0f, -1000.0f, -1000.0f);
+	//scene->getComponent<Transform>(boss).position = glm::vec3(-1000.0f, -1000.0f, -1000.0f);
 
 	for (int i = 0; i < 4; i++)
 	{
 		doors[i] = scene->createEntity();
-		//scene->setComponent<MeshComponent>(doors[i]);
+		scene->setComponent<MeshComponent>(doors[i]);
+		scene->getComponent<Transform>(doors[i]).scale.y = 100.f;
 	}
 	initRooms();
 
@@ -46,8 +47,8 @@ void RoomLayout::clear()
 {
 	for (int i = 0; i < 4; i++)
 	{
-		scene->removeEntity(doors[i]);
-		doors[i] = -1;
+		//scene->removeEntity(doors[i]);
+		//doors[i] = -1;
 	}
 	scene->removeEntity(boss);
 	boss = -1;
@@ -74,8 +75,8 @@ void RoomLayout::initRooms()
 		branch size: 1-2
 	*/
 
-	int numRooms = rand() % 3 + 3; 
-	int numBranches = rand() % (numRooms + 1) + 1; 
+	int numRooms = 3;//rand() % 3 + 3; 
+	int numBranches = 2;//rand() % (numRooms + 1) + 1; 
 
 	printf("Main rooms: %d, branches: %d\n", numRooms, numBranches);
 
@@ -95,7 +96,7 @@ void RoomLayout::initRooms()
 	if (!setShortcut(numBranches, numRooms)) {
 		std::cout << "Room: Could not create shortcut.\n";
 	}
-	//placeDoors(roomID);
+	placeDoors(roomID);
 }
 
 void RoomLayout::setUpRooms(int numRooms)
@@ -661,16 +662,16 @@ void RoomLayout::placeDoors(int& roomID)
 	glm::vec3 posUp = glm::vec3(-10000.0f, -10000.0f, -10000.0f);
 	glm::vec3 posDown = glm::vec3(-10000.0f, -10000.0f, -10000.0f);
 	if (curRoom.left != -1) {
-		posLeft = glm::vec3(curPos.x - curRoom.dimensions.x / 2, 0.0f, curPos.z);
+		posLeft = glm::vec3(curPos.x + curRoom.dimensions.x / 2, curPos.y, curPos.z);
 	}
 	if (curRoom.right != -1) {
-		posRight = glm::vec3(curPos.x + curRoom.dimensions.x / 2, 0.0f, curPos.z);
+		posRight = glm::vec3(curPos.x - curRoom.dimensions.x / 2, curPos.y, curPos.z);
 	}
 	if (curRoom.up != -1) {
-		posUp = glm::vec3(curPos.x, 0.0f, curPos.z + curRoom.dimensions.z / 2);
+		posUp = glm::vec3(curPos.x, curPos.y, curPos.z + curRoom.dimensions.z / 2);
 	}
 	if (curRoom.down != -1) {
-		posDown = glm::vec3(curPos.x, 0.0f, curPos.z - curRoom.dimensions.z / 2);
+		posDown = glm::vec3(curPos.x, curPos.y, curPos.z - curRoom.dimensions.z / 2);
 	}
 	scene->getComponent<Transform>(doors[0]).position = posLeft;
 	scene->getComponent<Transform>(doors[1]).position = posRight;

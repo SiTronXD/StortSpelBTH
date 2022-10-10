@@ -3,6 +3,7 @@
 #include "Room Layout.h"
 
 class Scene;
+class ResourceManager;
 
 #define REAL_LAYOUT 1
 
@@ -17,6 +18,7 @@ private:
 	RoomGenerator generator;
 	RoomLayout roomLayout;
 	Scene* scene;
+	ResourceManager* resourceMan;
 
 	int activeRoomIdx;
 	float roomWidth;
@@ -42,7 +44,7 @@ private:
 public:
 	RoomHandler();
 
-	void init(Scene* scene, int roomSize, int tileTypes);
+	void init(Scene* scene, ResourceManager* resourceMan, int roomSize, int tileTypes);
 
 	void generate();
 	void update();
