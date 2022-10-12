@@ -5,7 +5,7 @@ function system:update(dt)
 	local view = { "scripts/script.lua", CompType.Mesh, CompType.Transform }
 	self.dt = dt
 	scene.iterateView(view, self.viewFunc, self)
-
+	
 	self.counter = self.counter - 1
 	return self.counter < 1
 end

@@ -36,14 +36,14 @@ void GameScene::init()
     transform2.position   = glm::vec3(0.0f, -10.0f, 0.0f);
     transform2.scale      = glm::vec3(100.f, 0.1f, 100.f);
 
-	this->camEntity = this->createEntity();
-	this->setComponent<Camera>(this->camEntity, 1.0f);
-	this->setComponent<CameraMovement>(this->camEntity);
-	this->setMainCamera(this->camEntity);
-	Transform& camTransform = this->getComponent<Transform>(this->camEntity);
-	camTransform.position = glm::vec3(1.0f);
+	//this->camEntity = this->createEntity();
+	//this->setComponent<Camera>(this->camEntity, 1.0f);
+	//this->setComponent<CameraMovement>(this->camEntity);
+	//this->setMainCamera(this->camEntity);
+	//Transform& camTransform = this->getComponent<Transform>(this->camEntity);
+	//camTransform.position = glm::vec3(1.0f);
 
-    this->createSystem<CameraMovementSystem>(this, this->entity);
+ //   this->createSystem<CameraMovementSystem>(this, this->entity);
 }
 
 void GameScene::update()
