@@ -24,8 +24,10 @@ function script:update(dt)
         shaking = true
     end
 
-    local XInput = core.btoi(input.isKeyDown(Keys.H)) - core.btoi(input.isKeyDown(Keys.K))
-    local YInput = core.btoi(input.isKeyDown(Keys.J)) - core.btoi(input.isKeyDown(Keys.U))
+    --local XInput = core.btoi(input.isKeyDown(Keys.H)) - core.btoi(input.isKeyDown(Keys.K))
+    --local YInput = core.btoi(input.isKeyDown(Keys.J)) - core.btoi(input.isKeyDown(Keys.U))
+    local XInput = input.getMouseDelta().x
+    local YInput = -input.getMouseDelta().y
 
     self.camRot.x = self.camRot.x + self.sens * YInput * dt
     self.camRot.y = self.camRot.y + self.sens * XInput * dt
