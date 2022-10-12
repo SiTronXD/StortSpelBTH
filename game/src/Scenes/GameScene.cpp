@@ -19,8 +19,10 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
+    int ghost = this->getResourceManager()->addMesh("assets/models/ghost.obj");
+
 	this->entity = this->createEntity();
-	this->setComponent<MeshComponent>(this->entity);
+	this->setComponent<MeshComponent>(this->entity, ghost);
 	this->setComponent<Movement>(this->entity);
 	this->setComponent<Combat>(this->entity);
 	Transform& transform = this->getComponent<Transform>(this->entity);
