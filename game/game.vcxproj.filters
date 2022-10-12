@@ -53,6 +53,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
-    <None Include="scripts\prefabs\CameraPrefab.lua" />
   </ItemGroup>
 </Project>

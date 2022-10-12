@@ -200,7 +200,6 @@ SET ERRORLEVEL=0</Command>
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
-    <None Include="scripts\prefabs\CameraPrefab.lua" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

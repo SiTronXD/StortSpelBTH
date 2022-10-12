@@ -3,63 +3,69 @@ local script = {}
 function script:init()
 	print("init with ID: " .. self.ID)
 
-	local maxXRot       = M_PI / 2 - ((M_PI / 2) * 0.15f)
-    local minXRot       = -(M_PI / 4) + ((M_PI / 4) * 0.1f)
-    local camDist       = 23.f
-    local camHeight     = 14.f
-    local sens          = 2.f; //= 1.7f
+	self.maxXRot       = math.pi / 2 - ((math.pi / 2) * 0.15)
+    self.minXRot       = -(math.pi / 4) + ((math.pi / 4) * 0.1)
+    self.camDist       = 23
+    self.camHeight     = 14
+    self.sens          = 2
 
-    local shaking       = false
-    local shakeTimer    = 0.f
-    local shakeDuration = 0.3f
-    local shakeScalar   = 0.3f
-    local camRot {}
+    self.shaking       = false
+    self.shakeTimer    = 0
+    self.shakeDuration = 0.3
+    self.shakeScalar   = 0.3
+    self.camRot        = vector()
 
 end
 
 function script:update(dt)
 
-    if (Input::isKeyDown(Keys::Q))
+    if (input.isKeyDown(Keys.Q))
     then
         shaking = true
     end
 
-    local XInput = Input::isKeyDown(Keys::LEFT) ? 1.f : Input::isKeyDown(Keys::RIGHT) ? -1.f : 0.f
-    local YInput = Input::isKeyDown(Keys::DOWN) ? 1.f : Input::isKeyDown(Keys::UP)  ? -1.f : 0.f
+    local XInput = core.btoi(input.isKeyDown(Keys.H)) - core.btoi(input.isKeyDown(Keys.K))
+    local YInput = core.btoi(input.isKeyDown(Keys.J)) - core.btoi(input.isKeyDown(Keys.U))
 
-    camRot.x += sens * YInput * deltaTime
-    camRot.y += sens * XInput * deltaTime
+    self.camRot.x = self.camRot.x + self.sens * YInput * dt
+    self.camRot.y = self.camRot.y + self.sens * XInput * dt
 
-    if (camRot.x >= maxXRot)
+    if (self.camRot.x >= self.maxXRot)
     then
-        camRot.x = maxXRot
-    else if (camRot.x <= minXRot) 
+        self.camRot.x = self.maxXRot
+    elseif (self.camRot.x <= self.minXRot) 
     then
-        camRot.x = minXRot
+        self.camRot.x = self.minXRot
     end
 
-    local targetPos = scene->getComponent<Transform>(playerID).position
-    targetPos.y += camHeight
+    local targetPos = scene.getComponent(playerID, CompType.Transform).position
+    targetPos.y = targetPos.y + self.camHeight
 
-    if (shaking) 
+    if (self.shaking) 
     then
-        self.shakeTimer += deltaTime
-        if (shakeTimer >= shakeDuration)
+        self.shakeTimer = self.shakeTimer + dt
+        if (self.shakeTimer >= self.shakeDuration)
         then
-            self.shakeTimer = 0.f
+            self.shakeTimer = 0
             self.shaking = false
         else 
-            targetPos = targetPos + SMath::getRandomVector(shakeScalar)
+            targetPos = targetPos + self.randomVector(self.shakeScalar)
         end
-    }
+    end
 
-    local quat = glm::quat(camRot)
-    local scaledFwd = glm::normalize(SMath::rotateVectorByQuaternion(quat, glm::vec3(0.f, 0.f, 1.f))) * -camDist
-
+    self.transform.rotation.y = self.camRot.y * (180 / math.pi)
+    self.transform.rotation.x = self.camRot.x * (180 / math.pi)
+    
+    local scaledFwd = self.transform:forward() * -self.camDist
+    
     self.transform.position = targetPos + scaledFwd
+end
 
-    self.transform.rotation.y = self.camRot.y * (180.f / (float)M_PI)
-    self.transform.rotation.x = self.camRot.x * (180.f / (float)M_PI)
+function script.randomVector(scalar)
+    return vector(
+        ((math.random() % 201) * 0.01 - 1) * scalar,
+        ((math.random() % 201) * 0.01 - 1) * scalar,
+        ((math.random() % 201) * 0.01 - 1) * scalar)
 end
 
 return script
