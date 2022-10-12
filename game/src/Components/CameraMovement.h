@@ -7,7 +7,7 @@
 struct CameraMovement {
     float maxXRot       = M_PI / 2 - ((M_PI / 2) * 0.15f);
     float minXRot       = -(M_PI / 4) + ((M_PI / 4) * 0.1f);
-    float camDist       = 5.f;
+    float camDist       = 150.f;
     float camHeight     = 4.f;
     float sens          = 2.f; //= 1.7f;
 

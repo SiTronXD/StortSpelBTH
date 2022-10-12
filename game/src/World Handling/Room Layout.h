@@ -4,15 +4,19 @@
 #include "../Components/Room.h"
 
 #define RANDOM_POSITION 0
+#define PLAY 0
 
 class Scene;
+
+// MOVE DOORS TO ROOM HANDLER
+// MOVE DOORS TO ROOM HANDLER
+// MOVE DOORS TO ROOM HANDLER
 
 class RoomLayout
 {
 private:
 	int boss;
 	std::vector<int> rooms;
-	int doors[4];
 	bool foundBoss;
 	int roomID;
 
@@ -24,7 +28,6 @@ private:
 
 	// Private Functions
 	void setUpRooms(int numRooms);
-	void initRooms();
 
 	bool setRandomBranch(int numRooms);
 	void setBranch(int index, bool left, int size);
@@ -37,22 +40,19 @@ private:
 	int getEndWithLeftAvaliable();
 	
 	
-	void placeDoors(int& roomID);
+#if PLAY
 	bool canGoForward();
 	bool canGoBack();
 	bool canGoLeft();
 	bool canGoRight();
 
-	// Prints
 	void fightBoss(int& boss, int& bossHealth, int& roomID, bool& foundBoss);
 	void printDoorOptions(int& roomID);
 	void traverseRoomsConsole();
-	
-	// Unused
-	int numEnds();
 
 	// Statics
 	static std::string typeToString(Room::ROOM_TYPE type);
+#endif
 
 public:
 	RoomLayout();
@@ -71,6 +71,8 @@ public:
 	{
 		return (int)rooms.size();
 	}
+
+	void createDoors(int roomID, const glm::vec2* positions);
 
 	bool traverseRooms(int& roomID, int& boss, int& bossHealth, bool& foundBoss, float delta);
 };

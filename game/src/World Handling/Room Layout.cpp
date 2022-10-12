@@ -8,7 +8,7 @@
 #include <ctime>
 
 RoomLayout::RoomLayout()
-	:boss(-1), doors{-1, -1, -1, -1}, foundBoss(false), roomID(-1), roomDims(100.f)
+	:boss(-1), foundBoss(false), roomID(-1), roomDims(100.f)
 {
 	std::srand((unsigned)time(0));	
 }
@@ -23,51 +23,24 @@ void RoomLayout::init(Scene* scene, const glm::vec3& roomDims)
 	this->roomDims = roomDims;
 }
 
-void RoomLayout::generate()
-{
-	foundBoss = false;
-	roomID = 0;
-
-	//boss = scene->createEntity();
-	//this->setComponent<MeshComponent>(boss);
-	//scene->getComponent<Transform>(boss).position = glm::vec3(-1000.0f, -1000.0f, -1000.0f);
-
-	for (int i = 0; i < 4; i++)
-	{
-		doors[i] = scene->createEntity();
-		scene->setComponent<MeshComponent>(doors[i]);
-		scene->getComponent<Transform>(doors[i]).scale.y = 100.f;
-	}
-	initRooms();
-
-	//std::cout << "Slow: WASD" << std::endl << "Fast: HBNM" << std::endl;
-}
-
 void RoomLayout::clear()
 {
-	for (int i = 0; i < 4; i++)
-	{
-		//scene->removeEntity(doors[i]);
-		//doors[i] = -1;
-	}
 	scene->removeEntity(boss);
 	boss = -1;
-
-	for (int entity : rooms)
-	{
-		scene->removeEntity(entity);
-	}
-
-	rooms.clear();
 	foundBoss = false;
+
+	for (int entity : rooms) { scene->removeEntity(entity); }
+	rooms.resize(0);
 }
 
+#if PLAY
 std::string RoomLayout::typeToString(Room::ROOM_TYPE type)
 {
 	return std::string();
 }
+#endif
 
-void RoomLayout::initRooms()
+void RoomLayout::generate()
 {
 	/*
 		main rooms: 3 - 5
@@ -75,8 +48,8 @@ void RoomLayout::initRooms()
 		branch size: 1-2
 	*/
 
-	int numRooms = 3;//rand() % 3 + 3; 
-	int numBranches = 2;//rand() % (numRooms + 1) + 1; 
+	int numRooms = 5;//rand() % 3 + 3; 
+	int numBranches = 5;//rand() % (numRooms + 1) + 1; 
 
 	printf("Main rooms: %d, branches: %d\n", numRooms, numBranches);
 
@@ -93,10 +66,9 @@ void RoomLayout::initRooms()
 	if (!setExit()) {
 		std::cout << "Room: Could not create exit.\n";
 	}
-	if (!setShortcut(numBranches, numRooms)) {
+	/*if (!setShortcut(numBranches, numRooms)) {
 		std::cout << "Room: Could not create shortcut.\n";
-	}
-	placeDoors(roomID);
+	}*/
 }
 
 void RoomLayout::setUpRooms(int numRooms)
@@ -477,19 +449,6 @@ bool RoomLayout::setShortcut(int numBranches, int numRooms)
 	return true;
 }
 
-int RoomLayout::numEnds()
-{
-	int ret = 0;
-	for (int i = 0; i < rooms.size(); i++)
-	{
-		if (scene->getComponent<Room>(rooms[i]).branchEnd)
-		{
-			ret++;
-		}
-	}
-	return ret;
-}
-
 int RoomLayout::getEndWithRightAvaliable()
 {
 	int ret = -1;
@@ -520,6 +479,7 @@ int RoomLayout::getEndWithLeftAvaliable()
 	return ret;
 }
 
+#if PLAY
 void RoomLayout::traverseRoomsConsole()
 {
 	std::string input;
@@ -606,9 +566,11 @@ void RoomLayout::traverseRoomsConsole()
 		}
 	}
 }
+#endif
 
 bool RoomLayout::traverseRooms(int& roomID, int& boss, int& bossHealth, bool& foundBoss, float delta)
 {
+#if PLAY
 	bool ret = false;
 	Room curRoom = scene->getComponent<Room>(rooms[roomID]);
 
@@ -645,40 +607,12 @@ bool RoomLayout::traverseRooms(int& roomID, int& boss, int& bossHealth, bool& fo
 		ret = true;
 	}
 	return ret;
+#endif
+
+	return false;
 }
 
-void RoomLayout::placeDoors(int& roomID)
-{
-	Room& curRoom = scene->getComponent<Room>(rooms[roomID]);
-	glm::vec3 curPos = scene->getComponent<Transform>(rooms[roomID]).position;
-	glm::vec3& camPos = scene->getComponent<Transform>(scene->getMainCameraID()).position;
-
-	printDoorOptions(roomID);
-
-	camPos = curPos;
-
-	glm::vec3 posLeft = glm::vec3(-10000.0f, -10000.0f, -10000.0f);
-	glm::vec3 posRight = glm::vec3(-10000.0f, -10000.0f, -10000.0f);
-	glm::vec3 posUp = glm::vec3(-10000.0f, -10000.0f, -10000.0f);
-	glm::vec3 posDown = glm::vec3(-10000.0f, -10000.0f, -10000.0f);
-	if (curRoom.left != -1) {
-		posLeft = glm::vec3(curPos.x + curRoom.dimensions.x / 2, curPos.y, curPos.z);
-	}
-	if (curRoom.right != -1) {
-		posRight = glm::vec3(curPos.x - curRoom.dimensions.x / 2, curPos.y, curPos.z);
-	}
-	if (curRoom.up != -1) {
-		posUp = glm::vec3(curPos.x, curPos.y, curPos.z + curRoom.dimensions.z / 2);
-	}
-	if (curRoom.down != -1) {
-		posDown = glm::vec3(curPos.x, curPos.y, curPos.z - curRoom.dimensions.z / 2);
-	}
-	scene->getComponent<Transform>(doors[0]).position = posLeft;
-	scene->getComponent<Transform>(doors[1]).position = posRight;
-	scene->getComponent<Transform>(doors[2]).position = posUp;
-	scene->getComponent<Transform>(doors[3]).position = posDown;
-}
-
+#if PLAY
 bool RoomLayout::canGoForward()
 {
 	glm::vec3 doorPos = scene->getComponent<Transform>(doors[2]).position;
@@ -734,6 +668,7 @@ bool RoomLayout::canGoRight()
 
 void RoomLayout::fightBoss(int& boss, int& bossHealth, int& roomID, bool& foundBoss)
 {
+#if PLAY
 	Transform& transform = scene->getComponent<Transform>(boss);
 	transform.position = scene->getComponent<Transform>(rooms[roomID]).position + glm::vec3(cos(Time::getTimeSinceStart() * 100), sin(Time::getTimeSinceStart() * 100), 20.0f);
 	transform.scale = glm::vec3(10.0f, 5.0f, 5.0f);
@@ -799,6 +734,7 @@ void RoomLayout::fightBoss(int& boss, int& bossHealth, int& roomID, bool& foundB
 	{
 		placeDoors(roomID);
 	}
+#endif
 }
 
 void RoomLayout::printDoorOptions(int& roomID)
@@ -832,3 +768,4 @@ void RoomLayout::printDoorOptions(int& roomID)
 		std::cout << "right\n";
 	}
 }
+#endif

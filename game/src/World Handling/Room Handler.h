@@ -5,8 +5,6 @@
 class Scene;
 class ResourceManager;
 
-#define REAL_LAYOUT 1
-
 class RoomHandler
 {
 public:
@@ -14,35 +12,34 @@ public:
 	static const float ROOM_WIDTH;
 
 private:
-
-	RoomGenerator generator;
+	RoomGenerator roomGenerator;
 	RoomLayout roomLayout;
 	Scene* scene;
 	ResourceManager* resourceMan;
 
-	int activeRoomIdx;
-	float roomWidth;
+	std::unordered_map<Tile::Type, uint32_t> tileMeshIds;
+	uint32_t doorMeshId;
 
 	float roomGridSize;
+	float roomWidth;
+	int numRooms;
 
-	// Temp
-	struct RoomStorage
-	{
-		std::vector<int> entities;
-		std::vector<glm::vec3> startPositions;
-	};
-
-	std::vector<RoomStorage> rooms;
-
-	// return type value temp (should be void)
-	int setActiveRoom(int index);
+	int createTileEntity(int tileIndex, float tileScale, const glm::vec3& roomPos);
+	int createDoorEntity(float yRotation);
+	void createDoors(int roomIndex, float tileScale);
+	void createPathway(int direction);
 
 #ifdef _DEBUG
 	void reload();
+
+	// Used for reloading
+	std::vector<int> tileIds;
+	std::vector<int> doors;
 #endif
 
 public:
 	RoomHandler();
+	~RoomHandler();
 
 	void init(Scene* scene, ResourceManager* resourceMan, int roomSize, int tileTypes);
 

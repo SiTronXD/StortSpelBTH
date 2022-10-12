@@ -20,7 +20,7 @@ public:
         }
 
         Movement& movement     = scene->getComponent<Movement>(playerID);
-        movement.maxSpeed      = 50.f;
+        movement.maxSpeed      = 250.f;
         movement.speedIncrease = 200.f;
         movement.slowDown      = 180.f;
         movement.currentSpeed  = glm::vec2(0.f);
@@ -38,7 +38,7 @@ public:
             ImGui::PushItemWidth(-100.f);
             ImGui::Text("Player");
 
-            ImGui::DragFloat("Max speed", &movement.maxSpeed, 0.05f, 0.f, 200.f);
+            ImGui::DragFloat("Speed", &movement.maxSpeed, 0.05f, 0.f, 500.f);
 
             if (!ImGui::Checkbox("Move system switch", &moveSystem0))
             {
