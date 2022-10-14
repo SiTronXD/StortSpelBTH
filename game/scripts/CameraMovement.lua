@@ -5,7 +5,7 @@ function script:init()
 
 	self.maxXRot       = math.pi / 2 - ((math.pi / 2) * 0.15)
     self.minXRot       = -(math.pi / 4) + ((math.pi / 4) * 0.1)
-    self.camDist       = 23
+    self.camDist       = 15
     self.camHeight     = 14
     self.sens          = 2
 
@@ -18,7 +18,6 @@ function script:init()
 end
 
 function script:update(dt)
-
     if (input.isKeyDown(Keys.Q))
     then
         shaking = true
@@ -40,7 +39,7 @@ function script:update(dt)
         self.camRot.x = self.minXRot
     end
 
-    local targetPos = scene.getComponent(playerID, CompType.Transform).position
+    local targetPos = scene.getComponent(self.playerID, CompType.Transform).position
     targetPos.y = targetPos.y + self.camHeight
 
     if (self.shaking) 
