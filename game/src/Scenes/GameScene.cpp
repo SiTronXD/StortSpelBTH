@@ -46,14 +46,14 @@ void decreaseFps()
 {
 	static double result = 1234567890.0;
 	static int num = 0;
-    if (ImGui::Begin("Debug")) 
+    /*if (ImGui::Begin("Debug")) 
 	{
 		ImGui::Text("Performance");
 		ImGui::Text("Fps %f", 1.f / Time::getDT());
         ImGui::InputInt("Loops", &num);
 		ImGui::Separator();
     }
-    ImGui::End(); 
+    ImGui::End(); */
 
     for (int i = 0; i < num; i++) 
 	{

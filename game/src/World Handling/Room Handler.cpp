@@ -66,24 +66,24 @@ void RoomHandler::generate()
 	this->doors.reserve(size_t(this->numRooms * 4));
 #endif // _DEBUG
 	
-	for (int i = 0; i < this->numRooms; i++)
+	for (int i = 0; i < 1; i++)
 	{
 		//add tile enities
 		this->roomGenerator.generateRoom();
+		this->createDoors(i, TILE_SCALE);
+		this->roomGenerator.generateBorders(hasDoor);
+
+		const glm::vec3& roomPos = this->scene->getComponent<Transform>(this->roomLayout.getRoomID(i)).position;
 		const int NUM_TILES = this->roomGenerator.getNrTiles();
-
-		glm::vec3 pos = this->scene->getComponent<Transform>(this->roomLayout.getRoomID(i)).position;
-
 		for (int j = 0; j < NUM_TILES; j++) 
 		{
 #ifdef _DEBUG
-			this->createTileEntity(j, TILE_SCALE, pos);
+			this->createTileEntity(j, TILE_SCALE, roomPos);
 #else
 			tileIds.emplace_back(createTile(j, TILE_SCALE, pos));
 #endif
 		}
 		
-		this->createDoors(i, TILE_SCALE);
 
 		this->roomGenerator.reset();
 	}
@@ -144,29 +144,29 @@ void RoomHandler::createDoors(int roomIndex, float tileScale)
 	int possibleDoors[4]{-1,-1,-1,-1};
 
 	if (curRoom.left != -1) {
-		possibleDoors[0] = this->createDoorEntity(-90.f);
-		doorWorldPos[0] = doorTilePos[0] * tileScale;
+		possibleDoors[0] = this->createDoorEntity(-90.f);	
 	}
 	if (curRoom.right != -1) {
 		possibleDoors[1] = this->createDoorEntity(90.f);
-		doorWorldPos[1] = doorTilePos[1] * tileScale;
 	}
 	if (curRoom.up != -1) {
 		possibleDoors[2] = this->createDoorEntity(180.f);
-		doorWorldPos[2] = doorTilePos[2] * tileScale;
 	}
 	if (curRoom.down != -1) {
 		possibleDoors[3] = this->createDoorEntity(0.f);
-		doorWorldPos[3] = doorTilePos[3] * tileScale;
 	}
 
 	for (int i = 0; i < 4; i++)
 	{
+		hasDoor[i] = false;
+
 		if (possibleDoors[i] != -1)
 		{
 #ifdef _DEBUG
 			this->doors.emplace_back(possibleDoors[i]);
 #endif
+			hasDoor[i] = true;
+			doorWorldPos[i] = doorTilePos[i] * tileScale;
 			this->scene->getComponent<Transform>(possibleDoors[i]).position = 
 				glm::vec3(curPos.x + doorWorldPos[i].x, curPos.y, curPos.z + doorWorldPos[i].y);
 		}

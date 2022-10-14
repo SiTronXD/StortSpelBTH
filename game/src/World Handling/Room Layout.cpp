@@ -48,8 +48,8 @@ void RoomLayout::generate()
 		branch size: 1-2
 	*/
 
-	int numRooms = 5;//rand() % 3 + 3; 
-	int numBranches = 5;//rand() % (numRooms + 1) + 1; 
+	int numRooms = 2;//rand() % 3 + 3; 
+	int numBranches = 4;//rand() % (numRooms + 1) + 1; 
 
 	printf("Main rooms: %d, branches: %d\n", numRooms, numBranches);
 

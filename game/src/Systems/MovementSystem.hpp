@@ -20,7 +20,7 @@ public:
         }
 
         Movement& movement     = scene->getComponent<Movement>(playerID);
-        movement.maxSpeed      = 250.f;
+        movement.maxSpeed      = 70.f;//250.f;
         movement.speedIncrease = 200.f;
         movement.slowDown      = 180.f;
         movement.currentSpeed  = glm::vec2(0.f);

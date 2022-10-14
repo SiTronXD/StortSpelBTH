@@ -45,7 +45,9 @@ public:
     RoomGenerator();
     ~RoomGenerator();
     void init(int roomSize, int tileTypes);
+
     void generateRoom();
+    void generateBorders(const bool* hasDoors);
 
     int getRoomTile(int index) 
     {

@@ -20,6 +20,8 @@ private:
 	std::unordered_map<Tile::Type, uint32_t> tileMeshIds;
 	uint32_t doorMeshId;
 
+	bool hasDoor[4];
+
 	float roomGridSize;
 	float roomWidth;
 	int numRooms;
