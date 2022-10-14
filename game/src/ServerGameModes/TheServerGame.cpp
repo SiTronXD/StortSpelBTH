@@ -13,10 +13,10 @@ void TheServerGame::update(float dt)
     if (players[0].position.z > 1 && !yes) {
         yes = true;
         serverEntities.push_back(
-            ServerEntity { glm::vec3(0, 0, 200), glm::vec3(0, 0, 0), 1 });
+            ServerEntity { glm::vec3(0, 0, 500), glm::vec3(0, 0, 0), 1 });
         addEvent({ (int)GameEvents::SpawnEnemy, 1 }, { 0.f, 0.f, 200.f});
         serverEntities.push_back(ServerEntity{
-            glm::vec3(20, 0, 200), glm::vec3(0, 0, 0), 1});
+            glm::vec3(20, 0, 500), glm::vec3(0, 0, 0), 1});
         addEvent({(int)GameEvents::SpawnEnemy, 1}, {20.f, 0.f, 200.f});
     }
 
@@ -26,9 +26,8 @@ void TheServerGame::update(float dt)
             serverEntities[i].rotation.x = 0;
         }
         glm::vec3 dir =
-            pfm.getDirTo(serverEntities[i].position, players[0].position) *
+            pf.getDirTo(serverEntities[i].position, players[0].position) *
             (dt * 20);
-        std::cout << dir.x << ", " << dir.z << std::endl;
         serverEntities[i].position += dir;
     }
     

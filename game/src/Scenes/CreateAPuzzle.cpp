@@ -30,8 +30,8 @@ void PuzzleCreator::init()
   transform2.position = glm::vec3(0.0f, -10.0f, 0.0f);
   transform2.scale = glm::vec3(100.f, 0.1f, 100.f);
 
-  this->puzzleLoader = this->createEntity();
-  this->setScriptComponent(puzzleLoader, "src/Scripts/PuzzleLoader.lua");
+ // this->puzzleLoader = this->createEntity();
+ // this->setScriptComponent(puzzleLoader, "src/Scripts/PuzzleLoader.lua");
 
   this->puzzleCreator = this->createEntity();
   this->setScriptComponent(puzzleCreator, "src/Scripts/PuzzleCreatorLua.lua");

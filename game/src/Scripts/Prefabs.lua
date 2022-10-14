@@ -2,13 +2,14 @@ require "Prefab"
 --require ("../../../game/src/Scripts/Prefab")
 
 --Meshes
-m1 = resources.addMesh("assets/models/Cube.fbx")
+m1 = resources.addMesh("assets/models/cube.obj")
 m2 = resources.addMesh("assets/models/ghost.obj")
 
 p_Cube = Prefab:New()
 p_Cube.Mesh = m1
 p_Cube.Name = "cube"
 p_Cube.id = 1
+p_Cube.Transform.scale = vector(10,1,2)
 p_Cube.polyPoints = {
 	vector(-1,0,-1),
 	vector(1,0,-1),

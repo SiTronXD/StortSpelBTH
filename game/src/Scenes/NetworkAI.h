@@ -5,7 +5,7 @@
 class NetworkAI: public Scene {
   private:
     int camEntity;
-    int entity;
+    int player;
 
   public:
     NetworkAI();

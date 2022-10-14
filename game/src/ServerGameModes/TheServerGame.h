@@ -6,7 +6,6 @@
 class TheServerGame : public ServerGame
 {
  private:
-  PathFindingManager pfm;
   RoomHandler roomHandler;
 
  public:

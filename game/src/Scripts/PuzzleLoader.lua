@@ -1,39 +1,7 @@
 package.path = package.path..";./../game/src/Scripts/?.lua"
 require "Prefabs"
 
-
-function xVectorRotation(theVector, xrot)
-	local theReturn = vector(0,0,0)
-	theReturn.x = theVector.x
-	theReturn.y = theVector.y * math.cos(xrot) - theVector.z * math.sin(xrot)
-	theReturn.z = theVector.y * math.sin(xrot) + theVector.z * math.cos(xrot)
-	return theReturn
-end
-function yVectorRotation(theVector, yrot)
-	local theReturn = vector(0,0,0)
-	theReturn.x = theVector.x * math.cos(yrot) + theVector.z * math.sin(yrot)
-	theReturn.y = theVector.y
-	theReturn.z = -theVector.x * math.sin(yrot) + theVector.z * math.cos(yrot)
-	return theReturn
-end
-function zVectorRotation(theVector, zrot)
-	local theReturn = vector(0,0,0)
-	theReturn.x = theVector.x * math.cos(zrot) - theVector.y * math.sin(zrot)
-	theReturn.y = theVector.x * math.sin(zrot) + theVector.z * math.cos(zrot)
-	theReturn.z = theVector.z
-	return theReturn
-end
-
-function rotateVector(theVector, xrot, yrot, zrot)
-	theVector = zVectorRotation(theVector, zrot)
-	theVector = yVectorRotation(theVector, yrot)
-	theVector = xVectorRotation(theVector, xrot)
-	return theVector
-end
-
-local script = {} -- Script table
-
-function script:load() 
+function loadPuzzle(filepath, offset) 
 
 		file = io.open("assets/puzzleParts/test.puz", "r")
 
@@ -62,9 +30,9 @@ function script:load()
 				print("Mesh Type: " .. newObject.Mesh)
 			
 				--give entity data
-				newObject.Transform.position.x = xpos
-				newObject.Transform.position.y = ypos
-				newObject.Transform.position.z = zpos
+				newObject.Transform.position.x = xpos + offset.x
+				newObject.Transform.position.y = ypos + offset.y
+				newObject.Transform.position.z = zpos + offset.z
 				newObject.Transform.rotation.x = xrot
 				newObject.Transform.rotation.y = yrot
 				newObject.Transform.rotation.z = zrot
@@ -79,27 +47,19 @@ function script:load()
 				for i = 1, #newObject.polyPoints do
 					--scale the vectors
 					newObject.polyPoints[i] = newObject.polyPoints[i] * vector(xscale, yscale, zscale)
+					print(newObject.polyPoints[i])
 
 					--rotate the points
-					newObject.polyPoints[i] = rotateVector(newObject.polyPoints[i], xrot, yrot, zrot)
+					--newObject.polyPoints[i]:rotate(xrot, yrot, zrot)
 
 					--move the points
 					newObject.polyPoints[i] = newObject.polyPoints[i] + vector(xpos, ypos, zpos)
 				end
 				network.sendPolygons(newObject.polyPoints)
+
 			
 			end
 			print("saved puz")
 			io.close(file)
 		end
 end
-
-function script:init()
-	--check some kind of table here instead
-	local puzzleName =  "assets/puzzleParts/test.puz"
-	
-	self:load()
-
-end
-
-return script -- Return script table

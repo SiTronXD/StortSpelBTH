@@ -1,9 +1,10 @@
 #include "NetworkAI.h"
 
-#include "../Systems/MovementSystem.hpp"
+#include "../Systems/CameraMovementSystem.hpp"
 #include "../Systems/CombatSystem.hpp"
+#include "../Systems/MovementSystem.hpp"
 
-NetworkAI::NetworkAI(): camEntity(-1), entity(-1) {}
+NetworkAI::NetworkAI(): camEntity(-1), player(-1) {}
 
 NetworkAI::~NetworkAI() {}
 
@@ -15,22 +16,38 @@ void NetworkAI::init()
     Transform& camTransform = this->getComponent<Transform>(this->camEntity);
     camTransform.position   = glm::vec3(1.0f);
 
-    this->entity = this->createEntity();
-    this->setComponent<MeshComponent>(this->entity);
-    this->setComponent<Movement>(this->entity);
-    this->createSystem<MovementSystem>(this, entity);
-    this->setComponent<Combat>(this->entity);
-    this->createSystem<CombatSystem>(this, entity);
-    Transform& transform = this->getComponent<Transform>(this->entity);
-    transform.position   = glm::vec3(0.0f, 0.0f, 20.0f);
-    transform.rotation   = glm::vec3(-90.0f, 0.0f, 0.0f);
-    transform.scale      = glm::vec3(5.0f);
+    this->player = this->createEntity();
+    this->setComponent<MeshComponent>(this->player);
+    this->setComponent<Movement>(this->player);
+    this->setComponent<Combat>(this->player);
+    Transform& transform = this->getComponent<Transform>(this->player);
+    transform.position = glm::vec3(0.0f, 0.0f, 20.0f);
+    transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
+    transform.scale = glm::vec3(5.0f);
+    this->createSystem<CombatSystem>(this, player);
+    this->createSystem<MovementSystem>(this, this->player);
+
+    this->createSystem<CameraMovementSystem>(this, this->player);
+
+    //ground
+    int ground = this->createEntity();
+    int groundMesh =
+        this->getResourceManager()->addMesh("vengine_assets/models/Cube.fbx");
+
+    this->setComponent<Transform>(ground);
+    this->setComponent<MeshComponent>(ground, groundMesh);
+    Transform& transform2 = this->getComponent<Transform>(ground);
+    transform2.position = glm::vec3(0.0f, -10.0f, 0.0f);
+    transform2.scale = glm::vec3(100.f, 0.1f, 100.f);
+
+    int puzzleCreator = this->createEntity();
+    this->setScriptComponent(puzzleCreator, "src/Scripts/PuzzleCreatorLua.lua");
 }
 
 #include "../ServerGameModes/TheServerGame.h"
 void NetworkAI::update()
 {
-    Transform& transform = this->getComponent<Transform>(this->entity);
+    Transform& transform = this->getComponent<Transform>(this->player);
     this->getNetworkHandler()->sendUDPDataToClient(transform.position, transform.rotation);
 
     if (Input::isKeyPressed(Keys::H)) {
@@ -45,7 +62,6 @@ void NetworkAI::update()
             std::cout << "no Connect" << std::endl;
         }
         //no visulation that we connected
-        
     }
     if (Input::isKeyPressed(Keys::K)) {
         this->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent { GameEvents::START });
