@@ -23,11 +23,8 @@ function script:update(dt)
 		local e = scene.createPrefab(Prefabs[self.i])
 
 		self.nrOfEntities = self.nrOfEntities + 1;
-		--the ent
-		--type
-		--self.entities[self.nrOfEntities] = {e, Prefabs[self.i].id}
-		self.entities[self.nrOfEntities] = {e, self.i}
 
+		self.entities[self.nrOfEntities] = {e, self.i}
 
 		print("created prefab")
 
@@ -81,6 +78,9 @@ end
 
 function script:init()
 	self.iMax = #Prefabs
+	for i = 1, self.iMax do
+		print("penis:" .. Prefabs[i].id)
+	end
 end
 
 return script -- Return script table

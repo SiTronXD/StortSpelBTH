@@ -160,12 +160,6 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="src\AI\cone_of_vision.cpp" />
-    <ClCompile Include="src\AI\PathFinding.cpp" />
-    <ClCompile Include="src\AI\path_finder.cpp" />
-    <ClCompile Include="src\AI\point.cpp" />
-    <ClCompile Include="src\AI\polygon.cpp" />
-    <ClCompile Include="src\AI\segment.cpp" />
     <ClCompile Include="src\Scenes\CreateAPuzzle.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
     <ClCompile Include="src\Scenes\NetworkAI.cpp" />
@@ -184,13 +178,6 @@ robocopy $(ProjectDir)assets $(OutDir)assets\ /s</Command>
     <ClInclude Include="Components\Combat.h" />
     <ClInclude Include="Components\Movement.h" />
     <ClInclude Include="src\Components\CameraMovement.h" />
-    <ClInclude Include="src\AI\cone_of_vision.h" />
-    <ClInclude Include="src\AI\PathFinding.h" />
-    <ClInclude Include="src\AI\path_finder.h" />
-    <ClInclude Include="src\AI\point.h" />
-    <ClInclude Include="src\AI\pointf.h" />
-    <ClInclude Include="src\AI\polygon.h" />
-    <ClInclude Include="src\AI\segment.h" />
     <ClInclude Include="src\Components\Combat.h" />
     <ClInclude Include="src\Components\Movement.h" />
     <ClInclude Include="src\Scenes\CreateAPuzzle.h" />

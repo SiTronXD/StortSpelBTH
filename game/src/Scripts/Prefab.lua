@@ -4,24 +4,16 @@ Prefab = {
 		rotation = vector(0, 0, 0),
 		scale = vector.fill(1) 
 	}, 
-	Mesh = "",
+	Mesh = "vengine_assets/models/cube.obj",
 	Name = "",
 	id = 0
 }
 
-function Prefab.New(o)
+function Prefab:New(o)
 	o = o or {}
 
+	self.__index = self
 	setmetatable(o, self)
-
-	o.Transform = {
-		position = vector(0, 0, 0),
-		rotation = vector(0, 0, 0),
-		scale = vector.fill(1) 
-	}
-	o.Mesh = "vengine_assets/models/cube.obj"
-	o.Name = ""
-	o.id = 0
 
 	return o;
 end
