@@ -8,7 +8,6 @@ class ResourceManager;
 class RoomHandler
 {
 public:
-	static const float OUT_OF_BOUNDS;
 	static const float ROOM_WIDTH;
 
 private:
@@ -23,52 +22,29 @@ private:
 	float roomGridSize;
 	int numRooms;
 
-	float roomWidth;
 	const int numTilesInbetween;
 	float tileWidth;
 	
 	bool hasDoor[4];
+	int possibleDoors[4];
 
-	struct ConnectionPoints
-	{
-		ConnectionPoints() = default;
-
-		int index1 = -1;
-		glm::vec2 pos1{};
-
-		int index2 = -1;
-		glm::vec2 pos2{};
-	};
-
-	std::vector<ConnectionPoints> connections;
+	std::vector<std::pair<glm::vec3, glm::vec3>> exitPairs;
 
 	struct RoomExitPoint
 	{
 		RoomExitPoint() = default;
-		~RoomExitPoint()
-		{
-			for (int i = 0; i < 4; i++)
-			{
-				if (worldPositions[i])
-				{
-					delete worldPositions[i];
-					worldPositions[i] = nullptr;
-				}
-			}
-		}
-
-		glm::vec2* worldPositions[4]{};
+		glm::vec3 worldPositions[4]{};
 	};
 
-	std::vector<RoomExitPoint> exitPoints;
+	std::vector<RoomExitPoint> roomExitPoints;
 
 	int createTileEntity(int tileIndex, float tileScale, const glm::vec3& roomPos);
 	int createDoorEntity(float yRotation);
 	int createPathEntity();
 	
 	void createDoors(int roomIndex, float tileScale);
-	void createConnectionPoint();
-	void createPathways(float tileScale);
+	void createConnectionPoint(float tileScale, const glm::vec3& roomPos);
+	void createPathways();
 
 #ifdef _DEBUG
 	void reload();
@@ -76,6 +52,7 @@ private:
 	// Used for reloading
 	std::vector<int> tileIds;
 	std::vector<int> doors;
+	std::vector<int> connectionsIds;
 #endif
 
 public:

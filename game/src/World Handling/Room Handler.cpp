@@ -1,11 +1,19 @@
 #include "Room Handler.h"
 #include "vengine/application/Scene.hpp"
 
-const float RoomHandler::OUT_OF_BOUNDS = 1000.f;
 const float RoomHandler::ROOM_WIDTH = 200.f;
 
+/*
+	EXIT POINTS MESSED UP WHEN DOOR GENERATED ON THE EDGE
+	EXIT POINTS MESSED UP WHEN DOOR GENERATED ON THE EDGE
+	EXIT POINTS MESSED UP WHEN DOOR GENERATED ON THE EDGE
+	EXIT POINTS MESSED UP WHEN DOOR GENERATED ON THE EDGE
+	EXIT POINTS MESSED UP WHEN DOOR GENERATED ON THE EDGE
+	EXIT POINTS MESSED UP WHEN DOOR GENERATED ON THE EDGE
+*/
+
 RoomHandler::RoomHandler()
-	:scene(nullptr), resourceMan(nullptr), roomWidth(200.f), roomGridSize(0), numRooms(0),
+	:scene(nullptr), resourceMan(nullptr), roomGridSize(0), numRooms(0),
 	numTilesInbetween(3)
 {
 }
@@ -19,10 +27,10 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize,
 	this->scene = scene;
 	this->resourceMan = resourceMan;
 	this->roomGridSize = (float)roomSize;
-	this->tileWidth = roomWidth / (float)roomSize;
+	this->tileWidth = ROOM_WIDTH / (float)roomSize;
 
 	this->roomGenerator.init(roomSize, tileTypes);
-	this->roomLayout.init(scene, roomWidth + tileWidth * numTilesInbetween);
+	this->roomLayout.init(scene, ROOM_WIDTH + tileWidth * numTilesInbetween);
 	
 
 	// Border pieces not counted in tileTypes
@@ -60,26 +68,29 @@ void RoomHandler::update()
 
 void RoomHandler::generate()
 {
-	const float TILE_SCALE = this->roomWidth / (float)this->roomGridSize;
+	const float TILE_SCALE = this->ROOM_WIDTH / (float)this->roomGridSize;
 
 	this->roomLayout.generate();
 	this->numRooms = this->roomLayout.getNumRooms();
-	this->exitPoints.reserve(this->numRooms);
+	this->roomExitPoints.clear();
+	this->exitPairs.clear();
+
 #ifdef _DEBUG
-	this->tileIds.reserve(size_t(this->numRooms * 100));
-	this->doors.reserve(size_t(this->numRooms * 4));
+	this->tileIds.clear();
+	this->doors.clear();
 #endif // _DEBUG
 
-	
-	
 	for (int i = 0; i < this->numRooms; i++)
 	{
+		memset(possibleDoors, -1, sizeof(possibleDoors));
+		const glm::vec3& roomPos = this->scene->getComponent<Transform>(this->roomLayout.getRoomID(i)).position;
+
 		//add tile enities
 		this->roomGenerator.generateRoom();
 		this->createDoors(i, TILE_SCALE);
 		this->roomGenerator.generateBorders(hasDoor);
+		this->createConnectionPoint(TILE_SCALE, roomPos);
 
-		const glm::vec3& roomPos = this->scene->getComponent<Transform>(this->roomLayout.getRoomID(i)).position;
 		const int NUM_TILES = this->roomGenerator.getNrTiles();
 		for (int j = 0; j < NUM_TILES; j++) 
 		{
@@ -93,24 +104,83 @@ void RoomHandler::generate()
 		this->roomGenerator.reset();
 	}
 
-	this->connections.reserve((size_t)this->roomLayout.getNumMainRooms() * 2);
+	int numMainRooms = roomLayout.getNumMainRooms();
+	std::vector<glm::ivec2>& connections = roomLayout.getConnections();
+	exitPairs.reserve(connections.size());
+	for (size_t i = 0; i < connections.size(); i++)
+	{
+		const glm::ivec2& curCon = connections[i];
+		exitPairs.emplace_back();
+
+
+		if (curCon.x < numMainRooms && curCon.y < numMainRooms)
+		{
+			// Vertical Connection
+			// curCon.x = index of upper room
+			// curCon.y = index of lower room
+
+			exitPairs.back().first = roomExitPoints[curCon.y].worldPositions[2];
+			exitPairs.back().first.z += tileWidth;
+
+			exitPairs.back().second = roomExitPoints[curCon.x].worldPositions[3];
+			exitPairs.back().second.z -= tileWidth;
+		}
+		else
+		{
+			// Horizontal connection
+			// Conn[i].x = right room
+			// Conn[i].y = left room
+
+			exitPairs.back().first = roomExitPoints[curCon.y].worldPositions[0];
+			exitPairs.back().first.x += tileWidth;
+
+			exitPairs.back().second = roomExitPoints[curCon.x].worldPositions[1];
+			exitPairs.back().second.x -= tileWidth;
+		}
+
+		auto a = exitPairs.back().first;
+		auto b = exitPairs.back().second;
+		printf("connection: %d | pos: (%f, %f, %f) - (%f, %f, %f)\n", i, a.x, a.y, a.z, b.x, b.y, b.z);
+	}
+
+#ifdef _DEBUG
+	for (int i = 0; i < exitPairs.size(); i++)
+	{
+		int id1 = this->createPathEntity();
+		int id2 = this->createPathEntity();
+
+		Transform& tra1 = this->scene->getComponent<Transform>(id1);
+		Transform& tra2 = this->scene->getComponent<Transform>(id2); 
+
+		tra1.position = exitPairs[i].first;
+		tra2.position = exitPairs[i].second;
+
+		tra1.scale.y = 5.f;
+		tra2.scale.y = 5.f;
+
+		connectionsIds.emplace_back(id1);
+		connectionsIds.emplace_back(id2);
+	}
+#endif // _DEBUG
+
+	/*this->exitPairs.reserve((size_t)this->roomLayout.getNumMainRooms() * 2);
 	for (int i = 0; i < this->roomLayout.getNumMainRooms(); i++)
 	{
 		Room& currentRoom = this->scene->getComponent<Room>(this->roomLayout.getRoomID(i));
 
 		if (currentRoom.left != -1)
 		{
-			this->connections.emplace_back();
-			this->connections.back().index1 = i;
-			this->connections.back().index2 = currentRoom.left;
+			this->exitPairs.emplace_back();
+			this->exitPairs.back().index1 = i;
+			this->exitPairs.back().index2 = currentRoom.left;
 		}
 		if (currentRoom.right != -1)
 		{
-			this->connections.emplace_back();
-			this->connections.back().index1 = i;
-			this->connections.back().index2 = currentRoom.right;
+			this->exitPairs.emplace_back();
+			this->exitPairs.back().index1 = i;
+			this->exitPairs.back().index2 = currentRoom.right;
 		}
-	}
+	}*/
 
 	//this->createPathways(TILE_SCALE);
 	
@@ -179,7 +249,6 @@ void RoomHandler::createDoors(int roomIndex, float tileScale)
 	const glm::vec3& curPos = scene->getComponent<Transform>(roomLayout.getRoomID(roomIndex)).position;
 
 	const glm::vec2* doorTilePos = roomGenerator.getMinMaxPos();
-	int possibleDoors[4]{-1,-1,-1,-1};
 
 	if (curRoom.left != -1) {
 		possibleDoors[0] = this->createDoorEntity(-90.f);	
@@ -194,8 +263,6 @@ void RoomHandler::createDoors(int roomIndex, float tileScale)
 		possibleDoors[3] = this->createDoorEntity(0.f);
 	}
 
-	exitPoints.emplace_back();
-
 	for (int i = 0; i < 4; i++)
 	{
 		hasDoor[i] = false;
@@ -205,92 +272,36 @@ void RoomHandler::createDoors(int roomIndex, float tileScale)
 #ifdef _DEBUG
 			this->doors.emplace_back(possibleDoors[i]);
 #endif
-			hasDoor[i] = true;
-			exitPoints.back().worldPositions[i] = new glm::vec2(doorTilePos[i]* tileScale);
 
-			this->scene->getComponent<Transform>(possibleDoors[i]).position = 
-				glm::vec3(
-					curPos.x + (*exitPoints.back().worldPositions[i]).x,
-					curPos.y, 
-					curPos.z + (*exitPoints.back().worldPositions[i]).y);
+			hasDoor[i] = true;
+			glm::vec3 pos(doorTilePos[i].x, 0.f, doorTilePos[i].y);
+
+			this->scene->getComponent<Transform>(possibleDoors[i]).position = pos * tileScale + curPos;
 		}
 	}
 }
-//
-//void RoomHandler::createPathways(float tileScale)
-//{
-//	// +x, -x, +z, -y
-//	const glm::vec2* exitTiles = this->roomGenerator.getExitTiles();
-//	
-//	int indicies[4]{-1, -1, -1, -1};
-//	
-//	indicies[0] = currentRoom.left	!= -1 ? 0 : -1;
-//	indicies[1] = currentRoom.right != -1 ? 0 : -1;
-//	indicies[2] = currentRoom.up	!= -1 ? 0 : -1;
-//	indicies[3] = currentRoom.down	!= -1 ? 0 : -1;
-//	
-//	for (int i = 0; i < 4; i++)
-//	{
-//		for (int i = 0; i < k; i++)
-//		{
-//
-//		}
-//		int id = this->createPathEntity();
-//		Transform& transform = this->scene->getComponent<Transform>(id);
-//		transform.position.x = exitTiles[0].x * tileScale + roomPos.x;
-//		transform.position.y = roomPos.y;
-//		transform.position.z = exitTiles[0].y * tileScale + roomPos.z;
-//
-//#ifdef _DEBUG
-//		this->tileIds.emplace_back(id);
-//#endif // _DEBUG
-//	}
-//
-//
-//	if (currentRoom.right != -1)
-//	{
-//		int id = this->createPathEntity();
-//		Transform& transform = this->scene->getComponent<Transform>(id);
-//		transform.position.x = exitTiles[1].x * tileScale + roomPos.x;
-//		transform.position.y = roomPos.y;
-//		transform.position.z = exitTiles[1].y * tileScale + roomPos.z;
-//	}
-//	if (currentRoom.up != -1)
-//	{
-////		for (int i = 0; i < numTilesInbetween; i++)
-////		{
-////			int id = this->createPathEntity();
-////			Transform& transform = this->scene->getComponent<Transform>(id);
-////			transform.position.x = exitTiles[0].x * tileScale + roomPos.x;
-////			transform.position.y = roomPos.y;
-////			transform.position.z = (exitTiles[0].y * tileScale) + tileWidth * i + roomPos.z;
-////
-////#ifdef _DEBUG
-////			this->tileIds.emplace_back(id);
-////#endif // _DEBUG
-////
-////		}
-//
-//		int id = this->createPathEntity();
-//		Transform& transform = this->scene->getComponent<Transform>(id);
-//		transform.position.x = exitTiles[2].x * tileScale + roomPos.x;
-//		transform.position.y = roomPos.y;
-//		transform.position.z = exitTiles[2].y * tileScale + roomPos.z;
-//
-//	}
-//	if (currentRoom.down != -1)
-//	{
-//		int id = this->createPathEntity();
-//		Transform& transform = this->scene->getComponent<Transform>(id);
-//		transform.position.x = exitTiles[3].x * tileScale + roomPos.x;
-//		transform.position.y = roomPos.y;
-//		transform.position.z = exitTiles[3].y * tileScale + roomPos.z;
-//	}
-//}
+
+void RoomHandler::createConnectionPoint(float tileScale, const glm::vec3& roomPos)
+{
+	const glm::vec2* exitPositions = roomGenerator.getExitTiles();
+
+	roomExitPoints.emplace_back();
+
+	for (int i = 0; i < 4; i++)
+	{
+		if (possibleDoors[i] != -1)
+		{ 
+			roomExitPoints.back().worldPositions[i] = 
+				glm::vec3(exitPositions[i].x, 0.f, exitPositions[i].y) * tileScale + roomPos;;
+		}
+	}
+}
 
 #ifdef _DEBUG
 void RoomHandler::reload()
 {
+	system("CLS");
+
 	for (int& id : tileIds)
 	{
 		this->scene->removeEntity(id);
@@ -303,6 +314,14 @@ void RoomHandler::reload()
 		id = -1;
 	}
 	doors.clear();
+
+	for (int& id : connectionsIds)
+	{
+		this->scene->removeEntity(id);
+		id = -1;
+	}
+	connectionsIds.clear();
+
 
 	generate();
 }

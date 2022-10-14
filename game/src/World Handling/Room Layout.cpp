@@ -31,6 +31,8 @@ void RoomLayout::clear()
 
 	for (int entity : rooms) { scene->removeEntity(entity); }
 	rooms.clear();
+
+	connections.clear();
 }
 
 #if PLAY
@@ -50,6 +52,8 @@ void RoomLayout::generate()
 
 	numMainRooms = rand() % 3 + 3; 
 	int numBranches = rand() % (numMainRooms + 1) + 1; 
+
+	connections.reserve(size_t(numMainRooms + numBranches));
 
 	printf("Main rooms: %d, branches: %d\n", numMainRooms, numBranches);
 
@@ -104,6 +108,7 @@ void RoomLayout::setUpRooms(int numRooms)
 		{
 			scene->getComponent<Room>(rooms[i - 1]).up = i;
 			scene->getComponent<Room>(rooms[i]).down = i - 1;
+			connections.emplace_back(i, i - 1);
 		}
 
 #if RANDOM_POSITION
@@ -284,6 +289,7 @@ void RoomLayout::setBranch(int index, bool left, int size)
 				curRoomLeft = (int)rooms.size() - 1;
 				scene->getComponent<Room>(rooms[curRoomIndex]).left = curRoomLeft;
 				scene->getComponent<Room>(rooms[curRoomLeft]).right = curRoomIndex;
+				connections.emplace_back(curRoomLeft, curRoomIndex);
 			}
 			else
 			{
@@ -291,6 +297,7 @@ void RoomLayout::setBranch(int index, bool left, int size)
 				curRoomLeft = (int)rooms.size() - 1;
 				scene->getComponent<Room>(rooms[curRoomIndex]).left = curRoomLeft;
 				scene->getComponent<Room>(rooms[curRoomLeft]).right = curRoomIndex;
+				connections.emplace_back(curRoomLeft, curRoomIndex);
 			}
 
 		}
@@ -339,6 +346,7 @@ void RoomLayout::setBranch(int index, bool left, int size)
 				curRoomRight = (int)rooms.size() - 1;
 				scene->getComponent<Room>(rooms[curRoomIndex]).right = curRoomRight;
 				scene->getComponent<Room>(rooms[curRoomRight]).left = curRoomIndex;
+				connections.emplace_back(curRoomIndex, curRoomRight);
 			}
 			else
 			{
@@ -346,6 +354,7 @@ void RoomLayout::setBranch(int index, bool left, int size)
 				curRoomRight = (int)rooms.size() - 1;
 				scene->getComponent<Room>(rooms[curRoomIndex]).right = curRoomRight;
 				scene->getComponent<Room>(rooms[curRoomRight]).left = curRoomIndex;
+				connections.emplace_back(curRoomIndex, curRoomRight);
 			}
 
 		}

@@ -98,7 +98,7 @@ void RoomGenerator::addPiece(glm::vec2 position, int depth)
     int index = getArrayIndexFromPosition(x, y);
 
     //add piece only if tile is within room bounds
-    if (abs(x) < HALF_ROOM && abs(y) < HALF_ROOM) 
+    if (abs(x) < HALF_ROOM - 1 && abs(y) < HALF_ROOM - 1) 
     {
         std::random_device rd; //obtain random number from hardware
         std::mt19937       gen(rd()); //seed generator

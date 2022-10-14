@@ -40,7 +40,8 @@ private:
 	int getEndWithRightAvaliable();
 	int getEndWithLeftAvaliable();
 	
-	
+	std::vector<glm::ivec2> connections;
+
 #if PLAY
 	bool canGoForward();
 	bool canGoBack();
@@ -75,6 +76,11 @@ public:
 	int getNumMainRooms() const
 	{
 		return numMainRooms;
+	}
+
+	std::vector<glm::ivec2>& getConnections() 
+	{
+		return connections;
 	}
 
 	void createDoors(int roomID, const glm::vec2* positions);
