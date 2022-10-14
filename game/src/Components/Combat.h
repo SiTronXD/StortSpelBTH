@@ -7,7 +7,7 @@
 
 enum ActiveAttack { noActive, lightActive, heavyActive, comboActive };
 
-struct Combat
+struct combat
 {
 	float health = 0.f;
 	
