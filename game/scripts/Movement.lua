@@ -13,8 +13,6 @@ function script:init()
 end
 
 function script:update(dt)
-    --self:move(dt)
-    --self:rotate(dt)
     self:move2(dt)
     self:rotate2(dt)
 end
@@ -56,8 +54,6 @@ function script:move(deltaTime)
     end
 
     self.transform.position = self.transform.position + ((self.currentSpeed.y * self.transform:forward()) * deltaTime)
-    print(self.moveDir)
-    print(self.currentSpeed)
 end
 
 function script:rotate(deltaTime)
@@ -95,7 +91,6 @@ function script:move2(deltaTime)
     local moveFwd = camFwd
     moveFwd.y = 0
 
-    -- += forward + side
     self.transform.position = self.transform.position + (vector.normalize(moveFwd) * (self.currentSpeed.y * deltaTime)
     + vector.normalize(self.cross(camTransform:up(), camFwd)) * (self.currentSpeed.x * deltaTime))
 end
@@ -111,7 +106,6 @@ function script.cross(left, right)
 end
 
 function script:rotate2(deltaTime)
-    -- +180.f current cuz model is flipped wrong way ):<
     local camTransform = scene.getComponent(self.camID, CompType.Transform)
 
     if (self.moveDir.y > 0)
