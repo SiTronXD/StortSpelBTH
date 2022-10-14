@@ -19,16 +19,18 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
+    int ghost = this->getResourceManager()->addMesh("assets/models/ghost.obj");
+
 	this->entity = this->createEntity();
-	this->setComponent<MeshComponent>(this->entity);
-	this->setComponent<Movement>(this->entity);
+	//this->setComponent<MeshComponent>(this->entity, ghost);
+	//this->setComponent<Movement>(this->entity);
 	this->setComponent<Combat>(this->entity);
 	Transform& transform = this->getComponent<Transform>(this->entity);
 	transform.position = glm::vec3(0.0f, 0.0f, 20.0f);
 	transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
 	transform.scale = glm::vec3(5.0f);
 	this->createSystem<CombatSystem>(this, entity);
-	this->createSystem<MovementSystem>(this, this->entity);
+	//this->createSystem<MovementSystem>(this, this->entity);
 
 	int floor = this->createEntity();
     this->setComponent<MeshComponent>(floor);
