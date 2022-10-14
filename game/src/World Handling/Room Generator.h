@@ -6,9 +6,10 @@
 
 struct Tile 
 {
-    enum Type : unsigned int
+    enum Type : int
     {
-        // Order is currently dependant on obj names
+        // values are currently dependant on obj names
+        Invalid = -1,
         Border = 0,
         OneXOne = 1, 
         OneXTwo = 2, // one tree
@@ -27,13 +28,19 @@ private:
     int ROOM_SIZE;
     int HALF_ROOM  = ROOM_SIZE / 2;
 
-    int* room;
+    Tile::Type* room;
     std::vector<Tile> tiles;
     glm::vec2 minMaxPos[4]; // x, -x, z, -z
+    glm::vec2 exitTilesPos[4];
 
     int getArrayIndexFromPosition(int x, int y)
     {
         return (y + HALF_ROOM) * ROOM_SIZE + (x + HALF_ROOM);
+    }
+    void getIJIndex(int index, int* output)
+    {
+        output[1] = (index / ROOM_SIZE);
+        output[0] = (index - ROOM_SIZE * output[1]);
     }
 
     void      addPiece(glm::vec2 position, int depth);
@@ -48,6 +55,11 @@ public:
 
     void generateRoom();
     void generateBorders(const bool* hasDoors);
+
+    const glm::vec2* getExitTiles() const
+    {
+        return exitTilesPos;
+    }
 
     int getRoomTile(int index) 
     {
@@ -71,12 +83,17 @@ public:
 
     void reset()
     {
-        memset(room, 0, sizeof(int) * ROOM_SIZE * ROOM_SIZE);
+        memset(room, Tile::Invalid, sizeof(int) * ROOM_SIZE * ROOM_SIZE);
         tiles.clear();
 
-        minMaxPos[0] = glm::vec2(-ROOM_SIZE);
-        minMaxPos[1] = glm::vec2(ROOM_SIZE);
-        minMaxPos[2] = glm::vec2(-ROOM_SIZE);
-        minMaxPos[3] = glm::vec2(ROOM_SIZE);
+        minMaxPos[0] = glm::vec2((float)-ROOM_SIZE);
+        minMaxPos[1] = glm::vec2((float)ROOM_SIZE);
+        minMaxPos[2] = glm::vec2((float)-ROOM_SIZE);
+        minMaxPos[3] = glm::vec2((float)ROOM_SIZE);
+
+        for (int i = 0; i < 4; i++)
+        {
+            exitTilesPos[i] = glm::vec2(0.f);
+        }
     }
 };

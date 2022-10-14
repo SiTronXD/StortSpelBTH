@@ -26,7 +26,7 @@ void RoomGenerator::init(int roomSize, int tileTypes)
     ROOM_SIZE = roomSize;
     TILE_TYPES = tileTypes;
     HALF_ROOM = ROOM_SIZE / 2;
-    room = new int[ROOM_SIZE * ROOM_SIZE];
+    room = new Tile::Type[ROOM_SIZE * ROOM_SIZE];
 
     reset();
 }
@@ -39,93 +39,53 @@ void RoomGenerator::generateRoom()
 
 void RoomGenerator::generateBorders(const bool* hasDoors)
 {
-    //Add border pieces
-
-    int doorsIndex[4] = 
+    // 4 doors, each with a "i-j" coordinate (in the next for loop)
+    int doorGridIndex[4][2]{};
+    for (int i = 0; i < 4; i++)
     {
-        hasDoors[0] ? getArrayIndexFromPosition(minMaxPos[0].x, minMaxPos[0].y) : -1,
-        hasDoors[1] ? getArrayIndexFromPosition(minMaxPos[1].x, minMaxPos[1].y) : -1,
-        hasDoors[2] ? getArrayIndexFromPosition(minMaxPos[2].x, minMaxPos[2].y) : -1,
-        hasDoors[3] ? getArrayIndexFromPosition(minMaxPos[3].x, minMaxPos[3].y) : -1
-    };
+        if (hasDoors[i])
+            getIJIndex(getArrayIndexFromPosition(minMaxPos[i].x, minMaxPos[i].y), doorGridIndex[i]);
 
-    /*
-        
-        i-index = index / ROOM_SIZE
-        j-index = index - (ROOM_SIZE * i-index)
-    */
-
-    int paths[4][2];
-
-    paths[0][0] = hasDoors[0] ? (doorsIndex[0] - ROOM_SIZE * (doorsIndex[0] / ROOM_SIZE)) - 1 : -1;
-    paths[0][1] = hasDoors[0] ? (doorsIndex[0] / ROOM_SIZE) : -1;
-
-    paths[1][0] = hasDoors[1] ? (doorsIndex[1] - ROOM_SIZE * (doorsIndex[1] / ROOM_SIZE)) : -1;
-    paths[1][1] = hasDoors[1] ? (doorsIndex[1] / ROOM_SIZE) : -1;
-    
-    paths[2][0] = hasDoors[2] ? (doorsIndex[2] - ROOM_SIZE * (doorsIndex[2] / ROOM_SIZE)) : -1;
-    paths[2][1] = hasDoors[2] ? (doorsIndex[2] / ROOM_SIZE) : -1;
-    
-    paths[3][0] = hasDoors[3] ? (doorsIndex[3] - ROOM_SIZE * (doorsIndex[3] / ROOM_SIZE)) : -1;
-    paths[3][1] = hasDoors[3] ? (doorsIndex[3] / ROOM_SIZE) : -1;
-    
-    printf("paths +x: %d, %d\n", paths[0][0],paths[0][1]);
-    printf("paths -x: %d, %d\n", paths[1][0],paths[1][1]);
-    printf("paths +z: %d, %d\n", paths[2][0],paths[2][1]);
-    printf("paths -z: %d, %d\n", paths[3][0],paths[3][1]);
-
-
-    for (int i = 0; i < ROOM_SIZE; i++) 
-    {
-        for (int j = 0; j < ROOM_SIZE; j++) 
-        {
-            
-            if (j >= paths[0][0] && i == paths[0][1] && hasDoors[0])
-            {
-                room[i * ROOM_SIZE + j] = 1;
-                Tile t;
-                t.type     = Tile::OneXOne;
-                t.position = glm::vec2(j - HALF_ROOM, i - HALF_ROOM);
-                tiles.push_back(t);
-            }
-            if (j <= paths[1][0] && i == paths[1][1] && hasDoors[1])
-            {
-                room[i * ROOM_SIZE + j] = 1;
-                Tile t;
-                t.type     = Tile::OneXOne;
-                t.position = glm::vec2(j - HALF_ROOM, i - HALF_ROOM);
-                tiles.push_back(t);
-            }
-            if (j == paths[2][0] && i > paths[2][1] && hasDoors[2])
-            {
-                room[i * ROOM_SIZE + j] = 1;
-                Tile t;
-                t.type     = Tile::OneXOne;
-                t.position = glm::vec2(j - HALF_ROOM, i - HALF_ROOM);
-                tiles.push_back(t);
-            }
-            if (j == paths[3][0] && i < paths[3][1] && hasDoors[3])
-            {
-                room[i * ROOM_SIZE + j] = 1;
-                Tile t;
-                t.type     = Tile::OneXOne;
-                t.position = glm::vec2(j - HALF_ROOM, i - HALF_ROOM);
-                tiles.push_back(t);
-            } 
-        }
+#ifdef _DEBUG
+        else
+            doorGridIndex[i][0] = doorGridIndex[i][1] = -1;
+#endif
     }
 
-
+    int index = -1;
     for (int i = 0; i < ROOM_SIZE; i++) 
     {
         for (int j = 0; j < ROOM_SIZE; j++) 
         {
-            if (room[i * ROOM_SIZE + j] == 0)
+            // Place a 1x1 tile behind the doors
+
+            index = -1;
+
+            if      (hasDoors[0] && j >  doorGridIndex[0][0] && i == doorGridIndex[0][1]) index = 0;
+            else if (hasDoors[1] && j <  doorGridIndex[1][0] && i == doorGridIndex[1][1]) index = 1;
+            else if (hasDoors[2] && j == doorGridIndex[2][0] && i >  doorGridIndex[2][1]) index = 2;
+            else if (hasDoors[3] && j == doorGridIndex[3][0] && i <  doorGridIndex[3][1]) index = 3;
+            
+            if (index != -1)
             {
-                Tile t;
-                t.type     = Tile::Border;
-                t.position = glm::vec2(j - HALF_ROOM, i - HALF_ROOM);
-                tiles.push_back(t);
+                room[i * ROOM_SIZE + j] = Tile::OneXOne;
+                Tile tile{};
+
+                tile.type     = Tile::OneXOne;
+                tile.position = glm::vec2(j - HALF_ROOM, i - HALF_ROOM);
+                tiles.push_back(tile);
+
+                if (i == ROOM_SIZE -1 || i == 0 || j == ROOM_SIZE - 1 || j == 0)
+                    exitTilesPos[index] = tiles.back().position;
+            }
+
+            // Place a border-tile on empty tiles
+            else if (room[i * ROOM_SIZE + j] == -1)
+            {
+                Tile tile{};
+                tile.type     = Tile::Border;
+                tile.position = glm::vec2(j - HALF_ROOM, i - HALF_ROOM);
+                tiles.push_back(tile);
             }
         }
     }
@@ -145,7 +105,11 @@ void RoomGenerator::addPiece(glm::vec2 position, int depth)
         if (room[index] < 1) {
             std::uniform_int_distribution<> tileTypeRange(1, 10); //TODO: Update when more pieces exists
             Tile::Type tileType = Tile::Type(tileTypeRange(gen));
-            tileType = Tile::OneXOne;
+
+            // Temp
+            if (tileType == Tile::TwoXTwo)
+                tileType = Tile::OneXOne;
+
 
             //TODO: clean up code
             switch (tileType)

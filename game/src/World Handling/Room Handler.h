@@ -20,16 +20,55 @@ private:
 	std::unordered_map<Tile::Type, uint32_t> tileMeshIds;
 	uint32_t doorMeshId;
 
+	float roomGridSize;
+	int numRooms;
+
+	float roomWidth;
+	const int numTilesInbetween;
+	float tileWidth;
+	
 	bool hasDoor[4];
 
-	float roomGridSize;
-	float roomWidth;
-	int numRooms;
+	struct ConnectionPoints
+	{
+		ConnectionPoints() = default;
+
+		int index1 = -1;
+		glm::vec2 pos1{};
+
+		int index2 = -1;
+		glm::vec2 pos2{};
+	};
+
+	std::vector<ConnectionPoints> connections;
+
+	struct RoomExitPoint
+	{
+		RoomExitPoint() = default;
+		~RoomExitPoint()
+		{
+			for (int i = 0; i < 4; i++)
+			{
+				if (worldPositions[i])
+				{
+					delete worldPositions[i];
+					worldPositions[i] = nullptr;
+				}
+			}
+		}
+
+		glm::vec2* worldPositions[4]{};
+	};
+
+	std::vector<RoomExitPoint> exitPoints;
 
 	int createTileEntity(int tileIndex, float tileScale, const glm::vec3& roomPos);
 	int createDoorEntity(float yRotation);
+	int createPathEntity();
+	
 	void createDoors(int roomIndex, float tileScale);
-	void createPathway(int direction);
+	void createConnectionPoint();
+	void createPathways(float tileScale);
 
 #ifdef _DEBUG
 	void reload();

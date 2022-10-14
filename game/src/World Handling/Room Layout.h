@@ -19,11 +19,12 @@ private:
 	std::vector<int> rooms;
 	bool foundBoss;
 	int roomID;
+	int numMainRooms;
 
 	Scene* scene;
 
 #if !RANDOM_POSITION
-	glm::vec3 roomDims;
+	float distance;
 #endif
 
 	// Private Functions
@@ -58,7 +59,7 @@ public:
 	RoomLayout();
 	virtual ~RoomLayout();
 
-	void init(Scene* scene, const glm::vec3& roomDims);
+	void init(Scene* scene, float distance);
 
 	void generate();
 	void clear();
@@ -70,6 +71,10 @@ public:
 	int getNumRooms() const
 	{
 		return (int)rooms.size();
+	}
+	int getNumMainRooms() const
+	{
+		return numMainRooms;
 	}
 
 	void createDoors(int roomID, const glm::vec2* positions);

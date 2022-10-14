@@ -8,7 +8,7 @@
 #include <ctime>
 
 RoomLayout::RoomLayout()
-	:boss(-1), foundBoss(false), roomID(-1), roomDims(100.f)
+	:boss(-1), foundBoss(false), roomID(-1), distance(100.f)
 {
 	std::srand((unsigned)time(0));	
 }
@@ -17,10 +17,10 @@ RoomLayout::~RoomLayout()
 {
 }
 
-void RoomLayout::init(Scene* scene, const glm::vec3& roomDims)
+void RoomLayout::init(Scene* scene, float distance)
 {
 	this->scene = scene;
-	this->roomDims = roomDims;
+	this->distance = distance;
 }
 
 void RoomLayout::clear()
@@ -30,7 +30,7 @@ void RoomLayout::clear()
 	foundBoss = false;
 
 	for (int entity : rooms) { scene->removeEntity(entity); }
-	rooms.resize(0);
+	rooms.clear();
 }
 
 #if PLAY
@@ -48,19 +48,19 @@ void RoomLayout::generate()
 		branch size: 1-2
 	*/
 
-	int numRooms = 2;//rand() % 3 + 3; 
-	int numBranches = 4;//rand() % (numRooms + 1) + 1; 
+	numMainRooms = rand() % 3 + 3; 
+	int numBranches = rand() % (numMainRooms + 1) + 1; 
 
-	printf("Main rooms: %d, branches: %d\n", numRooms, numBranches);
+	printf("Main rooms: %d, branches: %d\n", numMainRooms, numBranches);
 
-	setUpRooms(numRooms);
+	setUpRooms(numMainRooms);
 	for (int i = 0; i < numBranches; i++)
 	{
-		if (!setRandomBranch(numRooms)) {
+		if (!setRandomBranch(numMainRooms)) {
 			std::cout << "Room: Could not create branch.\n";
 		}
 	}
-	if (!setBoss(numRooms)) {
+	if (!setBoss(numMainRooms)) {
 		std::cout << "Room: Could not create boss room.\n";
 	}
 	if (!setExit()) {
@@ -109,8 +109,7 @@ void RoomLayout::setUpRooms(int numRooms)
 #if RANDOM_POSITION
 		dimensions = getRandomVec3(MIN_WIDTH, MAX_WIDTH, MIN_HEIGHT, MAX_HEIGHT, MIN_DEPTH, MAX_DEPTH);
 #else
-		dimensions = roomDims;
-		curPos.z = i * roomDims.z * 1.5f;
+		curPos.z = i * distance;
 #endif
 
 
@@ -258,7 +257,7 @@ void RoomLayout::setBranch(int index, bool left, int size)
 
 			position = getRandomVec3(minX, maxX, minY, maxY, minZ, maxZ);
 #else
-			position.x += roomDims.x * 1.5f;
+			position.x += distance;
 #endif
 
 			rooms.push_back(scene->createEntity());
@@ -275,8 +274,6 @@ void RoomLayout::setBranch(int index, bool left, int size)
 
 #if RANDOM_POSITION
 			roomRef.dimensions = dimensions;
-#else
-			roomRef.dimensions = roomDims;
 #endif
 
 			int curRoomLeft, curRoomIndex;
@@ -317,7 +314,7 @@ void RoomLayout::setBranch(int index, bool left, int size)
 
 			position = getRandomVec3(minX, maxX, minY, maxY, minZ, maxZ);
 #else
-			position.x -= roomDims.x * 1.5f;
+			position.x -= distance;
 #endif
 
 			rooms.push_back(scene->createEntity());
@@ -333,8 +330,6 @@ void RoomLayout::setBranch(int index, bool left, int size)
 
 #if RANDOM_POSITION
 			roomRef.dimensions = dimensions;
-#else
-			roomRef.dimensions = roomDims;
 #endif
 
 			int curRoomRight, curRoomIndex;
