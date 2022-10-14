@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../Puzzle.h"
 #include "vengine.h"
 #include <map>
 
@@ -10,8 +9,9 @@ class PuzzleCreator : public Scene
 
   int camEntity;
   int ground;
+  int player;
   int puzzleCreator;
-  int talkWithLua;
+  int puzzleLoader;
   //int mover;
   //Puzzle puzzleObject;  // in here we should only change one puzzel
   //std::vector<int> objectID;

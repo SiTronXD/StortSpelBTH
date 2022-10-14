@@ -57,9 +57,6 @@
     <ClCompile Include="src\World Handling\RoomHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\World Handling\PuzzleHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Movement.h">
@@ -98,12 +95,6 @@
     <ClInclude Include="src\Scenes\CreateAPuzzle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\FileMaker.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Puzzle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Scenes\NetworkAI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -134,12 +125,12 @@
     <ClInclude Include="src\World Handling\RoomHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\World Handling\PuzzleHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
-    <None Include="src\Scenes\PuzzleCreatorLua.lua" />
+    <None Include="src\Scripts\PuzzleCreatorLua.lua" />
+    <None Include="src\Scripts\Prefab.lua" />
+    <None Include="src\Scripts\Prefabs.lua" />
+    <None Include="src\Scripts\PuzzleLoader.lua" />
   </ItemGroup>
 </Project>

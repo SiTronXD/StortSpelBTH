@@ -1,6 +1,5 @@
 #include "CreateAPuzzle.h"
 
-#include "../FileMaker.hpp"
 #include "../Systems/CameraMovementSystem.hpp"
 #include "../Systems/CombatSystem.hpp"
 #include "../Systems/MovementSystem.hpp"
@@ -13,55 +12,49 @@ PuzzleCreator::~PuzzleCreator() {}
 
 void PuzzleCreator::init()
 {
-  //also need to add collision boxes and others
-  PuzzleCreator::getObjectFileNames();
-
-  //Filesystem
-  //puzzleObject = readPuzzle("YesaTestPuzzle");
-  //puzzleObject.offset = glm::vec2(20, 0);
-  //puzzleObject.addToScene(this, objectID);
-  
-  //ground
-  this->ground = this->createEntity();
-  
-  if (meshes.find("Cube.fbx") == meshes.end())
-    {
-      meshes.insert({
-        "Cube.fbx", this->getResourceManager()->addMesh("vengine_assets/models/Cube.fbx")}
-      );
-    }
-  this->setComponent<MeshComponent>(
-      this->ground, meshes.find("Cube.fbx")->second
-  );
-  Transform& transform2 = this->getComponent<Transform>(this->ground);
-  transform2.position = glm::vec3(0.0f, -10.0f, 0.0f);
-  transform2.scale = glm::vec3(100.f, 0.1f, 100.f);
-  
-  //player
-  this->mover = this->createEntity();
-  this->setComponent<MeshComponent>(this->mover);
-  this->setComponent<Movement>(this->mover);
-  Transform& transform = this->getComponent<Transform>(this->mover);
-  transform.position = glm::vec3(0.0f, 0.0f, 20.0f);
-  transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
-  transform.scale = glm::vec3(5.0f);
-  this->createSystem<MovementSystem>(this, this->mover);
-  
-  //camera
-  this->camEntity = this->createEntity();
+  camEntity = this->createEntity();
   this->setComponent<Camera>(this->camEntity, 1.0f);
   this->setComponent<CameraMovement>(this->camEntity);
   this->setMainCamera(this->camEntity);
   Transform& camTransform = this->getComponent<Transform>(this->camEntity);
   camTransform.position = glm::vec3(1.0f);
+
+  //ground
+  this->ground = this->createEntity();
+  int groundMesh =
+      this->getResourceManager()->addMesh("vengine_assets/models/Cube.fbx");
+
+  this->setComponent<Transform>(this->ground);
+  this->setComponent<MeshComponent>(this->ground, groundMesh);
+  Transform& transform2 = this->getComponent<Transform>(this->ground);
+  transform2.position = glm::vec3(0.0f, -10.0f, 0.0f);
+  transform2.scale = glm::vec3(100.f, 0.1f, 100.f);
+
+  this->puzzleLoader = this->createEntity();
+  this->setScriptComponent(puzzleLoader, "src/Scripts/PuzzleLoader.lua");
+
+  this->puzzleCreator = this->createEntity();
+  this->setScriptComponent(puzzleCreator, "src/Scripts/PuzzleCreatorLua.lua");
+
+  this->player = this->createEntity();
+  this->setComponent<MeshComponent>(this->player);
+  this->setComponent<Movement>(this->player);
+  this->setComponent<Combat>(this->player);
+  Transform& transform = this->getComponent<Transform>(this->player);
+  transform.position = glm::vec3(0.0f, 0.0f, 20.0f);
+  transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
+  transform.scale = glm::vec3(5.0f);
+  this->createSystem<CombatSystem>(this, player);
+  this->createSystem<MovementSystem>(this, this->player);
   
-  this->createSystem<CameraMovementSystem>(this, this->mover);
+  this->createSystem<CameraMovementSystem>(this, this->player);
 }
 
 static int a;  //change this later
 
 void PuzzleCreator::update()
 {
+  /*
   if (ImGui::Begin("Add prefabs"))
     {
   
@@ -149,47 +142,5 @@ void PuzzleCreator::update()
           createPuzzel(this, &objectID, &meshes, puzzleName);
         }
     }
-  ImGui::End();
-  //if (a > meshes.size() - 1)
-  //  {
-  //    return;
-  //  }
-  //if (Input::isKeyPressed(Keys::B))
-  //  {
-  //    int temp = this->createEntity();
-  //    objectID.push_back(temp);
-  //
-  //    if (meshes.find(objectNames[a]) == meshes.end())
-  //      {
-  //        meshes.insert(
-  //            {objectNames[a],
-  //             this->getResourceManager()->addMesh(objectFilePath[a].c_str())}
-  //        );
-  //      }
-  //    this->setComponent<MeshComponent>(
-  //        temp, meshes.find(objectNames[a])->second
-  //    );
-  //
-  //    Transform& transform = this->getComponent<Transform>(temp);
-  //    transform.position = this->getComponent<Transform>(this->mover).position;
-  //    transform.scale = glm::vec3(1.f, 1.f, 1.f);
-  //  }
+  ImGui::End();*/
 }
-
-/*#include <filesystem>
-void PuzzleCreator::getObjectFileNames()
-{
-  std::string path = "vengine_assets/models";
-  for (const auto& entry : std::filesystem::directory_iterator(path))
-    {
-      std::string input = entry.path().generic_string();
-
-      if (input.substr(input.size() - 3) == "obj" ||
-          input.substr(input.size() - 3) == "fbx")
-        {
-          objectFilePath.push_back(input);
-          input = input.substr(input.find_last_of("/\\") + 1);
-          objectNames.push_back(input);
-        }
-    }
-}*/
