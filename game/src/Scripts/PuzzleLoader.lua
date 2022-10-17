@@ -26,7 +26,8 @@ function loadPuzzle(filepath, offset)
 			
 				--load the prefab
 				print("type: ".. type .. " Name: " .. Prefabs[type].Mesh)
-				local newObject = Prefab:New(Prefabs[type])
+				local newObject = Prefab:New()
+				newObject:Copy(Prefabs[type])
 				print("Mesh Type: " .. newObject.Mesh)
 			
 				--give entity data
@@ -44,16 +45,26 @@ function loadPuzzle(filepath, offset)
 				scene.createPrefab(newObject)
 
 				--get its poly points for AI
-				for i = 1, #newObject.polyPoints do
+				print(#newObject.polyPoints)
+				print(newObject.polyPoints[1])
+				for x = 1, #newObject.polyPoints do
 					--scale the vectors
-					newObject.polyPoints[i] = newObject.polyPoints[i] * vector(xscale, yscale, zscale)
-					print(newObject.polyPoints[i])
+					print(newObject.polyPoints[x], " * ", xscale, yscale, zscale)
+					newObject.polyPoints[x] = newObject.polyPoints[x] * vector(xscale, yscale, zscale)
+					print(newObject.polyPoints[x])
 
 					--rotate the points
-					--newObject.polyPoints[i]:rotate(xrot, yrot, zrot)
+					--newObject.polyPoints[x]:rotate(xrot, yrot, zrot)
 
 					--move the points
-					newObject.polyPoints[i] = newObject.polyPoints[i] + vector(xpos, ypos, zpos)
+					print(newObject.polyPoints[x], " + ", vector(xpos, ypos, zpos))
+					newObject.polyPoints[x] = newObject.polyPoints[x] + vector(xpos, ypos, zpos)
+					print(newObject.polyPoints[x])
+
+				end
+								print("poly:")
+				for x = 1, #newObject.polyPoints do
+					print(newObject.polyPoints[x])
 				end
 				network.sendPolygons(newObject.polyPoints)
 
@@ -61,5 +72,7 @@ function loadPuzzle(filepath, offset)
 			end
 			print("saved puz")
 			io.close(file)
+		else
+			print("file doesn't exist")
 		end
 end

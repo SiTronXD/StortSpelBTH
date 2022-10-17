@@ -17,3 +17,22 @@ function Prefab:New(o)
 
 	return o;
 end
+
+function Prefab:Copy(o)
+	self.Transform.position = o.Transform.position
+	self.Transform.rotation = o.Transform.rotation
+	self.Transform.scale = o.Transform.scale
+	self.Name = o.Name
+	self.Mesh = o.Mesh
+	self.id = o.id
+
+	if o.polyPoints ~= nil then
+	
+	print(#o.polyPoints)
+	self.polyPoints = {}
+		for i = 1, #o.polyPoints do
+			self.polyPoints[i] = o.polyPoints[i]
+		end
+	end
+
+end

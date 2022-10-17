@@ -17,7 +17,7 @@ void TheServerGame::update(float dt)
         addEvent({ (int)GameEvents::SpawnEnemy, 1 }, { 0.f, 0.f, 200.f});
         serverEntities.push_back(ServerEntity{
             glm::vec3(20, 0, 500), glm::vec3(0, 0, 0), 1});
-        addEvent({(int)GameEvents::SpawnEnemy, 1}, {20.f, 0.f, 200.f});
+        addEvent({(int)GameEvents::SpawnEnemy, 1}, {20.f, 0.f, 200.f});   
     }
 
     for (int i = 0; i < serverEntities.size(); i++) {
