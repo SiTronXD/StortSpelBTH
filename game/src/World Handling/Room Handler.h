@@ -44,13 +44,14 @@ private:
 	
 	void createDoors(int roomIndex, float tileScale);
 	void createConnectionPoint(float tileScale, const glm::vec3& roomPos);
-	void createPathways();
+	void createPathways(float tileScale);
 
 #ifdef _DEBUG
 	void reload();
 
 	// Used for reloading
 	std::vector<int> tileIds;
+	std::vector<int> pathIds;
 	std::vector<int> doors;
 	std::vector<int> connectionsIds;
 #endif

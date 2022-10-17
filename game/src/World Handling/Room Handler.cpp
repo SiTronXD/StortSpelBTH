@@ -78,6 +78,7 @@ void RoomHandler::generate()
 #ifdef _DEBUG
 	this->tileIds.clear();
 	this->doors.clear();
+	this->pathIds.clear();
 #endif // _DEBUG
 
 	for (int i = 0; i < this->numRooms; i++)
@@ -112,7 +113,6 @@ void RoomHandler::generate()
 		const glm::ivec2& curCon = connections[i];
 		exitPairs.emplace_back();
 
-
 		if (curCon.x < numMainRooms && curCon.y < numMainRooms)
 		{
 			// Vertical Connection
@@ -140,14 +140,20 @@ void RoomHandler::generate()
 
 		auto a = exitPairs.back().first;
 		auto b = exitPairs.back().second;
-		printf("connection: %d | pos: (%f, %f, %f) - (%f, %f, %f)\n", i, a.x, a.y, a.z, b.x, b.y, b.z);
+		printf("connection: %zd | pos: (%f, %f, %f) - (%f, %f, %f)\n", i, a.x, a.y, a.z, b.x, b.y, b.z);
 	}
 
-#ifdef _DEBUG
+	this->createPathways(TILE_SCALE);
+
+	
+/*#ifdef _DEBUG
 	for (int i = 0; i < exitPairs.size(); i++)
 	{
 		int id1 = this->createPathEntity();
 		int id2 = this->createPathEntity();
+
+		this->scene->getComponent<MeshComponent>(id1).meshID = doorMeshId;
+		this->scene->getComponent<MeshComponent>(id2).meshID = doorMeshId;
 
 		Transform& tra1 = this->scene->getComponent<Transform>(id1);
 		Transform& tra2 = this->scene->getComponent<Transform>(id2); 
@@ -161,7 +167,7 @@ void RoomHandler::generate()
 		connectionsIds.emplace_back(id1);
 		connectionsIds.emplace_back(id2);
 	}
-#endif // _DEBUG
+#endif*/
 
 	/*this->exitPairs.reserve((size_t)this->roomLayout.getNumMainRooms() * 2);
 	for (int i = 0; i < this->roomLayout.getNumMainRooms(); i++)
@@ -234,11 +240,11 @@ int RoomHandler::createPathEntity()
 	int id = this->scene->createEntity();
 	this->scene->setComponent<MeshComponent>(id);
 
-	//this->scene->getComponent<MeshComponent>(id).meshID = this->tileMeshIds[Tile::OneXOne];
+	this->scene->getComponent<MeshComponent>(id).meshID = this->tileMeshIds[Tile::OneXOne];
 	
 	// temp
-	this->scene->getComponent<MeshComponent>(id).meshID = doorMeshId;
-	this->scene->getComponent<Transform>(id).scale.y = 100.f;
+	//this->scene->getComponent<MeshComponent>(id).meshID = doorMeshId;
+	//this->scene->getComponent<Transform>(id).scale.y = 100.f;
 
 	return id;
 }
@@ -297,6 +303,65 @@ void RoomHandler::createConnectionPoint(float tileScale, const glm::vec3& roomPo
 	}
 }
 
+void RoomHandler::createPathways(float tileScale)
+{	
+	glm::vec3 dV;
+	glm::vec3 sV{};
+	glm::vec3 tilePos, gridPos;
+	glm::vec3 curPos{};
+
+	for (size_t i = 0; i < this->exitPairs.size(); i++)
+	{
+		glm::vec3& p0 = this->exitPairs[i].first;
+		glm::vec3& p1 = this->exitPairs[i].second;
+
+		if ((p1.x - p0.x) < 0.f)
+		{
+			std::swap(p0, p1);
+		}
+
+		dV = p1 - p0;
+		dV.z = dV.z > 0.f ? -dV.z : dV.z;
+
+		curPos = p0;
+
+		// fix
+		sV.x = p0.x < p1.x ? tileWidth : -tileWidth;
+		sV.z = p0.z < p1.z ? tileWidth : -tileWidth;
+
+		float err = dV.x + dV.z;
+		float e2;
+
+		for (;;)
+		{
+			gridPos = curPos / tileWidth;
+			tilePos = glm::vec3(std::floor(gridPos.x) * tileWidth, 0.f, std::floor(gridPos.z) * tileWidth);
+
+			pathIds.emplace_back(this->createPathEntity());
+			this->scene->getComponent<Transform>(pathIds.back()).position = tilePos;
+			this->scene->getComponent<Transform>(pathIds.back()).scale = glm::vec3(1.f);
+			
+			if (glm::length(curPos - p0) >= glm::length(dV))
+			{
+				break;
+			}
+
+			e2 = tileWidth * 2.f * err;
+
+			if (e2 > dV.z)
+			{
+				err += dV.z;
+				curPos.x += sV.x;
+			}
+			else if (e2 < dV.x)
+			{
+				err += dV.x;
+				curPos.z += sV.z;
+			}
+		}
+	}
+}
+
 #ifdef _DEBUG
 void RoomHandler::reload()
 {
@@ -321,6 +386,13 @@ void RoomHandler::reload()
 		id = -1;
 	}
 	connectionsIds.clear();
+
+	for (int& id : pathIds)
+	{
+		this->scene->removeEntity(id);
+		id = -1;
+	}
+	pathIds.clear();
 
 
 	generate();
