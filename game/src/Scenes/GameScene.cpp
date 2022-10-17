@@ -3,13 +3,14 @@
 #include "../Systems/MovementSystem.hpp"
 #include "../Systems/CombatSystem.hpp"
 #include "../Systems/CameraMovementSystem.hpp"
+#include "../Systems/AiMovementSystem.hpp"
 
 // decreaseFps used for testing game with different framerates
 void decreaseFps();
 double heavyFunction(double value);
 
 GameScene::GameScene():
-	camEntity(-1), entity(-1)
+	camEntity(-1), entity(-1), anotherEntity(-1)
 {
 }
 
@@ -24,13 +25,23 @@ void GameScene::init()
 	this->entity = this->createEntity();
 	//this->setComponent<MeshComponent>(this->entity, ghost);
 	//this->setComponent<Movement>(this->entity);
-	this->setComponent<Combat>(this->entity);
-	Transform& transform = this->getComponent<Transform>(this->entity);
-	transform.position = glm::vec3(0.0f, 0.0f, 20.0f);
-	transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
-	transform.scale = glm::vec3(5.0f);
-	this->createSystem<CombatSystem>(this, entity);
+	//this->setComponent<Combat>(this->entity);
+	//Transform& transform = this->getComponent<Transform>(this->entity);
+	//transform.position = glm::vec3(0.0f, 0.0f, 20.0f);
+	//transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
+	//transform.scale = glm::vec3(5.0f);
+	//this->createSystem<CombatSystem>(this, entity);
 	//this->createSystem<MovementSystem>(this, this->entity);
+
+	this->anotherEntity = this->createEntity();
+	this->setComponent<MeshComponent>(this->anotherEntity, ghost);
+	Transform& anotherTrans = this->getComponent<Transform>(this->anotherEntity);
+	anotherTrans.position = glm::vec3(0.f, 0.f, 20.f);
+	anotherTrans.rotation = glm::vec3(-90.f, 0.f, 0.f);
+	anotherTrans.scale = glm::vec3(5.f);
+
+	this->setComponent<AiMovement>(this->anotherEntity);
+	this->createSystem<AiMovementSystem>(this, this->anotherEntity);
 
 	int floor = this->createEntity();
     this->setComponent<MeshComponent>(floor);

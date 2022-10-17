@@ -3,10 +3,15 @@
 #include <vengine.h>
 #include "../Components/AiMovement.h"
 
+#include <chrono>
+
 class AiMovementSystem : public System {
 private:
 	Scene* scene;
     int ID;
+    float distance;
+    std::chrono::time_point<std::chrono::system_clock> timer;
+    std::chrono::duration<float> durTimer;
 public:
     AiMovementSystem(Scene* scene, int ID): scene(scene), ID(ID)
     {
@@ -14,8 +19,8 @@ public:
             scene->setComponent<AiMovement>(ID);
         }
         AiMovement& movement = scene->getComponent<AiMovement>(ID);
-        movement.maxSpeed = 50.f;
-        movement.speedIncrease = 200.f;
+        movement.maxSpeed = 100.f;
+        movement.speedIncrease = 50.f;
         movement.slowDown = 180.f;
         movement.currentSpeed = glm::vec2(0.f);
         movement.turnSpeed = 200.f;
@@ -34,32 +39,16 @@ public:
 
     void move(AiMovement& movement, Transform& transform, float dt)
     {
-        movement.currentSpeed.x = 0.f;
-        //movement.moveDir.y = (float) MovementInput, how does AI move?
+        Transform playerTrans = scene->getComponent<Transform>(4);
+        distance = glm::length(transform.position - playerTrans.position);
+        std::cout << distance << std::endl;
 
-        if (movement.currentSpeed.y > movement.maxSpeed)
+        if (distance <= 10.f)
         {
-            movement.currentSpeed.y = movement.maxSpeed;
+            movement.currentSpeed.y = 0.f;
         }
-        if (!movement.moveDir.y && movement.currentSpeed.y != 0.f)
-        {
-            if (movement.currentSpeed.y < 0.001f && movement.currentSpeed.y > -0.001f)
-            {
-                movement.currentSpeed.y = 0.f;
-            }
-            else if (movement.currentSpeed.y > 0.f)
-            {
-                movement.currentSpeed.y -= movement.slowDown * dt;
-            }
-            else if (movement.currentSpeed.y < 0.f)
-            {
-                movement.currentSpeed.y += movement.slowDown * dt;
-            }
-        }
-        else
-        {
-            movement.currentSpeed.y += movement.speedIncrease * movement.moveDir.y * dt;
-        }
+
+        movement.currentSpeed.y += movement.speedIncrease * dt;
 
         if (movement.currentSpeed.y > movement.maxSpeed)
         {
@@ -69,25 +58,21 @@ public:
         {
             movement.currentSpeed.y = -movement.maxSpeed;
         }
+        std::cout << movement.currentSpeed.y << std::endl;
+        glm::vec3 hej = glm::normalize(playerTrans.position - transform.position);
 
-        transform.position += (movement.currentSpeed.y * transform.up()) * dt;
+        transform.position += (hej * movement.currentSpeed.y) * dt;
     }
 
     void rotate(AiMovement& movement, Transform& transform, float dt)
     {
         //movement.moveDir.x = (float) Input? How does AI move?
+        Transform playerTrans = scene->getComponent<Transform>(4);
+        distance = glm::abs(glm::length(transform.position - playerTrans.position));
 
-        if (transform.rotation.y > 359.5f && transform.rotation.y != 0.f)
+        if (distance > 50.f)
         {
-            transform.rotation.y = 0.f;
-        }
-        if (movement.moveDir.x > 0)
-        {
-            transform.rotation.y += movement.turnSpeed * dt;
-        }
-        else if (movement.moveDir.x < 0)
-        {
-            transform.rotation.y -= movement.turnSpeed * dt;
+            transform.rotation.x = playerTrans.rotation.x;
         }
     }
 };
