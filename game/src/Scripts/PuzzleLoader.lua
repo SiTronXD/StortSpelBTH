@@ -2,7 +2,7 @@ package.path = package.path..";./../game/src/Scripts/?.lua"
 require "Prefabs"
 
 function loadPuzzle(filepath, offset) 
-
+	local objectPadding = 1.0
 		file = io.open("assets/puzzleParts/test.puz", "r")
 
 		if(file ~= nil) then
@@ -49,12 +49,17 @@ function loadPuzzle(filepath, offset)
 				print(newObject.polyPoints[1])
 				for x = 1, #newObject.polyPoints do
 					--scale the vectors
-					print(newObject.polyPoints[x], " * ", xscale, yscale, zscale)
 					newObject.polyPoints[x] = newObject.polyPoints[x] * vector(xscale, yscale, zscale)
-					print(newObject.polyPoints[x])
+					
+					--add some padding
+					local xneg = (newObject.polyPoints[x].x/math.abs(newObject.polyPoints[x].x)) * objectPadding
+					local yneg = (newObject.polyPoints[x].y/math.abs(newObject.polyPoints[x].y)) * objectPadding
+					local zneg = (newObject.polyPoints[x].z/math.abs(newObject.polyPoints[x].z)) * objectPadding
+					
+					newObject.polyPoints[x] = newObject.polyPoints[x] + vector(xneg, yneg, zneg)
 
 					--rotate the points
-					--newObject.polyPoints[x]:rotate(xrot, yrot, zrot)
+					newObject.polyPoints[x]:rotate(xrot, yrot, zrot)
 
 					--move the points
 					print(newObject.polyPoints[x], " + ", vector(xpos, ypos, zpos))
