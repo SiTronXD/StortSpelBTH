@@ -154,8 +154,8 @@ public:
             movement.currentSpeed = glm::normalize(movement.currentSpeed) * movement.maxSpeed;
         }
 
-        Transform& camTra = scene->getComponent<Transform>(scene->getMainCameraID());
-        const glm::vec3 camFwd = camTra.forward();
+        camTransform.updateMatrix();
+        const glm::vec3 camFwd = camTransform.forward();
 
         glm::vec3 moveFwd = camFwd;
         moveFwd.y = 0.f;
@@ -163,7 +163,8 @@ public:
         // += forward + side
         transform.position +=
             glm::normalize(moveFwd) * (movement.currentSpeed.y * deltaTime) +
-            glm::normalize(glm::cross(camTra.up(), camFwd)) * (movement.currentSpeed.x * deltaTime); 
+                              glm::normalize(glm::cross(camTransform.up(), camFwd)) *
+                                  (movement.currentSpeed.x * deltaTime); 
     }
 
     void rotate2(Movement& movement, Transform& transform, Transform& camTransform, float deltaTime)

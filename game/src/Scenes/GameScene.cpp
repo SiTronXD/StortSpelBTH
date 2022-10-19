@@ -8,9 +8,9 @@
 void decreaseFps();
 double heavyFunction(double value);
 
-GameScene::GameScene()
+GameScene::GameScene():
+	camEntity(-1), entity(-1)
 {
-
 }
 
 GameScene::~GameScene()
@@ -19,41 +19,53 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
-	int camEntity = this->createEntity();
-	this->setComponent<Camera>(camEntity, 1.0f);
-	this->setMainCamera(camEntity);
+    int ghost = this->getResourceManager()->addMesh("assets/models/ghost.obj");
 
-	this->playerID = this->createEntity();
-	this->setComponent<MeshComponent>(playerID);
-	this->setComponent<Movement>(playerID);
-	this->getComponent<Transform>(playerID).rotation.x = -90.f;
-	this->getComponent<Transform>(playerID).position.y = 2.5f;
-	this->createSystem<MovementSystem>(this, playerID);
-    this->createSystem<CameraMovementSystem>(this, playerID);
+	this->entity = this->createEntity();
+	//this->setComponent<MeshComponent>(this->entity, ghost);
+	//this->setComponent<Movement>(this->entity);
+	this->setComponent<Combat>(this->entity);
+	Transform& transform = this->getComponent<Transform>(this->entity);
+	transform.position = glm::vec3(0.0f, 0.0f, 20.0f);
+	transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
+	transform.scale = glm::vec3(5.0f);
+	this->createSystem<CombatSystem>(this, entity);
+	//this->createSystem<MovementSystem>(this, this->entity);
 
-    roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
-	roomHandler.generate();
+	int floor = this->createEntity();
+    this->setComponent<MeshComponent>(floor);
+    Transform& transform2 = this->getComponent<Transform>(floor);
+    transform2.position   = glm::vec3(0.0f, -10.0f, 0.0f);
+    transform2.scale      = glm::vec3(100.f, 0.1f, 100.f);
+
+	//this->camEntity = this->createEntity();
+	//this->setComponent<Camera>(this->camEntity, 1.0f);
+	//this->setComponent<CameraMovement>(this->camEntity);
+	//this->setMainCamera(this->camEntity);
+	//Transform& camTransform = this->getComponent<Transform>(this->camEntity);
+	//camTransform.position = glm::vec3(1.0f);
+
+ //   this->createSystem<CameraMovementSystem>(this, this->entity);
 }
 
 void GameScene::update()
 {
-	roomHandler.update(this->getComponent<Transform>(playerID).position);
 
+	static double value = 1234567890.0;
 	decreaseFps();
 }
 
 void decreaseFps()
 {
 	static double result = 1234567890.0;
+
 	static int num = 0;
-    /*if (ImGui::Begin("Debug")) 
+    if (ImGui::Begin("FPS decrease")) 
 	{
-		ImGui::Text("Performance");
 		ImGui::Text("Fps %f", 1.f / Time::getDT());
         ImGui::InputInt("Loops", &num);
-		ImGui::Separator();
     }
-    ImGui::End(); */
+    ImGui::End(); 
 
     for (int i = 0; i < num; i++) 
 	{
