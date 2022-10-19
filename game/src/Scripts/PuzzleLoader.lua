@@ -43,8 +43,6 @@ function loadPuzzle(filepath, offset)
 				scene.createPrefab(newObject)
 
 				--get its poly points for AI
-				print(#newObject.polyPoints)
-				print(newObject.polyPoints[1])
 				for x = 1, #newObject.polyPoints do
 					--scale the vectors
 					newObject.polyPoints[x] = newObject.polyPoints[x] * vector(xscale, yscale, zscale)
@@ -68,14 +66,11 @@ function loadPuzzle(filepath, offset)
 					newObject.polyPoints[x] = newObject.polyPoints[x] + vector(xpos, ypos, zpos)
 
 				end
-				for x = 1, #newObject.polyPoints do
-					print(newObject.polyPoints[x])
-				end
 				network.sendPolygons(newObject.polyPoints)
 
 			
 			end
-			print("saved puz")
+			print("Loaded puz")
 			io.close(file)
 		else
 			print("file doesn't exist")

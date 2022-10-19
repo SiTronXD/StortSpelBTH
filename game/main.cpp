@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
     srand((unsigned int)time(0));
     {
         Engine engine;
-        engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
+        engine.run("Presumed Dead", "scripts/gamescene.lua", new NetworkAI());
     }
 
     return EXIT_SUCCESS;

@@ -13,6 +13,7 @@ scene.setComponent(player, CompType.Mesh, ghost)
 scene.setComponent(player, CompType.Script, "scripts/Movement.lua")
 scene.getComponent(cam, CompType.Script).playerID = player
 scene.getComponent(player, CompType.Script).camID = cam
+network.sendPlayer(player)
 
 --[[local p = scene.createPrefab("scripts/prefabs/prefab.lua")
 

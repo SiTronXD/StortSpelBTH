@@ -10,24 +10,24 @@ NetworkAI::~NetworkAI() {}
 
 void NetworkAI::init()
 {
-    this->camEntity = this->createEntity();
-    this->setComponent<Camera>(this->camEntity, 1.0f);
-    this->setMainCamera(this->camEntity);
-    Transform& camTransform = this->getComponent<Transform>(this->camEntity);
-    camTransform.position   = glm::vec3(1.0f);
+    //this->camEntity = this->createEntity();
+    //this->setComponent<Camera>(this->camEntity, 1.0f);
+    //this->setMainCamera(this->camEntity);
+    //Transform& camTransform = this->getComponent<Transform>(this->camEntity);
+    //camTransform.position   = glm::vec3(1.0f);
 
     this->player = this->createEntity();
-    this->setComponent<MeshComponent>(this->player);
-    this->setComponent<Movement>(this->player);
+    //this->setComponent<MeshComponent>(this->player);
+    //this->setComponent<Movement>(this->player);
     this->setComponent<Combat>(this->player);
     Transform& transform = this->getComponent<Transform>(this->player);
     transform.position = glm::vec3(0.66f, 0.f, 7.9f);
     transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
     transform.scale = glm::vec3(5.0f);
     this->createSystem<CombatSystem>(this, player);
-    this->createSystem<MovementSystem>(this, this->player);
+    //this->createSystem<MovementSystem>(this, this->player);
 
-    this->createSystem<CameraMovementSystem>(this, this->player);
+    //this->createSystem<CameraMovementSystem>(this, this->player);
 
     //ground
     int ground = this->createEntity();
@@ -47,10 +47,7 @@ void NetworkAI::init()
 #include "../ServerGameModes/TheServerGame.h"
 void NetworkAI::update()
 {
-    Transform& transform = this->getComponent<Transform>(this->player);
-    this->getNetworkHandler()->sendUDPDataToClient(transform.position, transform.rotation);
-
-    if (Input::isKeyPressed(Keys::H)) {
+    if (Input::isKeyPressed(Keys::B)) {
         this->getNetworkHandler()->createServer(new TheServerGame());
         this->getNetworkHandler()->createClient();
         if (this->getNetworkHandler()->connectClientToThis())
@@ -63,10 +60,10 @@ void NetworkAI::update()
         }
         //no visulation that we connected
     }
-    if (Input::isKeyPressed(Keys::K)) {
+    if (Input::isKeyPressed(Keys::N)) {
         this->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent { GameEvents::START });
     }
-    if (Input::isKeyPressed(Keys::J)) {
+    if (Input::isKeyPressed(Keys::M)) {
         this->getNetworkHandler()->createClient("Cli");
         std::cout << "ip : ";
         std::string ip;

@@ -12,6 +12,7 @@ void TheServerGame::update(float dt)
     static bool yes = false;
     if (players[0].position.z > 1 && !yes) {
         yes = true;
+        std::cout << "spawn enemies" << std::endl;
         serverEntities.push_back(
             ServerEntity { glm::vec3(-0.83, 0, 126), glm::vec3(0, 0, 0), 1 });
         addEvent({ (int)GameEvents::SpawnEnemy, 1 }, { -0.83f, 0.f, 126.f });
