@@ -14,8 +14,8 @@ const float RoomHandler::ROOM_WIDTH = 200.f;
 
 RoomHandler::RoomHandler()
 	:scene(nullptr), resourceMan(nullptr), roomGridSize(0), numRooms(0),
-	numTilesInbetween(3), tileWidth(0.f), hasDoor{}, doorMeshId(0)
-	,activeIndex(0), nextIndex(-1)
+	numTilesInbetween(3), tileWidth(0.f), hasDoor{},
+	activeIndex(0), nextIndex(-1)
 {
 }
 
@@ -41,7 +41,8 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize,
 		uint32_t id = resourceMan->addMesh("assets/models/room_piece_" + std::to_string(i) + ".obj");
 		this->tileMeshIds[Tile::Type(i)] = id;
 	}
-	doorMeshId = resourceMan->addMesh("assets/models/door.obj");
+	openDoorMeshID = resourceMan->addMesh("assets/models/doorOpen.obj");
+	closedDoorMeshID = resourceMan->addMesh("assets/models/doorClosed.obj");
 }
 
 void RoomHandler::update(const glm::vec3& playerPos)
@@ -117,6 +118,14 @@ void RoomHandler::update(const glm::vec3& playerPos)
 		if (i == activeIndex && !coll) { curDoor = -1; }
 	}
 }
+
+/*
+	FIX TILE SCALE AFTER OPENING/CLOSING OF DOORS
+	FIX TILE SCALE AFTER OPENING/CLOSING OF DOORS
+	FIX TILE SCALE AFTER OPENING/CLOSING OF DOORS
+	FIX TILE SCALE AFTER OPENING/CLOSING OF DOORS
+	FIX TILE SCALE AFTER OPENING/CLOSING OF DOORS
+*/
 
 void RoomHandler::generate()
 {
@@ -227,7 +236,7 @@ Entity RoomHandler::createDoorEntity(float yRotation, const glm::vec3& offset)
 	Entity entity = scene->createEntity();
 
 	this->scene->setComponent<MeshComponent>(entity);
-	this->scene->getComponent<MeshComponent>(entity).meshID = doorMeshId;
+	this->scene->getComponent<MeshComponent>(entity).meshID = closedDoorMeshID;
 
 	Transform& transform = this->scene->getComponent<Transform>(entity);
 	transform.rotation.y = yRotation;
@@ -236,16 +245,13 @@ Entity RoomHandler::createDoorEntity(float yRotation, const glm::vec3& offset)
 	return entity;
 }
 
-Entity RoomHandler::createPathEntity()
+Entity RoomHandler::createPathEntity(float tileScale)
 {
 	Entity id = this->scene->createEntity();
 	this->scene->setComponent<MeshComponent>(id);
-
 	this->scene->getComponent<MeshComponent>(id).meshID = this->tileMeshIds[Tile::OneXOne];
 	
-	// temp
-	//this->scene->getComponent<MeshComponent>(id).meshID = doorMeshId;
-	//this->scene->getComponent<Transform>(id).scale.y = 100.f;
+	this->scene->getComponent<Transform>(id).scale = glm::vec3(0.04f) * tileScale;
 
 	return id;
 }
@@ -333,9 +339,8 @@ void RoomHandler::createPathways(float tileScale)
 
 		while(true)
 		{
-			pathIds.emplace_back(this->createPathEntity());
+			pathIds.emplace_back(this->createPathEntity(tileScale));
 			this->scene->getComponent<Transform>(pathIds.back()).position = snapToGrid(curPos);
-			this->scene->getComponent<Transform>(pathIds.back()).scale = glm::vec3(1.f);
 			
 			if (glm::length(curPos - p0) >= glm::length(dV))
 			{

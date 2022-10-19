@@ -26,7 +26,8 @@ private:
 	Scene* scene;
 	ResourceManager* resourceMan;
 	std::unordered_map<Tile::Type, uint32_t> tileMeshIds;
-	uint32_t doorMeshId;
+	uint32_t openDoorMeshID;
+	uint32_t closedDoorMeshID;
 
 	RoomGenerator roomGenerator;
 	RoomLayout roomLayout;
@@ -50,7 +51,7 @@ private:
 
 	Entity createTileEntity(int tileIndex, float tileScale, const glm::vec3& roomPos);
 	Entity createDoorEntity(float yRotation, const glm::vec3& offset);
-	Entity createPathEntity();
+	Entity createPathEntity(float tileScale);
 	
 	void createDoors(int roomIndex, float tileScale);
 	void createConnectionPoint(int roomIndex, float tileScale, const glm::vec3& roomPos);
