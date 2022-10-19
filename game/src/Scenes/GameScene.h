@@ -8,7 +8,7 @@ class GameScene: public Scene
 private:
 
     RoomHandler roomHandler;
-
+    int playerID;
 
 public:
     GameScene();

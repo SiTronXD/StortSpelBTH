@@ -39,7 +39,7 @@ void RoomGenerator::generateRoom()
 
 void RoomGenerator::generateBorders(const bool* hasDoors)
 {
-    // 4 doors, each with a "i-j" coordinate (in the next for loop)
+    // 4 doors, each with a row & column index (i & j) (in the next for loop)
     int doorGridIndex[4][2]{};
     for (int i = 0; i < 4; i++)
     {
@@ -57,27 +57,31 @@ void RoomGenerator::generateBorders(const bool* hasDoors)
     {
         for (int j = 0; j < ROOM_SIZE; j++) 
         {
-            // Place a 1x1 tile behind the doors
 
             index = -1;
 
+            // Check that we're behind the door and
+            // save index of which door we're currently behind
             if      (hasDoors[0] && j >  doorGridIndex[0][0] && i == doorGridIndex[0][1]) index = 0;
             else if (hasDoors[1] && j <  doorGridIndex[1][0] && i == doorGridIndex[1][1]) index = 1;
             else if (hasDoors[2] && j == doorGridIndex[2][0] && i >  doorGridIndex[2][1]) index = 2;
             else if (hasDoors[3] && j == doorGridIndex[3][0] && i <  doorGridIndex[3][1]) index = 3;
             
+            // Behind a door? Place tile..
             if (index != -1)
             {
                 room[i * ROOM_SIZE + j] = Tile::OneXOne;
-                Tile tile{};
 
+                Tile tile{};
                 tile.type     = Tile::OneXOne;
                 tile.position = glm::vec2(j - HALF_ROOM, i - HALF_ROOM);
                 tiles.push_back(tile);
 
+                // save the positions of the tile if it's at an edge
                 if (i == ROOM_SIZE -1 || i == 0 || j == ROOM_SIZE - 1 || j == 0)
                     exitTilesPos[index] = tiles.back().position;
             }
+
 
             // Place a border-tile on empty tiles
             else if (room[i * ROOM_SIZE + j] == -1)
@@ -107,8 +111,8 @@ void RoomGenerator::addPiece(glm::vec2 position, int depth)
             Tile::Type tileType = Tile::Type(tileTypeRange(gen));
 
             // Temp
-            if (tileType == Tile::TwoXTwo)
-                tileType = Tile::OneXOne;
+            //if (tileType == Tile::TwoXTwo)
+            tileType = Tile::OneXOne;
 
 
             //TODO: clean up code
@@ -189,22 +193,22 @@ void RoomGenerator::placeTile(Tile::Type tileType, glm::vec2 gridPosition, glm::
     // Find extents of room
     if (worldPosition.x >= minMaxPos[0].x) 
     {
-        if (room[getArrayIndexFromPosition(gridPosition.x + 1.f, gridPosition.y)] != Tile::TwoXTwo)
+        if (room[getArrayIndexFromPosition(gridPosition.x + 1.f, gridPosition.y)])
             minMaxPos[0] = worldPosition; 
     }
     if (worldPosition.x <= minMaxPos[1].x) 
     {
-        if (room[getArrayIndexFromPosition(gridPosition.x - 1.f, gridPosition.y)] != Tile::TwoXTwo)
+        if (room[getArrayIndexFromPosition(gridPosition.x - 1.f, gridPosition.y)])
             minMaxPos[1] = worldPosition; 
     }
     if (worldPosition.y >= minMaxPos[2].y) 
     {
-        if (room[getArrayIndexFromPosition(gridPosition.x, gridPosition.y + 1.f)] != Tile::TwoXTwo)
+        if (room[getArrayIndexFromPosition(gridPosition.x, gridPosition.y + 1.f)])
             minMaxPos[2] = worldPosition; 
     }
     if (worldPosition.y <= minMaxPos[3].y) 
     {
-        if (room[getArrayIndexFromPosition(gridPosition.x, gridPosition.y - 1.f)] != Tile::TwoXTwo)
+        if (room[getArrayIndexFromPosition(gridPosition.x, gridPosition.y - 1.f)])
             minMaxPos[3] = worldPosition; 
     }
 }

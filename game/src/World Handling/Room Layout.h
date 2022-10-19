@@ -1,31 +1,47 @@
 #pragma once
 #include <vector>
 #include <string>
-#include "../Components/Room.h"
-
-#define RANDOM_POSITION 0
-#define PLAY 0
+#include <glm/vec3.hpp>
+#include <glm/vec2.hpp>
 
 class Scene;
 
-// MOVE DOORS TO ROOM HANDLER
-// MOVE DOORS TO ROOM HANDLER
-// MOVE DOORS TO ROOM HANDLER
-
 class RoomLayout
 {
+public:
+	struct RoomData
+	{
+		enum Type{START_ROOM, NORMAL_ROOM, HARD_ROOM, BOSS_ROOM, EXIT_ROOM};
+		
+		Type type;
+	
+		// Index of connected rooms
+		int up, down, left, right;
+		glm::vec3 position;
+
+		bool branch, branchEnd, shortcut;
+
+		RoomData()
+			:up(-1), down(-1), left(-1), right(-1),
+			branch(false), branchEnd(false), shortcut(false),
+			type(Type::NORMAL_ROOM), position(0.f)
+		{
+		};
+	};
+
 private:
+	Scene* scene;
+
+	float distance;
+
 	int boss;
-	std::vector<int> rooms;
 	bool foundBoss;
 	int roomID;
 	int numMainRooms;
 
-	Scene* scene;
+	std::vector<RoomData> rooms;
+	std::vector<glm::ivec2> connections;
 
-#if !RANDOM_POSITION
-	float distance;
-#endif
 
 	// Private Functions
 	void setUpRooms(int numRooms);
@@ -40,7 +56,6 @@ private:
 	int getEndWithRightAvaliable();
 	int getEndWithLeftAvaliable();
 	
-	std::vector<glm::ivec2> connections;
 
 #if PLAY
 	bool canGoForward();
@@ -51,9 +66,6 @@ private:
 	void fightBoss(int& boss, int& bossHealth, int& roomID, bool& foundBoss);
 	void printDoorOptions(int& roomID);
 	void traverseRoomsConsole();
-
-	// Statics
-	static std::string typeToString(Room::ROOM_TYPE type);
 #endif
 
 public:
@@ -65,7 +77,7 @@ public:
 	void generate();
 	void clear();
 
-	int getRoomID(int index)
+	const RoomData& getRoom(int index)
 	{
 		return rooms[index];
 	}
@@ -82,8 +94,6 @@ public:
 	{
 		return connections;
 	}
-
-	void createDoors(int roomID, const glm::vec2* positions);
 
 	bool traverseRooms(int& roomID, int& boss, int& bossHealth, bool& foundBoss, float delta);
 };

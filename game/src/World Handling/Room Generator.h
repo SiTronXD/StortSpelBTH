@@ -3,7 +3,6 @@
 #include "vengine.h"
 #include <random>
 
-
 struct Tile 
 {
     enum Type : int

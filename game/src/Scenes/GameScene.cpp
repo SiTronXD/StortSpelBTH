@@ -23,7 +23,7 @@ void GameScene::init()
 	this->setComponent<Camera>(camEntity, 1.0f);
 	this->setMainCamera(camEntity);
 
-	int playerID = this->createEntity();
+	this->playerID = this->createEntity();
 	this->setComponent<MeshComponent>(playerID);
 	this->setComponent<Movement>(playerID);
 	this->getComponent<Transform>(playerID).rotation.x = -90.f;
@@ -37,7 +37,7 @@ void GameScene::init()
 
 void GameScene::update()
 {
-	roomHandler.update();
+	roomHandler.update(this->getComponent<Transform>(playerID).position);
 
 	decreaseFps();
 }
