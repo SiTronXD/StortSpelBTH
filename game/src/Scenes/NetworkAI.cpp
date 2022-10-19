@@ -21,7 +21,7 @@ void NetworkAI::init()
     this->setComponent<Movement>(this->player);
     this->setComponent<Combat>(this->player);
     Transform& transform = this->getComponent<Transform>(this->player);
-    transform.position = glm::vec3(0.0f, 0.0f, 20.0f);
+    transform.position = glm::vec3(0.66f, 0.f, 7.9f);
     transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
     transform.scale = glm::vec3(5.0f);
     this->createSystem<CombatSystem>(this, player);

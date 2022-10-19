@@ -22,7 +22,6 @@ int main(int argc, char* argv[])
 
     {
         Engine engine;
-        //engine.run(new NetworkAI());
         engine.run("penis", "", new NetworkAI());
 
     }

@@ -1,6 +1,5 @@
 Language: Cpp
-BasedOnStyle: Google
-AccessModifierOffset: -1
+BasedOnStyle: LLVM
 AlignAfterOpenBracket: BlockIndent
 AlignConsecutiveAssignments: None
 AlignOperands: Align

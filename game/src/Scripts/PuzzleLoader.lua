@@ -2,7 +2,7 @@ package.path = package.path..";./../game/src/Scripts/?.lua"
 require "Prefabs"
 
 function loadPuzzle(filepath, offset) 
-	local objectPadding = 1.0
+	local objectPadding = 3
 		file = io.open("assets/puzzleParts/test.puz", "r")
 
 		if(file ~= nil) then
@@ -25,10 +25,8 @@ function loadPuzzle(filepath, offset)
 				local type =	math.floor(tonumber(io.read()))
 			
 				--load the prefab
-				print("type: ".. type .. " Name: " .. Prefabs[type].Mesh)
 				local newObject = Prefab:New()
 				newObject:Copy(Prefabs[type])
-				print("Mesh Type: " .. newObject.Mesh)
 			
 				--give entity data
 				newObject.Transform.position.x = xpos + offset.x
@@ -52,9 +50,14 @@ function loadPuzzle(filepath, offset)
 					newObject.polyPoints[x] = newObject.polyPoints[x] * vector(xscale, yscale, zscale)
 					
 					--add some padding
-					local xneg = (newObject.polyPoints[x].x/math.abs(newObject.polyPoints[x].x)) * objectPadding
-					local yneg = (newObject.polyPoints[x].y/math.abs(newObject.polyPoints[x].y)) * objectPadding
-					local zneg = (newObject.polyPoints[x].z/math.abs(newObject.polyPoints[x].z)) * objectPadding
+					local xneg
+					local zneg
+					if(newObject.polyPoints[x].x ~= 0) then
+						xneg = (newObject.polyPoints[x].x/math.abs(newObject.polyPoints[x].x)) * objectPadding
+					end
+					if(newObject.polyPoints[x].z ~= 0) then
+						zneg = (newObject.polyPoints[x].z/math.abs(newObject.polyPoints[x].z)) * objectPadding
+					end
 					
 					newObject.polyPoints[x] = newObject.polyPoints[x] + vector(xneg, yneg, zneg)
 
@@ -62,12 +65,9 @@ function loadPuzzle(filepath, offset)
 					newObject.polyPoints[x]:rotate(xrot, yrot, zrot)
 
 					--move the points
-					print(newObject.polyPoints[x], " + ", vector(xpos, ypos, zpos))
 					newObject.polyPoints[x] = newObject.polyPoints[x] + vector(xpos, ypos, zpos)
-					print(newObject.polyPoints[x])
 
 				end
-								print("poly:")
 				for x = 1, #newObject.polyPoints do
 					print(newObject.polyPoints[x])
 				end
