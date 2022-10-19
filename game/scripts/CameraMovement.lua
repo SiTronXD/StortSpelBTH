@@ -5,7 +5,7 @@ function script:init()
 
 	self.maxXRot       = math.pi / 2 - ((math.pi / 2) * 0.15)
     self.minXRot       = -(math.pi / 4) + ((math.pi / 4) * 0.1)
-    self.camDist       = 15
+    self.camDist       = 50 --15
     self.camHeight     = 14
     self.sens          = 2
 

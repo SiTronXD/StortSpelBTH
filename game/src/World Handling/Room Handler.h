@@ -4,6 +4,7 @@
 
 class Scene;
 class ResourceManager;
+typedef int Entity;
 
 // temp before bullet
 struct Box2D
@@ -47,9 +48,9 @@ private:
 	};
 	std::vector<RoomExitPoint> roomExitPoints;
 
-	int createTileEntity(int tileIndex, float tileScale, const glm::vec3& roomPos);
-	int createDoorEntity(float yRotation, const glm::vec3& offset);
-	int createPathEntity();
+	Entity createTileEntity(int tileIndex, float tileScale, const glm::vec3& roomPos);
+	Entity createDoorEntity(float yRotation, const glm::vec3& offset);
+	Entity createPathEntity();
 	
 	void createDoors(int roomIndex, float tileScale);
 	void createConnectionPoint(int roomIndex, float tileScale, const glm::vec3& roomPos);
@@ -66,18 +67,23 @@ private:
 			memset(doorIds, -1, sizeof(doorIds));
 		}
 
-		std::vector<int> tileIds;
+		std::vector<Entity> tileIds;
 
-		int doorIds[4];
+		Entity doorIds[4];
 		int connectingIndex[4];
 	};
 
 	std::vector<Room> rooms;
-	std::vector<int> pathIds;
+	std::vector<Entity> pathIds;
 
-	void deactiveRooms();
-	int prevIndex;
-	int activeIndex;
+	void setActiveRooms();
+	int activeIndex = 0;
+	int nextIndex = -1;
+
+	int curDoor = -1;
+	bool coll = false;
+
+	bool roomFinished = false;
 
 public:
 	RoomHandler();

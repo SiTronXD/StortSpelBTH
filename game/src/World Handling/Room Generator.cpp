@@ -51,7 +51,7 @@ void RoomGenerator::generateBorders(const bool* hasDoors)
             doorGridIndex[i][0] = doorGridIndex[i][1] = -1;
 #endif
     }
-
+    
     int index = -1;
     for (int i = 0; i < ROOM_SIZE; i++) 
     {

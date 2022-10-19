@@ -14,7 +14,8 @@ const float RoomHandler::ROOM_WIDTH = 200.f;
 
 RoomHandler::RoomHandler()
 	:scene(nullptr), resourceMan(nullptr), roomGridSize(0), numRooms(0),
-	numTilesInbetween(3), activeIndex(0), tileWidth(0.f), hasDoor{}, doorMeshId(0)
+	numTilesInbetween(3), tileWidth(0.f), hasDoor{}, doorMeshId(0)
+	,activeIndex(0), nextIndex(-1)
 {
 }
 
@@ -56,34 +57,64 @@ void RoomHandler::update(const glm::vec3& playerPos)
 		if (ImGui::Button("Reload")) 
 		{
 			generate();
-		}
+		} 
+		ImGui::SameLine();
+
+		ImGui::Text("A: %d, N: %d, D: %d", activeIndex, nextIndex, curDoor, (int)coll);
 
 		ImGui::Separator();
 		ImGui::PopItemWidth();
 	}
 	ImGui::End();
+
+
+	if (Input::isKeyPressed(Keys::E)) 
+	{
+		roomFinished = true;
+	}
 #endif
 
 	for (size_t i = 0; i < rooms.size(); i++)
 	{
+		if (i != activeIndex && i != nextIndex)
+				continue;
+
+		coll = false;
+
 		for (int j = 0; j < 4; j++)
 		{
-			int id = rooms[i].doorIds[j];
+			Entity id = rooms[i].doorIds[j];
 			if (id == -1)
 				continue;
 
 			Transform& tra = scene->getComponent<Transform>(id);
 			Box2D& box = scene->getComponent<Box2D>(id);
 
-			if (box.colliding(tra.position, playerPos) && activeIndex != i)
+			if (box.colliding(tra.position, playerPos))
 			{
-				prevIndex = activeIndex;
-				activeIndex = i;
-				
-				deactiveRooms();
-				break;
+				if (i == nextIndex)
+				{
+					activeIndex = i;
+					nextIndex = -1;
+					roomFinished = false;
+					
+					printf("HELO! - A: %d, N: %d, D: %d\n", activeIndex, nextIndex, curDoor);
+					setActiveRooms();
+				}
+
+				else if (curDoor == -1 && roomFinished)
+				{
+					activeIndex = i;
+					nextIndex = rooms[i].connectingIndex[j];
+					curDoor = j;
+					printf("BAI! - A: %d, N: %d, D: %d\n", activeIndex, nextIndex, curDoor);
+					setActiveRooms();
+
+				}
+				coll = true;
 			}
 		}
+		if (i == activeIndex && !coll) { curDoor = -1; }
 	}
 }
 
@@ -167,11 +198,13 @@ void RoomHandler::generate()
 	this->createPathways(TILE_SCALE);
 
 	this->roomLayout.clear();
+
+	setActiveRooms();
 }
 
-int RoomHandler::createTileEntity(int tileIndex, float tileScale, const glm::vec3& roomPos)
+Entity RoomHandler::createTileEntity(int tileIndex, float tileScale, const glm::vec3& roomPos)
 {
-	int pieceID = scene->createEntity();
+	Entity pieceID = scene->createEntity();
 	this->scene->setComponent<MeshComponent>(pieceID);
 	this->scene->getComponent<MeshComponent>(pieceID).meshID = (int)this->tileMeshIds[this->roomGenerator.getTile(tileIndex).type];
 
@@ -189,9 +222,9 @@ int RoomHandler::createTileEntity(int tileIndex, float tileScale, const glm::vec
 	return pieceID;
 }
 
-int RoomHandler::createDoorEntity(float yRotation, const glm::vec3& offset)
+Entity RoomHandler::createDoorEntity(float yRotation, const glm::vec3& offset)
 {
-	int entity = scene->createEntity();
+	Entity entity = scene->createEntity();
 
 	this->scene->setComponent<MeshComponent>(entity);
 	this->scene->getComponent<MeshComponent>(entity).meshID = doorMeshId;
@@ -203,9 +236,9 @@ int RoomHandler::createDoorEntity(float yRotation, const glm::vec3& offset)
 	return entity;
 }
 
-int RoomHandler::createPathEntity()
+Entity RoomHandler::createPathEntity()
 {
-	int id = this->scene->createEntity();
+	Entity id = this->scene->createEntity();
 	this->scene->setComponent<MeshComponent>(id);
 
 	this->scene->getComponent<MeshComponent>(id).meshID = this->tileMeshIds[Tile::OneXOne];
@@ -278,7 +311,6 @@ void RoomHandler::createPathways(float tileScale)
 {	
 	glm::vec3 dV;
 	glm::vec3 sV{};
-	glm::vec3 tilePos;
 	glm::vec3 curPos{};
 
 	for (size_t i = 0; i < this->exitPairs.size(); i++)
@@ -358,15 +390,39 @@ void RoomHandler::reset()
 
 	exitPairs.clear();
 	roomExitPoints.clear();
+
+	activeIndex = 0;
+	nextIndex = -1;
 }
 
-void RoomHandler::deactiveRooms()
+void RoomHandler::setActiveRooms()
 {
-	for (const Room& room : rooms)
+	const int num = (int)rooms.size();
+	for (int i = 0; i < num; i++)
 	{
-		for (int id : room.tileIds)
+		if (i == activeIndex || i == nextIndex)
 		{
-			
+			for (Entity id : rooms[i].tileIds)
+			{
+				this->scene->setActive(id);
+			}
+			if (rooms[i].doorIds[0] != -1) { this->scene->setActive(rooms[i].doorIds[0]); }
+			if (rooms[i].doorIds[1] != -1) { this->scene->setActive(rooms[i].doorIds[1]); }
+			if (rooms[i].doorIds[2] != -1) { this->scene->setActive(rooms[i].doorIds[2]); }
+			if (rooms[i].doorIds[3] != -1) { this->scene->setActive(rooms[i].doorIds[3]); }
 		}
+		else
+		{
+			for (Entity id : rooms[i].tileIds)
+			{
+				this->scene->setInactive(id);
+			}
+
+			if (rooms[i].doorIds[0] != -1) { this->scene->setInactive(rooms[i].doorIds[0]); }
+			if (rooms[i].doorIds[1] != -1) { this->scene->setInactive(rooms[i].doorIds[1]); }
+			if (rooms[i].doorIds[2] != -1) { this->scene->setInactive(rooms[i].doorIds[2]); }
+			if (rooms[i].doorIds[3] != -1) { this->scene->setInactive(rooms[i].doorIds[3]); }
+		}
+
 	}
 }

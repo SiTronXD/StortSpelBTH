@@ -46,13 +46,24 @@ void GameScene::init()
 
  //   this->createSystem<CameraMovementSystem>(this, this->entity);
 
+
     roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
 	roomHandler.generate();
 }
 
 void GameScene::update()
 {
-	roomHandler.update(this->getComponent<Transform>(entity).position);
+	Entity mainCameraID = this->getMainCameraID();
+	Entity player = -1;
+
+	if (this->hasComponents<Script>(mainCameraID))
+	{
+		if (this->getScriptHandler()->getScriptComponentValue(this->getComponent<Script>(mainCameraID), player, "playerID"))
+		{
+			roomHandler.update(this->getComponent<Transform>(player).position);
+		}
+	}
+
 
 	decreaseFps();
 }
