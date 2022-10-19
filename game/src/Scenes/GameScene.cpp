@@ -8,8 +8,7 @@
 void decreaseFps();
 double heavyFunction(double value);
 
-GameScene::GameScene():
-	camEntity(-1), entity(-1)
+GameScene::GameScene()
 {
 }
 
@@ -19,7 +18,7 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
-    int ghost = this->getResourceManager()->addMesh("assets/models/ghost.obj");
+	int ghost = this->getResourceManager()->addMesh("assets/models/ghost.obj");
 
 	this->entity = this->createEntity();
 	//this->setComponent<MeshComponent>(this->entity, ghost);
@@ -46,12 +45,15 @@ void GameScene::init()
 	//camTransform.position = glm::vec3(1.0f);
 
  //   this->createSystem<CameraMovementSystem>(this, this->entity);
+
+    roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
+	roomHandler.generate();
 }
 
 void GameScene::update()
 {
+	roomHandler.update(this->getComponent<Transform>(entity).position);
 
-	static double value = 1234567890.0;
 	decreaseFps();
 }
 

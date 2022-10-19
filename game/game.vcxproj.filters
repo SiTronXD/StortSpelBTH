@@ -27,10 +27,10 @@
     <ClCompile Include="src\World Handling\Room Generator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\World Handling\Room Layout.cpp">
+    <ClCompile Include="src\World Handling\Room Handler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\World Handling\Room Handler.cpp">
+    <ClCompile Include="src\World Handling\Room Layout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
