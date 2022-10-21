@@ -155,6 +155,13 @@ void RoomHandler::generate()
 	setActiveRooms();
 }
 
+/*
+	Something wrong?
+	Something wrong?
+	Something wrong?
+	Something wrong?
+*/
+
 void RoomHandler::createDoors(int roomIndex)
 {
 	const RoomLayout::RoomData& curRoom = roomLayout.getRoom(roomIndex);
