@@ -459,19 +459,19 @@ void RoomHandler::flipDoors(bool open)
 
 	const Room& curRoom = rooms[activeIndex];
 
-	if (curRoom.doorIds[0] != -1) this->scene->getComponent<MeshComponent>(curRoom.doorIds[0]).meshID = doorId;
-	if (curRoom.doorIds[1] != -1) this->scene->getComponent<MeshComponent>(curRoom.doorIds[1]).meshID = doorId;
-	if (curRoom.doorIds[2] != -1) this->scene->getComponent<MeshComponent>(curRoom.doorIds[2]).meshID = doorId;
-	if (curRoom.doorIds[3] != -1) this->scene->getComponent<MeshComponent>(curRoom.doorIds[3]).meshID = doorId;
+	if (curRoom.doorIds[0] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doorIds[0]).meshID = doorId; }
+	if (curRoom.doorIds[1] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doorIds[1]).meshID = doorId; }
+	if (curRoom.doorIds[2] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doorIds[2]).meshID = doorId; }
+	if (curRoom.doorIds[3] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doorIds[3]).meshID = doorId; }
 
 	if (nextIndex != -1)
 	{
 		const Room& nextRoom = rooms[nextIndex];
 
-		if (nextRoom.doorIds[0] != -1) this->scene->getComponent<MeshComponent>(nextRoom.doorIds[0]).meshID = doorId;
-		if (nextRoom.doorIds[1] != -1) this->scene->getComponent<MeshComponent>(nextRoom.doorIds[1]).meshID = doorId;
-		if (nextRoom.doorIds[2] != -1) this->scene->getComponent<MeshComponent>(nextRoom.doorIds[2]).meshID = doorId;
-		if (nextRoom.doorIds[3] != -1) this->scene->getComponent<MeshComponent>(nextRoom.doorIds[3]).meshID = doorId;
+		if (nextRoom.doorIds[0] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doorIds[0]).meshID = doorId; }
+		if (nextRoom.doorIds[1] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doorIds[1]).meshID = doorId; }
+		if (nextRoom.doorIds[2] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doorIds[2]).meshID = doorId; }
+		if (nextRoom.doorIds[3] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doorIds[3]).meshID = doorId; }
 	}
 }
 
