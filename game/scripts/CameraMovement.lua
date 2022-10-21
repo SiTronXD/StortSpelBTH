@@ -6,7 +6,7 @@ function script:init()
 	self.maxXRot       = math.pi / 2 - ((math.pi / 2) * 0.15)
     self.minXRot       = -(math.pi / 4) + ((math.pi / 4) * 0.1)
     self.camDist       = 15
-    self.camHeight     = 14
+    self.camHeight     = 8
     self.sens          = 2
 
     self.shaking       = false
@@ -58,7 +58,8 @@ function script:update(dt)
     self.transform.rotation.x = self.camRot.x * (180 / math.pi)
     
     local scaledFwd = self.transform:forward() * -self.camDist
-    
+    self.camHeight = 6
+    self.camDist = 30
     self.transform.position = targetPos + scaledFwd
 end
 
