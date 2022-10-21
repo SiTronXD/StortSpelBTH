@@ -11,12 +11,10 @@ public:
 		enum Type{START_ROOM, NORMAL_ROOM, HARD_ROOM, BOSS_ROOM, EXIT_ROOM};
 		
 		Type type;
+		glm::vec3 position;
 	
 		// Index of connected rooms
 		int up, down, left, right;
-
-		glm::vec3 position;
-
 		RoomData()
 			:up(-1), down(-1), left(-1), right(-1),
 			type(Type::NORMAL_ROOM), position(0.f)
@@ -30,7 +28,6 @@ private:
 
 	std::vector<RoomData> rooms;
 	std::vector<glm::ivec2> connections;
-
 
 	void setUpRooms(int numRooms);
 	bool setRandomBranch(int numRooms);

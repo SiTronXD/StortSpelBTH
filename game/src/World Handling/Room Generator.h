@@ -60,27 +60,21 @@ public:
     void generateBorders(const bool* hasDoors);
 
     const glm::vec2* getExitTilesPos() const;
+    const glm::vec2* getMinMaxPos() const;
 
     int getRoomTile(int index) 
     {
         return room[index];
     }
-
     int getNrTiles()
     {
         return (int)tiles.size();
     }
-
     Tile getTile(int index) 
     {
         return tiles[index];
     }
     
-    const glm::vec2* getMinMaxPos() const 
-    {
-        return minMaxPos;
-    }
-
     void reset()
     {
         memset(room, Tile::Invalid, sizeof(int) * ROOM_SIZE * ROOM_SIZE);

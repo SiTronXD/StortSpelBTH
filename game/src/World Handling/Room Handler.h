@@ -9,7 +9,7 @@ typedef int Entity;
 // temp before bullet
 struct Box2D
 {
-	glm::vec2 extents = glm::vec2(0.f);
+	glm::vec2 extents = glm::vec2(1.f);
 	bool colliding(const glm::vec3& boxPos, const glm::vec3& otherPos)
 	{
 		glm::vec3 delta = otherPos - boxPos;
@@ -58,16 +58,16 @@ private:
 	RoomGenerator roomGenerator;
 	std::vector<RoomExitPoint> roomExitPoints;
 	bool hasDoor[4];
+	void setExitPoints(int roomIndex);
 	
 	// Create Entities
 	Entity createTileEntity(int tileIndex, const glm::vec3& roomPos);
-	Entity createDoorEntity(float yRotation, const glm::vec3& offset);
+	Entity createDoorEntity(float yRotation);
 	Entity createPathEntity();
 	
 	// Create tiles
 	void createDoors(int roomIndex);
-	void createConnectionPoint(int roomIndex, const glm::vec3& roomPos);
-	void createPathways();
+	void generatePathways();
 
 	// IDs
 	std::vector<Room> rooms;
@@ -89,17 +89,17 @@ private:
 	uint32_t openDoorMeshID;
 	uint32_t closedDoorMeshID;
 
-	// Other helpful stuff :]
+	// Reset & room scaling
 	void reset();
-	void scaleRoom();
+	void scaleRoom(int index, const glm::vec3& roomPos);
 
 public:
 	RoomHandler();
 	~RoomHandler();
 
 	void init(Scene* scene, ResourceManager* resourceMan, int roomSize, int tileTypes);
-	void generate();
 	void update(const glm::vec3& playerPos);
+	void generate();
 
 	// Statics
 	static glm::vec3 snapToGrid(const glm::vec3& pos);

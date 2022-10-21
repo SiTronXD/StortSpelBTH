@@ -257,3 +257,8 @@ const glm::vec2* RoomGenerator::getExitTilesPos() const
 {
     return exitTilesPos;
 }
+
+const glm::vec2* RoomGenerator::getMinMaxPos() const
+{
+    return minMaxPos;
+}

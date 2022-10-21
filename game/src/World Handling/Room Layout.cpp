@@ -21,7 +21,6 @@ void RoomLayout::setRoomDistance(float distance)
 void RoomLayout::clear()
 {
 	rooms.clear();
-
 	connections.clear();
 }
 
