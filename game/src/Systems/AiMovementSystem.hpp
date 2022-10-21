@@ -9,6 +9,7 @@ class AiMovementSystem : public System {
 private:
 	SceneHandler* sceneHandler;
     Scene* scene;
+    int playerID = -1;
 public:
     AiMovementSystem(SceneHandler* sceneHandler): sceneHandler(sceneHandler)
     {
@@ -40,11 +41,13 @@ public:
         Entity mainCamID = scene->getMainCameraID();
         if (scene->hasComponents<Script>(mainCamID))
         {
-            int playerID;
-            sceneHandler->getScriptHandler()->getScriptComponentValue(
-                scene->getComponent<Script>(mainCamID), playerID, "playerID");
-            Transform playerTrans = scene->getComponent<Transform>(playerID);
+            if (playerID == -1)
+            {
+                sceneHandler->getScriptHandler()->getScriptComponentValue(
+                    scene->getComponent<Script>(mainCamID), playerID, "playerID");
+            }
 
+            Transform playerTrans = scene->getComponent<Transform>(playerID);
             movement.distance = glm::length(transform.position - playerTrans.position);
             if (movement.distance <= 100.f)
             {
@@ -78,9 +81,11 @@ public:
         {
             if (movement.distance < 100.f)
             {
-                int playerID;
-                sceneHandler->getScriptHandler()->getScriptComponentValue(
-                    scene->getComponent<Script>(mainCamID), playerID, "playerID");
+                if (playerID == -1)
+                {
+                    sceneHandler->getScriptHandler()->getScriptComponentValue(
+                        scene->getComponent<Script>(mainCamID), playerID, "playerID");
+                }
                 Transform playerTrans = scene->getComponent<Transform>(playerID);
                 float posX = transform.position.x - playerTrans.position.x;
                 float posZ = transform.position.z - playerTrans.position.z;
