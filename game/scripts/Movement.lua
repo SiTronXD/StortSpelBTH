@@ -10,6 +10,8 @@ function script:init()
 	self.turnSpeed = 200
 	self.timer = 0
     self.slowDown = 80
+    self.transform.position = vector(0, -7, 0)
+    self.transform.rotation = vector(-90, 0, 0)
 end
 
 function script:update(dt)
@@ -116,10 +118,10 @@ function script:rotate2(deltaTime)
         self.transform.rotation.y = (camTransform.rotation.y) - 45 * self.moveDir.x
     elseif (self.moveDir.x > 0) 
     then
-        self.transform.rotation.y = camTransform.rotation.y + 90
+        self.transform.rotation.y = camTransform.rotation.y - 90
     elseif (self.moveDir.x < 0)
     then
-        self.transform.rotation.y = camTransform.rotation.y - 90
+        self.transform.rotation.y = camTransform.rotation.y + 90
     end
 end
 

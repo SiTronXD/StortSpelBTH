@@ -7,23 +7,21 @@
 
 class AiMovementSystem : public System {
 private:
-	Scene* scene;
-    int ID;
-    float distance;
-    std::chrono::time_point<std::chrono::system_clock> timer;
-    std::chrono::duration<float> durTimer;
+	SceneHandler* sceneHandler;
+    Scene* scene;
 public:
-    AiMovementSystem(Scene* scene, int ID): scene(scene), ID(ID)
+    AiMovementSystem(SceneHandler* sceneHandler): sceneHandler(sceneHandler)
     {
-        if (!scene->hasComponents<AiMovement>(ID)) {
-            scene->setComponent<AiMovement>(ID);
-        }
-        AiMovement& movement = scene->getComponent<AiMovement>(ID);
-        movement.maxSpeed = 100.f;
-        movement.speedIncrease = 50.f;
-        movement.slowDown = 180.f;
-        movement.currentSpeed = glm::vec2(0.f);
-        movement.turnSpeed = 200.f;
+        scene = sceneHandler->getScene();
+        auto view = scene->getSceneReg().view<AiMovement>();
+        auto movementLambda = [&](AiMovement& movement) {
+            movement.maxSpeed = 50.f;
+            movement.speedIncrease = 10.f;
+            movement.slowDown = 180.f;
+            movement.currentSpeed = glm::vec2(0.f);
+            movement.turnSpeed = 200.f;
+        };
+        view.each(movementLambda);
     }
 
     bool update(entt::registry& reg, float dt) final
@@ -39,40 +37,57 @@ public:
 
     void move(AiMovement& movement, Transform& transform, float dt)
     {
-        Transform playerTrans = scene->getComponent<Transform>(4);
-        distance = glm::length(transform.position - playerTrans.position);
-        std::cout << distance << std::endl;
-
-        if (distance <= 10.f)
+        Entity mainCamID = scene->getMainCameraID();
+        if (scene->hasComponents<Script>(mainCamID))
         {
-            movement.currentSpeed.y = 0.f;
-        }
+            int playerID;
+            sceneHandler->getScriptHandler()->getScriptComponentValue(
+                scene->getComponent<Script>(mainCamID), playerID, "playerID");
+            Transform playerTrans = scene->getComponent<Transform>(playerID);
 
-        movement.currentSpeed.y += movement.speedIncrease * dt;
+            movement.distance = glm::length(transform.position - playerTrans.position);
+            if (movement.distance <= 100.f)
+            {
+                if (movement.distance <= 8.f)
+                {
+                    movement.currentSpeed.y = 0.f;
+                }
+                else
+                {
+                    movement.currentSpeed.y += movement.speedIncrease * dt;
 
-        if (movement.currentSpeed.y > movement.maxSpeed)
-        {
-            movement.currentSpeed.y = movement.maxSpeed;
+                    if (movement.currentSpeed.y > movement.maxSpeed)
+                    {
+                        movement.currentSpeed.y = movement.maxSpeed;
+                    }
+                    else if (movement.currentSpeed.y < -movement.maxSpeed)
+                    {
+                        movement.currentSpeed.y = -movement.maxSpeed;
+                    }
+                }
+                movement.moveDir = glm::normalize(playerTrans.position - transform.position);
+                transform.position += (movement.moveDir * movement.currentSpeed.y) * dt;
+            }
         }
-        else if (movement.currentSpeed.y < -movement.maxSpeed)
-        {
-            movement.currentSpeed.y = -movement.maxSpeed;
-        }
-        std::cout << movement.currentSpeed.y << std::endl;
-        glm::vec3 hej = glm::normalize(playerTrans.position - transform.position);
-
-        transform.position += (hej * movement.currentSpeed.y) * dt;
     }
 
     void rotate(AiMovement& movement, Transform& transform, float dt)
     {
-        //movement.moveDir.x = (float) Input? How does AI move?
-        Transform playerTrans = scene->getComponent<Transform>(4);
-        distance = glm::abs(glm::length(transform.position - playerTrans.position));
-
-        if (distance > 50.f)
+        Entity mainCamID = scene->getMainCameraID();
+        if (scene->hasComponents<Script>(mainCamID))
         {
-            transform.rotation.x = playerTrans.rotation.x;
+            if (movement.distance < 100.f)
+            {
+                int playerID;
+                sceneHandler->getScriptHandler()->getScriptComponentValue(
+                    scene->getComponent<Script>(mainCamID), playerID, "playerID");
+                Transform playerTrans = scene->getComponent<Transform>(playerID);
+                float posX = transform.position.x - playerTrans.position.x;
+                float posZ = transform.position.z - playerTrans.position.z;
+                float angle = atan2(posX, posZ);
+                angle = glm::degrees(angle);
+                transform.rotation.y = angle;
+            }
         }
     }
 };

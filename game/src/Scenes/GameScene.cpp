@@ -10,7 +10,7 @@ void decreaseFps();
 double heavyFunction(double value);
 
 GameScene::GameScene():
-	camEntity(-1), entity(-1), anotherEntity(-1)
+	camEntity(-1), entity(-1)
 {
 }
 
@@ -33,16 +33,6 @@ void GameScene::init()
 	//this->createSystem<CombatSystem>(this, entity);
 	//this->createSystem<MovementSystem>(this, this->entity);
 
-	this->anotherEntity = this->createEntity();
-	this->setComponent<MeshComponent>(this->anotherEntity, ghost);
-	Transform& anotherTrans = this->getComponent<Transform>(this->anotherEntity);
-	anotherTrans.position = glm::vec3(0.f, 0.f, 20.f);
-	anotherTrans.rotation = glm::vec3(-90.f, 0.f, 0.f);
-	anotherTrans.scale = glm::vec3(5.f);
-
-	this->setComponent<AiMovement>(this->anotherEntity);
-	this->createSystem<AiMovementSystem>(this, this->anotherEntity);
-
 	int floor = this->createEntity();
     this->setComponent<MeshComponent>(floor);
     Transform& transform2 = this->getComponent<Transform>(floor);
@@ -61,7 +51,6 @@ void GameScene::init()
 
 void GameScene::update()
 {
-
 	static double value = 1234567890.0;
 	decreaseFps();
 }
