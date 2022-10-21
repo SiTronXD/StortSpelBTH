@@ -8,14 +8,8 @@ class AiCombatSystem : public System
 private:
 	Scene* scene;
 public:
-	AiCombatSystem(Scene* scene, int ID)
-		:scene(scene)
+	AiCombatSystem(Scene* scene) : scene(scene)
 	{
-		if (scene->hasComponents<AiCombat>(ID))
-		{
-			AiCombat& combat = scene->getComponent<AiCombat>(ID);
-			combat.normalAttack = 10.f;
-		}
 	}
 
 	bool update(entt::registry& reg, float dt) final
@@ -31,6 +25,16 @@ public:
 
 	void attack(AiCombat& combat)
 	{
+		if (!combat.attackActive)
+		{
+			combat.hitTimer = std::chrono::duration<float>(combat.lightAttackTime);
+			combat.timer = std::chrono::system_clock::now();
 
+			// Attack
+		}
+		else if ()
+		{
+
+		}
 	}
 };
