@@ -3,6 +3,7 @@
 #include "../Systems/MovementSystem.hpp"
 #include "../Systems/CombatSystem.hpp"
 #include "../Systems/CameraMovementSystem.hpp"
+#include "../Systems/AiMovementSystem.hpp"
 
 // decreaseFps used for testing game with different framerates
 void decreaseFps();
@@ -23,12 +24,12 @@ void GameScene::init()
 	this->entity = this->createEntity();
 	//this->setComponent<MeshComponent>(this->entity, ghost);
 	//this->setComponent<Movement>(this->entity);
-	this->setComponent<Combat>(this->entity);
-	Transform& transform = this->getComponent<Transform>(this->entity);
-	transform.position = glm::vec3(0.0f, 0.0f, 20.0f);
-	transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
-	transform.scale = glm::vec3(5.0f);
-	this->createSystem<CombatSystem>(this, entity);
+	//this->setComponent<Combat>(this->entity);
+	//Transform& transform = this->getComponent<Transform>(this->entity);
+	//transform.position = glm::vec3(0.0f, 0.0f, 20.0f);
+	//transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
+	//transform.scale = glm::vec3(5.0f);
+	//this->createSystem<CombatSystem>(this, entity);
 	//this->createSystem<MovementSystem>(this, this->entity);
 
 	int floor = this->createEntity();
