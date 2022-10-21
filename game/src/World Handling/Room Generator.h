@@ -22,6 +22,8 @@ struct Tile
 
 class RoomGenerator 
 {
+public:
+    static const float DEFUALT_TILE_SCALE;
 private:
     int TILE_TYPES;
     int ROOM_SIZE;

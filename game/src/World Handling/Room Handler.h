@@ -20,8 +20,8 @@ struct Box2D
 class RoomHandler
 {
 public:
-	static const float ROOM_WIDTH;
-	static const uint32_t TILES_BETWEEN_ROOMS = 3;
+	static const float TILE_WIDTH;
+	static const uint32_t TILES_BETWEEN_ROOMS;
 
 private:
 	Scene* scene;
@@ -33,7 +33,6 @@ private:
 	RoomGenerator roomGenerator;
 	RoomLayout roomLayout;
 
-	float tileWidth;
 	int roomGridSize;
 	
 	bool hasDoor[4];
@@ -47,15 +46,13 @@ private:
 	};
 	std::vector<RoomExitPoint> roomExitPoints;
 
-	Entity createTileEntity(int tileIndex, float tileScale, const glm::vec3& roomPos);
+	Entity createTileEntity(int tileIndex, const glm::vec3& roomPos);
 	Entity createDoorEntity(float yRotation, const glm::vec3& offset);
-	Entity createPathEntity(float tileScale);
+	Entity createPathEntity();
 	
-	void createDoors(int roomIndex, float tileScale);
-	void createConnectionPoint(int roomIndex, float tileScale, const glm::vec3& roomPos);
-	void createPathways(float tileScale);
-
-	glm::vec3 snapToGrid(const glm::vec3& pos);
+	void createDoors(int roomIndex);
+	void createConnectionPoint(int roomIndex, const glm::vec3& roomPos);
+	void createPathways();
 
 	void reset();
 
@@ -75,18 +72,25 @@ private:
 	std::vector<Room> rooms;
 	std::vector<Entity> pathIds;
 
-	void flipDoors(bool open);
 
-	void setActiveRooms();
+
+
+	// temp before slay 
+	bool roomFinished = false;
+
+
 	int activeIndex = 0;
 	int nextIndex = -1;
-
 	int curDoor = -1;
 	bool insideDoor = false;
 
-	bool roomFinished = false;
+	void checkRoom(int index, const glm::vec3& playerPos);
+	void setActiveRooms();
+	void flipDoors(bool open);
 
 public:
+	static glm::vec3 snapToGrid(const glm::vec3& pos);
+
 	RoomHandler();
 	~RoomHandler();
 

@@ -8,6 +8,7 @@
         border piece not on border
         
 */
+const float RoomGenerator::DEFUALT_TILE_SCALE = 0.04f;
 
 RoomGenerator::RoomGenerator()
 {
