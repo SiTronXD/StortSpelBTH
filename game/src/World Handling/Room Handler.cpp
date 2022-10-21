@@ -5,7 +5,7 @@ const float RoomHandler::TILE_WIDTH = 20.f;
 const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 3;
 
 RoomHandler::RoomHandler()
-	:scene(nullptr), resourceMan(nullptr), roomGridSize(0), hasDoor{},
+	:scene(nullptr), resourceMan(nullptr), hasDoor{},
 	activeIndex(0), nextIndex(-1),
 	openDoorMeshID(0), closedDoorMeshID(0)
 {
@@ -19,7 +19,6 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize,
 {
 	this->scene = scene;
 	this->resourceMan = resourceMan;
-	this->roomGridSize = roomSize;
 
 	this->roomGenerator.init(roomSize, tileTypes);
 	this->roomLayout.setRoomDistance(TILE_WIDTH * roomSize + TILE_WIDTH * TILES_BETWEEN_ROOMS);	
@@ -105,8 +104,9 @@ void RoomHandler::generate()
 		}
 	
 		this->roomGenerator.reset();
-	}
 
+		scaleRoom();
+	}
 
 
 	// Find exitPairs
@@ -165,7 +165,7 @@ Entity RoomHandler::createTileEntity(int tileIndex, const glm::vec3& roomPos)
 		this->scene->getComponent<MeshComponent>(pieceID).meshID = (int)this->tileMeshIds[Tile::Border];
 
 	Transform& transform = this->scene->getComponent<Transform>(pieceID);
-	transform.scale = glm::vec3(RoomGenerator::DEFUALT_TILE_SCALE) * TILE_WIDTH;
+	transform.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE) * TILE_WIDTH;
 
 	transform.position = glm::vec3(
 		roomGenerator.getTile(tileIndex).position.x * TILE_WIDTH + roomPos.x,
@@ -195,7 +195,7 @@ Entity RoomHandler::createPathEntity()
 	this->scene->setComponent<MeshComponent>(id);
 	this->scene->getComponent<MeshComponent>(id).meshID = this->tileMeshIds[Tile::OneXOne];
 	
-	this->scene->getComponent<Transform>(id).scale = glm::vec3(RoomGenerator::DEFUALT_TILE_SCALE) * TILE_WIDTH;
+	this->scene->getComponent<Transform>(id).scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE) * TILE_WIDTH;
 
 	return id;
 }
@@ -212,7 +212,7 @@ void RoomHandler::createDoors(int roomIndex)
 
 	if (curRoom.left != -1)
 	{
-		curRoomIds.doorIds[0] = this->createDoorEntity(-90.f, glm::vec3(OFFSET , 0.f, 0.f));	
+		curRoomIds.doorIds[0] = this->createDoorEntity(-90.f, glm::vec3(OFFSET, 0.f, 0.f));	
 	}
 	if (curRoom.right != -1) 
 	{
@@ -310,6 +310,11 @@ void RoomHandler::createPathways()
 			}
 		}
 	}
+}
+
+void RoomHandler::scaleRoom()
+{
+
 }
 
 void RoomHandler::checkRoom(int index, const glm::vec3& playerPos)

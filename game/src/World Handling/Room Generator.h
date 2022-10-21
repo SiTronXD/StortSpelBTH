@@ -23,7 +23,7 @@ struct Tile
 class RoomGenerator 
 {
 public:
-    static const float DEFUALT_TILE_SCALE;
+    static const float DEFAULT_TILE_SCALE;
 private:
     int TILE_TYPES;
     int ROOM_SIZE;
@@ -46,8 +46,8 @@ private:
         output[0] = (index - ROOM_SIZE * output[1]);
     }
 
-    void      addPiece(glm::vec2 position, int depth);
-    void      placeTile(Tile::Type tileType, glm::vec2 gridPosition, glm::vec2 worldPosition);
+    void addPiece(glm::vec2 position, int depth);
+    void placeTile(Tile::Type tileType, glm::vec2 gridPosition, glm::vec2 worldPosition);
     glm::vec2 getFreeLarge(glm::vec2 position);
     glm::vec2 getFreeAdjacent(glm::vec2 position, glm::vec2 dir);
 
