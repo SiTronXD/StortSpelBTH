@@ -29,7 +29,9 @@ private:
 
     Tile::Type* room;
     std::vector<Tile> tiles;
-    glm::vec2 minMaxPos[4]; // x, -x, z, -z
+
+    // Order: x, -x, z, -z
+    glm::vec2 minMaxPos[4]; 
     glm::vec2 exitTilesPos[4];
 
     int getArrayIndexFromPosition(int x, int y)
@@ -55,10 +57,7 @@ public:
     void generateRoom();
     void generateBorders(const bool* hasDoors);
 
-    const glm::vec2* getExitTiles() const
-    {
-        return exitTilesPos;
-    }
+    const glm::vec2* getExitTilesPos() const;
 
     int getRoomTile(int index) 
     {

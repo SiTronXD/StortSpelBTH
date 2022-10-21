@@ -21,6 +21,7 @@ class RoomHandler
 {
 public:
 	static const float ROOM_WIDTH;
+	static const uint32_t TILES_BETWEEN_ROOMS = 3;
 
 private:
 	Scene* scene;
@@ -32,11 +33,8 @@ private:
 	RoomGenerator roomGenerator;
 	RoomLayout roomLayout;
 
-	float roomGridSize;
-	int numRooms;
-
-	const int numTilesInbetween;
 	float tileWidth;
+	int roomGridSize;
 	
 	bool hasDoor[4];
 
@@ -64,8 +62,8 @@ private:
 	struct Room
 	{
 		Room()
+			:doorIds{-1,-1,-1,-1}
 		{		
-			memset(doorIds, -1, sizeof(doorIds));
 		}
 
 		std::vector<Entity> tileIds;
@@ -77,12 +75,14 @@ private:
 	std::vector<Room> rooms;
 	std::vector<Entity> pathIds;
 
+	void flipDoors(bool open);
+
 	void setActiveRooms();
 	int activeIndex = 0;
 	int nextIndex = -1;
 
 	int curDoor = -1;
-	bool coll = false;
+	bool insideDoor = false;
 
 	bool roomFinished = false;
 

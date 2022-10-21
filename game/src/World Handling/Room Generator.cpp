@@ -1,5 +1,4 @@
 #include "Room Generator.h"
-#include <iostream> //TODO: ONLY FOR VISUALIZING ROOM LAYOUT. REMOVE LATER
 
 /*
     Limit num objects (atleast houses)
@@ -251,4 +250,9 @@ glm::vec2 RoomGenerator::getFreeAdjacent(glm::vec2 position, glm::vec2 dir)
     dir *= -1;
     if (room[getArrayIndexFromPosition(position.x + dir.x, position.y + dir.y)] < 1) return dir;
     return glm::vec2(0);
+}
+
+const glm::vec2* RoomGenerator::getExitTilesPos() const
+{
+    return exitTilesPos;
 }

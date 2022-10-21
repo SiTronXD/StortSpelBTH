@@ -21,9 +21,6 @@
     <ClCompile Include="src\Scenes\GameScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\World Handling\Randomizer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\World Handling\Room Generator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -60,9 +57,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Systems\CameraMovementSystem.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\World Handling\Randomizer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\World Handling\Room Generator.h">

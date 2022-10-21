@@ -3,19 +3,11 @@
 
 const float RoomHandler::ROOM_WIDTH = 200.f;
 
-/*
-	EXIT POINTS MESSED UP WHEN DOOR GENERATED ON THE EDGE
-	EXIT POINTS MESSED UP WHEN DOOR GENERATED ON THE EDGE
-	EXIT POINTS MESSED UP WHEN DOOR GENERATED ON THE EDGE
-	EXIT POINTS MESSED UP WHEN DOOR GENERATED ON THE EDGE
-	EXIT POINTS MESSED UP WHEN DOOR GENERATED ON THE EDGE
-	EXIT POINTS MESSED UP WHEN DOOR GENERATED ON THE EDGE
-*/
-
 RoomHandler::RoomHandler()
-	:scene(nullptr), resourceMan(nullptr), roomGridSize(0), numRooms(0),
-	numTilesInbetween(3), tileWidth(0.f), hasDoor{},
-	activeIndex(0), nextIndex(-1)
+	:scene(nullptr), resourceMan(nullptr), roomGridSize(0),
+	tileWidth(0.f), hasDoor{},
+	activeIndex(0), nextIndex(-1),
+	openDoorMeshID(0), closedDoorMeshID(0)
 {
 }
 
@@ -27,20 +19,20 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize,
 {
 	this->scene = scene;
 	this->resourceMan = resourceMan;
-	this->roomGridSize = (float)roomSize;
+	this->roomGridSize = roomSize;
 	this->tileWidth = ROOM_WIDTH / (float)roomSize;
 
 	this->roomGenerator.init(roomSize, tileTypes);
-	this->roomLayout.init(scene, ROOM_WIDTH + tileWidth * numTilesInbetween);
-	
+	this->roomLayout.setRoomDistance(ROOM_WIDTH + tileWidth * TILES_BETWEEN_ROOMS);	
 
 	// Border pieces not counted in tileTypes
 	for (int i = 0; i < tileTypes + 1; i++)
 	{
-		// Tile types in RoomGenerator ranges from 1-tileTypes
+		// Tile types in RoomGenerator ranges from 0-tileTypes
 		uint32_t id = resourceMan->addMesh("assets/models/room_piece_" + std::to_string(i) + ".obj");
 		this->tileMeshIds[Tile::Type(i)] = id;
 	}
+
 	openDoorMeshID = resourceMan->addMesh("assets/models/doorOpen.obj");
 	closedDoorMeshID = resourceMan->addMesh("assets/models/doorClosed.obj");
 }
@@ -54,14 +46,14 @@ void RoomHandler::update(const glm::vec3& playerPos)
 	{
 		ImGui::PushItemWidth(-100.f);
 		ImGui::Text("Rooms");
-		ImGui::Text("Num: %zd", this->numRooms);
+		ImGui::Text("Num: %zd", this->rooms.size());
 		if (ImGui::Button("Reload")) 
 		{
 			generate();
 		} 
 		ImGui::SameLine();
 
-		ImGui::Text("A: %d, N: %d, D: %d", activeIndex, nextIndex, curDoor, (int)coll);
+		ImGui::Text("A: %d, N: %d, D: %d", activeIndex, nextIndex, curDoor, (int)insideDoor);
 
 		ImGui::Separator();
 		ImGui::PopItemWidth();
@@ -72,6 +64,7 @@ void RoomHandler::update(const glm::vec3& playerPos)
 	if (Input::isKeyPressed(Keys::E)) 
 	{
 		roomFinished = true;
+		flipDoors(true);
 	}
 #endif
 
@@ -80,7 +73,7 @@ void RoomHandler::update(const glm::vec3& playerPos)
 		if (i != activeIndex && i != nextIndex)
 				continue;
 
-		coll = false;
+		insideDoor = false;
 
 		for (int j = 0; j < 4; j++)
 		{
@@ -101,6 +94,7 @@ void RoomHandler::update(const glm::vec3& playerPos)
 					
 					printf("HELO! - A: %d, N: %d, D: %d\n", activeIndex, nextIndex, curDoor);
 					setActiveRooms();
+					flipDoors(false);
 				}
 
 				else if (curDoor == -1 && roomFinished)
@@ -110,27 +104,14 @@ void RoomHandler::update(const glm::vec3& playerPos)
 					curDoor = j;
 					printf("BAI! - A: %d, N: %d, D: %d\n", activeIndex, nextIndex, curDoor);
 					setActiveRooms();
-
+					flipDoors(true);
 				}
-				coll = true;
+				insideDoor = true;
 			}
 		}
-		if (i == activeIndex && !coll) { curDoor = -1; }
+		if (i == activeIndex && !insideDoor) { curDoor = -1; }
 	}
 }
-
-/*
-	FIX TILE SCALE AFTER OPENING/CLOSING OF DOORS
-	FIX TILE SCALE AFTER OPENING/CLOSING OF DOORS
-	FIX TILE SCALE AFTER OPENING/CLOSING OF DOORS
-	FIX TILE SCALE AFTER OPENING/CLOSING OF DOORS
-	FIX TILE SCALE AFTER OPENING/CLOSING OF DOORS
-
-	TRANSFORM SCALE STILL NEEDS TO CARE ABOUT TILE_SCALE
-	TRANSFORM SCALE STILL NEEDS TO CARE ABOUT TILE_SCALE
-	TRANSFORM SCALE STILL NEEDS TO CARE ABOUT TILE_SCALE
-	TRANSFORM SCALE STILL NEEDS TO CARE ABOUT TILE_SCALE
-*/
 
 void RoomHandler::generate()
 {
@@ -139,10 +120,10 @@ void RoomHandler::generate()
 	const float TILE_SCALE = this->ROOM_WIDTH / (float)this->roomGridSize;
 
 	this->roomLayout.generate();
-	this->numRooms = this->roomLayout.getNumRooms();
-	this->rooms.resize(this->numRooms);
+	const int numRooms = this->roomLayout.getNumRooms();
+	this->rooms.resize(numRooms);
 
-	for (int i = 0; i < this->numRooms; i++)
+	for (int i = 0; i < numRooms; i++)
 	{
 		const RoomLayout::RoomData& roomRef = this->roomLayout.getRoom(i);
 		const glm::vec3& roomPos = roomRef.position;
@@ -269,18 +250,23 @@ void RoomHandler::createDoors(int roomIndex, float tileScale)
 	Room& curRoomIds = this->rooms[roomIndex];
 
 	const glm::vec2* doorTilePos = roomGenerator.getMinMaxPos();
+	const float OFFSET = tileWidth * 1.5f;
 
-	if (curRoom.left != -1) {
-		curRoomIds.doorIds[0] = this->createDoorEntity(-90.f, glm::vec3(tileWidth, 0.f, 0.f));	
+	if (curRoom.left != -1)
+	{
+		curRoomIds.doorIds[0] = this->createDoorEntity(-90.f, glm::vec3(OFFSET , 0.f, 0.f));	
 	}
-	if (curRoom.right != -1) {
-		curRoomIds.doorIds[1] = this->createDoorEntity(90.f, glm::vec3(-tileWidth, 0.f, 0.f));
+	if (curRoom.right != -1) 
+	{
+		curRoomIds.doorIds[1] = this->createDoorEntity(90.f, glm::vec3(-OFFSET, 0.f, 0.f));
 	}
-	if (curRoom.up != -1) {
-		curRoomIds.doorIds[2] = this->createDoorEntity(180.f, glm::vec3(0.f, 0.f, tileWidth));
+	if (curRoom.up != -1) 
+	{
+		curRoomIds.doorIds[2] = this->createDoorEntity(180.f, glm::vec3(0.f, 0.f, OFFSET));
 	}
-	if (curRoom.down != -1) {
-		curRoomIds.doorIds[3] = this->createDoorEntity(0.f, glm::vec3(0.f, 0.f, -tileWidth));
+	if (curRoom.down != -1) 
+	{
+		curRoomIds.doorIds[3] = this->createDoorEntity(0.f, glm::vec3(0.f, 0.f, -OFFSET));
 	}
 
 	for (int i = 0; i < 4; i++)
@@ -296,15 +282,15 @@ void RoomHandler::createDoors(int roomIndex, float tileScale)
 
 			this->scene->setComponent<Box2D>(curRoomIds.doorIds[i]);
 			Box2D& trigger = this->scene->getComponent<Box2D>(curRoomIds.doorIds[i]);
-			trigger.extents.x = tileWidth * 0.5f;
-			trigger.extents.y = tileWidth * 0.5f;
+			trigger.extents.x = tileWidth * 0.2f;
+			trigger.extents.y = tileWidth * 0.2f;
 		}
 	}
 }
 
 void RoomHandler::createConnectionPoint(int roomIndex, float tileScale, const glm::vec3& roomPos)
 {
-	const glm::vec2* exitPositions = roomGenerator.getExitTiles();
+	const glm::vec2* exitPositions = roomGenerator.getExitTilesPos();
 
 	roomExitPoints.emplace_back();
 
@@ -313,7 +299,7 @@ void RoomHandler::createConnectionPoint(int roomIndex, float tileScale, const gl
 		if (rooms[roomIndex].doorIds[i] != -1)
 		{ 
 			roomExitPoints.back().worldPositions[i] = 
-				glm::vec3(exitPositions[i].x, 0.f, exitPositions[i].y) * tileScale + roomPos;;
+				glm::vec3(exitPositions[i].x, 0.f, exitPositions[i].y) * tileScale + roomPos;
 		}
 	}
 }
@@ -416,6 +402,7 @@ void RoomHandler::setActiveRooms()
 			{
 				this->scene->setActive(id);
 			}
+
 			if (rooms[i].doorIds[0] != -1) { this->scene->setActive(rooms[i].doorIds[0]); }
 			if (rooms[i].doorIds[1] != -1) { this->scene->setActive(rooms[i].doorIds[1]); }
 			if (rooms[i].doorIds[2] != -1) { this->scene->setActive(rooms[i].doorIds[2]); }
@@ -434,5 +421,27 @@ void RoomHandler::setActiveRooms()
 			if (rooms[i].doorIds[3] != -1) { this->scene->setInactive(rooms[i].doorIds[3]); }
 		}
 
+	}
+}
+
+void RoomHandler::flipDoors(bool open)
+{
+	const uint32_t doorId = open ? openDoorMeshID : closedDoorMeshID;
+
+	const Room& curRoom = rooms[activeIndex];
+
+	if (curRoom.doorIds[0] != -1) this->scene->getComponent<MeshComponent>(curRoom.doorIds[0]).meshID = doorId;
+	if (curRoom.doorIds[1] != -1) this->scene->getComponent<MeshComponent>(curRoom.doorIds[1]).meshID = doorId;
+	if (curRoom.doorIds[2] != -1) this->scene->getComponent<MeshComponent>(curRoom.doorIds[2]).meshID = doorId;
+	if (curRoom.doorIds[3] != -1) this->scene->getComponent<MeshComponent>(curRoom.doorIds[3]).meshID = doorId;
+
+	if (nextIndex != -1)
+	{
+		const Room& nextRoom = rooms[nextIndex];
+
+		if (nextRoom.doorIds[0] != -1) this->scene->getComponent<MeshComponent>(nextRoom.doorIds[0]).meshID = doorId;
+		if (nextRoom.doorIds[1] != -1) this->scene->getComponent<MeshComponent>(nextRoom.doorIds[1]).meshID = doorId;
+		if (nextRoom.doorIds[2] != -1) this->scene->getComponent<MeshComponent>(nextRoom.doorIds[2]).meshID = doorId;
+		if (nextRoom.doorIds[3] != -1) this->scene->getComponent<MeshComponent>(nextRoom.doorIds[3]).meshID = doorId;
 	}
 }
