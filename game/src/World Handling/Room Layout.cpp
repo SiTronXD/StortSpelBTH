@@ -148,74 +148,53 @@ void RoomLayout::setBranch(int index, bool left, int size)
 		roomType = RoomData::Type::NORMAL_ROOM;
 	}
 
-	if (left)
+	for (int i = 0; i < size; i++)
 	{
-		for (int i = 0; i < size; i++)
+		position.x += left ? distance : -distance;
+		rooms.emplace_back();
+
+		RoomData& roomRef = rooms[rooms.size() - 1];
+		glm::vec3& posRef = rooms[rooms.size() - 1].position;
+
+		roomRef.type = roomType;
+		posRef = position;
+
+		int curRoomIndex;
+		int sideIndex = (int)rooms.size() - 1;
+		if (left)
 		{
-			position.x += distance;
-
-			rooms.emplace_back();
-
-			RoomData& roomRef = rooms[rooms.size() - 1];
-			glm::vec3& posRef = rooms[rooms.size() - 1].position;
-
-			roomRef.type = roomType;
-			posRef = position;
-
-
-			int curRoomLeft, curRoomIndex;
-
 			if (i == 0)
 			{
 				curRoomIndex = index;
-				curRoomLeft = (int)rooms.size() - 1;
-				rooms[curRoomIndex].left = curRoomLeft;
-				rooms[curRoomLeft].right = curRoomIndex;
-				connections.emplace_back(curRoomLeft, curRoomIndex);
+				rooms[curRoomIndex].left = sideIndex;
+				rooms[sideIndex].right = curRoomIndex;
 			}
 			else
 			{
 				curRoomIndex = (int)rooms.size() - 2;
-				curRoomLeft = (int)rooms.size() - 1;
-				rooms[curRoomIndex].left = curRoomLeft;
-				rooms[curRoomLeft].right = curRoomIndex;
-				connections.emplace_back(curRoomLeft, curRoomIndex);
+				rooms[curRoomIndex].left = sideIndex;
+				rooms[sideIndex].right = curRoomIndex;
 			}
-
+			connections.emplace_back(sideIndex, curRoomIndex);
 		}
-	}
-	else
-	{
-		for (int i = 0; i < size; i++)
+		else
 		{
-			position.x -= distance;
-
-			rooms.emplace_back();
-			RoomData& roomRef = rooms[rooms.size() - 1];
-			glm::vec3& posRef = rooms[rooms.size() - 1].position;
-
-			roomRef.type = roomType;
-			posRef = position;
-
-			int curRoomRight, curRoomIndex;
 			if (i == 0)
 			{
 				curRoomIndex = index;
-				curRoomRight = (int)rooms.size() - 1;
-				rooms[curRoomIndex].right = curRoomRight;
-				rooms[curRoomRight].left = curRoomIndex;
-				connections.emplace_back(curRoomIndex, curRoomRight);
+				rooms[curRoomIndex].right = sideIndex;
+				rooms[sideIndex].left = curRoomIndex;
 			}
 			else
 			{
 				curRoomIndex = (int)rooms.size() - 2;
-				curRoomRight = (int)rooms.size() - 1;
-				rooms[curRoomIndex].right = curRoomRight;
-				rooms[curRoomRight].left = curRoomIndex;
-				connections.emplace_back(curRoomIndex, curRoomRight);
+				rooms[curRoomIndex].right = sideIndex;
+				rooms[sideIndex].left = curRoomIndex;
 			}
-
+			connections.emplace_back(curRoomIndex, sideIndex);
 		}
+
+
 	}
 }
 

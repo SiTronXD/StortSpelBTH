@@ -201,6 +201,7 @@ void RoomHandler::createDoors(int roomIndex)
 			// Offset by 1.5 (1.5 tiles before room scaling)
 			tra.position.x = doorTilePos[i].x + OFFSETS[i].x;
 			tra.position.z = doorTilePos[i].y + OFFSETS[i].y;
+			tra.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE);
 
 			this->scene->setComponent<Box2D>(curRoomIds.doorIds[i]);
 		}
@@ -276,7 +277,7 @@ void RoomHandler::scaleRoom(int index, const glm::vec3& roomPos)
 {	
 	Room& room = rooms[index];
 
-	// Scale door positions
+	// Scale doors
 	for (int i = 0; i < 4; i++)
 	{
 		if (room.doorIds[i] != -1)
@@ -284,6 +285,7 @@ void RoomHandler::scaleRoom(int index, const glm::vec3& roomPos)
 			Transform& tra = this->scene->getComponent<Transform>(room.doorIds[i]);
 			tra.position *= TILE_WIDTH;
 			tra.position += roomPos;
+			tra.scale *= TILE_WIDTH;
 
 			Box2D& trigger = this->scene->getComponent<Box2D>(room.doorIds[i]);
 			trigger.extents.x = TILE_WIDTH * 0.5f;
@@ -294,7 +296,7 @@ void RoomHandler::scaleRoom(int index, const glm::vec3& roomPos)
 		}
 	}
 
-	// Scale doors
+	// Scale all tiles
 	for (Entity id : room.tileIds)
 	{
 		Transform& tra = this->scene->getComponent<Transform>(id);
@@ -312,7 +314,7 @@ Entity RoomHandler::createTileEntity(int tileIndex, const glm::vec3& roomPos)
 	this->scene->getComponent<MeshComponent>(pieceID).meshID = (int)this->tileMeshIds[this->roomGenerator.getTile(tileIndex).type];
 
 	Transform& transform = this->scene->getComponent<Transform>(pieceID);
-	transform.scale *= RoomGenerator::DEFAULT_TILE_SCALE;
+	transform.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE);
 
 	transform.position = glm::vec3(
 		roomGenerator.getTile(tileIndex).position.x,
@@ -367,7 +369,6 @@ void RoomHandler::checkRoom(int index, const glm::vec3& playerPos)
 				nextIndex = -1;
 				roomFinished = false;
 				
-				printf("HELO! - A: %d, N: %d, D: %d\n", activeIndex, nextIndex, curDoor);
 				setActiveRooms();
 				flipDoors(false);
 			}
@@ -377,14 +378,17 @@ void RoomHandler::checkRoom(int index, const glm::vec3& playerPos)
 				activeIndex = index;
 				nextIndex = rooms[index].connectingIndex[j];
 				curDoor = j;
-				printf("BAI! - A: %d, N: %d, D: %d\n", activeIndex, nextIndex, curDoor);
+				
 				setActiveRooms();
 				flipDoors(true);
 			}
 			insideDoor = true;
 		}
 	}
-	if (index == activeIndex && !insideDoor) { curDoor = -1; }
+	if (index == activeIndex && !insideDoor)
+	{ 
+		curDoor = -1;
+	}
 }
 
 void RoomHandler::reset()

@@ -16,7 +16,12 @@ struct Tile
         TwoXTwo = 4
     };
 
-    Type type = Type::Border;
+    Tile()
+        :type(Type::Border), position(0.f)
+    {
+    }
+
+    Type type;
     glm::vec2 position;
 };
 
@@ -36,20 +41,19 @@ private:
     glm::vec2 minMaxPos[4]; 
     glm::vec2 exitTilesPos[4];
 
-    int getArrayIndexFromPosition(int x, int y)
-    {
-        return (y + HALF_ROOM) * ROOM_SIZE + (x + HALF_ROOM);
-    }
+    int getArrayIndexFromPosition(int x, int y) const;
+    int getArrayIndexFromPosition(float x, float y) const;
+
     void getIJIndex(int index, int* output)
     {
         output[1] = (index / ROOM_SIZE);
         output[0] = (index - ROOM_SIZE * output[1]);
     }
 
-    void addPiece(glm::vec2 position, int depth);
-    void placeTile(Tile::Type tileType, glm::vec2 gridPosition, glm::vec2 worldPosition);
-    glm::vec2 getFreeLarge(glm::vec2 position);
-    glm::vec2 getFreeAdjacent(glm::vec2 position, glm::vec2 dir);
+    void addPiece(const glm::vec2& position, int depth);
+    void placeTile(Tile::Type tileType, const glm::vec2& gridPosition, const glm::vec2& worldPosition);
+    glm::vec2 getFreeLarge(const glm::vec2& position);
+    glm::vec2 getFreeAdjacent(const glm::vec2& position, glm::vec2 dir);
 
 public:
     RoomGenerator();
@@ -58,36 +62,12 @@ public:
 
     void generateRoom();
     void generateBorders(const bool* hasDoors);
+    void reset();
 
     const glm::vec2* getExitTilesPos() const;
     const glm::vec2* getMinMaxPos() const;
 
-    int getRoomTile(int index) 
-    {
-        return room[index];
-    }
-    int getNrTiles()
-    {
-        return (int)tiles.size();
-    }
-    Tile getTile(int index) 
-    {
-        return tiles[index];
-    }
-    
-    void reset()
-    {
-        memset(room, Tile::Invalid, sizeof(int) * ROOM_SIZE * ROOM_SIZE);
-        tiles.clear();
-
-        minMaxPos[0] = glm::vec2((float)-ROOM_SIZE);
-        minMaxPos[1] = glm::vec2((float)ROOM_SIZE);
-        minMaxPos[2] = glm::vec2((float)-ROOM_SIZE);
-        minMaxPos[3] = glm::vec2((float)ROOM_SIZE);
-
-        for (int i = 0; i < 4; i++)
-        {
-            exitTilesPos[i] = glm::vec2(0.f);
-        }
-    }
+    Tile::Type getRoomTile(int index) const;
+    int getNrTiles() const;
+    const Tile& getTile(int index) const;
 };
