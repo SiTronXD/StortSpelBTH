@@ -32,11 +32,11 @@ void GameScene::init()
 	//this->createSystem<CombatSystem>(this, entity);
 	//this->createSystem<MovementSystem>(this, this->entity);
 
-	int floor = this->createEntity();
+	/*int floor = this->createEntity();
     this->setComponent<MeshComponent>(floor);
     Transform& transform2 = this->getComponent<Transform>(floor);
-    transform2.position   = glm::vec3(0.0f, -10.0f, 0.0f);
-    transform2.scale      = glm::vec3(100.f, 0.1f, 100.f);
+    transform2.position   = glm::vec3(0.0f, 0.0f, 0.0f);
+    transform2.scale      = glm::vec3(100.f, 0.1f, 100.f);*/
 
 	//this->camEntity = this->createEntity();
 	//this->setComponent<Camera>(this->camEntity, 1.0f);

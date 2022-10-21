@@ -84,6 +84,11 @@ private:
 	void setActiveRooms();
 	void flipDoors(bool open);
 
+#ifdef _DEBUG
+	bool showAllRooms = false;
+	void activateAll();
+#endif
+
 	// Mesh IDs
 	std::unordered_map<Tile::Type, uint32_t> tileMeshIds;
 	uint32_t openDoorMeshID;

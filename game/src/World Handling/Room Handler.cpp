@@ -40,16 +40,23 @@ void RoomHandler::update(const glm::vec3& playerPos)
 	// Check if passed through door
 
 #ifdef _DEBUG
+	
 	if (ImGui::Begin("Debug"))
 	{
 		ImGui::PushItemWidth(-100.f);
 		ImGui::Text("Rooms");
 		ImGui::Text("Num: %zd", this->rooms.size());
+
+		if (ImGui::Checkbox("Show all rooms", &showAllRooms))
+		{
+			if (showAllRooms) { activateAll(); }
+			else { setActiveRooms(); }
+		}
+
 		if (ImGui::Button("Reload")) 
 		{
 			generate();
 		} 
-		ImGui::SameLine();
 
 		ImGui::Text("A: %d, N: %d, D: %d", activeIndex, nextIndex, curDoor, (int)insideDoor);
 
@@ -64,10 +71,20 @@ void RoomHandler::update(const glm::vec3& playerPos)
 		roomFinished = true;
 		flipDoors(true);
 	}
-#endif
 
+	if (!showAllRooms)
+	{
+		checkRoom(activeIndex, playerPos);
+		if (nextIndex != -1) checkRoom(nextIndex, playerPos);
+	}
+
+#else
 	checkRoom(activeIndex, playerPos);
 	if (nextIndex != -1) checkRoom(nextIndex, playerPos);
+
+#endif
+
+
 }
 
 void RoomHandler::generate()
@@ -152,15 +169,15 @@ void RoomHandler::generate()
 	}
 	
 	this->roomLayout.clear();
-	setActiveRooms();
-}
 
-/*
-	Something wrong?
-	Something wrong?
-	Something wrong?
-	Something wrong?
-*/
+#ifdef _DEBUG
+	if (showAllRooms) { activateAll(); }
+	else { setActiveRooms(); }
+#else
+	setActiveRooms();
+#endif // _DEBUG
+
+}
 
 void RoomHandler::createDoors(int roomIndex)
 {
@@ -489,3 +506,21 @@ glm::vec3 RoomHandler::snapToGrid(const glm::vec3& pos)
 		0.f, 
 		std::floor(pos.z / TILE_WIDTH) * TILE_WIDTH);
 }
+
+#ifdef _DEBUG
+void RoomHandler::activateAll()
+{
+	for (size_t i = 0; i < rooms.size(); i++)
+	{	
+		for (Entity id : rooms[i].tileIds)
+		{
+			this->scene->setActive(id);
+		}
+
+		if (rooms[i].doorIds[0] != -1) { this->scene->setActive(rooms[i].doorIds[0]); }
+		if (rooms[i].doorIds[1] != -1) { this->scene->setActive(rooms[i].doorIds[1]); }
+		if (rooms[i].doorIds[2] != -1) { this->scene->setActive(rooms[i].doorIds[2]); }
+		if (rooms[i].doorIds[3] != -1) { this->scene->setActive(rooms[i].doorIds[3]); }		
+	}
+}
+#endif // _DEBUG
