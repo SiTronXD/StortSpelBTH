@@ -11,8 +11,6 @@ private:
 
     int camEntity;
 	int entity;
-    int testEnemy;
-    int playerID;
 
 public:
     GameScene();
