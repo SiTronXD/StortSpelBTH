@@ -2,7 +2,7 @@
 #include "vengine/application/Scene.hpp"
 
 const float RoomHandler::TILE_WIDTH = 20.f;
-const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 6;
+const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 10;
 #define PRINT_POS(pos) printf("(%d, %d, %d)\n", (int)pos.x, (int)pos.y, (int)pos.z)
 
 RoomHandler::RoomHandler()
@@ -281,69 +281,21 @@ void RoomHandler::generatePathways()
 		printf("P0: (%f, %f, %f), P1: (%f, %f, %f)\n", p0.x, p0.y, p0.z, p1.x, p1.y, p1.z);
 		printf("dV: (%f, %f, %f), sV: (%f, %f, %f)\n\n", dV.x, dV.y, dV.z, sV.x, sV.y, sV.z);
 
-		char cur = '\0';
-		char old = '\0';
+		char curDir = '\0';
+		char oldDir = '\0';
 		int num = 0;
-		size_t numBorders = pathIds.size();
+
 		while(true)
 		{
 			pathIds.emplace_back(this->createPathEntity());
 			this->scene->getComponent<Transform>(pathIds.back()).position = snapToGrid(curPos);
 			
-			auto a = snapToGrid(curPos);
+			//auto a = snapToGrid(curPos);
 			//printf("(%f, %f, %f), (%f, %f, %f)\n", curPos.x, curPos.y, curPos.z, a.x, a.y, a.z);
 
 			if (glm::length(curPos - p0) >= glm::length(dV))
 			{
-				if (old == 'f')
-				{
-					printf("Creating...\n");
-					borderPos = curPos;
-					borderPos.x += sV.x;
-					borderPos.z += sV.z;
-					for (int j = 0; j < num; j++)
-					{
-						borderPos.x -= sV.x;
-						entity = createPathBorderEntity(borderPos);
-						this->pathIds.emplace_back(entity);
-
-						borderPos.z -= sV.z * 2.f;
-						entity = createPathBorderEntity(borderPos);
-						this->pathIds.emplace_back(entity);
-						borderPos.z += sV.z * 2.f;
-					}
-					//if (num == 1 || num == 0)
-					//{
-					//	borderPos.x -= sV.x;
-					//	//borderPos.z += sV.z;
-					//	entity = createPathBorderEntity(borderPos);
-					//	this->pathIds.emplace_back(entity);
-					//}
-				}
-				else
-				{
-					printf("Creating...\n");
-					borderPos = curPos;
-					borderPos.x += sV.x;
-					for (int j = 0; j < num; j++)
-					{
-						borderPos.z -= sV.z;
-						entity = createPathBorderEntity(borderPos);
-						this->pathIds.emplace_back(entity);
-
-						borderPos.x -= sV.x * 2.f;
-						entity = createPathBorderEntity(borderPos);
-						this->pathIds.emplace_back(entity);
-						borderPos.x += sV.x * 2.f;
-					}
-					//if (num == 1 || num == 0)
-					//{
-					//	//borderPos.x -= sV.x;
-					//	borderPos.z += sV.z;
-					//	entity = createPathBorderEntity(borderPos);
-					//	this->pathIds.emplace_back(entity);
-					//}
-				}
+				if (curDir)
 				break;
 			}
 
@@ -351,7 +303,7 @@ void RoomHandler::generatePathways()
 			//printf("e2: %f, err: %f\n", e2, err);
 
 			borderPos = curPos;
-			old = cur;
+			oldDir = curDir;
 
 			if (e2 > dV.z)
 			{
@@ -359,7 +311,7 @@ void RoomHandler::generatePathways()
 				curPos.x += sV.x;
 				printf("First\n");
 
-				cur = 'f';
+				curDir = 'x';
 			}
 			else if (e2 < dV.x)
 			{
@@ -367,20 +319,20 @@ void RoomHandler::generatePathways()
 				curPos.z += sV.z;
 				printf("Second\n");
 
-				cur = 's';
+				curDir = 'z';
 			}
 
 #if 1
 			num++;
-			printf("cur: %c, old: %c\n", cur, old);
+			printf("cur: %c, old: %c\n", curDir, oldDir);
 			//continue;
-			if (old != cur && old != '\0')
+			if (oldDir != curDir && oldDir != '\0')
 			{
 				printf("Hello?\n");
 				printf("Num: %d\n", num);
 				printf("(%f, %f, %f)\n", borderPos.x,borderPos.y,borderPos.z);
 
-				if (old == 'f')
+				if (oldDir == 'x')
 				{
 					printf("Creating...\n");
 					//borderPos = curPos;
@@ -396,16 +348,34 @@ void RoomHandler::generatePathways()
 						this->pathIds.emplace_back(entity);
 						borderPos.z += sV.z * 2.f;
 					}
-					//if (num == 1 || num == 0)
-					//{
-					//	borderPos.x -= sV.x;
-					//	//borderPos.z += sV.z;
-					//	entity = createPathBorderEntity(borderPos);
-					//	this->pathIds.emplace_back(entity);
-					//}
+					
 				}
-				else
+				else if (oldDir == 'z')
 				{
+					auto b = borderPos;
+					if (std::abs(dV.x) > std::abs(dV.z))
+					{
+						b.z += sV.z;
+						entity = createPathBorderEntity(b);
+						this->pathIds.emplace_back(entity);
+						b.z -= sV.z;
+
+						b.z -= sV.z * 2.f;
+						entity = createPathBorderEntity(b);
+						this->pathIds.emplace_back(entity);
+					}
+					else
+					{
+						b.x -= sV.x;
+						entity = createPathBorderEntity(b);
+						this->pathIds.emplace_back(entity);
+						//b.x -= sV.x;
+
+						b.x += sV.x * 3.f;
+						entity = createPathBorderEntity(b);
+						this->pathIds.emplace_back(entity);
+					}
+
 					printf("Creating...\n");
 					//borderPos = curPos;
 					borderPos.x += sV.x;
@@ -420,14 +390,15 @@ void RoomHandler::generatePathways()
 						this->pathIds.emplace_back(entity);
 						borderPos.x += sV.x * 2.f;
 					}
-					//if (num == 1 || num == 0)
-					//{
-					//	//borderPos.x -= sV.x;
-					//	borderPos.z += sV.z;
-					//	entity = createPathBorderEntity(borderPos);
-					//	this->pathIds.emplace_back(entity);
-					//}
 				}
+
+				/*else if (curDir == 's')
+				{
+					borderPos.z -= sV.z;
+					entity = createPathBorderEntity(borderPos);
+					this->pathIds.emplace_back(entity);
+				}*/
+
 				num = 0;
 			}
 
@@ -500,7 +471,6 @@ void RoomHandler::generatePathways()
 #endif
 			
 		}
-		printf("num border: %zd\n", pathIds.size() - numBorders );
 	}
 }
 
