@@ -36,7 +36,7 @@ private:
 	{
 		Room()
 			:doorIds{-1,-1,-1,-1},
-			connectingIndex{-1,-1,-1,-1}
+			connectingIndex{-1,-1,-1,-1}, finished(false)
 		{		
 		}
 
@@ -44,6 +44,8 @@ private:
 
 		Entity doorIds[4];
 		int connectingIndex[4];
+
+		bool finished;
 	};
 
 	// Scene

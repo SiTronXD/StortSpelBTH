@@ -65,26 +65,26 @@ void RoomHandler::update(const glm::vec3& playerPos)
 	}
 	ImGui::End();
 
+#endif
+
 
 	if (Input::isKeyPressed(Keys::E)) 
 	{
 		roomFinished = true;
 		flipDoors(true);
+		rooms[activeIndex].finished = true;
 	}
 
+#ifdef _DEBUG
 	if (!showAllRooms)
 	{
 		checkRoom(activeIndex, playerPos);
 		if (nextIndex != -1) checkRoom(nextIndex, playerPos);
 	}
-
 #else
 	checkRoom(activeIndex, playerPos);
-	if (nextIndex != -1) checkRoom(nextIndex, playerPos);
-
-#endif
-
-
+	if (nextIndex != -1) { checkRoom(nextIndex, playerPos); }
+#endif // _DEBUG
 }
 
 void RoomHandler::generate()
@@ -387,12 +387,12 @@ void RoomHandler::checkRoom(int index, const glm::vec3& playerPos)
 
 		if (box.colliding(tra.position, playerPos))
 		{
-			if (index == nextIndex)
+			if (index == nextIndex && !rooms[index].finished)
 			{
 				activeIndex = index;
 				nextIndex = -1;
 				roomFinished = false;
-				
+
 				setActiveRooms();
 				flipDoors(false);
 			}
@@ -428,6 +428,8 @@ void RoomHandler::reset()
 		if (room.doorIds[1] != -1) { this->scene->removeEntity(room.doorIds[1]); room.doorIds[1] = -1; }
 		if (room.doorIds[2] != -1) { this->scene->removeEntity(room.doorIds[2]); room.doorIds[2] = -1; }
 		if (room.doorIds[3] != -1) { this->scene->removeEntity(room.doorIds[3]); room.doorIds[3] = -1; }
+
+		room.finished = false;
 	}																				  
 
 	for (int& id : pathIds)
