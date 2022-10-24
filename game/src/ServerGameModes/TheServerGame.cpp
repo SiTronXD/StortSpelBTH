@@ -3,9 +3,9 @@
 
 TheServerGame::TheServerGame() 
 {
-  roomHandler.init(5, 4);
-  roomHandler.generateRoom();
+
 }
+
 #include <iostream>
 void TheServerGame::init() {
 
