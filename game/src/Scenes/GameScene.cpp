@@ -9,8 +9,7 @@
 void decreaseFps();
 double heavyFunction(double value);
 
-GameScene::GameScene():
-	camEntity(-1), entity(-1)
+GameScene::GameScene()
 {
 }
 
@@ -20,38 +19,26 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
-    int ghost = this->getResourceManager()->addMesh("assets/models/ghost.obj");
+	//int ghost = this->getResourceManager()->addMesh("assets/models/ghost.obj");
 
-	this->entity = this->createEntity();
-	//this->setComponent<MeshComponent>(this->entity, ghost);
-	//this->setComponent<Movement>(this->entity);
-	//this->setComponent<Combat>(this->entity);
-	//Transform& transform = this->getComponent<Transform>(this->entity);
-	//transform.position = glm::vec3(0.0f, 0.0f, 20.0f);
-	//transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
-	//transform.scale = glm::vec3(5.0f);
-	//this->createSystem<CombatSystem>(this, entity);
-	//this->createSystem<MovementSystem>(this, this->entity);
-
-	int floor = this->createEntity();
-    this->setComponent<MeshComponent>(floor);
-    Transform& transform2 = this->getComponent<Transform>(floor);
-    transform2.position   = glm::vec3(0.0f, -10.0f, 0.0f);
-    transform2.scale      = glm::vec3(100.f, 0.1f, 100.f);
-
-	//this->camEntity = this->createEntity();
-	//this->setComponent<Camera>(this->camEntity, 1.0f);
-	//this->setComponent<CameraMovement>(this->camEntity);
-	//this->setMainCamera(this->camEntity);
-	//Transform& camTransform = this->getComponent<Transform>(this->camEntity);
-	//camTransform.position = glm::vec3(1.0f);
-
- //   this->createSystem<CameraMovementSystem>(this, this->entity);
+    roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
+	roomHandler.generate();
 }
 
 void GameScene::update()
 {
-	static double value = 1234567890.0;
+	Entity mainCameraID = this->getMainCameraID();
+	Entity player = -1;
+
+	if (this->hasComponents<Script>(mainCameraID))
+	{
+		if (this->getScriptHandler()->getScriptComponentValue(this->getComponent<Script>(mainCameraID), player, "playerID"))
+		{
+			roomHandler.update(this->getComponent<Transform>(player).position);
+		}
+	}
+
+
 	decreaseFps();
 }
 

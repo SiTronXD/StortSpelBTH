@@ -1,18 +1,22 @@
 #pragma once
 
 #include "vengine.h"
+#include "../World Handling/Room Handler.h"
 
-class GameScene : public Scene
+class GameScene: public Scene
 {
 private:
-	int camEntity;
+
+    RoomHandler roomHandler;
+
+    int camEntity;
 	int entity;
+
 public:
-	GameScene();
-	virtual ~GameScene();
+    GameScene();
+    virtual ~GameScene();
 
-	// Inherited via Scene
-	virtual void init() override;
-	virtual void update() override;
+    // Inherited via Scene
+    virtual void init() override;
+    virtual void update() override;
 };
-

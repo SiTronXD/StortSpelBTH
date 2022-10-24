@@ -34,4 +34,4 @@ prefab.Transform = {
 }
 scene.createPrefab(prefab)]]
 
-scene.createSystem("scripts/system.lua")
+--scene.createSystem("scripts/system.lua")

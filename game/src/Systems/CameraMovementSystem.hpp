@@ -15,13 +15,17 @@ private:
 
 public:
 
-      CameraMovementSystem(Scene* scene, int playerID): scene(scene), playerID(playerID)
+      CameraMovementSystem(Scene* scene, int playerID)
+          :scene(scene), playerID(playerID)
       {
       }
 
       bool update(entt::registry& reg, float deltaTime) final 
       {
-          camMovement(deltaTime);
+           if (scene->hasComponents<CameraMovement>(scene->getMainCameraID()))
+           {
+               camMovement(deltaTime);
+           }
 
           return false;
       }
