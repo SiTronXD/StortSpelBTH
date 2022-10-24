@@ -2,13 +2,15 @@
 #include "vengine/application/Scene.hpp"
 
 const float RoomHandler::TILE_WIDTH = 20.f;
-const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 3;
+const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 6;
+#define PRINT_POS(pos) printf("(%d, %d, %d)\n", (int)pos.x, (int)pos.y, (int)pos.z)
 
 RoomHandler::RoomHandler()
 	:scene(nullptr), resourceMan(nullptr), hasDoor{},
 	activeIndex(0), nextIndex(-1),
 	openDoorMeshID(0), closedDoorMeshID(0)
 {
+	srand((unsigned)time(0));
 }
 
 RoomHandler::~RoomHandler()
@@ -59,6 +61,7 @@ void RoomHandler::update(const glm::vec3& playerPos)
 		} 
 
 		ImGui::Text("A: %d, N: %d, D: %d", activeIndex, nextIndex, curDoor, (int)insideDoor);
+		ImGui::Text("Pos: (%d, %d, %d)", (int)playerPos.x, (int)playerPos.y, (int)playerPos.z);
 
 		ImGui::Separator();
 		ImGui::PopItemWidth();
@@ -249,14 +252,18 @@ void RoomHandler::setExitPoints(int roomIndex)
 
 void RoomHandler::generatePathways()
 {	
+	printf("#################################\n");
 	glm::vec3 dV;
 	glm::vec3 sV{};
 	glm::vec3 curPos{};
+	glm::vec3 borderPos{};
+	Entity entity;
 
 	for (size_t i = 0; i < this->exitPairs.size(); i++)
 	{
 		glm::vec3& p0 = this->exitPairs[i].first;
 		glm::vec3& p1 = this->exitPairs[i].second;
+
 
 		if ((p1.x - p0.x) < 0.f) { std::swap(p0, p1); }
 
@@ -269,31 +276,231 @@ void RoomHandler::generatePathways()
 		sV.z = p0.z < p1.z ? TILE_WIDTH : -TILE_WIDTH;
 
 		float err = dV.x + dV.z;
-		float e2;
+		float e2 = 0.f;
+		printf("--------------------------\n");
+		printf("P0: (%f, %f, %f), P1: (%f, %f, %f)\n", p0.x, p0.y, p0.z, p1.x, p1.y, p1.z);
+		printf("dV: (%f, %f, %f), sV: (%f, %f, %f)\n\n", dV.x, dV.y, dV.z, sV.x, sV.y, sV.z);
 
+		char cur = '\0';
+		char old = '\0';
+		int num = 0;
+		size_t numBorders = pathIds.size();
 		while(true)
 		{
 			pathIds.emplace_back(this->createPathEntity());
 			this->scene->getComponent<Transform>(pathIds.back()).position = snapToGrid(curPos);
 			
+			auto a = snapToGrid(curPos);
+			//printf("(%f, %f, %f), (%f, %f, %f)\n", curPos.x, curPos.y, curPos.z, a.x, a.y, a.z);
+
 			if (glm::length(curPos - p0) >= glm::length(dV))
 			{
+				if (old == 'f')
+				{
+					printf("Creating...\n");
+					borderPos = curPos;
+					borderPos.x += sV.x;
+					borderPos.z += sV.z;
+					for (int j = 0; j < num; j++)
+					{
+						borderPos.x -= sV.x;
+						entity = createPathBorderEntity(borderPos);
+						this->pathIds.emplace_back(entity);
+
+						borderPos.z -= sV.z * 2.f;
+						entity = createPathBorderEntity(borderPos);
+						this->pathIds.emplace_back(entity);
+						borderPos.z += sV.z * 2.f;
+					}
+					//if (num == 1 || num == 0)
+					//{
+					//	borderPos.x -= sV.x;
+					//	//borderPos.z += sV.z;
+					//	entity = createPathBorderEntity(borderPos);
+					//	this->pathIds.emplace_back(entity);
+					//}
+				}
+				else
+				{
+					printf("Creating...\n");
+					borderPos = curPos;
+					borderPos.x += sV.x;
+					for (int j = 0; j < num; j++)
+					{
+						borderPos.z -= sV.z;
+						entity = createPathBorderEntity(borderPos);
+						this->pathIds.emplace_back(entity);
+
+						borderPos.x -= sV.x * 2.f;
+						entity = createPathBorderEntity(borderPos);
+						this->pathIds.emplace_back(entity);
+						borderPos.x += sV.x * 2.f;
+					}
+					//if (num == 1 || num == 0)
+					//{
+					//	//borderPos.x -= sV.x;
+					//	borderPos.z += sV.z;
+					//	entity = createPathBorderEntity(borderPos);
+					//	this->pathIds.emplace_back(entity);
+					//}
+				}
 				break;
 			}
 
 			e2 = TILE_WIDTH * 2.f * err;
+			//printf("e2: %f, err: %f\n", e2, err);
+
+			borderPos = curPos;
+			old = cur;
 
 			if (e2 > dV.z)
 			{
 				err += dV.z;
 				curPos.x += sV.x;
+				printf("First\n");
+
+				cur = 'f';
 			}
 			else if (e2 < dV.x)
 			{
 				err += dV.x;
 				curPos.z += sV.z;
+				printf("Second\n");
+
+				cur = 's';
 			}
+
+#if 1
+			num++;
+			printf("cur: %c, old: %c\n", cur, old);
+			//continue;
+			if (old != cur && old != '\0')
+			{
+				printf("Hello?\n");
+				printf("Num: %d\n", num);
+				printf("(%f, %f, %f)\n", borderPos.x,borderPos.y,borderPos.z);
+
+				if (old == 'f')
+				{
+					printf("Creating...\n");
+					//borderPos = curPos;
+					borderPos.z += sV.z;
+					for (int j = 0; j < num - 1; j++)
+					{
+						borderPos.x -= sV.x;
+						entity = createPathBorderEntity(borderPos);
+						this->pathIds.emplace_back(entity);
+
+						borderPos.z -= sV.z * 2.f;
+						entity = createPathBorderEntity(borderPos);
+						this->pathIds.emplace_back(entity);
+						borderPos.z += sV.z * 2.f;
+					}
+					//if (num == 1 || num == 0)
+					//{
+					//	borderPos.x -= sV.x;
+					//	//borderPos.z += sV.z;
+					//	entity = createPathBorderEntity(borderPos);
+					//	this->pathIds.emplace_back(entity);
+					//}
+				}
+				else
+				{
+					printf("Creating...\n");
+					//borderPos = curPos;
+					borderPos.x += sV.x;
+					for (int j = 0; j < num - 1; j++)
+					{
+						borderPos.z -= sV.z;
+						entity = createPathBorderEntity(borderPos);
+						this->pathIds.emplace_back(entity);
+
+						borderPos.x -= sV.x * 2.f;
+						entity = createPathBorderEntity(borderPos);
+						this->pathIds.emplace_back(entity);
+						borderPos.x += sV.x * 2.f;
+					}
+					//if (num == 1 || num == 0)
+					//{
+					//	//borderPos.x -= sV.x;
+					//	borderPos.z += sV.z;
+					//	entity = createPathBorderEntity(borderPos);
+					//	this->pathIds.emplace_back(entity);
+					//}
+				}
+				num = 0;
+			}
+
+#elif 1
+			if (dirX && !oldDirX)
+			{
+				//printf("---Triggered ONE---\n");
+
+				borderPos.x -= sV.x;
+				
+				Entity entity = createPathBorderEntity(snapToGrid(borderPos));
+				this->pathIds.emplace_back(entity);
+				//printf("(%f, %f, %f)\n", borderPos.x,borderPos.y,borderPos.z);
+				numBorders++;
+			}
+			continue;
+#else
+			else if (!dirX)
+			{	
+				//printf("---Triggered TWO---\n");
+
+				borderPos.x += sV.x;
+				Entity entity = createPathBorderEntity(snapToGrid(borderPos));
+				this->pathIds.emplace_back(entity);
+				//printf("(%f, %f, %f)\n", borderPos.x,borderPos.y,borderPos.z);
+				numBorders++;
+
+				if (!oldDirX)
+				{
+					//printf("---Triggered TWO TWO---\n");
+					borderPos.x -= sV.x * 2.f;
+					entity = createPathBorderEntity(snapToGrid(borderPos));
+					this->pathIds.emplace_back(entity);
+					//printf("(%f, %f, %f)\n", borderPos.x,borderPos.y,borderPos.z);
+					numBorders++;
+				}
+				/*else
+				{
+					printf("---Triggered TWO TWO TWO---\n");
+					borderPos.x -= sV.x * 2.f;
+					entity = createPathBorderEntity(snapToGrid(borderPos));
+					this->pathIds.emplace_back(entity);
+				}*/
+			}
+			else if (oldDirX)
+			{
+				//printf("---Triggered THREE---\n");
+
+				borderPos = curPos;
+				borderPos.z -= sV.z;
+
+				Entity entity = createPathBorderEntity(snapToGrid(borderPos));
+				this->pathIds.emplace_back(entity);
+				//printf("(%f, %f, %f)\n", borderPos.x,borderPos.y,borderPos.z);
+				numBorders++;
+
+				borderPos = curPos;
+				borderPos.x -= sV.x;
+				borderPos.z += sV.z;
+
+				entity = createPathBorderEntity(snapToGrid(borderPos));
+				this->pathIds.emplace_back(entity);
+				numBorders++;
+
+				borderPos.x -= sV.x;
+				entity = createPathBorderEntity(snapToGrid(borderPos));
+				this->pathIds.emplace_back(entity);
+				numBorders++;
+			}
+#endif
+			
 		}
+		printf("num border: %zd\n", pathIds.size() - numBorders );
 	}
 }
 
@@ -370,6 +577,19 @@ Entity RoomHandler::createPathEntity()
 	this->scene->getComponent<Transform>(id).scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE) * TILE_WIDTH;
 
 	return id;
+}
+
+Entity RoomHandler::createPathBorderEntity(const glm::vec3& position)
+{
+	Entity entity = this->scene->createEntity();
+	this->scene->setComponent<MeshComponent>(entity);
+	this->scene->getComponent<MeshComponent>(entity).meshID = tileMeshIds[Tile::Border];
+	Transform& tra = this->scene->getComponent<Transform>(entity);
+	tra.position = position;
+	tra.scale *= RoomGenerator::DEFAULT_TILE_SCALE * TILE_WIDTH;
+	PRINT_POS(tra.position);
+
+	return entity;
 }
 
 void RoomHandler::checkRoom(int index, const glm::vec3& playerPos)
