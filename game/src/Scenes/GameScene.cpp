@@ -4,6 +4,7 @@
 #include "../Systems/CombatSystem.hpp"
 #include "../Systems/CameraMovementSystem.hpp"
 #include "../Systems/AiMovementSystem.hpp"
+#include "../Systems/AiCombatSystem.hpp"
 
 // decreaseFps used for testing game with different framerates
 void decreaseFps();
@@ -19,10 +20,14 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
-	//int ghost = this->getResourceManager()->addMesh("assets/models/ghost.obj");
+	int ghost = this->getResourceManager()->addMesh("assets/models/ghost.obj");
 
-    roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
+	roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
 	roomHandler.generate();
+}
+
+void GameScene::start()
+{
 }
 
 void GameScene::update()
@@ -47,21 +52,21 @@ void decreaseFps()
 	static double result = 1234567890.0;
 
 	static int num = 0;
-    if (ImGui::Begin("FPS decrease")) 
+	if (ImGui::Begin("FPS decrease"))
 	{
 		ImGui::Text("Fps %f", 1.f / Time::getDT());
-        ImGui::InputInt("Loops", &num);
-    }
-    ImGui::End(); 
+		ImGui::InputInt("Loops", &num);
+	}
+	ImGui::End();
 
-    for (int i = 0; i < num; i++) 
+	for (int i = 0; i < num; i++)
 	{
 		result /= std::sqrt(heavyFunction(result));
 		result /= std::sqrt(heavyFunction(result));
 		result /= std::sqrt(heavyFunction(result));
 		result /= std::sqrt(heavyFunction(result));
 		result /= std::sqrt(heavyFunction(result));
-    }
+	}
 }
 
 double heavyFunction(double value)
@@ -75,6 +80,6 @@ double heavyFunction(double value)
 		result /= std::sqrt(std::sqrt(std::sqrt(std::sqrt(value * 3.691284908))));
 		result /= std::sqrt(std::sqrt(std::sqrt(std::sqrt(value * 3.376598278))));
 	}
-	
+
 	return result;
 }

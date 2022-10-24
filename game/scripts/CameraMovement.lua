@@ -5,8 +5,8 @@ function script:init()
 
 	self.maxXRot       = math.pi / 2 - ((math.pi / 2) * 0.15)
     self.minXRot       = -(math.pi / 4) + ((math.pi / 4) * 0.1)
-    self.camDist       = 15
-    self.camHeight     = 8
+    self.camDist       = 30
+    self.camHeight     = 6
     self.sens          = 2
 
     self.shaking       = false

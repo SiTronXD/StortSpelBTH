@@ -188,11 +188,13 @@ SET ERRORLEVEL=0</Command>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
     <ClInclude Include="Components\Movement.h" />
+    <ClInclude Include="src\Components\AiCombat.h" />
     <ClInclude Include="src\Components\AiMovement.h" />
     <ClInclude Include="src\Components\CameraMovement.h" />
     <ClInclude Include="src\Components\Combat.h" />
     <ClInclude Include="src\Components\Movement.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
+    <ClInclude Include="src\Systems\AiCombatSystem.hpp" />
     <ClInclude Include="src\Systems\AiMovementSystem.hpp" />
     <ClInclude Include="src\Systems\CameraMovementSystem.hpp" />
     <ClInclude Include="src\Systems\CombatSystem.hpp" />
