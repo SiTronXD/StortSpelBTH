@@ -9,6 +9,7 @@ private:
 
     RoomHandler roomHandler;
 
+    Entity playerID;
     int camEntity;
 	int entity;
 

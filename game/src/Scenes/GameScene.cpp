@@ -10,7 +10,7 @@
 void decreaseFps();
 double heavyFunction(double value);
 
-GameScene::GameScene()
+GameScene::GameScene() : playerID(-1)
 {
 }
 
@@ -28,21 +28,16 @@ void GameScene::init()
 
 void GameScene::start()
 {
+	std::string playerName = "playerID";
+	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 }
 
 void GameScene::update()
 {
-	Entity mainCameraID = this->getMainCameraID();
-	Entity player = -1;
-
-	if (this->hasComponents<Script>(mainCameraID))
+	if (playerID != -1)
 	{
-		if (this->getScriptHandler()->getScriptComponentValue(this->getComponent<Script>(mainCameraID), player, "playerID"))
-		{
-			roomHandler.update(this->getComponent<Transform>(player).position);
-		}
+		roomHandler.update(this->getComponent<Transform>(playerID).position);
 	}
-
 
 	decreaseFps();
 }
