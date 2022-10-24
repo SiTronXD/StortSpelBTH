@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -118,7 +118,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)deps\vengine\src\vengine\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -180,10 +180,13 @@ SET ERRORLEVEL=0</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\Scenes\CreateAPuzzle.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
     <ClCompile Include="src\World Handling\Room Generator.cpp" />
     <ClCompile Include="src\World Handling\Room Handler.cpp" />
     <ClCompile Include="src\World Handling\Room Layout.cpp" />
+    <ClCompile Include="src\ServerGameModes\TheServerGame.cpp" />
+    <ClCompile Include="src\Scenes\NetworkAI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -193,9 +196,12 @@ SET ERRORLEVEL=0</Command>
     <ClInclude Include="src\Components\CameraMovement.h" />
     <ClInclude Include="src\Components\Combat.h" />
     <ClInclude Include="src\Components\Movement.h" />
+    <ClInclude Include="src\Scenes\CreateAPuzzle.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
     <ClInclude Include="src\Systems\AiCombatSystem.hpp" />
     <ClInclude Include="src\Systems\AiMovementSystem.hpp" />
+    <ClInclude Include="src\Scenes\NetworkAI.h" />
+    <ClInclude Include="src\ServerGameModes\TheServerGame.h" />
     <ClInclude Include="src\Systems\CameraMovementSystem.hpp" />
     <ClInclude Include="src\Systems\CombatSystem.hpp" />
     <ClInclude Include="src\Systems\MovementSystem.hpp" />
@@ -210,6 +216,10 @@ SET ERRORLEVEL=0</Command>
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
+    <None Include="src\Scripts\Prefab.lua" />
+    <None Include="src\Scripts\Prefabs.lua" />
+    <None Include="src\Scripts\PuzzleCreatorLua.lua" />
+    <None Include="src\Scripts\PuzzleLoader.lua" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
