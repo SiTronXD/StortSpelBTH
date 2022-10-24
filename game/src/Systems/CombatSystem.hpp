@@ -75,11 +75,6 @@ public:
 			{
 				combat.activeAttack = noActive;
 			}
-			else
-			{
-				//std::cout << "Light attack already in use\n";
-				//Log::write(std::to_string(combat.hitTimer.count()) + " Over 3 seconds and you can attack again\n" + combat.comboOrder + "\n\n");
-			}
 			break;
 		case heavyActive:
 			// If it takes too long between attacks, resets combo.
@@ -92,21 +87,11 @@ public:
 			{
 				combat.activeAttack = noActive;
 			}
-			else
-			{
-				//std::cout << "Heavy attack already in use\n";
-				//Log::write(std::to_string(combat.hitTimer.count()) + " Over 5 seconds and you can attack again\n" + "\n\n");
-			}
 			break;
 		case comboActive:
 			if (combat.hitTimer.count() > combat.comboAttackTime)
 			{
 				combat.activeAttack = noActive;
-			}
-			else
-			{
-				//std::cout << "Combo attack already in use\n";
-				//Log::write(std::to_string(combat.hitTimer.count()) + " Over 7 seconds and you can attack again\n" + "\n\n");
 			}
 		}
 	};
@@ -138,7 +123,6 @@ public:
 				else
 				{
 					combat.health -= combat.lightHit;
-					//std::cout << combat.comboOrder + "\nYou hit the enemy! New health is " + std::to_string(combat.health) + "\n\n";
 					return true;
 				}
 			}
@@ -166,7 +150,6 @@ public:
 				else
 				{
 					combat.health -= combat.heavyHit;
-					//std::cout << combat.comboOrder + "\nYou hit the enemy! New health is " + std::to_string(combat.health) + "\n\n";
 					return true;
 				}
 			}
@@ -181,21 +164,18 @@ public:
 		if (idx == 0)
 		{
 			combat.health -= combat.comboLightHit;
-			//std::cout << "You hit the enemy with a light combo! New health is " + std::to_string(combat.health) + "\n\n";
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive;
 		}
 		else if (idx == 1)
 		{
 			combat.health -= combat.comboMixHit;
-			//std::cout << "You hit the enemy with a mix combo! New health is " + std::to_string(combat.health) + "\n\n";
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive;
 		}
 		else if (idx == 2)
 		{
 			combat.health -= combat.comboHeavyHit;
-			//std::cout << "You hit the enemy with a heavy combo! New health is " + std::to_string(combat.health) + "\n\n";
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive;
 		}

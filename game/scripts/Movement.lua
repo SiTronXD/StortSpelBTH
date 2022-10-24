@@ -10,7 +10,7 @@ function script:init()
 	self.turnSpeed = 200
 	self.timer = 0
     self.slowDown = 80
-    self.transform.position = vector(0, 0, 0)
+    self.transform.position = vector(0, 2, 0)
     self.transform.rotation = vector(-90, 0, 0)
 end
 
