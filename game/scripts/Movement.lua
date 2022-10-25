@@ -5,7 +5,7 @@ function script:init()
 
 	self.moveDir = vector()
 	self.currentSpeed = vector()
-	self.maxSpeed = 50
+	self.maxSpeed = 100
 	self.speedIncrease = 200
 	self.turnSpeed = 200
 	self.timer = 0

@@ -58,7 +58,7 @@ function script:update(dt)
     self.transform.rotation.x = self.camRot.x * (180 / math.pi)
     
     local scaledFwd = self.transform:forward() * -self.camDist
-    self.camHeight = 200
+    self.camHeight = 100
     self.camDist = 30
     self.transform.position = targetPos + scaledFwd
 end
