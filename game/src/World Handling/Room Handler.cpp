@@ -2,7 +2,7 @@
 #include "vengine/application/Scene.hpp"
 
 const float RoomHandler::TILE_WIDTH = 5.f;
-const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 3;
+const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 10;
 #define PRINT_POS(pos) printf("(%d, %d, %d)\n", (int)pos.x, (int)pos.y, (int)pos.z)
 #define PRINT_POS2(pos) printf("(%d, %d, %d) | ", (int)pos.x, (int)pos.y, (int)pos.z)
 
@@ -372,11 +372,13 @@ void RoomHandler::generatePathways()
 
 			}
 		}
-		printf("Num: %zd - ", pathIds.size() - currentSize);
-		PRINT_POS2(p0);
-		PRINT_POS2(p1);
-		printf("\n");
+		//printf("Num: %zd - ", pathIds.size() - currentSize);
+		//PRINT_POS2(p0);
+		//PRINT_POS2(p1);
+		//printf("\n");
 	}
+
+	printf("DONE\n");
 }
 
 void RoomHandler::scaleRoom(int index, const glm::vec3& roomPos)
