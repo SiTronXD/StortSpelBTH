@@ -54,6 +54,7 @@ private:
 
 	// Layout generation
 	RoomLayout roomLayout;
+	std::vector<bool> verticalConnection;
 	std::vector<std::pair<glm::vec3, glm::vec3>> exitPairs;
 
 	// Room generation

@@ -26,8 +26,8 @@ void RoomLayout::clear()
 
 void RoomLayout::generate()
 {
-	numMainRooms = rand() % 3 + 3; 
-	int numBranches = rand() % numMainRooms + 1; 
+	numMainRooms = 7; //rand() % 3 + 3;
+	int numBranches = 14;// rand() % numMainRooms + 1;
 
 	connections.reserve(size_t(numMainRooms + numBranches));
 
@@ -85,7 +85,7 @@ void RoomLayout::setUpRooms(int numRooms)
 
 bool RoomLayout::setRandomBranch(int numRooms)
 {
-	int branchSize = rand() % 2 + 1;
+	int branchSize = 2;// rand() % 2 + 1;
 
 	bool foundSpot = false;
 	int spot = rand() % (numRooms - 1);
