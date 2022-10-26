@@ -34,10 +34,22 @@ void GameScene::start()
 
 void GameScene::update()
 {
-	if (playerID != -1)
+	if (Input::isKeyPressed(Keys::E)) 
 	{
-		roomHandler.update(this->getComponent<Transform>(playerID).position);
+		// Call when a room is cleared
+		roomHandler.roomCompleted();		
 	}
+
+	// Player entered a new room
+	if (roomHandler.checkPlayer(this->getComponent<Transform>(playerID).position))
+	{
+		const std::vector<Entity>& entites = roomHandler.getFreeTiles();
+		for (Entity entity : entites)
+		{
+			// Hi
+		}
+	}
+	
 
 	decreaseFps();
 }

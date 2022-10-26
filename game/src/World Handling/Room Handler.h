@@ -40,7 +40,8 @@ private:
 		{		
 		}
 
-		std::vector<Entity> tileIds;
+		std::vector<Entity> tiles;
+		std::vector<Entity> borders;
 
 		Entity doorIds[4];
 		int connectingIndex[4];
@@ -84,7 +85,7 @@ private:
 	bool insideDoor = false;
 	bool roomFinished = false; // temp before slayyyy queen yaasss
 
-	void checkRoom(int index, const glm::vec3& playerPos);
+	bool checkRoom(int index, const glm::vec3& playerPos);
 	void setActiveRooms();
 	void flipDoors(bool open);
 
@@ -107,8 +108,12 @@ public:
 	~RoomHandler();
 
 	void init(Scene* scene, ResourceManager* resourceMan, int roomSize, int tileTypes);
-	void update(const glm::vec3& playerPos);
 	void generate();
+
+	void roomCompleted();
+	bool checkPlayer(const glm::vec3& playerPos);
+
+	const std::vector<Entity>& getFreeTiles();
 
 	// Statics
 	static glm::vec3 snapToGrid(const glm::vec3& pos);
