@@ -124,28 +124,40 @@ void RoomHandler::generate()
 		this->rooms[i].connectingIndex[2] = roomRef.up;
 		this->rooms[i].connectingIndex[3] = roomRef.down;
 
+		//this->rooms[i].borders.reserve();
+		//this->rooms[i].tiles.reserve();
+
 		// Generate tiles, doors, borders and connection point
 		this->roomGenerator.generateRoom();
+		for (int j = 0; j < roomGenerator.getNrTiles(); j++) 
+		{
+			this->rooms[i].tiles.emplace_back(this->createTileEntity(j, roomPos));
+		}
+
 		this->createDoors(i);
+
 		this->roomGenerator.generateBorders(this->hasDoor);
 		this->setExitPoints(i);
 
-		// Create main tiles
-		const int NUM_TILES = this->roomGenerator.getNrTiles();
-		this->rooms[i].borders.reserve(size_t(NUM_TILES));
-		this->rooms[i].tiles.reserve(size_t(NUM_TILES));
-		for (int j = 0; j < NUM_TILES; j++) 
+		for (int j = 0; j < roomGenerator.getNrBorders(); j++) 
 		{
-			Entity entity = this->createTileEntity(j, roomPos);
-			if (this->roomGenerator.getTile(j).type == Tile::Border)
-			{
-				this->rooms[i].borders.emplace_back(entity);
-			}
-			else
-			{
-				this->rooms[i].tiles.emplace_back(entity);
-			}
+			this->rooms[i].tiles.emplace_back(this->createBorderEntity(j, roomPos));
 		}
+
+		//// Create main tiles
+		//const int NUM_TILES = this->roomGenerator.getNrTiles();
+		//for (int j = 0; j < NUM_TILES; j++) 
+		//{
+		//	Entity entity = this->createTileEntity(j, roomPos);
+		//	if (this->roomGenerator.getTile(j).type == Tile::Border)
+		//	{
+		//		this->rooms[i].borders.emplace_back(entity);
+		//	}
+		//	else
+		//	{
+		//		this->rooms[i].tiles.emplace_back(entity);
+		//	}
+		//}
 	
 		// Scale the room, RoomGenerator is dependant on a tile being 1x1
 		this->scaleRoom(i, roomPos);
@@ -446,6 +458,23 @@ Entity RoomHandler::createTileEntity(int tileIndex, const glm::vec3& roomPos)
 		this->roomGenerator.getTile(tileIndex).position.y);
 
 	return pieceID;
+}
+
+Entity RoomHandler::createBorderEntity(int tileIndex, const glm::vec3& roomPos)
+{
+	Entity pieceID = this->scene->createEntity();
+	this->scene->setComponent<MeshComponent>(pieceID);
+	this->scene->getComponent<MeshComponent>(pieceID).meshID = (int)this->tileMeshIds[this->roomGenerator.getBorder(tileIndex).type];
+
+	Transform& transform = this->scene->getComponent<Transform>(pieceID);
+	transform.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE);
+
+	transform.position = glm::vec3(
+		this->roomGenerator.getBorder(tileIndex).position.x,
+		0.f,
+		this->roomGenerator.getBorder(tileIndex).position.y);
+
+	return pieceID;;
 }
 
 Entity RoomHandler::createDoorEntity(float yRotation)

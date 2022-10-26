@@ -56,7 +56,7 @@ void GameScene::update()
 		const std::vector<Entity>& entites = roomHandler.getFreeTiles();
 		for (Entity entity : entites)
 		{
-			// Hi
+			this->getComponent<Transform>(entity).scale.y = 20.f;
 		}
 	}
 	

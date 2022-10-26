@@ -66,6 +66,7 @@ private:
 	
 	// Create Entities
 	Entity createTileEntity(int tileIndex, const glm::vec3& roomPos);
+	Entity createBorderEntity(int tileIndex, const glm::vec3& roomPos);
 	Entity createDoorEntity(float yRotation);
 	Entity createPathEntity();
 	Entity createPathBorderEntity(const glm::vec3& position);

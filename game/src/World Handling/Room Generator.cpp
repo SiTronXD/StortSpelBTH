@@ -96,7 +96,7 @@ void RoomGenerator::generateBorders(const bool* hasDoors)
                 Tile tile{};
                 tile.type = Tile::Border;
                 tile.position = glm::vec2(j - HALF_ROOM, i - HALF_ROOM);
-                tiles.push_back(tile);
+                borders.push_back(tile);
             }
         }
     }
@@ -313,9 +313,19 @@ int RoomGenerator::getNrTiles() const
     return (int)tiles.size();
 }
 
+int RoomGenerator::getNrBorders() const
+{
+    return (int)borders.size();
+}
+
 const Tile& RoomGenerator::getTile(int index) const
 {
     return tiles[index];
+}
+
+const Tile& RoomGenerator::getBorder(int index) const
+{
+    return borders[index];
 }
 
 const glm::vec2* RoomGenerator::getMinMaxPos() const

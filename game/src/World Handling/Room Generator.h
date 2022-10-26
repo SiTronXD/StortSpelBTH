@@ -32,6 +32,7 @@ private:
 
     Tile::Type* room;
     std::vector<Tile> tiles;
+    std::vector<Tile> borders;
     glm::vec2 minMaxPos[4]; // x, -x, z, -z
     glm::vec2 exitTilesPos[4];
 
@@ -56,7 +57,9 @@ public:
     
     int getRoomTile(int index) const;
     int getNrTiles() const;
+    int getNrBorders() const;
     const Tile& getTile(int index) const;
+    const Tile& getBorder(int index) const;
 
     void reset();
 };
