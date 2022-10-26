@@ -1,5 +1,6 @@
 #include "Room Handler.h"
 #include "vengine/application/Scene.hpp"
+#include "vengine/application/SceneHandler.hpp"
 
 const float RoomHandler::TILE_WIDTH = 25.f;
 const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 3;
@@ -100,6 +101,22 @@ bool RoomHandler::checkPlayer(const glm::vec3& playerPos)
 #endif // _DEBUG
 
 	return false;
+}
+
+void RoomHandler::drawColliders(SceneHandler* sceneHandler)
+{
+	DebugRenderer* dRenderer = sceneHandler->getDebugRenderer();
+
+	const Room& room = this->rooms[this->activeIndex];
+	for (Entity entity : room.borders)
+	{
+		if (this->scene->getComponent<MeshComponent>(entity).meshID == (int)this->tileMeshIds[Tile::Border])
+		{
+			const Transform& tra = this->scene->getComponent<Transform>(entity);
+			const Collider& col = this->scene->getComponent<Collider>(entity);
+			dRenderer->renderBox(tra.position, tra.rotation, col.extents, glm::vec3(1.f, 0.f, 1.f));
+		}
+	}
 }
 
 void RoomHandler::generate()
@@ -427,6 +444,7 @@ void RoomHandler::scaleRoom(int index, const glm::vec3& roomPos)
 
 		tra.scale *= TILE_WIDTH;
 	}
+	const glm::vec3 BOX(TILE_WIDTH, TILE_WIDTH * 2.f, TILE_WIDTH);
 	for (Entity id : room.borders)
 	{
 		Transform& tra = this->scene->getComponent<Transform>(id);
@@ -434,6 +452,10 @@ void RoomHandler::scaleRoom(int index, const glm::vec3& roomPos)
 		tra.position += roomPos;
 
 		tra.scale *= TILE_WIDTH;
+
+		this->scene->setComponent<Collider>(id, Collider::createBox(BOX));
+		//this->scene->setComponent<Rigidbody>(id);
+
 	}
 	for (Entity id : room.exitPaths)
 	{
@@ -470,6 +492,7 @@ Entity RoomHandler::createBorderEntity(int tileIndex, const glm::vec3& roomPos)
 
 	Transform& transform = this->scene->getComponent<Transform>(pieceID);
 	transform.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE);
+
 
 	transform.position = glm::vec3(
 		this->roomGenerator.getBorder(tileIndex).position.x,
