@@ -1,8 +1,8 @@
 #include "SwarmBTs.hpp"
-#include "../../../components/Script.hpp"
+#include "../components/Script.hpp"
 
 //TODO: Remove
-uint32_t getPlayerID_DUMMY(Scene* scene,int playerID_in) 
+uint32_t getPlayerID_DUMMY(SceneHandler* sceneHandler,int playerID_in) 
 {
 	static bool notSet = true;
 	static int playerID = 0; 
@@ -12,18 +12,24 @@ uint32_t getPlayerID_DUMMY(Scene* scene,int playerID_in)
 		notSet = false; 
 	}
 		
-	if (true)
-	{
-		int mainCameraID = scene->getMainCameraID();
+	// if (true)
+	// {
+	// 	// int mainCameraID = scene->getMainCameraID();
 
-		if (scene->hasComponents<Script>(mainCameraID))
-		{
-			Log::warning("OBS! vi h�mtar inte playerID r�tt �n! ");
+	// 	// if (scene->hasComponents<Script>(mainCameraID))
+	// 	// {
+	// 	// 	Log::warning("OBS! vi h�mtar inte playerID r�tt �n! ");
 			
-			//scene->getScriptHandler()->getScriptComponentValue(scene->getComponent<Script>(mainCameraID), playerID, "playerID");
-            scene->getScriptHandler()->getGlobal(playerID, "playerID")
-		}
-	}
+	// 		//scene->getScriptHandler()->getScriptComponentValue(scene->getComponent<Script>(mainCameraID), playerID, "playerID");
+    //         // this->sce
+    //         scene->getScriptHandler()->getGlobal(playerID, "playerID")
+	// 	}
+        
+	// }
+    
+    std::string playerString = "palyerID";
+    sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
+
 	Log::warning("OBS! vi h�mtar inte playerID r�tt �n! ");
 
 	return playerID; 
@@ -37,7 +43,7 @@ BTStatus SwarmBT::hasFriends(uint32_t entityID)
 	BTStatus ret = BTStatus::Success;
 
 	SwarmGroup* groupPtr =
-	    sceneHandler->getComponent<SwarmComponentBT>(entityID).group;
+	    sceneHandler->getScene()->getComponent<SwarmComponentBT>(entityID).group;
 	if (groupPtr->members.size() <= 1)
 	{
 		return BTStatus::Failure;
@@ -75,10 +81,10 @@ BTStatus SwarmBT::JoinGroup(uint32_t entityID)
 	//TODO: Make blob jump in circle!
 
 	SwarmComponentBT& thisSwarmComp =
-	    BehaviorTree::sceneHandler->getComponent<SwarmComponentBT>(entityID);
+	    BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponentBT>(entityID);
 	Transform& thisTransform =
-	    BehaviorTree::sceneHandler->getComponent<Transform>(entityID);
-	sceneHandler->getSceneReg().view<SwarmComponentBT, Transform>().each(
+	    BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
+	sceneHandler->getScene()->getSceneReg().view<SwarmComponentBT, Transform>().each(
 	    [&](const auto& entity, SwarmComponentBT& swComp, Transform& trans)
 	    {
 		    if (static_cast<int>(entity) != entityID)
@@ -101,13 +107,13 @@ BTStatus SwarmBT::seesNewFriends(uint32_t entityID)
 {
 	BTStatus ret = BTStatus::Failure;
 
-	SwarmComponentBT& thisSwarmComp = BehaviorTree::sceneHandler->getComponent<SwarmComponentBT>(entityID);
-	Transform& thisTransform = BehaviorTree::sceneHandler->getComponent<Transform>(entityID);
+	SwarmComponentBT& thisSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponentBT>(entityID);
+	Transform& thisTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
 
 	//TODO perf: Define size of vecor from start to avoid push_back
 	thisSwarmComp.groupsInSight.clear();
 
-	sceneHandler->getSceneReg().view<SwarmComponentBT, Transform>().each(
+	sceneHandler->getScene()->getSceneReg().view<SwarmComponentBT, Transform>().each(
 	    [&](const auto& entity, SwarmComponentBT& swComp, Transform& trans)
 	    {
 		    if (static_cast<int>(entity) != entityID)
@@ -130,7 +136,7 @@ BTStatus SwarmBT::escapeToFriends(uint32_t entityID)
 	BTStatus ret = BTStatus::Running;
 	
 	SwarmComponentBT& thisSwarmComp =
-	    BehaviorTree::sceneHandler->getComponent<SwarmComponentBT>(entityID);
+	    BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponentBT>(entityID);
 
 	SwarmGroup* nearestGroup = nullptr;
 	for (auto& f : thisSwarmComp.groupsInSight)
@@ -147,13 +153,13 @@ BTStatus SwarmBT::escapeToFriends(uint32_t entityID)
 	}
 
 	Transform& thisTransform =
-	    BehaviorTree::sceneHandler->getComponent<Transform>(entityID);
+	    BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
 
 	//TODO: find nearset blob instead.
 	glm::vec3 swarmMidPoint;
 	for (auto& blob : nearestGroup->members)
 	{
-		swarmMidPoint += sceneHandler->getComponent<Transform>(blob).position;
+		swarmMidPoint += sceneHandler->getScene()->getComponent<Transform>(blob).position;
 	}
 	swarmMidPoint /= nearestGroup->members.size();
 	
@@ -176,9 +182,9 @@ BTStatus SwarmBT::escapeFromPlayer(uint32_t entityID)
 	int player = getPlayerID_DUMMY(sceneHandler);
 	
 
-	Transform& thisTransform = BehaviorTree::sceneHandler->getComponent<Transform>(entityID);
-	SwarmComponentBT& thisSwarmComp = BehaviorTree::sceneHandler->getComponent<SwarmComponentBT>(entityID);
-	Transform playerTransform = BehaviorTree::sceneHandler->getComponent<Transform>(player);
+	Transform& thisTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
+	SwarmComponentBT& thisSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponentBT>(entityID);
+	Transform playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(player);
 
 	if (glm::length((thisTransform.position - playerTransform.position)) > thisSwarmComp.sightRadius)
 	{
@@ -199,10 +205,10 @@ BTStatus SwarmBT::informFriends(uint32_t entityID)
 {
 	BTStatus ret = BTStatus::Success;
 
-	SwarmComponentBT& thisSwarmComp = BehaviorTree::sceneHandler->getComponent<SwarmComponentBT>(entityID);
+	SwarmComponentBT& thisSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponentBT>(entityID);
 	for (auto& f : thisSwarmComp.group->members)
 	{
-		SwarmComponentBT& curSwarmComp = BehaviorTree::sceneHandler->getComponent<SwarmComponentBT>(f);
+		SwarmComponentBT& curSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponentBT>(f);
 		curSwarmComp.inCombat = true;
 	}
 
@@ -215,8 +221,8 @@ BTStatus SwarmBT::jumpTowardsPlayer(uint32_t entityID)
 {
 	BTStatus ret = BTStatus::Running;
 
-	Transform& thisTransform = BehaviorTree::sceneHandler->getComponent<Transform>(entityID);
-	Transform& playerTransform = BehaviorTree::sceneHandler->getComponent<Transform>(getPlayerID_DUMMY(sceneHandler));
+	Transform& thisTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
+	Transform& playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(getPlayerID_DUMMY(sceneHandler));
 	glm::vec3 vecToPlayer = glm::normalize(playerTransform.position - thisTransform.position);
 	//Jump towarsd player
 
@@ -233,9 +239,9 @@ BTStatus SwarmBT::closeEnoughToPlayer(uint32_t entityID)
 {
 	BTStatus ret = BTStatus::Failure;
 
-	SwarmComponentBT& thisSwarmComp = BehaviorTree::sceneHandler->getComponent<SwarmComponentBT>(entityID);
-	Transform& thisTransform = BehaviorTree::sceneHandler->getComponent<Transform>(entityID);
-	Transform& playerTransform = BehaviorTree::sceneHandler->getComponent<Transform>(getPlayerID_DUMMY(sceneHandler));
+	SwarmComponentBT& thisSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponentBT>(entityID);
+	Transform& thisTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
+	Transform& playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(getPlayerID_DUMMY(sceneHandler));
 
 	float dist = glm::length(thisTransform.position - playerTransform.position);
 	if (dist <= thisSwarmComp.attackRange)

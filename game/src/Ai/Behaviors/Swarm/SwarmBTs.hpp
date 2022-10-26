@@ -1,11 +1,12 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include "../../../ai/BehaviorTree.hpp"
+
+#include "ai/BehaviorTree.hpp"
 
 // TODO: REmove
 //// DUMMY HELP THINGS
-uint32_t getPlayerID_DUMMY(Scene*scene ,int playerID_in = -1);
+uint32_t getPlayerID_DUMMY(SceneHandler*sceneHandler ,int playerID_in = -1);
 
 struct SwarmGroup
 {
@@ -17,9 +18,9 @@ struct SwarmGroup
 
 struct SwarmComponentBT : public BT_component
 {
-	void registerEntity(uint32_t entityId, Scene* scene) override
+	void registerEntity(uint32_t entityId, SceneHandler* sceneHandler) override
 	{
-		scene->setComponent(entityId, SwarmComponentBT());
+		sceneHandler->getScene()->setComponent(entityId, SwarmComponentBT());
 	}
 
 	float attackRange;

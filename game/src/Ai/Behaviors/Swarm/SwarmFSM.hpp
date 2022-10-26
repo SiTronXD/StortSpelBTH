@@ -1,5 +1,5 @@
 #pragma once
-#include "../../../ai/FSM.hpp"
+#include "ai/FSM.hpp"
 #include "SwarmBTs.hpp"
 
 
@@ -10,8 +10,8 @@ struct SwarmComponentFSM : public FSM_component
 	float speed;
 
 	// Inherited via FSM_component
-	virtual void registerEntity(uint32_t entityId, Scene* scene) override {
-		scene->setComponent(entityId, SwarmComponentFSM());
+	virtual void registerEntity(uint32_t entityId, SceneHandler* sceneHandler) override {
+		sceneHandler->getScene()->setComponent(entityId, SwarmComponentFSM());
 	}
 };
 
