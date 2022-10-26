@@ -80,18 +80,18 @@ void RoomGenerator::generateBorders(const bool* hasDoors)
                 Tile tile{};
                 tile.type = Tile::OneXOne;
                 tile.position = glm::vec2(j - HALF_ROOM, i - HALF_ROOM);
-                tiles.push_back(tile);
+                exitPathsTiles.emplace_back(tile);
 
                 // save the positions of the tile if it's at an edge
                 if (i == ROOM_SIZE - 1 || i == 0 || j == ROOM_SIZE - 1 || j == 0)
                 {
-                    exitTilesPos[index] = tiles.back().position;
+                    exitTilesPos[index] = exitPathsTiles.back().position;
                 }
             }
 
 
             // Place a border-tile on empty tiles
-            else if (room[i * ROOM_SIZE + j] == -1)
+            else if (room[i * ROOM_SIZE + j] == Tile::Invalid)
             {
                 Tile tile{};
                 tile.type = Tile::Border;
@@ -113,7 +113,9 @@ void RoomGenerator::addPiece(glm::vec2 position, int depth)
     {
         std::random_device rd; //obtain random number from hardware
         std::mt19937       gen(rd()); //seed generator
-        if (room[index] < 1) {
+
+        if (room[index] < 1) 
+        {
             std::uniform_int_distribution<> tileTypeRange(1, 10); //TODO: Update when more pieces exists
             Tile::Type tileType = Tile::Type(tileTypeRange(gen));
 
@@ -137,8 +139,8 @@ void RoomGenerator::addPiece(glm::vec2 position, int depth)
                 {
                     placeTile(tileType, position, position + glm::vec2(0, 0.5 * dY));
                     room[getArrayIndexFromPosition(x, y + dY)] = tileType;
-                    break;
                 }
+                break;
             }
             case Tile::TwoXOne: //2x1
             {
@@ -147,8 +149,8 @@ void RoomGenerator::addPiece(glm::vec2 position, int depth)
                 {
                     placeTile(tileType, position, position + glm::vec2(0.5 * dX, 0));
                     room[getArrayIndexFromPosition(x + dX, y)] = tileType;
-                    break;
                 }
+                break;
             }
             case Tile::TwoXTwo: //2x2
             {
@@ -160,8 +162,8 @@ void RoomGenerator::addPiece(glm::vec2 position, int depth)
                     room[getArrayIndexFromPosition(x + dir.x, y)] = tileType;
                     room[getArrayIndexFromPosition(x, y + dir.y)] = tileType;
                     room[getArrayIndexFromPosition(x + dir.x, y + dir.y)] = tileType;
-                    break;
                 }
+                break;
             }
             default:
                 placeTile(Tile::OneXOne, position, position);
@@ -318,6 +320,11 @@ int RoomGenerator::getNrBorders() const
     return (int)borders.size();
 }
 
+int RoomGenerator::getNrExitTiles() const
+{
+    return (int)exitPathsTiles.size();
+}
+
 const Tile& RoomGenerator::getTile(int index) const
 {
     return tiles[index];
@@ -326,6 +333,11 @@ const Tile& RoomGenerator::getTile(int index) const
 const Tile& RoomGenerator::getBorder(int index) const
 {
     return borders[index];
+}
+
+const Tile& RoomGenerator::getExitTiles(int index) const
+{
+    return exitPathsTiles[index];
 }
 
 const glm::vec2* RoomGenerator::getMinMaxPos() const
@@ -337,6 +349,8 @@ void RoomGenerator::reset()
 {
     memset(room, Tile::Invalid, sizeof(int) * ROOM_SIZE * ROOM_SIZE);
     tiles.clear();
+    borders.clear();
+    exitPathsTiles.clear();
 
     minMaxPos[0] = glm::vec2((float)-ROOM_SIZE);
     minMaxPos[1] = glm::vec2((float)ROOM_SIZE);

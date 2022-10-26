@@ -124,46 +124,41 @@ void RoomHandler::generate()
 		this->rooms[i].connectingIndex[2] = roomRef.up;
 		this->rooms[i].connectingIndex[3] = roomRef.down;
 
-		//this->rooms[i].borders.reserve();
-		//this->rooms[i].tiles.reserve();
-
-		// Generate tiles, doors, borders and connection point
+		
+		// Generate room (no borders)
 		this->roomGenerator.generateRoom();
+
+		this->rooms[i].tiles.reserve(size_t(roomGenerator.getNrTiles()));
 		for (int j = 0; j < roomGenerator.getNrTiles(); j++) 
 		{
 			this->rooms[i].tiles.emplace_back(this->createTileEntity(j, roomPos));
 		}
 
 		this->createDoors(i);
-
 		this->roomGenerator.generateBorders(this->hasDoor);
+
+		// Save room exit points
 		this->setExitPoints(i);
 
+		this->rooms[i].borders.reserve(size_t(roomGenerator.getNrBorders()));
 		for (int j = 0; j < roomGenerator.getNrBorders(); j++) 
 		{
-			this->rooms[i].tiles.emplace_back(this->createBorderEntity(j, roomPos));
+			this->rooms[i].borders.emplace_back(this->createBorderEntity(j, roomPos));
 		}
 
-		//// Create main tiles
-		//const int NUM_TILES = this->roomGenerator.getNrTiles();
-		//for (int j = 0; j < NUM_TILES; j++) 
-		//{
-		//	Entity entity = this->createTileEntity(j, roomPos);
-		//	if (this->roomGenerator.getTile(j).type == Tile::Border)
-		//	{
-		//		this->rooms[i].borders.emplace_back(entity);
-		//	}
-		//	else
-		//	{
-		//		this->rooms[i].tiles.emplace_back(entity);
-		//	}
-		//}
+		// Save exit paths
+		this->rooms[i].exitPaths.reserve(size_t(roomGenerator.getNrExitTiles()));
+		for (int j = 0; j < roomGenerator.getNrExitTiles(); j++) 
+		{
+			this->rooms[i].exitPaths.emplace_back(this->createExitTileEntity(j, roomPos));
+		}
+
 	
 		// Scale the room, RoomGenerator is dependant on a tile being 1x1
 		this->scaleRoom(i, roomPos);
 	}
 
-
+#if 1
 	// Find exit pairs and create pathways
 	{
 		const int NUM_MAIN_ROOMS = this->roomLayout.getNumMainRooms();
@@ -209,7 +204,7 @@ void RoomHandler::generate()
 
 		this->generatePathways();
 	}
-	
+#endif	
 	this->roomLayout.clear();
 
 #ifdef _DEBUG
@@ -441,6 +436,14 @@ void RoomHandler::scaleRoom(int index, const glm::vec3& roomPos)
 
 		tra.scale *= TILE_WIDTH;
 	}
+	for (Entity id : room.exitPaths)
+	{
+		Transform& tra = this->scene->getComponent<Transform>(id);
+		tra.position *= TILE_WIDTH;
+		tra.position += roomPos;
+
+		tra.scale *= TILE_WIDTH;
+	}
 }
 
 Entity RoomHandler::createTileEntity(int tileIndex, const glm::vec3& roomPos)
@@ -464,7 +467,7 @@ Entity RoomHandler::createBorderEntity(int tileIndex, const glm::vec3& roomPos)
 {
 	Entity pieceID = this->scene->createEntity();
 	this->scene->setComponent<MeshComponent>(pieceID);
-	this->scene->getComponent<MeshComponent>(pieceID).meshID = (int)this->tileMeshIds[this->roomGenerator.getBorder(tileIndex).type];
+	this->scene->getComponent<MeshComponent>(pieceID).meshID = (int)this->tileMeshIds[Tile::Border];
 
 	Transform& transform = this->scene->getComponent<Transform>(pieceID);
 	transform.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE);
@@ -474,7 +477,26 @@ Entity RoomHandler::createBorderEntity(int tileIndex, const glm::vec3& roomPos)
 		0.f,
 		this->roomGenerator.getBorder(tileIndex).position.y);
 
-	return pieceID;;
+	return pieceID;
+}
+
+Entity RoomHandler::createExitTileEntity(int tileIndex, const glm::vec3& roomPos)
+{
+	Entity pieceID = this->scene->createEntity();
+	this->scene->setComponent<MeshComponent>(pieceID);
+	this->scene->getComponent<MeshComponent>(pieceID).meshID = (int)this->tileMeshIds[Tile::OneXOne];
+
+	Transform& transform = this->scene->getComponent<Transform>(pieceID);
+	transform.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE);
+
+	transform.position = glm::vec3(
+		this->roomGenerator.getExitTiles(tileIndex).position.x,
+		0.f,
+		this->roomGenerator.getExitTiles(tileIndex).position.y);
+
+	//printf("(%f, %f, %f)\n", transform.position.x, transform.position.y, transform.position.z);
+
+	return pieceID;
 }
 
 Entity RoomHandler::createDoorEntity(float yRotation)
@@ -574,8 +596,13 @@ void RoomHandler::reset()
 		{
 			this->scene->removeEntity(id);
 		}
+		for (const Entity& id : room.exitPaths)
+		{
+			this->scene->removeEntity(id);
+		}
 		room.tiles.clear();
 		room.borders.clear();
+		room.exitPaths.clear();
 
 		if (room.doorIds[0] != -1) { this->scene->removeEntity(room.doorIds[0]); room.doorIds[0] = -1; }
 		if (room.doorIds[1] != -1) { this->scene->removeEntity(room.doorIds[1]); room.doorIds[1] = -1; }
@@ -614,6 +641,10 @@ void RoomHandler::setActiveRooms()
 			{
 				this->scene->setActive(id);
 			}
+			for (const Entity& id : this->rooms[i].exitPaths)
+			{
+				this->scene->setActive(id);
+			}
 
 			if (this->rooms[i].doorIds[0] != -1) { this->scene->setActive(this->rooms[i].doorIds[0]); }
 			if (this->rooms[i].doorIds[1] != -1) { this->scene->setActive(this->rooms[i].doorIds[1]); }
@@ -627,6 +658,10 @@ void RoomHandler::setActiveRooms()
 				this->scene->setInactive(id);
 			}
 			for (const Entity& id : this->rooms[i].borders)
+			{
+				this->scene->setInactive(id);
+			}
+			for (const Entity& id : this->rooms[i].exitPaths)
 			{
 				this->scene->setInactive(id);
 			}
@@ -694,6 +729,10 @@ void RoomHandler::activateAll()
 			this->scene->setActive(id);
 		}
 		for (const Entity& id : this->rooms[i].borders)
+		{
+			this->scene->setActive(id);
+		}
+		for (const Entity& id : this->rooms[i].exitPaths)
 		{
 			this->scene->setActive(id);
 		}
