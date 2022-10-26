@@ -180,9 +180,10 @@ void RoomHandler::generate()
 
 #ifdef _DEBUG
 	if (this->showAllRooms) { this->activateAll(); }
-	else { this->setActiveRooms(); }
+	else { this->setActiveRooms(); flipDoors(false); }
 #else
 	this->setActiveRooms();
+	flipDoors(false);
 #endif // _DEBUG
 
 }
@@ -554,21 +555,6 @@ void RoomHandler::setActiveRooms()
 			if (this->rooms[i].doorIds[3] != -1) { this->scene->setInactive(this->rooms[i].doorIds[3]); }
 		}
 	}
-
-	if (this->nextIndex == -1)
-	{
-		for (const Entity& entity : this->pathIds)
-		{
-			this->scene->setInactive(entity);
-		}
-	}
-	else
-	{
-		for (const Entity& entity : this->pathIds)
-		{
-			this->scene->setActive(entity);
-		}
-	}
 }
 
 void RoomHandler::flipDoors(bool open)
@@ -590,6 +576,21 @@ void RoomHandler::flipDoors(bool open)
 		if (nextRoom.doorIds[1] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doorIds[1]).meshID = doorId; }
 		if (nextRoom.doorIds[2] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doorIds[2]).meshID = doorId; }
 		if (nextRoom.doorIds[3] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doorIds[3]).meshID = doorId; }
+	}
+
+	if (open)
+	{
+		for (const Entity& entity : this->pathIds)
+		{
+			this->scene->setActive(entity);
+		}
+	}
+	else
+	{
+		for (const Entity& entity : this->pathIds)
+		{
+			this->scene->setInactive(entity);
+		}
 	}
 }
 
