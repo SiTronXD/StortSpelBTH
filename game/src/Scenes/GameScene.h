@@ -10,8 +10,8 @@ private:
     RoomHandler roomHandler;
 
     Entity playerID;
-    int camEntity;
-	int entity;
+    std::vector<Entity> enemyIDs;
+    int swarm;
 
 public:
     GameScene();

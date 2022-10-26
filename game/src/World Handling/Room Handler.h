@@ -35,9 +35,9 @@ private:
 	struct Room
 	{
 		Room()
-			:doorIds{-1,-1,-1,-1},
-			connectingIndex{-1,-1,-1,-1}, finished(false)
-		{		
+			:doorIds{ -1,-1,-1,-1 },
+			connectingIndex{ -1,-1,-1,-1 }, finished(false)
+		{
 		}
 
 		std::vector<Entity> tiles;
@@ -63,13 +63,13 @@ private:
 	std::vector<RoomExitPoint> roomExitPoints;
 	bool hasDoor[4];
 	void setExitPoints(int roomIndex);
-	
+
 	// Create Entities
 	Entity createTileEntity(int tileIndex, const glm::vec3& roomPos);
 	Entity createDoorEntity(float yRotation);
 	Entity createPathEntity();
 	Entity createPathBorderEntity(const glm::vec3& position);
-	
+
 	// Create tiles
 	void createDoors(int roomIndex);
 	void generatePathways();
@@ -77,7 +77,7 @@ private:
 	// IDs
 	std::vector<Room> rooms;
 	std::vector<Entity> pathIds;
-	
+
 	// Room Updating
 	int activeIndex = 0;
 	int nextIndex = -1;

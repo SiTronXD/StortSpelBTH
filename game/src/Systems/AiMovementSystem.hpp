@@ -38,35 +38,31 @@ public:
 
     void move(AiMovement& movement, Transform& transform, float dt)
     {
-        Entity mainCamID = scene->getMainCameraID();
-        if (scene->hasComponents<Script>(mainCamID))
+        Transform playerTrans = scene->getComponent<Transform>(playerID);
+        if (transform.position != playerTrans.position)
         {
-            Transform playerTrans = scene->getComponent<Transform>(playerID);
-            if (transform.position != playerTrans.position)
+            movement.distance = glm::length(transform.position - playerTrans.position);
+            if (movement.distance <= 100.f)
             {
-                movement.distance = glm::length(transform.position - playerTrans.position);
-                if (movement.distance <= 100.f)
+                if (movement.distance <= 8.f)
                 {
-                    if (movement.distance <= 8.f)
-                    {
-                        movement.currentSpeed.y = 0.f;
-                    }
-                    else
-                    {
-                        movement.currentSpeed.y += movement.speedIncrease * dt;
-
-                        if (movement.currentSpeed.y > movement.maxSpeed)
-                        {
-                            movement.currentSpeed.y = movement.maxSpeed;
-                        }
-                        else if (movement.currentSpeed.y < -movement.maxSpeed)
-                        {
-                            movement.currentSpeed.y = -movement.maxSpeed;
-                        }
-                    }
-                    movement.moveDir = glm::normalize(playerTrans.position - transform.position);
-                    transform.position += (movement.moveDir * movement.currentSpeed.y) * dt;
+                    movement.currentSpeed.y = 0.f;
                 }
+                else
+                {
+                    movement.currentSpeed.y += movement.speedIncrease * dt;
+
+                    if (movement.currentSpeed.y > movement.maxSpeed)
+                    {
+                        movement.currentSpeed.y = movement.maxSpeed;
+                    }
+                    else if (movement.currentSpeed.y < -movement.maxSpeed)
+                    {
+                        movement.currentSpeed.y = -movement.maxSpeed;
+                    }
+                }
+                movement.moveDir = glm::normalize(playerTrans.position - transform.position);
+                transform.position += (movement.moveDir * movement.currentSpeed.y) * dt;
             }
         }
     }

@@ -10,7 +10,7 @@
 void decreaseFps();
 double heavyFunction(double value);
 
-GameScene::GameScene() : playerID(-1)
+GameScene::GameScene() : playerID(-1), swarm(-1)
 {
 }
 
@@ -20,7 +20,16 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
-	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+	swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+	for (size_t i = 0; i < 10; i++)
+	{
+		this->enemyIDs.emplace_back();
+		this->enemyIDs.back() = this->createEntity();
+		this->setComponent<MeshComponent>(this->enemyIDs.back(), this->swarm);
+		this->setComponent<AiMovement>(this->enemyIDs.back());
+		this->setComponent<AiCombat>(this->enemyIDs.back());
+		this->setInactive(this->enemyIDs.back());
+	}
 
 	roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
 	roomHandler.generate();
@@ -30,26 +39,44 @@ void GameScene::start()
 {
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+
+	this->setComponent<Combat>(this->playerID);
+	this->createSystem<AiMovementSystem>(this->getSceneHandler(), this->playerID);
+	this->createSystem<AiCombatSystem>(this->getSceneHandler(), this->playerID);
 }
 
 void GameScene::update()
 {
-	if (Input::isKeyPressed(Keys::E)) 
+	if (Input::isKeyPressed(Keys::E))
 	{
 		// Call when a room is cleared
-		roomHandler.roomCompleted();		
+		roomHandler.roomCompleted();
+		for (size_t i = 0; i < this->enemyIDs.size(); i++)
+		{
+			this->setInactive(this->enemyIDs[i]);
+		}
 	}
 
 	// Player entered a new room
 	if (roomHandler.checkPlayer(this->getComponent<Transform>(playerID).position))
 	{
+		int idx = 0;
 		const std::vector<Entity>& entites = roomHandler.getFreeTiles();
 		for (Entity entity : entites)
 		{
-			// Hi
+			if (idx != 10)
+			{
+				this->setActive(this->enemyIDs[idx]);
+				Transform& transform = this->getComponent<Transform>(this->enemyIDs[idx]);
+				Transform& tileTrans = this->getComponent<Transform>(entity);
+				float tileWidth = rand() % (int)RoomHandler::TILE_WIDTH + 0.01f;
+				transform.position = tileTrans.position;
+				transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
+				idx++;
+			}
 		}
 	}
-	
+
 
 	decreaseFps();
 }
