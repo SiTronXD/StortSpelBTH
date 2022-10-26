@@ -26,8 +26,8 @@ void RoomLayout::clear()
 
 void RoomLayout::generate()
 {
-	numMainRooms = rand() % 3 + 3; 
-	int numBranches = rand() % numMainRooms + 1; 
+	numMainRooms = rand() % 3 + 3;
+	int numBranches = rand() % numMainRooms + 1;
 
 	connections.reserve(size_t(numMainRooms + numBranches));
 
