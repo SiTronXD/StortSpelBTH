@@ -54,13 +54,13 @@ protected:
 		//// Movement temporary shit
 		//addEntityTransition("walking", energyMed, "jogging");
 		addEntityTransition("idle", SwarmFSM::idle_to_combat , "combat");
-		addEntityTransition("idle",SwarmFSM::idle_to_escape , "escape");
+		addEntityTransition("idle", SwarmFSM::idle_to_escape , "escape");
 
 		addEntityTransition("combat", SwarmFSM::combat_to_idle, "idle");
 		addEntityTransition("combat", SwarmFSM::combat_to_escape, "escape");
 
-		addEntityTransition("escape",SwarmFSM::escape_to_idle , "combat");
-		addEntityTransition("escape", SwarmFSM::escape_to_combat, "idle");
+		addEntityTransition("escape", SwarmFSM::escape_to_combat , "combat");
+		addEntityTransition("escape", SwarmFSM::escape_to_idle, "idle");
 	
 
 		setInitialNode("idle");

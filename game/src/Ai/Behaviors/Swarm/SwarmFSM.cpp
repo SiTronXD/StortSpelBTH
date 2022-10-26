@@ -112,7 +112,7 @@ bool SwarmFSM::escape_combat(uint32_t entityID)
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
 	SwarmComponentBT& enemySwarmCompBT = FSM::sceneHandler->getScene()->getComponent<SwarmComponentBT>(entityID);
     
-	if (enemySwarmCompBT.group->members.size() > 0)
+	if (enemySwarmCompBT.group->members.size() > 1)
     {
 		ret = true;
     }
