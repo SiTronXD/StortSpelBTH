@@ -158,7 +158,6 @@ void RoomHandler::generate()
 		this->scaleRoom(i, roomPos);
 	}
 
-#if 1
 	// Find exit pairs and create pathways
 	{
 		const int NUM_MAIN_ROOMS = this->roomLayout.getNumMainRooms();
@@ -204,7 +203,7 @@ void RoomHandler::generate()
 
 		this->generatePathways();
 	}
-#endif	
+
 	this->roomLayout.clear();
 
 #ifdef _DEBUG
