@@ -9,9 +9,11 @@ class GameScene: public Scene
 private:
 
     RoomHandler roomHandler;
-    AIHandler* aiHandler;
+    AIHandler* aiHandler = nullptr;
 
     Entity playerID;
+    std::vector<int> swarmEnemies;
+    std::vector<SwarmGroup*> swarmGroups;
     int camEntity;
 	int entity;
 
