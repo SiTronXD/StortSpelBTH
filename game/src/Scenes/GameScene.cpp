@@ -30,14 +30,20 @@ void GameScene::start()
 {
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+
+	this->setComponent<Collider>(playerID, Collider::createCapsule(2.f, 2.f));
 }
 
 void GameScene::update()
 {
-	if (playerID != -1)
-	{
-		roomHandler.update(this->getComponent<Transform>(playerID).position);
-	}
+	Transform& playerTra = this->getComponent<Transform>(playerID);
+	Collider& playerCol = this->getComponent<Collider>(playerID);
+
+	this->getDebugRenderer()->renderCapsule(
+		playerTra.position, playerTra.rotation, playerCol.height, playerCol.radius, glm::vec3(0.f, 1.f, 1.f));
+
+	roomHandler.update(playerTra.position);
+	roomHandler.drawColliders(this->getSceneHandler());
 
 	decreaseFps();
 }

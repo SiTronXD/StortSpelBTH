@@ -4,6 +4,7 @@
 
 class Scene;
 class ResourceManager;
+class SceneHandler;
 typedef int Entity;
 
 // temp before bullet
@@ -108,6 +109,7 @@ public:
 
 	void init(Scene* scene, ResourceManager* resourceMan, int roomSize, int tileTypes);
 	void update(const glm::vec3& playerPos);
+	void drawColliders(SceneHandler* sceneHandler);
 	void generate();
 
 	// Statics
