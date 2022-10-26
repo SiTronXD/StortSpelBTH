@@ -57,8 +57,18 @@ void GameScene::update()
 
 void GameScene::aiEaxample() 
 {
+	auto a = [&](FSM* fsm) -> void {
+		SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
+		int& health = this->getSceneHandler()->getScene()->getComponent<SwarmComponentFSM>(this->swarmEnemies.back()).life;
+		std::string& status = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(this->swarmEnemies.back()).currentNode->status;
+		ImGui::Begin("Blob");
+		ImGui::SliderInt("health", &health, 0, 100);
+        ImGui::Text(status.c_str());
+        ImGui::End();
+	};
 	static SwarmFSM swarmFSM;
 	this->aiHandler->addFSM(&swarmFSM, "swarmFSM");
+	this->aiHandler->addImguiToFSM("swarmFSM", a);
 
 	int ghost = this->getResourceManager()->addMesh("assets/models/ghost.obj");
 	int swarmModel = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
@@ -77,7 +87,7 @@ void GameScene::aiEaxample()
         this->swarmGroups.back()->members.push_back(this->swarmEnemies.back());
         this->getSceneHandler()->getScene()->getComponent<SwarmComponentBT>(this->swarmEnemies.back()).group = this->swarmGroups.back();
 	}
-	int test = 0;
+    
 }
 
 void decreaseFps()
