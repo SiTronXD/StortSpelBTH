@@ -32,6 +32,8 @@ private:
 
     Tile::Type* room;
     std::vector<Tile> tiles;
+    std::vector<Tile> borders;
+    std::vector<Tile> exitPathsTiles;
     glm::vec2 minMaxPos[4]; // x, -x, z, -z
     glm::vec2 exitTilesPos[4];
 
@@ -55,8 +57,14 @@ public:
     const glm::vec2* getMinMaxPos() const;
     
     int getRoomTile(int index) const;
+
     int getNrTiles() const;
+    int getNrBorders() const;
+    int getNrExitTiles() const;
+
     const Tile& getTile(int index) const;
+    const Tile& getBorder(int index) const;
+    const Tile& getExitTiles(int index) const;
 
     void reset();
 };
