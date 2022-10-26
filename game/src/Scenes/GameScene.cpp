@@ -10,7 +10,7 @@
 void decreaseFps();
 double heavyFunction(double value);
 
-GameScene::GameScene() : playerID(-1)
+GameScene::GameScene() : playerID(-1), enemyID(-1)
 {
 }
 
@@ -20,7 +20,13 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
-	int ghost = this->getResourceManager()->addMesh("assets/models/ghost.obj");
+	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+	this->enemyID = this->createEntity();
+	this->setComponent<MeshComponent>(this->enemyID, swarm);
+	Transform& enemyTrans = this->getComponent<Transform>(this->enemyID);
+	enemyTrans.position = glm::vec3(0.f, 0.f, 0.f);
+	this->setComponent<AiMovement>(this->enemyID);
+	this->setComponent<AiCombat>(this->enemyID);
 
 	roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
 	roomHandler.generate();
@@ -30,6 +36,10 @@ void GameScene::start()
 {
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+
+	this->setComponent<Combat>(this->playerID);
+	this->createSystem<AiMovementSystem>(this->getSceneHandler(), playerID);
+	this->createSystem<AiCombatSystem>(this->getSceneHandler(), playerID);
 }
 
 void GameScene::update()
