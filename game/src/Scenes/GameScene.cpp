@@ -61,18 +61,21 @@ void GameScene::update()
 	if (roomHandler.checkPlayer(this->getComponent<Transform>(playerID).position))
 	{
 		int idx = 0;
+		int randNumEnemies = rand() % 8 + 3;
+		int counter = 0;
 		const std::vector<Entity>& entites = roomHandler.getFreeTiles();
 		for (Entity entity : entites)
 		{
-			if (idx != 10)
+			if (idx != 10 && randNumEnemies - counter != 0)
 			{
 				this->setActive(this->enemyIDs[idx]);
 				Transform& transform = this->getComponent<Transform>(this->enemyIDs[idx]);
 				Transform& tileTrans = this->getComponent<Transform>(entity);
-				float tileWidth = rand() % (int)RoomHandler::TILE_WIDTH + 0.01f;
+				float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
 				transform.position = tileTrans.position;
 				transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
 				idx++;
+				counter++;
 			}
 		}
 	}
