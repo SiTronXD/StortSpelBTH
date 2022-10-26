@@ -2,12 +2,14 @@
 
 #include "vengine.h"
 #include "../World Handling/Room Handler.h"
+#include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 
 class GameScene: public Scene
 {
 private:
 
     RoomHandler roomHandler;
+    AIHandler* aiHandler;
 
     Entity playerID;
     int camEntity;
@@ -21,4 +23,8 @@ public:
     virtual void init() override;
     virtual void start() override;
     virtual void update() override;
+
+private:
+    void aiEaxample();
+
 };

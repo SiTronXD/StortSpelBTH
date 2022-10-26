@@ -32,9 +32,10 @@ void GameScene::start()
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 
     // Ai management 
-    AIHandler* aiHandler = this->getAIHandler();
-
+    this->aiHandler = this->getAIHandler();
+	this->aiHandler->init(this->getSceneHandler());
     
+	aiEaxample();
 
 }
 
@@ -43,9 +44,20 @@ void GameScene::update()
 	if (playerID != -1)
 	{
 		roomHandler.update(this->getComponent<Transform>(playerID).position);
+
+		this->aiHandler->update();
 	}
 
 	decreaseFps();
+}
+
+void GameScene::aiEaxample() 
+{
+	static SwarmFSM swarmFSM;
+	this->aiHandler->addFSM(&swarmFSM, "swarmFSM");
+
+	auto enemyID = this->createEntity();      
+    this->aiHandler->createAIEntity(enemyID, "swarmFSM");
 }
 
 void decreaseFps()

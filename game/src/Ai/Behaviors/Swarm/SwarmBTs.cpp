@@ -1,5 +1,5 @@
 #include "SwarmBTs.hpp"
-#include "../components/Script.hpp"
+//#include "../components/Script.hpp"
 
 //TODO: Remove
 uint32_t getPlayerID_DUMMY(SceneHandler* sceneHandler,int playerID_in) 
