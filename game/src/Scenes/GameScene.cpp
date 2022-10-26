@@ -20,7 +20,7 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
-	int ghost = this->getResourceManager()->addMesh("assets/models/ghost.obj");
+	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 
 	roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
 	roomHandler.generate();
@@ -42,8 +42,23 @@ void GameScene::update()
 	this->getDebugRenderer()->renderCapsule(
 		playerTra.position, playerTra.rotation, playerCol.height, playerCol.radius, glm::vec3(0.f, 1.f, 1.f));
 
-	roomHandler.update(playerTra.position);
 	roomHandler.drawColliders(this->getSceneHandler());
+	if (Input::isKeyPressed(Keys::E)) 
+	{
+		// Call when a room is cleared
+		roomHandler.roomCompleted();		
+	}
+
+	// Player entered a new room
+	if (roomHandler.checkPlayer(this->getComponent<Transform>(playerID).position))
+	{
+		const std::vector<Entity>& entites = roomHandler.getFreeTiles();
+		for (Entity entity : entites)
+		{
+			// Hi
+		}
+	}
+	
 
 	decreaseFps();
 }
