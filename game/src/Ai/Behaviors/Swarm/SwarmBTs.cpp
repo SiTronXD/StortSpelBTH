@@ -11,31 +11,15 @@ uint32_t getPlayerID_DUMMY(SceneHandler* sceneHandler,int playerID_in)
 		playerID = playerID_in;
 		notSet = false; 
 	}
-		
-	// if (true)
-	// {
-	// 	// int mainCameraID = scene->getMainCameraID();
 
-	// 	// if (scene->hasComponents<Script>(mainCameraID))
-	// 	// {
-	// 	// 	Log::warning("OBS! vi h�mtar inte playerID r�tt �n! ");
-			
-	// 		//scene->getScriptHandler()->getScriptComponentValue(scene->getComponent<Script>(mainCameraID), playerID, "playerID");
-    //         // this->sce
-    //         scene->getScriptHandler()->getGlobal(playerID, "playerID")
-	// 	}
-        
-	// }
-    
-    std::string playerString = "palyerID";
+
+    std::string playerString = "playerID";
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
-
-	Log::warning("OBS! vi h�mtar inte playerID r�tt �n! ");
 
 	return playerID; 
 }
 
-SwarmGroup* SwarmComponentBT::group = new SwarmGroup;
+//SwarmGroup* SwarmComponentBT::group = new SwarmGroup;
 
 BTStatus SwarmBT::hasFriends(uint32_t entityID)
 {

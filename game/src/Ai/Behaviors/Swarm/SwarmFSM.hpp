@@ -5,7 +5,9 @@
 
 struct SwarmComponentFSM : public FSM_component
 {
-	int life;
+	 int LOW_HEALTH = 30;
+	 int FULL_HEALTH = 100;
+	int life = FULL_HEALTH ;
 	int attack;
 	float speed;
 

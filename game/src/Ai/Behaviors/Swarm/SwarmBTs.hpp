@@ -24,10 +24,10 @@ struct SwarmComponentBT : public BT_component
 		sceneHandler->getScene()->setComponent(entityId, SwarmComponentBT());
 	}
 
-	float attackRange;
-	bool inCombat;
-	float sightRadius;
-	static SwarmGroup* group;
+	float sightRadius	= 10;
+	float attackRange	= sightRadius/2;
+	bool inCombat		= false;
+	SwarmGroup* group;
 	std::vector<SwarmGroup*> groupsInSight;
 };
 
