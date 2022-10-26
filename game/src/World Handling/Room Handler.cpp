@@ -197,6 +197,7 @@ void RoomHandler::generate()
 	this->roomLayout.clear();
 
 #ifdef _DEBUG
+	//showAllRooms = true;
 	if (this->showAllRooms) { this->activateAll(); }
 	else { this->setActiveRooms(); flipDoors(false); }
 #else
@@ -496,7 +497,7 @@ void RoomHandler::checkRoom(int index, const glm::vec3& playerPos)
 				this->activeIndex = index;
 				this->nextIndex = -1;
 				this->roomFinished = false;
-
+				printf("Hello?\n");
 				setActiveRooms();
 				flipDoors(false);
 			}

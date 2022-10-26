@@ -137,8 +137,8 @@ void RoomGenerator::addPiece(glm::vec2 position, int depth)
                 {
                     placeTile(tileType, position, position + glm::vec2(0, 0.5 * dY));
                     room[getArrayIndexFromPosition(x, y + dY)] = tileType;
-                    break;
                 }
+                break;
             }
             case Tile::TwoXOne: //2x1
             {
@@ -147,8 +147,8 @@ void RoomGenerator::addPiece(glm::vec2 position, int depth)
                 {
                     placeTile(tileType, position, position + glm::vec2(0.5 * dX, 0));
                     room[getArrayIndexFromPosition(x + dX, y)] = tileType;
-                    break;
                 }
+                break;
             }
             case Tile::TwoXTwo: //2x2
             {
@@ -160,8 +160,8 @@ void RoomGenerator::addPiece(glm::vec2 position, int depth)
                     room[getArrayIndexFromPosition(x + dir.x, y)] = tileType;
                     room[getArrayIndexFromPosition(x, y + dir.y)] = tileType;
                     room[getArrayIndexFromPosition(x + dir.x, y + dir.y)] = tileType;
-                    break;
                 }
+                break;
             }
             default:
                 placeTile(Tile::OneXOne, position, position);
