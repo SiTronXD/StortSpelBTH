@@ -30,6 +30,12 @@ void GameScene::start()
 {
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+
+    // Ai management 
+    AIHandler* aiHandler = this->getAIHandler();
+
+    
+
 }
 
 void GameScene::update()

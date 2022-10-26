@@ -226,6 +226,8 @@ BTStatus SwarmBT::jumpTowardsPlayer(uint32_t entityID)
 	glm::vec3 vecToPlayer = glm::normalize(playerTransform.position - thisTransform.position);
 	//Jump towarsd player
 
+    
+
 	//TODO: Something may be wrong here??!?
 	if (closeEnoughToPlayer(entityID) == BTStatus::Success)
 	{
