@@ -74,17 +74,17 @@ void RoomHandler::update(const glm::vec3& playerPos)
 	{
 		this->roomFinished = true;
 		this->flipDoors(true);
-		this->rooms[activeIndex].finished = true;
+		this->rooms[this->activeIndex].finished = true;
 	}
 
 #ifdef _DEBUG
-	if (!showAllRooms)
+	if (!this->showAllRooms)
 	{
 		this->checkRoom(this->activeIndex, playerPos);
 		if (this->nextIndex != -1) { this->checkRoom(this->nextIndex, playerPos); };
 	}
 #else
-	this->heckRoom(this->activeIndex, this->playerPos);
+	this->checkRoom(this->activeIndex, this->playerPos);
 	if (this->nextIndex != -1) { this->checkRoom(this->nextIndex, this->playerPos); }
 #endif // _DEBUG
 }
@@ -346,7 +346,7 @@ void RoomHandler::generatePathways()
 						if (glm::dot(mPosToOffset, mPosToOffset) < (TILE_WIDTH * TILE_WIDTH))
 						{
 							canPlace = false;
-							m = pathIds.size();
+							m = this->pathIds.size();
 						}
 					}
 				}
@@ -526,7 +526,7 @@ void RoomHandler::reset()
 
 void RoomHandler::setActiveRooms()
 {
-	const int num = (int)rooms.size();
+	const int num = (int)this->rooms.size();
 	for (int i = 0; i < num; i++)
 	{
 		if (i == this->activeIndex || i == this->nextIndex)
@@ -555,7 +555,7 @@ void RoomHandler::setActiveRooms()
 		}
 	}
 
-	if (nextIndex == -1)
+	if (this->nextIndex == -1)
 	{
 		for (const Entity& entity : this->pathIds)
 		{
