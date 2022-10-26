@@ -36,7 +36,7 @@ private:
 	{
 		Room()
 			:doorIds{-1,-1,-1,-1},
-			connectingIndex{-1,-1,-1,-1}
+			connectingIndex{-1,-1,-1,-1}, finished(false)
 		{		
 		}
 
@@ -44,6 +44,8 @@ private:
 
 		Entity doorIds[4];
 		int connectingIndex[4];
+
+		bool finished;
 	};
 
 	// Scene
@@ -52,6 +54,7 @@ private:
 
 	// Layout generation
 	RoomLayout roomLayout;
+	std::vector<bool> verticalConnection;
 	std::vector<std::pair<glm::vec3, glm::vec3>> exitPairs;
 
 	// Room generation
@@ -64,6 +67,7 @@ private:
 	Entity createTileEntity(int tileIndex, const glm::vec3& roomPos);
 	Entity createDoorEntity(float yRotation);
 	Entity createPathEntity();
+	Entity createPathBorderEntity(const glm::vec3& position);
 	
 	// Create tiles
 	void createDoors(int roomIndex);
