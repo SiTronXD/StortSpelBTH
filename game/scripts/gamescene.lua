@@ -10,7 +10,7 @@ scene.setMainCamera(cam)
 
 playerID = scene.createEntity()
 scene.setComponent(playerID, CompType.Mesh, ghost)
-scene.setComponent(playerID, CompType.Script, "scripts/Movement.lua")
+scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
 scene.getComponent(cam, CompType.Script).playerID = playerID
 scene.getComponent(playerID, CompType.Script).camID = cam
 network.sendPlayer(player)

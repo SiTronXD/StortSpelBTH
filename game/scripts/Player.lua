@@ -1,5 +1,13 @@
 local script = {}
 
+-- Active perks and their effect values
+script.perkProperties = 
+{
+    -- Speed
+    speedPerkActive = 0,
+    speedPerkValue = 2.0
+}
+
 function script:init()
 	print("init with ID: " .. self.ID)
 
@@ -78,38 +86,43 @@ end
 function script:move2(deltaTime)
     local camTransform = scene.getComponent(self.camID, CompType.Transform)
 
+    -- Move dir
     self.moveDir.y = (core.btoi(input.isKeyDown(Keys.W)) - core.btoi(input.isKeyDown(Keys.S)))
     self.moveDir.x = (core.btoi(input.isKeyDown(Keys.A)) - core.btoi(input.isKeyDown(Keys.D)))
 
-    self.currentSpeed.x = self.moveDir.x * self.maxSpeed
-    self.currentSpeed.y = self.moveDir.y * self.maxSpeed
+    -- Speed
+    self.currentSpeed.x = self.moveDir.x
+    self.currentSpeed.y = self.moveDir.y
 
-    if (self.moveDir.x and self.moveDir.y)
-    then
-        self.currentSpeed = vector.normalize(self.currentSpeed) * self.maxSpeed
-    end
+    -- Normalize speed
+    self.currentSpeed = vector.normalize(self.currentSpeed) * 
+        self.maxSpeed * 
+        math.max(
+            1.0, 
+            self.perkProperties.speedPerkActive * 
+                self.perkProperties.speedPerkValue)
 
+    -- Forward vector
     local camFwd = camTransform:forward()
-    local moveFwd = camFwd
-    moveFwd.y = 0
+    local forwardVec = camFwd
+    forwardVec.y = 0
+    forwardVec = vector.normalize(forwardVec)
 
-    self.transform.position = self.transform.position + (vector.normalize(moveFwd) * (self.currentSpeed.y * deltaTime)
-    + vector.normalize(self.cross(camTransform:up(), camFwd)) * (self.currentSpeed.x * deltaTime))
-end
+    -- Right vector
+    local rightVec = camTransform:up()
+    rightVec = rightVec:cross(camFwd)
+    rightVec = vector.normalize(rightVec)
 
-function script.cross(left, right)
-	local x = (left.y * right.z) - (left.z * right.y);
-	local y = (left.z * right.x) - (left.x * right.z);
-	local z = (left.x * right.y) - (left.y * right.x);
-
-	sum = vector(x, y, z);
-
-	return sum;
+    -- Apply position
+    self.transform.position = self.transform.position + 
+        (forwardVec * self.currentSpeed.y +
+        rightVec * self.currentSpeed.x) * deltaTime
 end
 
 function script:rotate2(deltaTime)
     local camTransform = scene.getComponent(self.camID, CompType.Transform)
 
+    -- Rotate towards movement direction
     if (self.moveDir.y > 0)
     then
         self.transform.rotation.y = (camTransform.rotation.y + 180) + 45 * self.moveDir.x
