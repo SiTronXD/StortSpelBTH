@@ -5,15 +5,21 @@ print(ghost)
 --scene.setComponent(cam, CompType.Camera)
 --scene.setMainCamera(cam)
 
+-- Camera
 local cam = scene.createPrefab("scripts/prefabs/CameraPrefab.lua")
 scene.setMainCamera(cam)
 
+-- Player
 playerID = scene.createEntity()
 scene.setComponent(playerID, CompType.Mesh, ghost)
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
 scene.getComponent(cam, CompType.Script).playerID = playerID
 scene.getComponent(playerID, CompType.Script).camID = cam
 network.sendPlayer(player)
+
+-- UI
+local uiID = scene.createEntity()
+scene.setComponent(uiID, CompType.Script, "scripts/UI.lua")
 
 --[[local p = scene.createPrefab("scripts/prefabs/prefab.lua")
 
