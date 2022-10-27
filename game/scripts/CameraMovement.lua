@@ -20,17 +20,20 @@ end
 function script:update(dt)
     if (input.isKeyDown(Keys.Q))
     then
-        shaking = true
+        self.shaking = true
     end
 
+    -- Camera input controls
     local XInput = core.btoi(input.isKeyDown(Keys.H)) - core.btoi(input.isKeyDown(Keys.K))
     local YInput = core.btoi(input.isKeyDown(Keys.J)) - core.btoi(input.isKeyDown(Keys.U))
     --local XInput = input.getMouseDelta().x
     --local YInput = -input.getMouseDelta().y
 
+    -- Rotate camera
     self.camRot.x = self.camRot.x + self.sens * YInput * dt
     self.camRot.y = self.camRot.y + self.sens * XInput * dt
 
+    -- Limit camera angle
     if (self.camRot.x >= self.maxXRot)
     then
         self.camRot.x = self.maxXRot
@@ -39,35 +42,37 @@ function script:update(dt)
         self.camRot.x = self.minXRot
     end
 
+    -- Create target pos
     local targetPos = scene.getComponent(self.playerID, CompType.Transform).position
     targetPos.y = targetPos.y + self.camHeight
 
+    -- Camera shake
     if (self.shaking) 
     then
         self.shakeTimer = self.shakeTimer + dt
+
         if (self.shakeTimer >= self.shakeDuration)
         then
+            -- Stop shaking
             self.shakeTimer = 0
             self.shaking = false
         else 
-            targetPos = targetPos + self.randomVector(self.shakeScalar)
+            -- Start shaking
+            local offsetVector = vector()
+            offsetVector:randomVector(self.shakeScalar)
+            targetPos = targetPos + offsetVector
         end
     end
 
+    -- Apply rotation
     self.transform.rotation.y = self.camRot.y * (180 / math.pi)
     self.transform.rotation.x = self.camRot.x * (180 / math.pi)
     
+    -- Apply position
     local scaledFwd = self.transform:forward() * -self.camDist
     self.camHeight = 6
     self.camDist = 60
     self.transform.position = targetPos + scaledFwd
-end
-
-function script.randomVector(scalar)
-    return vector(
-        ((math.random() % 201) * 0.01 - 1) * scalar,
-        ((math.random() % 201) * 0.01 - 1) * scalar,
-        ((math.random() % 201) * 0.01 - 1) * scalar)
 end
 
 return script

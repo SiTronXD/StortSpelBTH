@@ -31,10 +31,11 @@ void GameScene::start()
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 
-	//this->setComponent<Collider>(playerID, Collider::createBox(glm::vec3(2.f)));
-	//this->setComponent<Rigidbody>(playerID);
-	//this->getComponent<Transform>(playerID).position.y = 100.f;
-
+	uint32_t swordId = this->getResourceManager()->addMesh("assets/models/Sword.obj");
+	
+	Entity sword = this->createEntity();
+	this->setComponent<MeshComponent>(sword);
+	this->getComponent<MeshComponent>(sword).meshID = swordId;
 }
 
 void GameScene::update()
