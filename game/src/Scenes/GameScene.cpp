@@ -59,14 +59,6 @@ void GameScene::update()
 	
 
 	decreaseFps();
-
-	// Debug window for reloading scene and it's scripts
-	ImGui::Begin("Scene");
-	if (ImGui::Button("Reload Scene"))
-	{
-		this->getSceneHandler()->reloadScene();
-	}
-	ImGui::End();
 }
 
 void decreaseFps()
