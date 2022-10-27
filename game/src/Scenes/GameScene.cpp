@@ -81,11 +81,14 @@ void GameScene::aiEaxample()
 	int ghost = this->getResourceManager()->addMesh("assets/models/ghost.obj");
 	int swarmModel = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 
-	int num_blobs = 1;
+	int num_blobs = 3;
 	int group_size = 3;
 	for (int i = 0; i < num_blobs; i++)
     {
 		this->swarmEnemies.push_back(this->createEntity());   
+		Transform& trans = this->getSceneHandler()->getScene()->getComponent<Transform>(this->swarmEnemies.back());
+        trans.position.x += rand()%50 - 25;
+        trans.position.z += rand()%50 - 25;
 		this->setComponent<MeshComponent>(this->swarmEnemies.back(), swarmModel);
 		this->aiHandler->createAIEntity(this->swarmEnemies.back(), "swarmFSM");
         if ((i)%group_size == 0)

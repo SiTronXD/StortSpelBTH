@@ -39,7 +39,7 @@ BTStatus SwarmBT::hasFriends(uint32_t entityID)
 
 	SwarmGroup* groupPtr =
 	    sceneHandler->getScene()->getComponent<SwarmComponentBT>(entityID).group;
-	if (groupPtr->members.size() <= 1)
+		if (groupPtr->members.size() <= 1)
 	{
 		return BTStatus::Failure;
 	}
@@ -54,6 +54,7 @@ BTStatus SwarmBT::jumpInCircle(uint32_t entityID)
 	if (hasFriends(entityID) == BTStatus::Failure)
 	{
 		return BTStatus::Failure;
+
 	}
 	return ret;
 }
@@ -187,7 +188,7 @@ BTStatus SwarmBT::escapeFromPlayer(uint32_t entityID)
 		return BTStatus::Success;
 	}
 
-	 thisTransform.rotation.y = -lookAtY(thisTransform, playerTransform);
+	 thisTransform.rotation.y = lookAtY(playerTransform, thisTransform);
 	 thisTransform.updateMatrix();
 
 	 glm::vec3 dir = -glm::normalize(playerTransform.position- thisTransform.position);
