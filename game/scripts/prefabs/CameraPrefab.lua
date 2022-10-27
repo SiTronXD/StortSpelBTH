@@ -5,5 +5,5 @@ return {
 		scale = vector.fill(1)
 	},
 	Script = "scripts/CameraMovement.lua",
-	Camera = 0
+	Camera = 90
 }
