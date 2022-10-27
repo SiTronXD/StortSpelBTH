@@ -80,7 +80,7 @@ void GameScene::aiEaxample()
 	int ghost = this->getResourceManager()->addMesh("assets/models/ghost.obj");
 	int swarmModel = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 
-	int num_blobs = 3;
+	int num_blobs = 6;
 	int group_size = 3;
 	for (int i = 0; i < num_blobs; i++)
     {

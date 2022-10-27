@@ -12,6 +12,7 @@ uint32_t getPlayerID_DUMMY(SceneHandler*sceneHandler ,int playerID_in = -1);
 struct SwarmGroup
 {
 	int max;
+	bool inCombat = false;
 	std::vector<uint32_t> members;
 };
 

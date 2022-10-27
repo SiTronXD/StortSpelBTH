@@ -212,7 +212,7 @@ BTStatus SwarmBT::informFriends(uint32_t entityID)
 	for (auto& f : thisSwarmComp.group->members)
 	{
 		SwarmComponent& curSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(f);
-		curSwarmComp.inCombat = true;
+		curSwarmComp.group->inCombat = true;
 	}
 
 	//TODO BTStatus: failure not returned.

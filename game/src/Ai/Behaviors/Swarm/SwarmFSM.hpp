@@ -16,6 +16,8 @@ struct SwarmComponent
 	bool inCombat		= false;
 	SwarmGroup* group;
 	std::vector<SwarmGroup*> groupsInSight;	
+
+	SwarmComponent(){};
 };
 
 
@@ -23,6 +25,7 @@ class SwarmFSM : public FSM
 {
 private:
 	static bool idle_combat(uint32_t entityID);
+	static bool idle_combat_FirendsInFight(uint32_t entityID);
 	static bool idle_escape(uint32_t entityID);
 	
 	static bool combat_idle(uint32_t entityID);
@@ -33,6 +36,7 @@ private:
 
 
 	EntityEvent idle_to_combat{idle_combat};
+	EntityEvent idle_to_combat_firends_in_fight{idle_combat_FirendsInFight};
 	EntityEvent idle_to_escape{idle_escape};
 	EntityEvent combat_to_idle{combat_idle};
 	EntityEvent combat_to_escape{combat_escape};
@@ -59,6 +63,7 @@ protected:
 		//// Movement temporary shit
 		//addEntityTransition("walking", energyMed, "jogging");
 		addEntityTransition("idle", SwarmFSM::idle_to_combat , "combat");
+		addEntityTransition("idle", SwarmFSM::idle_to_combat_firends_in_fight , "combat");
 		addEntityTransition("idle", SwarmFSM::idle_to_escape , "escape");
 
 		addEntityTransition("combat", SwarmFSM::combat_to_idle, "idle");
