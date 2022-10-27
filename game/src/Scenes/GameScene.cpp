@@ -55,24 +55,23 @@ void GameScene::update()
 
 void GameScene::aiEaxample() 
 {
-	auto a = [&](FSM* fsm) -> void {
+	auto a = [&](FSM* fsm, uint32_t entityId) -> void {
 		SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
-		int& health = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->swarmEnemies.back()).life;
-        int& attack = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->swarmEnemies.back()).attack;
-        float& speed = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->swarmEnemies.back()).speed;
-        float& attackRange = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->swarmEnemies.back()).attackRange;
-        float& sightRange = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->swarmEnemies.back()).sightRadius;
-        //std::string& groupPtr = std::to_string(&this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->swarmEnemies.back()).group);
-        bool& inCombat = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->swarmEnemies.back()).inCombat;
-		std::string& status = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(this->swarmEnemies.back()).currentNode->status;
-		ImGui::Begin("Blob");
+		int& health = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).life;
+        int& attack = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).attack;
+        float& speed = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).speed;
+        float& attackRange = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).attackRange;
+        float& sightRange = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).sightRadius;
+        //std::string& groupPtr = std::to_string(&this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).group);
+        bool& inCombat = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).inCombat;
+		std::string& status = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId).currentNode->status;
+		
 		ImGui::SliderInt("health", &health, 0, 100);
 		ImGui::SliderFloat("speed", &speed, 0, 100);
 		ImGui::SliderFloat("attackRange", &attackRange, 0, 100);
 		ImGui::SliderFloat("sightRange", &sightRange, 0, 100);		
 		ImGui::Checkbox("inCombat", &inCombat);		
         ImGui::Text(status.c_str());
-        ImGui::End();
 	};
 	static SwarmFSM swarmFSM;
 	this->aiHandler->addFSM(&swarmFSM, "swarmFSM");
