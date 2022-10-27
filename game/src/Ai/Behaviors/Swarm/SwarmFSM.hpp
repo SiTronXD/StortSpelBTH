@@ -3,7 +3,7 @@
 #include "SwarmBTs.hpp"
 
 
-struct SwarmComponentFSM : public FSM_component
+struct SwarmComponent
 {
 	 int LOW_HEALTH = 30;
 	 int FULL_HEALTH = 100;
@@ -11,10 +11,11 @@ struct SwarmComponentFSM : public FSM_component
 	int attack  = 1;
 	float speed = 10;
 
-	// Inherited via FSM_component
-	virtual void registerEntity(uint32_t entityId, SceneHandler* sceneHandler) override {
-		sceneHandler->getScene()->setComponent(entityId, SwarmComponentFSM());
-	}
+    float sightRadius	= 10;
+	float attackRange	= sightRadius/2;
+	bool inCombat		= false;
+	SwarmGroup* group;
+	std::vector<SwarmGroup*> groupsInSight;	
 };
 
 
@@ -41,9 +42,13 @@ private:
 public:
 protected:
 	// Inherited via FSM
+    virtual void registerEntityComponents(uint32_t entityId) override
+    {
+        addRequiredComponent<SwarmComponent>(entityId);
+    }
+
 	virtual void real_init() override
 	{
-		addRequiredComponent(new SwarmComponentFSM);		
 
 		addBTs({
 			{"idle", new Swarm_idle},

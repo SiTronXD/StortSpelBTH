@@ -1,7 +1,6 @@
 #include "SwarmFSM.hpp"
 
 
-//void SwarmComponentFSM::registerEntity(uint32_t entityId, Scene* scene) {}
 
 bool SwarmFSM::idle_combat(uint32_t entityID)
 {
@@ -11,8 +10,8 @@ bool SwarmFSM::idle_combat(uint32_t entityID)
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
 	Transform& playerTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(playerID);
 	Transform& enemyTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(entityID);
-	SwarmComponentBT& enemySwarmCompBT = FSM::sceneHandler->getScene()->getComponent<SwarmComponentBT>(entityID);
-	SwarmComponentFSM& enemySwarmCompFSM = FSM::sceneHandler->getScene()->getComponent<SwarmComponentFSM>(entityID);
+	SwarmComponent& enemySwarmCompBT = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+	SwarmComponent& enemySwarmCompFSM = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
     
 	if (glm::length(enemyTransform.position - playerTransform.position) <=
         enemySwarmCompBT.sightRadius && enemySwarmCompFSM.life > enemySwarmCompFSM.LOW_HEALTH)
@@ -33,8 +32,8 @@ bool SwarmFSM::idle_escape(uint32_t entityID)
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
 	Transform& playerTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(playerID);
 	Transform& enemyTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(entityID);
-	SwarmComponentBT& enemySwarmCompBT = FSM::sceneHandler->getScene()->getComponent<SwarmComponentBT>(entityID);
-	SwarmComponentFSM& enemySwarmCompFSM = FSM::sceneHandler->getScene()->getComponent<SwarmComponentFSM>(entityID);
+	SwarmComponent& enemySwarmCompBT = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+	SwarmComponent& enemySwarmCompFSM = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
     
 	if (glm::length(enemyTransform.position - playerTransform.position) <=
         enemySwarmCompBT.sightRadius && enemySwarmCompFSM.life <= enemySwarmCompFSM.LOW_HEALTH)
@@ -54,7 +53,7 @@ bool SwarmFSM::combat_idle(uint32_t entityID)
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
 	Transform& playerTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(playerID);
 	Transform& enemyTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(entityID);
-	SwarmComponentBT& enemySwarmCompBT = FSM::sceneHandler->getScene()->getComponent<SwarmComponentBT>(entityID);
+	SwarmComponent& enemySwarmCompBT = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
     
 	if (glm::length(enemyTransform.position - playerTransform.position) >
         enemySwarmCompBT.sightRadius)
@@ -73,7 +72,7 @@ bool SwarmFSM::combat_escape(uint32_t entityID)
 	int playerID;
 	std::string playerString = "playerID";
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
-	SwarmComponentFSM& enemySwarmCompFSM = FSM::sceneHandler->getScene()->getComponent<SwarmComponentFSM>(entityID);
+	SwarmComponent& enemySwarmCompFSM = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
     
 	if (enemySwarmCompFSM.life <= enemySwarmCompFSM.LOW_HEALTH)
     {
@@ -92,7 +91,7 @@ bool SwarmFSM::escape_idle(uint32_t entityID)
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
 	Transform& playerTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(playerID);
 	Transform& enemyTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(entityID);
-	SwarmComponentBT& enemySwarmCompBT = FSM::sceneHandler->getScene()->getComponent<SwarmComponentBT>(entityID);
+	SwarmComponent& enemySwarmCompBT = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
     
 	if (glm::length(enemyTransform.position - playerTransform.position) >
         enemySwarmCompBT.sightRadius)
@@ -110,7 +109,7 @@ bool SwarmFSM::escape_combat(uint32_t entityID)
 	int playerID;
 	std::string playerString = "playerID";
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
-	SwarmComponentBT& enemySwarmCompBT = FSM::sceneHandler->getScene()->getComponent<SwarmComponentBT>(entityID);
+	SwarmComponent& enemySwarmCompBT = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
     
 	if (enemySwarmCompBT.group->members.size() > 1)
     {

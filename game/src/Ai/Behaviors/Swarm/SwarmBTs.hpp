@@ -16,27 +16,13 @@ struct SwarmGroup
 };
 
 
-
-struct SwarmComponentBT : public BT_component
-{
-	void registerEntity(uint32_t entityId, SceneHandler* sceneHandler) override
-	{
-		sceneHandler->getScene()->setComponent(entityId, SwarmComponentBT());
-	}
-
-	float sightRadius	= 10;
-	float attackRange	= sightRadius/2;
-	bool inCombat		= false;
-	SwarmGroup* group;
-	std::vector<SwarmGroup*> groupsInSight;
-};
-
 class SwarmBT : public BehaviorTree
 {
    protected:
 	virtual void start() = 0;
+    void registerEntityComponents(uint32_t entityId) override;
 
-   public:
+  public:
 	virtual void initEntityData(uint32_t entityID) = 0;
 	virtual void update(uint32_t entityID) = 0;
 
@@ -64,8 +50,7 @@ class Swarm_idle : public SwarmBT
 {
    protected:
 	void start();
-
-   public:
+  public:
 	void initEntityData(uint32_t entityID){};
 	void update(uint32_t entityID){};
 };
@@ -75,7 +60,7 @@ class Swarm_combat : public SwarmBT
    protected:
 	void start();
 
-   public:
+  public:
 	void initEntityData(uint32_t entityID){};
 	void update(uint32_t entityID){};
 };
@@ -85,8 +70,7 @@ class Swarm_escape : public SwarmBT
 {
    protected:
 	void start();
-
-   public:
+  public:
 	void initEntityData(uint32_t entityID){};
 	void update(uint32_t entityID){};
 };
