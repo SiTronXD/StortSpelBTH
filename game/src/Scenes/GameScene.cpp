@@ -48,8 +48,6 @@ void GameScene::update()
 	if (playerID != -1)
 	{
 		roomHandler.update(this->getComponent<Transform>(playerID).position);
-
-		this->aiHandler->update();
 	}
 
 	decreaseFps();
