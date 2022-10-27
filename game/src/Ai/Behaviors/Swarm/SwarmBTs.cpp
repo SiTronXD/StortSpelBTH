@@ -1,4 +1,5 @@
 #include "SwarmBTs.hpp"
+#include "SwarmFSM.hpp"
 //#include "../components/Script.hpp"
 
 //TODO: Remove
@@ -19,6 +20,16 @@ uint32_t getPlayerID_DUMMY(SceneHandler* sceneHandler,int playerID_in)
 	return playerID; 
 }
 
+
+float lookAtY(Transform from, Transform to)
+{
+    float posX = from.position.x - to.position.x;
+    float posZ = from.position.z - to.position.z;
+    float angle = atan2(posX, posZ);
+    angle = glm::degrees(angle);
+  
+    return angle; 
+}
 //SwarmGroup* SwarmComponentBT::group = new SwarmGroup;
 
 BTStatus SwarmBT::hasFriends(uint32_t entityID)
@@ -169,15 +180,19 @@ BTStatus SwarmBT::escapeFromPlayer(uint32_t entityID)
 	Transform& thisTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
 	SwarmComponentBT& thisSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponentBT>(entityID);
 	Transform playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(player);
+	SwarmComponentFSM& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponentFSM>(entityID);
 
 	if (glm::length((thisTransform.position - playerTransform.position)) > thisSwarmComp.sightRadius)
 	{
 		return BTStatus::Success;
 	}
 
-	glm::vec3 vecAwayFromPlayer = glm::normalize(thisTransform.position - playerTransform.position);
+	 thisTransform.rotation.y = -lookAtY(thisTransform, playerTransform);
+	 thisTransform.updateMatrix();
 
-	//jump in vec direction
+	 glm::vec3 dir = -glm::normalize(playerTransform.position- thisTransform.position);
+	 dir.y = 0;
+	 thisTransform.position += dir * Time::getDT() * swarmComp.speed;
 
 	//TODO BTStatus: failure not returned.
 	//TODO : Check if cornered, return failure
@@ -200,15 +215,20 @@ BTStatus SwarmBT::informFriends(uint32_t entityID)
 
 	return ret;
 }
-
 BTStatus SwarmBT::jumpTowardsPlayer(uint32_t entityID)
 {
 	BTStatus ret = BTStatus::Running;
 
 	Transform& thisTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Transform& playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(getPlayerID_DUMMY(sceneHandler));
-	glm::vec3 vecToPlayer = glm::normalize(playerTransform.position - thisTransform.position);
-	//Jump towarsd player
+	SwarmComponentFSM& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponentFSM>(entityID);
+
+     thisTransform.rotation.y = lookAtY(thisTransform, playerTransform);
+	 thisTransform.updateMatrix();
+
+	 glm::vec3 dir = glm::normalize(playerTransform.position- thisTransform.position);
+	 dir.y = 0;
+     thisTransform.position += dir * Time::getDT() * swarmComp.speed;
 
     
 
@@ -220,7 +240,6 @@ BTStatus SwarmBT::jumpTowardsPlayer(uint32_t entityID)
 
 	return ret;
 }
-
 BTStatus SwarmBT::closeEnoughToPlayer(uint32_t entityID)
 {
 	BTStatus ret = BTStatus::Failure;
@@ -238,17 +257,23 @@ BTStatus SwarmBT::closeEnoughToPlayer(uint32_t entityID)
 	return ret;
 }
 
+
+
 BTStatus SwarmBT::attack(uint32_t entityID)
 {
 	BTStatus ret = BTStatus::Running;
 
 	//SwarmComponentBT& thisSwarmComp = BehaviorTree::scene->getComponent<SwarmComponentBT>(entityID);
-	//Transform& thisTransform = BehaviorTree::scene->getComponent<Transform>(entityID);
-	//Transform& playerTransform = BehaviorTree::scene->getComponent<Transform>(getPlayerID_DUMMY(scene));
+	Transform& thisTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
+	Transform& playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(getPlayerID_DUMMY(sceneHandler));
+	SwarmComponentFSM& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponentFSM>(entityID);
 
-	//Attack player
-	//TODO: Get current player ID
-	//TODO: Pick some combat move
+     thisTransform.rotation.y = lookAtY(thisTransform, playerTransform);
+	 thisTransform.updateMatrix();
+
+	 glm::vec3 dir = glm::normalize(playerTransform.position- thisTransform.position);
+	 dir.y = 0;
+     thisTransform.position += dir * Time::getDT() * swarmComp.speed;
 
 	return ret;
 }
