@@ -20,11 +20,17 @@ function script:init()
     self.slowDown = 80
     self.transform.position = vector(0, 2, 0)
     self.transform.rotation = vector(-90, 0, 0)
+
+    self.maxHP = 100.0
+    self.currentHP = self.maxHP
 end
 
 function script:update(dt)
     self:move2(dt)
     self:rotate2(dt)
+
+    -- Test for UI
+    self.currentHP = self.currentHP - dt * 10.0
 end
 
 function script:move(deltaTime)
