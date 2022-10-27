@@ -5,6 +5,7 @@
 bool SwarmFSM::idle_combat(uint32_t entityID)
 {
 	bool ret = false;
+
 	int playerID;
 	std::string playerString = "playerID";
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
@@ -13,12 +14,11 @@ bool SwarmFSM::idle_combat(uint32_t entityID)
 	SwarmComponent& enemySwarmCompBT = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	SwarmComponent& enemySwarmCompFSM = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
     
-	if (glm::length(enemyTransform.position - playerTransform.position) <=
-        enemySwarmCompBT.sightRadius && enemySwarmCompFSM.life > enemySwarmCompFSM.LOW_HEALTH)
-      {
+	if (glm::length(enemyTransform.position - playerTransform.position) <= enemySwarmCompBT.sightRadius && 
+		enemySwarmCompFSM.life > enemySwarmCompFSM.LOW_HEALTH)
+    {
 		ret = true;
-      }
-
+    }
 
 	return ret;
 }
@@ -57,9 +57,9 @@ bool SwarmFSM::combat_idle(uint32_t entityID)
     
 	if (glm::length(enemyTransform.position - playerTransform.position) >
         enemySwarmCompBT.sightRadius)
-      {
+    {
 		ret = true;
-      }
+    }
 
 
 	return ret;
