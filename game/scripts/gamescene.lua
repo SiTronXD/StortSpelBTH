@@ -18,8 +18,10 @@ scene.getComponent(playerID, CompType.Script).camID = cam
 network.sendPlayer(player)
 
 -- UI
-local uiID = scene.createEntity()
-scene.setComponent(uiID, CompType.Script, "scripts/UI.lua")
+--local uiID = scene.createEntity()
+--scene.setComponent(uiID, CompType.Script, "scripts/UI.lua")
+--scene.getComponent(uiID, CompType.Script).hpBarTextureID = 
+--	resources.addTexture("assets/textures/UI/hpBar.png")
 
 --[[local p = scene.createPrefab("scripts/prefabs/prefab.lua")
 
