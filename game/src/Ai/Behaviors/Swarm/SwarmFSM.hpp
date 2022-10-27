@@ -8,8 +8,8 @@ struct SwarmComponentFSM : public FSM_component
 	 int LOW_HEALTH = 30;
 	 int FULL_HEALTH = 100;
 	int life = FULL_HEALTH ;
-	int attack;
-	float speed;
+	int attack  = 1;
+	float speed = 10;
 
 	// Inherited via FSM_component
 	virtual void registerEntity(uint32_t entityId, SceneHandler* sceneHandler) override {
