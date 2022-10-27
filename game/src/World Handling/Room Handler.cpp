@@ -458,6 +458,13 @@ void RoomHandler::createColliders()
 		}
 	}
 
+	for (Entity entity : this->pathIds)
+	{
+		if (this->scene->getComponent<MeshComponent>(entity).meshID == tileMeshIds[Tile::Border])
+		{
+			this->scene->setComponent<Collider>(entity, Collider::createBox(BOX));
+		}
+	}
 
 	float minX = 10000000.f;
 	float maxX = -10000000.f;
