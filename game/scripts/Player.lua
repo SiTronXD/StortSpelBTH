@@ -20,6 +20,7 @@ function script:init()
     self.slowDown = 80
     self.transform.position = vector(0, 2, 0)
     self.transform.rotation = vector(-90, 0, 0)
+    self.transform.scale = vector(0.05, 0.05, 0.05)
 
     self.maxHP = 100.0
     self.currentHP = self.maxHP

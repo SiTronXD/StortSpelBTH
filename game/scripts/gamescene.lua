@@ -1,4 +1,4 @@
-local ghost = resources.addMesh("assets/models/ghost.obj")
+local ghost = resources.addMesh("assets/models/Amogus/source/1.fbx")
 print(ghost)
 
 --local cam = scene.createEntity()
@@ -12,6 +12,10 @@ scene.setMainCamera(cam)
 -- Player
 playerID = scene.createEntity()
 scene.setComponent(playerID, CompType.Mesh, ghost)
+local playerAnim = {}
+playerAnim.timer = 0.0
+playerAnim.timeScale = 1.0 
+scene.setComponent(playerID, CompType.Animation, playerAnim)
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
 scene.getComponent(cam, CompType.Script).playerID = playerID
 scene.getComponent(playerID, CompType.Script).camID = cam
