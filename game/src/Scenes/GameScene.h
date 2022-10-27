@@ -10,9 +10,7 @@ private:
     RoomHandler roomHandler;
 
     Entity playerID;
-    int camEntity;
-	int entity;
-
+    Entity floor;
 public:
     GameScene();
     virtual ~GameScene();

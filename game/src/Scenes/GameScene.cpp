@@ -31,24 +31,19 @@ void GameScene::start()
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 
-	this->setComponent<Collider>(playerID, Collider::createBox(glm::vec3(2.f)));
-	this->setComponent<Rigidbody>(playerID);
-	this->getComponent<Transform>(playerID).position.y = 100.f;
+	//this->setComponent<Collider>(playerID, Collider::createBox(glm::vec3(2.f)));
+	//this->setComponent<Rigidbody>(playerID);
+	//this->getComponent<Transform>(playerID).position.y = 100.f;
 
-	Entity floor = this->createEntity();
-	this->getComponent<Transform>(floor).position.y = -0.5f;
-	this->setComponent<Collider>(floor, Collider::createBox(glm::vec3(500.f, 1.f, 500.f)));
 }
 
 void GameScene::update()
 {
-	Transform& playerTra = this->getComponent<Transform>(playerID);
+	/*Transform& playerTra = this->getComponent<Transform>(playerID);
 	Collider& playerCol = this->getComponent<Collider>(playerID);
 
 	this->getDebugRenderer()->renderBox(
-		playerTra.position, playerTra.rotation, playerCol.extents, glm::vec3(0.f, 1.f, 1.f));
-
-	roomHandler.drawColliders(this->getSceneHandler());
+		playerTra.position, playerTra.rotation, playerCol.extents * 2.f, glm::vec3(0.f, 1.f, 1.f));*/
 
 	if (Input::isKeyPressed(Keys::E)) 
 	{

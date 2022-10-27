@@ -1,14 +1,13 @@
 #include "Room Handler.h"
 #include "vengine/application/Scene.hpp"
-#include "vengine/application/SceneHandler.hpp"
 
-const float RoomHandler::TILE_WIDTH = 25.f;
+const float RoomHandler::TILE_WIDTH = 24.f;
 const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 3;
 
 RoomHandler::RoomHandler()
 	:scene(nullptr), resourceMan(nullptr), hasDoor{},
-	activeIndex(0), nextIndex(-1),
-	openDoorMeshID(0), closedDoorMeshID(0)
+	activeIndex(0), nextIndex(-1), floor(-1),
+	openDoorMeshID(0), closedDoorMeshID(0), gridSize(0)
 {
 	srand((unsigned)time(0));
 }
@@ -21,6 +20,7 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize,
 {
 	this->scene = scene;
 	this->resourceMan = resourceMan;
+	this->gridSize = roomSize;
 
 	this->roomGenerator.init(roomSize, tileTypes);
 	this->roomLayout.setRoomDistance(TILE_WIDTH * roomSize + TILE_WIDTH * TILES_BETWEEN_ROOMS);	
@@ -47,7 +47,6 @@ void RoomHandler::roomCompleted()
 bool RoomHandler::checkPlayer(const glm::vec3& playerPos)
 {
 	// Check if passed through door
-
 #ifdef _DEBUG
 	
 	if (ImGui::Begin("Debug"))
@@ -101,22 +100,6 @@ bool RoomHandler::checkPlayer(const glm::vec3& playerPos)
 #endif // _DEBUG
 
 	return false;
-}
-
-void RoomHandler::drawColliders(SceneHandler* sceneHandler)
-{
-	DebugRenderer* dRenderer = sceneHandler->getDebugRenderer();
-
-	const Room& room = this->rooms[this->activeIndex];
-	for (Entity entity : room.borders)
-	{
-		if (this->scene->getComponent<MeshComponent>(entity).meshID == (int)this->tileMeshIds[Tile::Border])
-		{
-			const Transform& tra = this->scene->getComponent<Transform>(entity);
-			const Collider& col = this->scene->getComponent<Collider>(entity);
-			dRenderer->renderBox(tra.position, tra.rotation, col.extents, glm::vec3(1.f, 0.f, 1.f));
-		}
-	}
 }
 
 void RoomHandler::generate()
@@ -220,7 +203,8 @@ void RoomHandler::generate()
 
 		this->generatePathways();
 	}
-
+	
+	this->createColliders();
 	this->roomLayout.clear();
 
 #ifdef _DEBUG
@@ -444,7 +428,6 @@ void RoomHandler::scaleRoom(int index, const glm::vec3& roomPos)
 
 		tra.scale *= TILE_WIDTH;
 	}
-	const glm::vec3 BOX(TILE_WIDTH, TILE_WIDTH * 2.f, TILE_WIDTH);
 	for (Entity id : room.borders)
 	{
 		Transform& tra = this->scene->getComponent<Transform>(id);
@@ -452,10 +435,6 @@ void RoomHandler::scaleRoom(int index, const glm::vec3& roomPos)
 		tra.position += roomPos;
 
 		tra.scale *= TILE_WIDTH;
-
-		this->scene->setComponent<Collider>(id, Collider::createBox(BOX));
-		//this->scene->setComponent<Rigidbody>(id);
-
 	}
 	for (Entity id : room.exitPaths)
 	{
@@ -465,6 +444,46 @@ void RoomHandler::scaleRoom(int index, const glm::vec3& roomPos)
 
 		tra.scale *= TILE_WIDTH;
 	}
+}
+
+void RoomHandler::createColliders()
+{
+	const glm::vec3 BOX(TILE_WIDTH * 0.5f, TILE_WIDTH, TILE_WIDTH * 0.5f);
+
+	for (Room& room : this->rooms)
+	{
+		for (Entity id : room.borders)
+		{
+			this->scene->setComponent<Collider>(id, Collider::createBox(BOX));
+		}
+	}
+
+
+	float minX = 10000000.f;
+	float maxX = -10000000.f;
+					  
+	float minZ = 10000000.f;
+	float maxZ = -10000000.f;
+
+	for (int i = 0; i < this->roomLayout.getNumRooms(); i++)
+	{
+		const glm::vec3& pos = this->roomLayout.getRoom(i).position;
+
+		if		(pos.x < minX) { minX = pos.x; }
+		else if (pos.x > maxX) { maxX = pos.x; }
+		
+		if		(pos.z < minZ) { minZ = pos.z; }
+		else if (pos.z > maxZ) { maxZ = pos.z; }
+	}
+
+	const float HalfRoom = (float)gridSize * TILE_WIDTH * 0.5f + TILE_WIDTH * 0.5f;
+
+	const glm::vec3 floorPos((minX + maxX) * 0.5f, -4.f, (minZ + maxZ) * 0.5f);
+	const glm::vec3 floorDimensions((maxX - minX) * 0.5f + HalfRoom, 4.f, (maxZ - minZ) * 0.5f + HalfRoom);
+
+	this->floor = this->scene->createEntity();
+	this->scene->setComponent<Collider>(this->floor, Collider::createBox(floorDimensions));
+	this->scene->getComponent<Transform>(this->floor).position = floorPos;
 }
 
 Entity RoomHandler::createTileEntity(int tileIndex, const glm::vec3& roomPos)
@@ -577,10 +596,13 @@ bool RoomHandler::checkRoom(int index, const glm::vec3& playerPos)
 		{
 			if (index == this->nextIndex && !this->rooms[index].finished)
 			{
+				printf("Hello\n");
+				printf("A: %d, N: %d, D: %d\n", this->activeIndex, this->nextIndex, this->curDoor);
 				this->activeIndex = index;
 				this->nextIndex = -1;
 				this->roomFinished = false;
 				result = true;
+				printf("A: %d, N: %d, D: %d\n", this->activeIndex, this->nextIndex, this->curDoor);
 
 				setActiveRooms();
 				flipDoors(false);
@@ -588,9 +610,12 @@ bool RoomHandler::checkRoom(int index, const glm::vec3& playerPos)
 
 			else if (this->curDoor == -1 && this->roomFinished)
 			{
+				printf("Bai\n");
+				printf("A: %d, N: %d, D: %d\n", this->activeIndex, this->nextIndex, this->curDoor);
 				this->activeIndex = index;
 				this->nextIndex = this->rooms[index].connectingIndex[j];
 				this->curDoor = j;
+				printf("A: %d, N: %d, D: %d\n", this->activeIndex, this->nextIndex, this->curDoor);
 				
 				setActiveRooms();
 				flipDoors(true);
@@ -640,6 +665,9 @@ void RoomHandler::reset()
 		id = -1;
 	}
 	this->pathIds.clear();
+	
+	this->scene->removeEntity(this->floor);
+	this->floor = -1;
 
 	this->exitPairs.clear();
 	this->roomExitPoints.clear();
