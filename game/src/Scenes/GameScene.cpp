@@ -61,17 +61,51 @@ void GameScene::update()
 	if (Input::isKeyPressed(Keys::E)) 
 	{
 		// Call when a room is cleared
-		roomHandler.roomCompleted();		
+		roomHandler.roomCompleted();
+		for(auto p: enemyIDs)
+		{
+			SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(p);
+			swarmComp.life = 0.0f;
+		}
 	}
 
 	// Player entered a new room
 	if (roomHandler.checkPlayer(this->getComponent<Transform>(playerID).position))
 	{
-		const std::vector<Entity>& entites = roomHandler.getFreeTiles();
-		for (Entity entity : entites)
-		{
-			// Hi
-		}
+
+		int idx = 0;
+        int randNumEnemies = rand() % 8 + 3;
+        int counter = 0;
+        const std::vector<Entity>& entites = roomHandler.getFreeTiles();
+        for (Entity entity : entites)
+        {
+            if (idx != 10 && randNumEnemies - counter != 0)
+            {
+                this->setActive(this->enemyIDs[idx]);
+                Transform& transform = this->getComponent<Transform>(this->enemyIDs[idx]);
+                Transform& tileTrans = this->getComponent<Transform>(entity);
+                float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
+                transform.position = tileTrans.position;
+                transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
+                idx++;
+                counter++;
+
+				//Temporary enemie reset
+				SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs[idx]);
+				FSMAgentComponent& agentComp = this->getComponent<FSMAgentComponent>(this->enemyIDs[idx]);
+				swarmComp.life = swarmComp.FULL_HEALTH;
+				FSM_Node* tempNode = agentComp.fsm->getCurrentNode();
+				agentComp.fsm->setCurrentNode("idle");
+				agentComp.currentNode =  agentComp.fsm->getCurrentNode();
+				agentComp.fsm->setCurrentNode(tempNode);
+				
+            }
+        }
+		//const std::vector<Entity>& entites = roomHandler.getFreeTiles();
+		//for (Entity entity : entites)
+		//{
+		//	// Hi
+		//}
 	}
 	
 
@@ -124,7 +158,22 @@ void GameScene::aiExample()
 	this->aiHandler->addFSM(&swarmFSM, "swarmFSM");
 	this->aiHandler->addImguiToFSM("swarmFSM", a);
 
-	int swarmModel = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+
+	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+	this->swarmGroups.push_back(new SwarmGroup);
+    for (size_t i = 0; i < 10; i++)
+    {
+		this->enemyIDs.push_back(this->createEntity());
+        this->setComponent<MeshComponent>(this->enemyIDs.back(), swarm);
+        this->setComponent<AiMovement>(this->enemyIDs.back());
+        this->setComponent<AiCombat>(this->enemyIDs.back());
+		this->aiHandler->createAIEntity(this->enemyIDs.back(), "swarmFSM");
+		this->swarmGroups.back()->members.push_back(this->enemyIDs.back());
+        this->setInactive(this->enemyIDs.back());
+		this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->enemyIDs.back()).group = this->swarmGroups.back();
+    }
+
+	/*int swarmModel = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 
 	int num_blobs = 6;
 	int group_size = 3;
@@ -142,7 +191,7 @@ void GameScene::aiExample()
         }
         this->swarmGroups.back()->members.push_back(this->swarmEnemies.back());
         this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->swarmEnemies.back()).group = this->swarmGroups.back();
-	}
+	}*/
     
 }
 

@@ -306,7 +306,7 @@ BTStatus SwarmBT::playDeathAnim(Entity entityID)
 	SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 	float step = swarmComp.deathAnimTimer / 1;
-	if(swarmComp.timer <= 0)
+	if(swarmComp.timer <= 0 || swarmTrans.scale.y <= 0.0f)
 	{
 		swarmComp.timer = swarmComp.deathAnimTimer;
 		ret = BTStatus::Success;

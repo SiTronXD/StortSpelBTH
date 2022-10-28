@@ -13,7 +13,7 @@ struct SwarmComponent
 	float deathAnimTimer = 1.0f;
 	float timer = deathAnimTimer;
 
-    float sightRadius	= 10;
+    float sightRadius	= 30;
 	float attackRange	= sightRadius/2;
 	bool inCombat		= false;
 	SwarmGroup* group;
