@@ -12,10 +12,12 @@ private:
     AIHandler* aiHandler = nullptr;
 
     Entity playerID;
+    Entity floor;
     std::vector<int> swarmEnemies;
     std::vector<SwarmGroup*> swarmGroups;
-    int camEntity;
-	int entity;
+
+    uint32_t hpBarBackgroundTextureID;
+    uint32_t hpBarTextureID;
 
 public:
     GameScene();

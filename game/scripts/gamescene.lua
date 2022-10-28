@@ -1,5 +1,6 @@
-local ghost = resources.addMesh("assets/models/ghost.obj")
-print(ghost)
+--local playerMesh = resources.addMesh("assets/models/Amogus/source/1.fbx")
+local playerMesh = resources.addMesh("assets/models/run_forward.fbx", "assets/textures/playerMesh")
+print(playerMesh)
 
 --local cam = scene.createEntity()
 --scene.setComponent(cam, CompType.Camera)
@@ -11,7 +12,13 @@ scene.setMainCamera(cam)
 
 -- Player
 playerID = scene.createEntity()
-scene.setComponent(playerID, CompType.Mesh, ghost)
+scene.setComponent(playerID, CompType.Mesh, playerMesh)
+local playerAnim = 
+{ 
+	timer = 0.0, 
+	timeScale = 1.0 
+}
+scene.setComponent(playerID, CompType.Animation, playerAnim)
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
 scene.getComponent(cam, CompType.Script).playerID = playerID
 scene.getComponent(playerID, CompType.Script).camID = cam
@@ -23,8 +30,7 @@ scene.setComponent(uiID, CompType.Script, "scripts/UI.lua")
 scene.getComponent(uiID, CompType.Script).playerScript = scene.getComponent(playerID, CompType.Script)
 
 -- UI textures
-local pixelArtSamplerSettings = {}
-pixelArtSamplerSettings.filterMode = Filters.Nearest
+local pixelArtSamplerSettings = { filterMode = Filters.Nearest }
 scene.getComponent(uiID, CompType.Script).hpBarBackgroundTextureID =
 	resources.addTexture("assets/textures/UI/hpBarBackground.png")
 scene.getComponent(uiID, CompType.Script).hpBarTextureID = 

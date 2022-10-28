@@ -22,9 +22,21 @@ public:
 		};
 	};
 
+	static const int MIN_MAIN_ROOMS = 2;
+	static const int MAX_MAIN_ROOMS = 4;
+
+	static const int MIN_NUM_BRANCHES = 1;
+	static const int MAX_NUM_BRANCHES = 3; // Cannot exceed (MAX_MAIN_ROOMS * 2)
+
+	static const int MIN_BRANCH_SIZE = 1;
+	static const int MAX_BRANCH_SIZE = 2;
+
 private:
 	float distance;
+
 	int numMainRooms;
+	int numBranches;
+	int largestBranchSize;
 
 	std::vector<RoomData> rooms;
 	std::vector<glm::ivec2> connections;
@@ -47,5 +59,6 @@ public:
 	const RoomData& getRoom(int index);
 	int getNumRooms() const;
 	int getNumMainRooms() const;
+	int getLargestBranch() const;
 	const std::vector<glm::ivec2>& getConnections();
 };

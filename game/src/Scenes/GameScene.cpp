@@ -29,6 +29,11 @@ void GameScene::init()
 
 	roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
 	roomHandler.generate();
+
+	this->hpBarBackgroundTextureID =
+		this->getResourceManager()->addTexture("assets/textures/UI/hpBarBackground.png");
+	this->hpBarTextureID = 
+		this->getResourceManager()->addTexture("assets/textures/UI/hpBar.png");
 }
 
 void GameScene::start()
@@ -43,8 +48,6 @@ void GameScene::start()
 	Entity sword = this->createEntity();
 	this->setComponent<MeshComponent>(sword);
 	this->getComponent<MeshComponent>(sword).meshID = swordId;
-
-
     // Ai management 
     this->aiHandler = this->getAIHandler();
 	this->aiHandler->init(this->getSceneHandler());
@@ -73,20 +76,40 @@ void GameScene::update()
 	
 
 	decreaseFps();
+
+	// Render HP bar UI
+	float hpPercent = 1.0f;
+	if (this->hasComponents<Combat>(this->playerID))
+	{
+		hpPercent =
+			this->getComponent<Combat>(this->playerID).health * 0.01f;
+	}
+	float xPos = -720;
+	float yPos = -500;
+	float xSize = 1024 * 0.35;
+	float ySize = 64 * 0.35;
+
+	Scene::getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
+	Scene::getUIRenderer()->renderTexture(xPos, yPos, xSize + 10, ySize + 10);
+	Scene::getUIRenderer()->setTexture(this->hpBarTextureID);
+	Scene::getUIRenderer()->renderTexture(xPos - (1.0 - hpPercent) * xSize * 0.5, yPos, xSize * hpPercent, ySize);
 }
 
 void GameScene::aiExample() 
 {
 	auto a = [&](FSM* fsm, uint32_t entityId) -> void {
 		SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
-		int& health = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).life;
-        float& speed = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).speed;
-        float& attackRange = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).attackRange;
-        float& sightRange = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).sightRadius;
-        bool& inCombat = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).inCombat;
-        float& attackPerSec = this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId).lightAttackTime;
-		float& lightAttackDmg = this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId).lightHit;
-		std::string& status = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId).currentNode->status;
+        auto entitySwarmComponent = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId);
+        auto entityAiCombatComponent = this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId);
+        auto entiyFSMAgentComp = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId);
+		int& health            = entitySwarmComponent.life;
+        float& speed           = entitySwarmComponent.speed;
+        float& attackRange     = entitySwarmComponent.attackRange;
+        float& sightRange      = entitySwarmComponent.sightRadius;
+        bool& inCombat         = entitySwarmComponent.inCombat;
+        float& attackPerSec    = entityAiCombatComponent.lightAttackTime;
+		float& lightAttackDmg  = entityAiCombatComponent.lightHit;
+		std::string& status    = entiyFSMAgentComp.currentNode->status;
 		
 		ImGui::SliderInt("health", &health, 0, 100);
 		ImGui::SliderFloat("speed", &speed, 0, 100);

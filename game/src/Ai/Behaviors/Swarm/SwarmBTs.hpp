@@ -4,10 +4,7 @@
 
 #include "vengine.h"
 //#include "ai/PathFinding.h"
-
-// TODO: REmove
-//// DUMMY HELP THINGS
-uint32_t getPlayerID_DUMMY(SceneHandler*sceneHandler ,int playerID_in = -1);
+Entity getPlayerID(SceneHandler*sceneHandler);
 
 struct SwarmGroup
 {

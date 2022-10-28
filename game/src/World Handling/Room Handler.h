@@ -64,7 +64,8 @@ private:
 	std::vector<RoomExitPoint> roomExitPoints;
 	bool hasDoor[4];
 	void setExitPoints(int roomIndex);
-	
+	int gridSize;
+
 	// Create Entities
 	Entity createTileEntity(int tileIndex, const glm::vec3& roomPos);
 	Entity createBorderEntity(int tileIndex, const glm::vec3& roomPos);
@@ -80,7 +81,8 @@ private:
 	// IDs
 	std::vector<Room> rooms;
 	std::vector<Entity> pathIds;
-	
+	Entity floor;
+
 	// Room Updating
 	int activeIndex = 0;
 	int nextIndex = -1;
@@ -102,9 +104,10 @@ private:
 	uint32_t openDoorMeshID;
 	uint32_t closedDoorMeshID;
 
-	// Reset & room scaling
+	// Reset, room scaling & colliders
 	void reset();
 	void scaleRoom(int index, const glm::vec3& roomPos);
+	void createColliders();
 
 public:
 	RoomHandler();

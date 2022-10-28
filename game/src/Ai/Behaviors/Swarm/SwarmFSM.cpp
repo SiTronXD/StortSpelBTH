@@ -78,7 +78,7 @@ bool SwarmFSM::combat_idle(Entity entityID)
 		for(auto& p: enemySwarmComp.group->members)
 		{
 			Transform& enmyTrans = FSM::sceneHandler->getScene()->getComponent<Transform>(p);
-			//groupMidPos+=enemyTransform.position;
+			
 			SwarmComponent& enmyswarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(p);
 			if (glm::length(enmyTrans.position - playerTransform.position) > enmyswarmComp.sightRadius)
 			{
@@ -94,10 +94,7 @@ bool SwarmFSM::combat_idle(Entity entityID)
 
 		if(ret)
 		{
-			enemySwarmComp.group->inCombat = false;
-
-			/*groupMidPos/=enemySwarmComp.group->members.size();
-			enemySwarmComp.group->idleMidBos = groupMidPos; */
+			enemySwarmComp.group->inCombat = false;			
 		}
 	}
 	
