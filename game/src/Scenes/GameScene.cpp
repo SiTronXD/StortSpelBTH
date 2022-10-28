@@ -5,6 +5,7 @@
 #include "../Systems/CameraMovementSystem.hpp"
 #include "../Systems/AiMovementSystem.hpp"
 #include "../Systems/AiCombatSystem.hpp"
+#include "GameOverScene.h"
 
 // decreaseFps used for testing game with different framerates
 void decreaseFps();
@@ -40,6 +41,7 @@ void GameScene::start()
 {
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+	this->setComponent<Combat>(playerID, 100.0f);
 
 	this->setComponent<Combat>(playerID);
 
@@ -58,10 +60,10 @@ void GameScene::start()
 
 void GameScene::update()
 {
-	if (Input::isKeyPressed(Keys::E)) 
+	if (Input::isKeyPressed(Keys::E))
 	{
 		// Call when a room is cleared
-		roomHandler.roomCompleted();		
+		roomHandler.roomCompleted();
 	}
 
 	// Player entered a new room
@@ -85,11 +87,20 @@ void GameScene::update()
 
 	decreaseFps();
 
+	// Switch scene if the player is dead
+	if (this->hasComponents<Combat>(this->playerID))
+	{
+		if (this->getComponent<Combat>(this->playerID).health <= 0.0f)
+		{
+			this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+		}
+	}
+
 	// Render HP bar UI
 	float hpPercent = 1.0f;
 	if (this->hasComponents<Combat>(this->playerID))
 	{
-		hpPercent =
+		hpPercent = 
 			this->getComponent<Combat>(this->playerID).health * 0.01f;
 	}
 	float xPos = -720;
