@@ -131,10 +131,10 @@ function script:move2(deltaTime)
     local curSpdSum = curSpdSqrd.x + curSpdSqrd.y + curSpdSqrd.z
     if curSpdSum > 0
     then
+        anim.timeScale = 1.0
+    else
         anim.timer = 0.0
         anim.timeScale = 0.0
-    else
-        anim.timeScale = 1.0
     end
     scene.setComponent(self.ID, CompType.Animation, anim)
 end
