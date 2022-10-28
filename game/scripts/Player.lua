@@ -124,6 +124,19 @@ function script:move2(deltaTime)
     self.transform.position = self.transform.position + 
         (forwardVec * self.currentSpeed.y +
         rightVec * self.currentSpeed.x) * deltaTime
+    
+    -- Handle animation speed and timing
+    local anim = scene.getComponent(self.ID, CompType.Animation)
+    local curSpdSqrd = self.currentSpeed * self.currentSpeed
+    local curSpdSum = curSpdSqrd.x + curSpdSqrd.y + curSpdSqrd.z
+    if curSpdSum > 0
+    then
+        anim.timer = 0.0
+        anim.timeScale = 0.0
+    else
+        anim.timeScale = 1.0
+    end
+    scene.setComponent(self.ID, CompType.Animation, anim)
 end
 
 function script:rotate2(deltaTime)
