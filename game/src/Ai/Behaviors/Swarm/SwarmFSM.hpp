@@ -23,15 +23,15 @@ struct SwarmComponent
 class SwarmFSM : public FSM
 {
 private:
-	static bool idle_combat(uint32_t entityID);
-	static bool idle_combat_FirendsInFight(uint32_t entityID);
-	static bool idle_escape(uint32_t entityID);
+	static bool idle_combat(Entity entityID);
+	static bool idle_combat_FirendsInFight(Entity entityID);
+	static bool idle_escape(Entity entityID);
 	
-	static bool combat_idle(uint32_t entityID);
-	static bool combat_escape(uint32_t entityID);
+	static bool combat_idle(Entity entityID);
+	static bool combat_escape(Entity entityID);
 
-	static bool escape_idle(uint32_t entityID);
-	static bool escape_combat(uint32_t entityID);
+	static bool escape_idle(Entity entityID);
+	static bool escape_combat(Entity entityID);
 
 
 	EntityEvent idle_to_combat{idle_combat};
@@ -45,7 +45,7 @@ private:
 public:
 protected:
 	// Inherited via FSM
-    virtual void registerEntityComponents(uint32_t entityId) override
+    virtual void registerEntityComponents(Entity entityId) override
     {
         addRequiredComponent<SwarmComponent>(entityId);
         addRequiredComponent<AiCombat>(entityId);
@@ -60,9 +60,7 @@ protected:
 		    {"escape", new Swarm_escape}
         });
 
-		//TODO: Cehck transitions
-		//// Movement temporary shit
-		//addEntityTransition("walking", energyMed, "jogging");
+		//TODO: Cehck transitions (Only one should be possible).
 		addEntityTransition("idle", SwarmFSM::idle_to_escape , "escape");
 		addEntityTransition("idle", SwarmFSM::idle_to_combat , "combat");
 		addEntityTransition("idle", SwarmFSM::idle_to_combat_firends_in_fight , "combat");

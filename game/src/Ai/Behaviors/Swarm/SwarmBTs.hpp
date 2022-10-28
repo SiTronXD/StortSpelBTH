@@ -25,26 +25,26 @@ class SwarmBT : public BehaviorTree
 {
    protected:
 	virtual void start() = 0;
-    void registerEntityComponents(uint32_t entityId) override;
+    void registerEntityComponents(Entity entityId) override;
 
   public:
-	virtual void initEntityData(uint32_t entityID) = 0;
-	virtual void update(uint32_t entityID) = 0;
+	virtual void initEntityData(Entity entityID) = 0;
+	virtual void update(Entity entityID) = 0;
 
    protected:
-	static BTStatus hasFriends(uint32_t entityID);
-	static BTStatus jumpInCircle(uint32_t entityID);
-	static BTStatus lookingForGroup(uint32_t entityID);
-	static BTStatus JoinGroup(uint32_t entityID);
+	static BTStatus hasFriends(Entity entityID);
+	static BTStatus jumpInCircle(Entity entityID);
+	static BTStatus lookingForGroup(Entity entityID);
+	static BTStatus JoinGroup(Entity entityID);
 
-	static BTStatus seesNewFriends(uint32_t entityID);
-	static BTStatus escapeToFriends(uint32_t entityID);
-	static BTStatus escapeFromPlayer(uint32_t entityID);
+	static BTStatus seesNewFriends(Entity entityID);
+	static BTStatus escapeToFriends(Entity entityID);
+	static BTStatus escapeFromPlayer(Entity entityID);
 
-	static BTStatus informFriends(uint32_t entityID);
-	static BTStatus jumpTowardsPlayer(uint32_t entityID);
-	static BTStatus closeEnoughToPlayer(uint32_t entityID);
-	static BTStatus attack(uint32_t entityID);
+	static BTStatus informFriends(Entity entityID);
+	static BTStatus jumpTowardsPlayer(Entity entityID);
+	static BTStatus closeEnoughToPlayer(Entity entityID);
+	static BTStatus attack(Entity entityID);
 
 
 
@@ -56,8 +56,8 @@ class Swarm_idle : public SwarmBT
    protected:
 	void start();
   public:
-	void initEntityData(uint32_t entityID){};
-	void update(uint32_t entityID){};
+	void initEntityData(Entity entityID){};
+	void update(Entity entityID){};
 };
 
 class Swarm_combat : public SwarmBT
@@ -66,8 +66,8 @@ class Swarm_combat : public SwarmBT
 	void start();
 
   public:
-	void initEntityData(uint32_t entityID){};
-	void update(uint32_t entityID){};
+	void initEntityData(Entity entityID){};
+	void update(Entity entityID){};
 };
 
 
@@ -76,8 +76,8 @@ class Swarm_escape : public SwarmBT
    protected:
 	void start();
   public:
-	void initEntityData(uint32_t entityID){};
-	void update(uint32_t entityID){};
+	void initEntityData(Entity entityID){};
+	void update(Entity entityID){};
 };
 
 

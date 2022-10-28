@@ -2,7 +2,7 @@
 
 
 
-bool SwarmFSM::idle_combat(uint32_t entityID)
+bool SwarmFSM::idle_combat(Entity entityID)
 {
 	bool ret = false;
 
@@ -22,7 +22,7 @@ bool SwarmFSM::idle_combat(uint32_t entityID)
 	return ret;
 }
 
-bool SwarmFSM::idle_combat_FirendsInFight(uint32_t entityID)
+bool SwarmFSM::idle_combat_FirendsInFight(Entity entityID)
 {
 	bool ret = false;
 
@@ -35,7 +35,7 @@ bool SwarmFSM::idle_combat_FirendsInFight(uint32_t entityID)
 	return ret;
 }
 
-bool SwarmFSM::idle_escape(uint32_t entityID)
+bool SwarmFSM::idle_escape(Entity entityID)
 {
 	bool ret = false;
 
@@ -55,7 +55,7 @@ bool SwarmFSM::idle_escape(uint32_t entityID)
 	return ret;
 }
 
-bool SwarmFSM::combat_idle(uint32_t entityID)
+bool SwarmFSM::combat_idle(Entity entityID)
 {
 	bool ret = false;
 
@@ -106,7 +106,7 @@ bool SwarmFSM::combat_idle(uint32_t entityID)
 	return ret;
 }
 
-bool SwarmFSM::combat_escape(uint32_t entityID)
+bool SwarmFSM::combat_escape(Entity entityID)
 {
 	bool ret = false;
 
@@ -123,7 +123,7 @@ bool SwarmFSM::combat_escape(uint32_t entityID)
 	return ret;
 }
 
-bool SwarmFSM::escape_idle(uint32_t entityID)
+bool SwarmFSM::escape_idle(Entity entityID)
 {
 	bool ret = false;
 
@@ -143,7 +143,7 @@ bool SwarmFSM::escape_idle(uint32_t entityID)
 	return ret;
 }
 
-bool SwarmFSM::escape_combat(uint32_t entityID)
+bool SwarmFSM::escape_combat(Entity entityID)
 {
 	bool ret = false;
 

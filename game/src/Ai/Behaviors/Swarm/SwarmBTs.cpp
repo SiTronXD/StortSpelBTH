@@ -33,12 +33,12 @@ float lookAtY(Transform from, Transform to)
     return angle; 
 }
 
-void SwarmBT::registerEntityComponents(uint32_t entityId)
+void SwarmBT::registerEntityComponents(Entity entityId)
 {
   addRequiredComponent<SwarmComponent>(entityId);
 }
 
-BTStatus SwarmBT::hasFriends(uint32_t entityID)
+BTStatus SwarmBT::hasFriends(Entity entityID)
 {
 
 	BTStatus ret = BTStatus::Success;
@@ -51,7 +51,7 @@ BTStatus SwarmBT::hasFriends(uint32_t entityID)
 	}
 	return ret;
 }
-BTStatus SwarmBT::jumpInCircle(uint32_t entityID)
+BTStatus SwarmBT::jumpInCircle(Entity entityID)
 {
 
 	BTStatus ret = BTStatus::Running;
@@ -71,7 +71,7 @@ BTStatus SwarmBT::jumpInCircle(uint32_t entityID)
 	}
 	return ret;
 }
-BTStatus SwarmBT::lookingForGroup(uint32_t entityID)
+BTStatus SwarmBT::lookingForGroup(Entity entityID)
 {
 
 	BTStatus ret = BTStatus::Running;
@@ -83,7 +83,7 @@ BTStatus SwarmBT::lookingForGroup(uint32_t entityID)
 	}
 	return ret;
 }
-BTStatus SwarmBT::JoinGroup(uint32_t entityID)
+BTStatus SwarmBT::JoinGroup(Entity entityID)
 {
 
 	BTStatus ret = BTStatus::Running;
@@ -111,7 +111,7 @@ BTStatus SwarmBT::JoinGroup(uint32_t entityID)
 	return ret;
 }
 
-BTStatus SwarmBT::seesNewFriends(uint32_t entityID)
+BTStatus SwarmBT::seesNewFriends(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
 
@@ -139,7 +139,7 @@ BTStatus SwarmBT::seesNewFriends(uint32_t entityID)
 
 	return ret;
 }
-BTStatus SwarmBT::escapeToFriends(uint32_t entityID)
+BTStatus SwarmBT::escapeToFriends(Entity entityID)
 {
 	BTStatus ret = BTStatus::Running;
 	
@@ -183,7 +183,7 @@ BTStatus SwarmBT::escapeToFriends(uint32_t entityID)
 
 	return ret;
 }
-BTStatus SwarmBT::escapeFromPlayer(uint32_t entityID)
+BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 {
 	BTStatus ret = BTStatus::Running;
 	//TODO: change to real player ID
@@ -213,7 +213,7 @@ BTStatus SwarmBT::escapeFromPlayer(uint32_t entityID)
 	return ret;
 }
 
-BTStatus SwarmBT::informFriends(uint32_t entityID)
+BTStatus SwarmBT::informFriends(Entity entityID)
 {
 	BTStatus ret = BTStatus::Success;
 
@@ -228,7 +228,7 @@ BTStatus SwarmBT::informFriends(uint32_t entityID)
 
 	return ret;
 }
-BTStatus SwarmBT::jumpTowardsPlayer(uint32_t entityID)
+BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 {
 	BTStatus ret = BTStatus::Running;
 
@@ -253,7 +253,7 @@ BTStatus SwarmBT::jumpTowardsPlayer(uint32_t entityID)
 
 	return ret;
 }
-BTStatus SwarmBT::closeEnoughToPlayer(uint32_t entityID)
+BTStatus SwarmBT::closeEnoughToPlayer(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
 
@@ -272,7 +272,7 @@ BTStatus SwarmBT::closeEnoughToPlayer(uint32_t entityID)
 
 
 
-BTStatus SwarmBT::attack(uint32_t entityID)
+BTStatus SwarmBT::attack(Entity entityID)
 {
 	BTStatus ret = BTStatus::Running;
 
