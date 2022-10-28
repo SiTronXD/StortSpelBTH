@@ -50,10 +50,14 @@ function script:update(dt)
     local right = camTransform:right()
     right.y = 0
 
+    -- Input vector
     self.moveDir = vector(core.btoi(input.isKeyDown(Keys.A)) - core.btoi(input.isKeyDown(Keys.D)), core.btoi(input.isKeyDown(Keys.W)) - core.btoi(input.isKeyDown(Keys.S)), 0)
+    -- Local vector with speed applied
     self.currentSpeed = self.moveDir:normalize() * self.maxSpeed * math.max(1.0, self.perkProperties.speedPerkActive * self.perkProperties.speedPerkValue)
+    -- Final vector in 3D using cameras directional vectors
     self.currentSpeed = forward:normalize() * self.currentSpeed.y + right:normalize() * self.currentSpeed.x
 
+    -- Apply to rigidbody velocity
     local rb = scene.getComponent(self.ID, CompType.Rigidbody)
     local y = rb.velocity.y
     rb.velocity = self.currentSpeed
@@ -77,9 +81,6 @@ function script:update(dt)
 
     --self:move2(dt)
     --self:rotate2(dt)
-
-    -- Test for UI
-    self.currentHP = self.currentHP - dt * 5.0
 end
 
 function script:move(deltaTime)
