@@ -80,9 +80,12 @@ private:
 	bool insideDoor = false;
 	bool roomFinished = false; // temp before slayyyy queen yaasss
 
-	bool checkRoom(int index, const glm::vec3& playerPos);
+	bool checkRoom(int index, const glm::vec3& playerPos, Entity entity);
 	void setActiveRooms();
 	void flipDoors(bool open);
+
+	void activateRoom(int index);
+	void deactivateRoom(int index);
 
 #ifdef _CONSOLE
 	bool showAllRooms = false;
@@ -106,8 +109,12 @@ public:
 	void init(Scene* scene, ResourceManager* resourceMan, int roomSize, int tileTypes);
 	void generate();
 
+#ifdef  _CONSOLE
+	void imgui();
+#endif //  _CONSOLE
+
 	void roomCompleted();
-	bool checkPlayer(const glm::vec3& playerPos);
+	bool newRoom(const glm::vec3& playerPos, Entity entity);
 
 	const std::vector<Entity>& getFreeTiles();
 

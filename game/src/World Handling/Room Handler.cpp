@@ -44,61 +44,39 @@ void RoomHandler::roomCompleted()
 	this->rooms[this->activeIndex].finished = true;
 }
 
-bool RoomHandler::checkPlayer(const glm::vec3& playerPos)
+bool RoomHandler::newRoom(const glm::vec3& playerPos, Entity entity)
 {
 	// Check if passed through door
-#ifdef _CONSOLE
-	
-	if (ImGui::Begin("Debug"))
-	{
-		ImGui::PushItemWidth(-100.f);
-		ImGui::Text("Rooms");
-		ImGui::Text("Num: %zd", this->rooms.size());
-
-		if (ImGui::Checkbox("Show all rooms", &this->showAllRooms))
-		{
-			if (this->showAllRooms) { this->activateAll(); }
-			else { this->setActiveRooms(); }
-		}
-
-		if (ImGui::Button("Reload")) 
-		{
-			this->generate();
-		} 
-
-		ImGui::Text("A: %d, N: %d, D: %d", this->activeIndex, this->nextIndex, this->curDoor);
-		ImGui::Text("Pos: (%d, %d, %d)", (int)playerPos.x, (int)playerPos.y, (int)playerPos.z);
-
-		ImGui::Separator();
-		ImGui::PopItemWidth();
-	}
-	ImGui::End();
-
-#endif
 
 #ifdef _CONSOLE
 	if (!this->showAllRooms)
 	{
-		if (this->checkRoom(this->activeIndex, playerPos))
+		if (this->checkRoom(this->activeIndex, playerPos, entity))
 		{
 			return true;
 		}
 
 		if (this->nextIndex != -1)
 		{ 
-			if (this->checkRoom(this->nextIndex, playerPos))
+			if (this->checkRoom(this->nextIndex, playerPos, entity))
+			{
 				return true;
-		};
+			}
+		}
 	}
 #else
-	if (this->checkRoom(this->activeIndex, playerPos))
+	if (this->checkRoom(this->activeIndex, playerPos, entity))
+	{
 		return true;
+	}
 
 	if (this->nextIndex != -1)
 	{ 
-		if (this->checkRoom(this->nextIndex, playerPos))
+		if (this->checkRoom(this->nextIndex, playerPos, entity))
+		{
 			return true;
-	};
+		}
+	}
 #endif // _CONSOLE
 
 	return false;
@@ -255,7 +233,7 @@ void RoomHandler::createDoors(int roomIndex)
 			this->hasDoor[i] = true;
 			Transform& tra = this->scene->getComponent<Transform>(curRoomIds.doorIds[i]);
 
-			// Offset by 1.5 (1.5 tiles before room scaling)
+			// offset by 1.5 (1.5 tiles before room scaling)
 			tra.position.x = doorTilePos[i].x + OFFSETS[i].x;
 			tra.position.z = doorTilePos[i].y + OFFSETS[i].y;
 			tra.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE);
@@ -444,36 +422,48 @@ void RoomHandler::scaleRoom(int index, const glm::vec3& roomPos)
 
 void RoomHandler::createColliders()
 {
-	const float Offset = TILE_WIDTH * 0.6f;
-	const glm::vec3 Offsets[4] = 
+	const float halfTile = TILE_WIDTH * 0.5f;
+	const float offset = TILE_WIDTH * 0.6f;
+	const glm::vec3 offsets[4] = 
 	{
-		glm::vec3(-Offset, TILE_WIDTH * 0.5f, 0.f),
-		glm::vec3(Offset, TILE_WIDTH * 0.5f, 0.f),
-		glm::vec3(0.f, TILE_WIDTH * 0.5f, -Offset),
-		glm::vec3(0.f, TILE_WIDTH * 0.5f, Offset)
+		glm::vec3(-offset, 0, 0.f),
+		glm::vec3(offset, 0, 0.f),
+		glm::vec3(0.f, 0, -offset),
+		glm::vec3(0.f, 0, offset)
 	};
 
-	const Collider borderCol = Collider::createBox(glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH, TILE_WIDTH * 0.5f));
-	const Collider doorCol	 = Collider::createBox(glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH * 0.5f, TILE_WIDTH - Offset));
+	const glm::vec3 borderColDims(halfTile, TILE_WIDTH, halfTile);
+	const glm::vec3 doorColDims(halfTile, TILE_WIDTH, TILE_WIDTH * 0.1f);
+	//const glm::vec3 doorTrigCol(halfTile, halfTile, TILE_WIDTH - offset);
+	//const glm::vec3 borderColDims(5.f);
+	//const glm::vec3 doorColDims	 (5.f);
+	const glm::vec3 doorTrigCol	 (5.f);
 
 	for (Room& room : this->rooms)
 	{
 		for (Entity id : room.borders)
 		{
-			//this->scene->setComponent<Collider>(id, borderCol);
+			this->scene->setComponent<Collider>(id, Collider::createBox(borderColDims));
 		}
 
 		for (int i = 0; i < 4; i++)
 		{
 			if (room.doorIds[i] != -1)
 			{
-				room.doorTriggers[i] = this->scene->createEntity();
-				this->scene->setComponent<Collider>(room.doorTriggers[i], doorCol);
+				// Physics Collider
+				this->scene->setComponent<Collider>(room.doorIds[i], Collider::createBox(doorColDims));
 
+				// Trigger
+				room.doorTriggers[i] = this->scene->createEntity();
+				
 				Transform& doorTra = this->scene->getComponent<Transform>(room.doorIds[i]);
 				Transform& triggerTra = this->scene->getComponent<Transform>(room.doorTriggers[i]);
 
-				triggerTra.position = doorTra.position + Offsets[i];
+				triggerTra.position = doorTra.position + offsets[i];
+				triggerTra.rotation = doorTra.rotation;
+				
+				this->scene->setComponent<Collider>(room.doorTriggers[i], Collider::createBox(doorTrigCol, true));
+
 			}
 		}
 	}
@@ -482,7 +472,7 @@ void RoomHandler::createColliders()
 	{
 		if (this->scene->getComponent<MeshComponent>(entity).meshID == this->tileMeshIds[Tile::Border])
 		{
-			this->scene->setComponent<Collider>(entity, borderCol);
+			this->scene->setComponent<Collider>(entity, Collider::createBox(borderColDims));
 		}
 	}
 
@@ -509,8 +499,8 @@ void RoomHandler::createColliders()
 	const glm::vec3 floorDimensions((maxX - minX) * 0.5f + HalfRoom, 4.f, (maxZ - minZ) * 0.5f + HalfRoom);
 
 	this->floor = this->scene->createEntity();
-	this->scene->setComponent<Collider>(this->floor, Collider::createBox(floorDimensions));
-	this->scene->getComponent<Transform>(this->floor).position = floorPos;
+	//this->scene->setComponent<Collider>(this->floor, Collider::createBox(floorDimensions));
+	//this->scene->getComponent<Transform>(this->floor).position = floorPos;
 }
 
 Entity RoomHandler::createTileEntity(int tileIndex, const glm::vec3& roomPos)
@@ -601,43 +591,45 @@ Entity RoomHandler::createPathBorderEntity(const glm::vec3& position)
 	return entity;
 }
 
-bool RoomHandler::checkRoom(int index, const glm::vec3& playerPos)
+bool RoomHandler::checkRoom(int index, const glm::vec3& playerPos, Entity entity)
 {
-	return false;
-	/*this->insideDoor = false;
+	this->insideDoor = false;
 	bool result = false;
 
-	for (int j = 0; j < 4; j++)
+	Room& curRoom = this->rooms[index];
+
+	for (int i = 0; i < 4; i++)
 	{
-		Entity id = this->rooms[index].doorIds[j];
-		if (id == -1)
-		{
-			continue;
-		}
+		Entity id = curRoom.doorTriggers[i];
 
-		Transform& tra = this->scene->getComponent<Transform>(id);
-		Box2D& box = this->scene->getComponent<Box2D>(id);
-
-		if (box.colliding(tra.position, playerPos))
+		// Will also skip invalid doors (-1)
+		if (entity == id)
 		{
-			if (index == this->nextIndex && !this->rooms[index].finished)
+			const Collider& col = this->scene->getComponent<Collider>(id);
+
+			// Entered new room
+			if (index == this->nextIndex && !curRoom.finished)
 			{
+				// deactivate the old room
+				this->deactivateRoom(this->activeIndex);
+
 				this->activeIndex = index;
 				this->nextIndex = -1;
 				this->roomFinished = false;
 				result = true;
 
-				setActiveRooms();
 				flipDoors(false);
 			}
 
+			// Left finished room
 			else if (this->curDoor == -1 && this->roomFinished)
 			{
 				this->activeIndex = index;
-				this->nextIndex = this->rooms[index].connectingIndex[j];
-				this->curDoor = j;
+				this->nextIndex = curRoom.connectingIndex[i];
+				this->curDoor = i;
 				
-				setActiveRooms();
+				this->activateRoom(this->nextIndex);
+
 				flipDoors(true);
 			}
 			this->insideDoor = true;
@@ -648,7 +640,7 @@ bool RoomHandler::checkRoom(int index, const glm::vec3& playerPos)
 		this->curDoor = -1;
 	}
 
-	return result;*/
+	return result;
 }
 
 void RoomHandler::reset()
@@ -671,10 +663,17 @@ void RoomHandler::reset()
 		room.borders.clear();
 		room.exitPaths.clear();
 
-		if (room.doorIds[0] != -1) { this->scene->removeEntity(room.doorIds[0]); room.doorIds[0] = -1; }
-		if (room.doorIds[1] != -1) { this->scene->removeEntity(room.doorIds[1]); room.doorIds[1] = -1; }
-		if (room.doorIds[2] != -1) { this->scene->removeEntity(room.doorIds[2]); room.doorIds[2] = -1; }
-		if (room.doorIds[3] != -1) { this->scene->removeEntity(room.doorIds[3]); room.doorIds[3] = -1; }
+		for (int i = 0; i < 4; i++)
+		{
+			if (room.doorIds[i] != -1)
+			{
+				this->scene->removeEntity(room.doorIds[i]);
+				room.doorIds[i] = -1;
+
+				this->scene->removeEntity(room.doorTriggers[i]);
+				room.doorTriggers[i] = -1;
+			}
+		}
 
 		room.finished = false;
 	}																				  
@@ -701,45 +700,56 @@ void RoomHandler::setActiveRooms()
 	const int num = (int)this->rooms.size();
 	for (int i = 0; i < num; i++)
 	{
+		Room& curRoom = this->rooms[i];
+
 		if (i == this->activeIndex || i == this->nextIndex)
 		{
-			for (const Entity& id : this->rooms[i].tiles)
+			for (const Entity& id : curRoom.tiles)
 			{
 				this->scene->setActive(id);
 			}
-			for (const Entity& id : this->rooms[i].borders)
+			for (const Entity& id : curRoom.borders)
 			{
 				this->scene->setActive(id);
 			}
-			for (const Entity& id : this->rooms[i].exitPaths)
+			for (const Entity& id : curRoom.exitPaths)
 			{
 				this->scene->setActive(id);
 			}
-
-			if (this->rooms[i].doorIds[0] != -1) { this->scene->setActive(this->rooms[i].doorIds[0]); }
-			if (this->rooms[i].doorIds[1] != -1) { this->scene->setActive(this->rooms[i].doorIds[1]); }
-			if (this->rooms[i].doorIds[2] != -1) { this->scene->setActive(this->rooms[i].doorIds[2]); }
-			if (this->rooms[i].doorIds[3] != -1) { this->scene->setActive(this->rooms[i].doorIds[3]); }
+			
+			for (int i = 0; i < 4; i++)
+			{
+				if (curRoom.doorIds[i] != -1)
+				{
+					 this->scene->setActive(curRoom.doorIds[i]);
+					 this->scene->setActive(curRoom.doorTriggers[i]);
+				}
+			}
 		}
+
 		else
 		{
-			for (const Entity& id : this->rooms[i].tiles)
+			for (const Entity& id : curRoom.tiles)
 			{
 				this->scene->setInactive(id);
 			}
-			for (const Entity& id : this->rooms[i].borders)
+			for (const Entity& id : curRoom.borders)
 			{
 				this->scene->setInactive(id);
 			}
-			for (const Entity& id : this->rooms[i].exitPaths)
+			for (const Entity& id : curRoom.exitPaths)
 			{
 				this->scene->setInactive(id);
 			}
 
-			if (this->rooms[i].doorIds[0] != -1) { this->scene->setInactive(this->rooms[i].doorIds[0]); }
-			if (this->rooms[i].doorIds[1] != -1) { this->scene->setInactive(this->rooms[i].doorIds[1]); }
-			if (this->rooms[i].doorIds[2] != -1) { this->scene->setInactive(this->rooms[i].doorIds[2]); }
-			if (this->rooms[i].doorIds[3] != -1) { this->scene->setInactive(this->rooms[i].doorIds[3]); }
+			for (int i = 0; i < 4; i++)
+			{
+				if (curRoom.doorIds[i] != -1)
+				{
+					 this->scene->setInactive(curRoom.doorIds[i]);
+					 this->scene->setInactive(curRoom.doorTriggers[i]);
+				}
+			}
 		}
 	}
 }
@@ -781,6 +791,68 @@ void RoomHandler::flipDoors(bool open)
 	}
 }
 
+void RoomHandler::activateRoom(int index)
+{
+	if (index < 0 || index >= (int)this->rooms.size())
+	{
+		return;
+	}
+
+	Room& curRoom = this->rooms[index];
+	for (const Entity& id : curRoom.tiles)
+	{
+		this->scene->setActive(id);
+	}
+	for (const Entity& id : curRoom.borders)
+	{
+		this->scene->setActive(id);
+	}
+	for (const Entity& id : curRoom.exitPaths)
+	{
+		this->scene->setActive(id);
+	}
+	
+	for (int i = 0; i < 4; i++)
+	{
+		if (curRoom.doorIds[i] != -1)
+		{
+			 this->scene->setActive(curRoom.doorIds[i]);
+			 this->scene->setActive(curRoom.doorTriggers[i]);
+		}
+	}
+}
+
+void RoomHandler::deactivateRoom(int index)
+{
+	if (index < 0 || index >= (int)this->rooms.size())
+	{
+		return;
+	}
+
+	Room& curRoom = this->rooms[index];
+	for (const Entity& id : curRoom.tiles)
+	{
+		this->scene->setInactive(id);
+	}
+	for (const Entity& id : curRoom.borders)
+	{
+		this->scene->setInactive(id);
+	}
+	for (const Entity& id : curRoom.exitPaths)
+	{
+		this->scene->setInactive(id);
+	}
+	
+	for (int i = 0; i < 4; i++)
+	{
+		if (curRoom.doorIds[i] != -1)
+		{
+			 this->scene->setInactive(curRoom.doorIds[i]);
+			 this->scene->setInactive(curRoom.doorTriggers[i]);
+		}
+	}
+}
+
 glm::vec3 RoomHandler::snapToGrid(const glm::vec3& pos)
 {
 	return glm::vec3(
@@ -818,4 +890,33 @@ void RoomHandler::activateAll()
 		this->scene->setActive(entity);
 	}
 }
+
+void RoomHandler::imgui()
+{
+	if (ImGui::Begin("Debug"))
+	{
+		ImGui::PushItemWidth(-100.f);
+		ImGui::Text("Rooms");
+		ImGui::Text("Num: %zd", this->rooms.size());
+
+		if (ImGui::Checkbox("Show all rooms", &this->showAllRooms))
+		{
+			if (this->showAllRooms) { this->activateAll(); }
+			else { this->setActiveRooms(); }
+		}
+
+		if (ImGui::Button("Reload")) 
+		{
+			this->generate();
+		} 
+
+		ImGui::Text("A: %d, N: %d, D: %d", this->activeIndex, this->nextIndex, this->curDoor);
+
+		ImGui::Separator();
+		ImGui::PopItemWidth();
+	}
+	ImGui::End();
+}
+
 #endif // _CONSOLE
+
