@@ -6,9 +6,11 @@
 #include "../Systems/AiMovementSystem.hpp"
 #include "../Systems/AiCombatSystem.hpp"
 
+#ifdef _CONSOLE
 // decreaseFps used for testing game with different framerates
 void decreaseFps();
 double heavyFunction(double value);
+#endif
 
 GameScene::GameScene() : playerID(-1)
 {
@@ -24,6 +26,9 @@ void GameScene::init()
 
 	roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
 	roomHandler.generate();
+
+	this->getPhysicsEngine()->renderDebugShapes(true);
+
 }
 
 void GameScene::start()
@@ -56,10 +61,16 @@ void GameScene::update()
 		}
 	}
 	
-
+#ifdef _CONSOLE
 	decreaseFps();
+#endif
 }
 
+void GameScene::onTriggerStay(Entity e1, Entity e2)
+{
+}
+
+#ifdef _CONSOLE
 void decreaseFps()
 {
 	static double result = 1234567890.0;
@@ -96,3 +107,4 @@ double heavyFunction(double value)
 
 	return result;
 }
+#endif

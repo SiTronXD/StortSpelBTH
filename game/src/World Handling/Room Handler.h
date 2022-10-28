@@ -6,17 +6,6 @@ class Scene;
 class ResourceManager;
 typedef int Entity;
 
-// temp before bullet
-struct Box2D
-{
-	glm::vec2 extents = glm::vec2(1.f);
-	bool colliding(const glm::vec3& boxPos, const glm::vec3& otherPos)
-	{
-		glm::vec3 delta = otherPos - boxPos;
-		return std::abs(delta.x) <= extents.x && std::abs(delta.z) <= extents.y;
-	}
-};
-
 class RoomHandler
 {
 public:
@@ -35,7 +24,7 @@ private:
 	struct Room
 	{
 		Room()
-			:doorIds{-1,-1,-1,-1},
+			:doorIds{-1,-1,-1,-1}, doorTriggers{-1,-1,-1,-1},
 			connectingIndex{-1,-1,-1,-1}, finished(false)
 		{		
 		}
@@ -45,6 +34,7 @@ private:
 		std::vector<Entity> exitPaths;
 
 		Entity doorIds[4];
+		Entity doorTriggers[4];
 		int connectingIndex[4];
 
 		bool finished;
@@ -94,7 +84,7 @@ private:
 	void setActiveRooms();
 	void flipDoors(bool open);
 
-#ifdef _DEBUG
+#ifdef _CONSOLE
 	bool showAllRooms = false;
 	void activateAll();
 #endif
