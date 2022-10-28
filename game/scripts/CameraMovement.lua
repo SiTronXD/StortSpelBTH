@@ -12,6 +12,7 @@ function script:init()
     self.camHeight     = 6
     self.sens          = 25
     self.distAcc       = 0
+    self.distMargin    = 1
 
     self.shaking       = false
     self.shakeTimer    = 0
@@ -77,9 +78,17 @@ function script:update(dt)
 
     -- Apply rotation
     self.transform.rotation = camRot
+    local forward = self.transform:forward()
+
+    -- Limit distance
+    local actualDist = self.camDist + self.distMargin
+    local payload = physics.raycast(targetPos, -forward, actualDist)
+    if (payload) then
+        actualDist = vector.length(payload.hitPoint - targetPos)
+    end
 
     -- Apply position
-    local scaledFwd = self.transform:forward() * self.camDist
+    local scaledFwd = forward * (actualDist - self.distMargin)
     self.transform.position = targetPos - scaledFwd
 end
 
