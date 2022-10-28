@@ -36,7 +36,6 @@ void GameScene::start()
 	Entity sword = this->createEntity();
 	this->setComponent<MeshComponent>(sword);
 	this->getComponent<MeshComponent>(sword).meshID = swordId;
-
 }
 
 void GameScene::update()
