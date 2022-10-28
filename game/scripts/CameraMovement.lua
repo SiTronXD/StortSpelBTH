@@ -21,7 +21,6 @@ function script:init()
     self.active        = true
     
     input.setHideCursor(self.active)
-    --physics.renderDebugShapes(self.active)
 end
 
 function script:update(dt)
@@ -29,7 +28,6 @@ function script:update(dt)
     if (input.isKeyPressed(Keys.ESCAPE)) then
         self.active = not self.active
         input.setHideCursor(self.active)
-        --physics.renderDebugShapes(self.active)
     end
 
     if (not self.active) then
