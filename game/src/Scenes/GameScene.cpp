@@ -44,11 +44,11 @@ void GameScene::start()
 	this->createSystem<AiMovementSystem>(this->getSceneHandler(), this->playerID);
 	this->createSystem<AiCombatSystem>(this->getSceneHandler(), this->playerID);
 	
-	uint32_t swordId = this->getResourceManager()->addMesh("assets/models/Sword.obj");
-	
-	Entity sword = this->createEntity();
-	this->setComponent<MeshComponent>(sword);
-	this->getComponent<MeshComponent>(sword).meshID = swordId;
+	//uint32_t swordId = this->getResourceManager()->addMesh("assets/models/Sword.obj");
+	//
+	//Entity sword = this->createEntity();
+	//this->setComponent<MeshComponent>(sword);
+	//this->getComponent<MeshComponent>(sword).meshID = swordId;
 }
 
 void GameScene::update()

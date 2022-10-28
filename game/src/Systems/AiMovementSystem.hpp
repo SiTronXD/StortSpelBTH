@@ -63,6 +63,7 @@ public:
                 }
                 movement.moveDir = glm::normalize(playerTrans.position - transform.position);
                 transform.position += (movement.moveDir * movement.currentSpeed.y) * dt;
+                transform.position.y = 0.f;
             }
         }
     }
