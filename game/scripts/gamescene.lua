@@ -1,10 +1,5 @@
---local playerMesh = resources.addMesh("assets/models/Amogus/source/1.fbx")
 local playerMesh = resources.addMesh("assets/models/run_forward.fbx", "assets/textures/playerMesh")
 print(playerMesh)
-
---local cam = scene.createEntity()
---scene.setComponent(cam, CompType.Camera)
---scene.setMainCamera(cam)
 
 -- Camera
 local cam = scene.createPrefab("scripts/prefabs/CameraPrefab.lua")
@@ -20,6 +15,8 @@ local playerAnim =
 }
 scene.setComponent(playerID, CompType.Animation, playerAnim)
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
+scene.setComponent(playerID, CompType.Collider, { type = ColliderType.Capsule, radius = 2, height = 5 })
+scene.setComponent(playerID, CompType.Rigidbody, { mass = 1, gravityMult = 5, rotFactor = vector.fill(0) })
 scene.getComponent(cam, CompType.Script).playerID = playerID
 scene.getComponent(playerID, CompType.Script).camID = cam
 network.sendPlayer(player)

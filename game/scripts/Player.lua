@@ -18,20 +18,69 @@ function script:init()
 	self.turnSpeed = 200
 	self.timer = 0
     self.slowDown = 80
-    self.transform.position = vector(0, 0, 0)
+    self.transform.position = vector(0, 10, 0)
     self.transform.rotation = vector(0, 0, 0)
-    --self.transform.scale = vector(0.05, 0.05, 0.05)
 
     self.maxHP = 100.0
     self.currentHP = self.maxHP
+    self.onGround = false
+    self.active = true
 end
 
 function script:update(dt)
-    self:move2(dt)
-    self:rotate2(dt)
+    -- Set and use active
+    if (input.isKeyPressed(Keys.ESCAPE)) then
+        self.active = not self.active
+    end
 
-    -- Test for UI
-    self.currentHP = self.currentHP - dt * 10.0
+    if (not self.active) then
+        return
+    end
+
+    -- Check if grounded
+    local payload = physics.raycast(self.transform.position, vector(0, -1, 0))
+    if (payload) then
+        self.onGround = (self.transform.position - payload.hitPoint):length() < 5
+    end
+
+    -- New movement using rigidbody
+    local camTransform = scene.getComponent(self.camID, CompType.Transform)
+    local forward = camTransform:forward()
+    forward.y = 0
+    local right = camTransform:right()
+    right.y = 0
+
+    -- Input vector
+    self.moveDir = vector(core.btoi(input.isKeyDown(Keys.A)) - core.btoi(input.isKeyDown(Keys.D)), core.btoi(input.isKeyDown(Keys.W)) - core.btoi(input.isKeyDown(Keys.S)), 0)
+    -- Local vector with speed applied
+    self.currentSpeed = self.moveDir:normalize() * self.maxSpeed * math.max(1.0, self.perkProperties.speedPerkActive * self.perkProperties.speedPerkValue)
+    -- Final vector in 3D using cameras directional vectors
+    self.currentSpeed = forward:normalize() * self.currentSpeed.y + right:normalize() * self.currentSpeed.x
+
+    -- Apply to rigidbody velocity
+    local rb = scene.getComponent(self.ID, CompType.Rigidbody)
+    local y = rb.velocity.y
+    rb.velocity = self.currentSpeed
+    rb.velocity.y = y + core.btoi(input.isKeyPressed(Keys.SPACE)) * core.btoi(self.onGround) * 7.5 * rb.gravityMult
+    scene.setComponent(self.ID, CompType.Rigidbody, rb)
+
+    -- Rotate
+    if (self.moveDir.y > 0)
+    then
+        self.transform.rotation.y = (camTransform.rotation.y + 180) + 45 * self.moveDir.x
+    elseif (self.moveDir.y < 0)
+    then
+        self.transform.rotation.y = (camTransform.rotation.y) - 45 * self.moveDir.x
+    elseif (self.moveDir.x > 0) 
+    then
+        self.transform.rotation.y = camTransform.rotation.y - 90
+    elseif (self.moveDir.x < 0)
+    then
+        self.transform.rotation.y = camTransform.rotation.y + 90
+    end
+
+    --self:move2(dt)
+    --self:rotate2(dt)
 end
 
 function script:move(deltaTime)
