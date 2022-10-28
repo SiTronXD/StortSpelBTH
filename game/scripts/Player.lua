@@ -30,7 +30,7 @@ function script:update(dt)
     self:rotate2(dt)
 
     -- Test for UI
-    self.currentHP = self.currentHP - dt * 10.0
+    self.currentHP = self.currentHP - dt * 5.0
 end
 
 function script:move(deltaTime)
