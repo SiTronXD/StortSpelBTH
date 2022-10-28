@@ -13,9 +13,11 @@ scene.setMainCamera(cam)
 -- Player
 playerID = scene.createEntity()
 scene.setComponent(playerID, CompType.Mesh, playerMesh)
-local playerAnim = {}
-playerAnim.timer = 0.0
-playerAnim.timeScale = 1.0 
+local playerAnim = 
+{ 
+	timer = 0.0, 
+	timeScale = 1.0 
+}
 scene.setComponent(playerID, CompType.Animation, playerAnim)
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
 scene.getComponent(cam, CompType.Script).playerID = playerID
@@ -28,8 +30,7 @@ scene.setComponent(uiID, CompType.Script, "scripts/UI.lua")
 scene.getComponent(uiID, CompType.Script).playerScript = scene.getComponent(playerID, CompType.Script)
 
 -- UI textures
-local pixelArtSamplerSettings = {}
-pixelArtSamplerSettings.filterMode = Filters.Nearest
+local pixelArtSamplerSettings = { filterMode = Filters.Nearest }
 scene.getComponent(uiID, CompType.Script).hpBarBackgroundTextureID =
 	resources.addTexture("assets/textures/UI/hpBarBackground.png")
 scene.getComponent(uiID, CompType.Script).hpBarTextureID = 
