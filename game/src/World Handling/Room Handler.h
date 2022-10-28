@@ -24,7 +24,7 @@ private:
 	struct Room
 	{
 		Room()
-			:doorIds{-1,-1,-1,-1}, doorTriggers{-1,-1,-1,-1},
+			:doors{-1,-1,-1,-1}, doorTriggers{-1,-1,-1,-1},
 			connectingIndex{-1,-1,-1,-1}, finished(false)
 		{		
 		}
@@ -33,7 +33,7 @@ private:
 		std::vector<Entity> borders;
 		std::vector<Entity> exitPaths;
 
-		Entity doorIds[4];
+		Entity doors[4];
 		Entity doorTriggers[4];
 		int connectingIndex[4];
 

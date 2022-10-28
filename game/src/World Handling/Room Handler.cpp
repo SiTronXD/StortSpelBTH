@@ -209,10 +209,10 @@ void RoomHandler::createDoors(int roomIndex)
 
 	Room& curRoomIds = this->rooms[roomIndex];
 
-	if (curRoom.left  != -1) { curRoomIds.doorIds[0] = this->createDoorEntity(-90.f); }
-	if (curRoom.right != -1) { curRoomIds.doorIds[1] = this->createDoorEntity(90.f);  }
-	if (curRoom.up	  != -1) { curRoomIds.doorIds[2] = this->createDoorEntity(180.f); }
-	if (curRoom.down  != -1) { curRoomIds.doorIds[3] = this->createDoorEntity(0.f);	  }
+	if (curRoom.left  != -1) { curRoomIds.doors[0] = this->createDoorEntity(-90.f); }
+	if (curRoom.right != -1) { curRoomIds.doors[1] = this->createDoorEntity(90.f);  }
+	if (curRoom.up	  != -1) { curRoomIds.doors[2] = this->createDoorEntity(180.f); }
+	if (curRoom.down  != -1) { curRoomIds.doors[3] = this->createDoorEntity(0.f);	  }
 
 	const float OFFSET = 1.5f;
 	const glm::vec2 OFFSETS[4] = 
@@ -228,10 +228,10 @@ void RoomHandler::createDoors(int roomIndex)
 	{
 		this->hasDoor[i] = false;
 
-		if (curRoomIds.doorIds[i] != -1)
+		if (curRoomIds.doors[i] != -1)
 		{
 			this->hasDoor[i] = true;
-			Transform& tra = this->scene->getComponent<Transform>(curRoomIds.doorIds[i]);
+			Transform& tra = this->scene->getComponent<Transform>(curRoomIds.doors[i]);
 
 			// offset by 1.5 (1.5 tiles before room scaling)
 			tra.position.x = doorTilePos[i].x + OFFSETS[i].x;
@@ -249,7 +249,7 @@ void RoomHandler::setExitPoints(int roomIndex)
 
 	for (int i = 0; i < 4; i++)
 	{
-		if (this->rooms[roomIndex].doorIds[i] != -1)
+		if (this->rooms[roomIndex].doors[i] != -1)
 		{ 
 			this->roomExitPoints.back().worldPositions[i] = glm::vec3(exitPositions[i].x, 0.f, exitPositions[i].y);
 		}
@@ -381,9 +381,9 @@ void RoomHandler::scaleRoom(int index, const glm::vec3& roomPos)
 	// Scale doors
 	for (int i = 0; i < 4; i++)
 	{
-		if (room.doorIds[i] != -1)
+		if (room.doors[i] != -1)
 		{
-			Transform& tra = this->scene->getComponent<Transform>(room.doorIds[i]);
+			Transform& tra = this->scene->getComponent<Transform>(room.doors[i]);
 			tra.position *= TILE_WIDTH;
 			tra.position += roomPos;
 			tra.scale *= TILE_WIDTH;
@@ -434,10 +434,7 @@ void RoomHandler::createColliders()
 
 	const glm::vec3 borderColDims(halfTile, TILE_WIDTH, halfTile);
 	const glm::vec3 doorColDims(halfTile, TILE_WIDTH, TILE_WIDTH * 0.1f);
-	//const glm::vec3 doorTrigCol(halfTile, halfTile, TILE_WIDTH - offset);
-	//const glm::vec3 borderColDims(5.f);
-	//const glm::vec3 doorColDims	 (5.f);
-	const glm::vec3 doorTrigCol	 (5.f);
+	const glm::vec3 doorTrigCol(halfTile, halfTile, TILE_WIDTH - offset);
 
 	for (Room& room : this->rooms)
 	{
@@ -448,15 +445,15 @@ void RoomHandler::createColliders()
 
 		for (int i = 0; i < 4; i++)
 		{
-			if (room.doorIds[i] != -1)
+			if (room.doors[i] != -1)
 			{
 				// Physics Collider
-				this->scene->setComponent<Collider>(room.doorIds[i], Collider::createBox(doorColDims));
+				this->scene->setComponent<Collider>(room.doors[i], Collider::createBox(doorColDims));
 
 				// Trigger
 				room.doorTriggers[i] = this->scene->createEntity();
 				
-				Transform& doorTra = this->scene->getComponent<Transform>(room.doorIds[i]);
+				Transform& doorTra = this->scene->getComponent<Transform>(room.doors[i]);
 				Transform& triggerTra = this->scene->getComponent<Transform>(room.doorTriggers[i]);
 
 				triggerTra.position = doorTra.position + offsets[i];
@@ -472,7 +469,7 @@ void RoomHandler::createColliders()
 	{
 		if (this->scene->getComponent<MeshComponent>(entity).meshID == this->tileMeshIds[Tile::Border])
 		{
-			this->scene->setComponent<Collider>(entity, Collider::createBox(borderColDims));
+			//this->scene->setComponent<Collider>(entity, Collider::createBox(borderColDims));
 		}
 	}
 
@@ -499,8 +496,8 @@ void RoomHandler::createColliders()
 	const glm::vec3 floorDimensions((maxX - minX) * 0.5f + HalfRoom, 4.f, (maxZ - minZ) * 0.5f + HalfRoom);
 
 	this->floor = this->scene->createEntity();
-	//this->scene->setComponent<Collider>(this->floor, Collider::createBox(floorDimensions));
-	//this->scene->getComponent<Transform>(this->floor).position = floorPos;
+	this->scene->setComponent<Collider>(this->floor, Collider::createBox(floorDimensions));
+	this->scene->getComponent<Transform>(this->floor).position = floorPos;
 }
 
 Entity RoomHandler::createTileEntity(int tileIndex, const glm::vec3& roomPos)
@@ -665,10 +662,10 @@ void RoomHandler::reset()
 
 		for (int i = 0; i < 4; i++)
 		{
-			if (room.doorIds[i] != -1)
+			if (room.doors[i] != -1)
 			{
-				this->scene->removeEntity(room.doorIds[i]);
-				room.doorIds[i] = -1;
+				this->scene->removeEntity(room.doors[i]);
+				room.doors[i] = -1;
 
 				this->scene->removeEntity(room.doorTriggers[i]);
 				room.doorTriggers[i] = -1;
@@ -719,9 +716,9 @@ void RoomHandler::setActiveRooms()
 			
 			for (int i = 0; i < 4; i++)
 			{
-				if (curRoom.doorIds[i] != -1)
+				if (curRoom.doors[i] != -1)
 				{
-					 this->scene->setActive(curRoom.doorIds[i]);
+					 this->scene->setActive(curRoom.doors[i]);
 					 this->scene->setActive(curRoom.doorTriggers[i]);
 				}
 			}
@@ -744,9 +741,9 @@ void RoomHandler::setActiveRooms()
 
 			for (int i = 0; i < 4; i++)
 			{
-				if (curRoom.doorIds[i] != -1)
+				if (curRoom.doors[i] != -1)
 				{
-					 this->scene->setInactive(curRoom.doorIds[i]);
+					 this->scene->setInactive(curRoom.doors[i]);
 					 this->scene->setInactive(curRoom.doorTriggers[i]);
 				}
 			}
@@ -760,19 +757,19 @@ void RoomHandler::flipDoors(bool open)
 
 	const Room& curRoom = this->rooms[this->activeIndex];
 
-	if (curRoom.doorIds[0] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doorIds[0]).meshID = doorId; }
-	if (curRoom.doorIds[1] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doorIds[1]).meshID = doorId; }
-	if (curRoom.doorIds[2] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doorIds[2]).meshID = doorId; }
-	if (curRoom.doorIds[3] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doorIds[3]).meshID = doorId; }
+	if (curRoom.doors[0] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doors[0]).meshID = doorId; }
+	if (curRoom.doors[1] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doors[1]).meshID = doorId; }
+	if (curRoom.doors[2] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doors[2]).meshID = doorId; }
+	if (curRoom.doors[3] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doors[3]).meshID = doorId; }
 
 	if (this->nextIndex != -1)
 	{
 		const Room& nextRoom = this->rooms[nextIndex];
 
-		if (nextRoom.doorIds[0] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doorIds[0]).meshID = doorId; }
-		if (nextRoom.doorIds[1] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doorIds[1]).meshID = doorId; }
-		if (nextRoom.doorIds[2] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doorIds[2]).meshID = doorId; }
-		if (nextRoom.doorIds[3] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doorIds[3]).meshID = doorId; }
+		if (nextRoom.doors[0] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doors[0]).meshID = doorId; }
+		if (nextRoom.doors[1] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doors[1]).meshID = doorId; }
+		if (nextRoom.doors[2] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doors[2]).meshID = doorId; }
+		if (nextRoom.doors[3] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doors[3]).meshID = doorId; }
 	}
 
 	if (open)
@@ -814,9 +811,9 @@ void RoomHandler::activateRoom(int index)
 	
 	for (int i = 0; i < 4; i++)
 	{
-		if (curRoom.doorIds[i] != -1)
+		if (curRoom.doors[i] != -1)
 		{
-			 this->scene->setActive(curRoom.doorIds[i]);
+			 this->scene->setActive(curRoom.doors[i]);
 			 this->scene->setActive(curRoom.doorTriggers[i]);
 		}
 	}
@@ -845,9 +842,9 @@ void RoomHandler::deactivateRoom(int index)
 	
 	for (int i = 0; i < 4; i++)
 	{
-		if (curRoom.doorIds[i] != -1)
+		if (curRoom.doors[i] != -1)
 		{
-			 this->scene->setInactive(curRoom.doorIds[i]);
+			 this->scene->setInactive(curRoom.doors[i]);
 			 this->scene->setInactive(curRoom.doorTriggers[i]);
 		}
 	}
@@ -879,10 +876,10 @@ void RoomHandler::activateAll()
 			this->scene->setActive(id);
 		}
 
-		if (this->rooms[i].doorIds[0] != -1) { this->scene->setActive(this->rooms[i].doorIds[0]); }
-		if (this->rooms[i].doorIds[1] != -1) { this->scene->setActive(this->rooms[i].doorIds[1]); }
-		if (this->rooms[i].doorIds[2] != -1) { this->scene->setActive(this->rooms[i].doorIds[2]); }
-		if (this->rooms[i].doorIds[3] != -1) { this->scene->setActive(this->rooms[i].doorIds[3]); }		
+		if (this->rooms[i].doors[0] != -1) { this->scene->setActive(this->rooms[i].doors[0]); }
+		if (this->rooms[i].doors[1] != -1) { this->scene->setActive(this->rooms[i].doors[1]); }
+		if (this->rooms[i].doors[2] != -1) { this->scene->setActive(this->rooms[i].doors[2]); }
+		if (this->rooms[i].doors[3] != -1) { this->scene->setActive(this->rooms[i].doors[3]); }		
 	}
 
 	for (const Entity& entity : this->pathIds)

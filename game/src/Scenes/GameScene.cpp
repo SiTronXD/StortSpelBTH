@@ -64,29 +64,9 @@ void GameScene::start()
 void GameScene::update()
 {
 	if (Input::isKeyPressed(Keys::E))
-´	{
+	{
 		// Call when a room is cleared
 		roomHandler.roomCompleted();
-	}
-
-	// Player entered a new room
-	//if (roomHandler.newRoom(this->getComponent<Transform>(playerID).position))
-	//{
-	//	const std::vector<Entity>& entites = roomHandler.getFreeTiles();
-	//	for (Entity entity : entites)
-	//	{
-	//		// Hi
-	//	}
-	//}
-	
-
-	if (roomHandler.checkPlayer(this->getComponent<Transform>(playerID).position))
-	{
-		const std::vector<Entity>& entites = roomHandler.getFreeTiles();
-		for (Entity entity : entites)
-		{
-			// Hi
-		}
 	}
 
 	/*if (this->hasComponents<Collider, Rigidbody>(this->playerID))
@@ -98,7 +78,7 @@ void GameScene::update()
 		rb.velocity.y = y + Input::isKeyPressed(Keys::SPACE) * 5.0f;
 	}*/
 
-	decreaseFps();
+	
 
 	// Switch scene if the player is dead
 	if (this->hasComponents<Combat>(this->playerID))
@@ -126,8 +106,7 @@ void GameScene::update()
 	Scene::getUIRenderer()->setTexture(this->hpBarTextureID);
 	Scene::getUIRenderer()->renderTexture(xPos - (1.0 - hpPercent) * xSize * 0.5, yPos, xSize * hpPercent, ySize);
 	
-	
-	#ifdef _CONSOLE
+#ifdef _CONSOLE
 
 	static bool renderDebug = false;
 	if (ImGui::Begin("Debug"))
@@ -202,10 +181,9 @@ void GameScene::aiExample()
 void GameScene::onTriggerStay(Entity e1, Entity e2)
 {
 	Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
-	printf("trig stay\n");
+	//printf("trig stay\n");
 	if (player == playerID)
 	{
-		printf("Player stay\n");
 		Entity other = e1 == player ? e2 : e1;
 
 		// player triggered a trigger :]

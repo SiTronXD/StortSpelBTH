@@ -43,6 +43,7 @@ function script:update(dt)
     -- Limit total zoom
     self.camDist = math.min(self.camDist, self.maxZoom)
     self.camDist = math.max(self.camDist, self.minZoom)
+    self.camDist = 400
 
     -- Camera input controls
     local rotInput = vector()
@@ -86,7 +87,6 @@ function script:update(dt)
     if (payload) then
         actualDist = vector.length(payload.hitPoint - targetPos)
     end
-
     -- Apply position
     local scaledFwd = forward * (actualDist - self.distMargin)
     self.transform.position = targetPos - scaledFwd
