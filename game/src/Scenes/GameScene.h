@@ -27,6 +27,6 @@ public:
     virtual void update() override;
 
 private:
-    void aiEaxample();
+    void aiExample();
 
 };

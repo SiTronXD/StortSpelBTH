@@ -1,14 +1,13 @@
 #pragma once
 #include "vengine.h"
 #include "SwarmBTs.hpp"
-
+#include "../../../Components/AiCombat.h"
 
 struct SwarmComponent
 {
-	 int LOW_HEALTH = 30;
-	 int FULL_HEALTH = 100;
+	int LOW_HEALTH = 30;
+	int FULL_HEALTH = 100;
 	int life = FULL_HEALTH ;
-	int attack  = 1;
 	float speed = 10;
 
     float sightRadius	= 10;
@@ -49,6 +48,7 @@ protected:
     virtual void registerEntityComponents(uint32_t entityId) override
     {
         addRequiredComponent<SwarmComponent>(entityId);
+        addRequiredComponent<AiCombat>(entityId);
     }
 
 	virtual void real_init() override
@@ -60,14 +60,15 @@ protected:
 		    {"escape", new Swarm_escape}
         });
 
+		//TODO: Cehck transitions
 		//// Movement temporary shit
 		//addEntityTransition("walking", energyMed, "jogging");
+		addEntityTransition("idle", SwarmFSM::idle_to_escape , "escape");
 		addEntityTransition("idle", SwarmFSM::idle_to_combat , "combat");
 		addEntityTransition("idle", SwarmFSM::idle_to_combat_firends_in_fight , "combat");
-		addEntityTransition("idle", SwarmFSM::idle_to_escape , "escape");
 
-		addEntityTransition("combat", SwarmFSM::combat_to_idle, "idle");
 		addEntityTransition("combat", SwarmFSM::combat_to_escape, "escape");
+		addEntityTransition("combat", SwarmFSM::combat_to_idle, "idle");
 
 		addEntityTransition("escape", SwarmFSM::escape_to_combat , "combat");
 		addEntityTransition("escape", SwarmFSM::escape_to_idle, "idle");

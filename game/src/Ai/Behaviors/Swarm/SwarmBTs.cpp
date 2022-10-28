@@ -1,6 +1,8 @@
 #include "SwarmBTs.hpp"
 #include "SwarmFSM.hpp"
 //#include "../components/Script.hpp"
+#include "../../../Components/Combat.h"
+#include "../../../Components/AiCombat.h"
 
 //TODO: Remove
 uint32_t getPlayerID_DUMMY(SceneHandler* sceneHandler,int playerID_in) 
@@ -54,6 +56,13 @@ BTStatus SwarmBT::jumpInCircle(uint32_t entityID)
 
 	BTStatus ret = BTStatus::Running;
 	//TODO: Make blob jump in circle!
+
+	//Transform& thisTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
+	//SwarmComponent& thisSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+	//glm::vec3 dir = glm::normalize(thisSwarmComp.group->idleMidBos - thisTransform.position);
+	//thisTransform.position += Time::getDT() * dir * thisSwarmComp.speed;
+
+
 
 	if (hasFriends(entityID) == BTStatus::Failure)
 	{
@@ -271,13 +280,27 @@ BTStatus SwarmBT::attack(uint32_t entityID)
 	Transform& thisTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Transform& playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(getPlayerID_DUMMY(sceneHandler));
 	SwarmComponent& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+	AiCombat& combat = BehaviorTree::sceneHandler->getScene()->getComponent<AiCombat>(entityID);
 
      thisTransform.rotation.y = lookAtY(thisTransform, playerTransform);
 	 thisTransform.updateMatrix();
 
-	 glm::vec3 dir = glm::normalize(playerTransform.position- thisTransform.position);
+	/* glm::vec3 dir = glm::normalize(playerTransform.position- thisTransform.position);
 	 dir.y = 0;
-     thisTransform.position += dir * Time::getDT() * swarmComp.speed;
+     thisTransform.position += dir * Time::getDT() * swarmComp.speed;*/
+
+	 if(combat.timer > 0.0f){
+		combat.timer -= Time::getDT();
+	 }
+	 else
+	 {
+		Combat& playerCombat = BehaviorTree::sceneHandler->getScene()->getComponent<Combat>(getPlayerID_DUMMY(sceneHandler));
+		playerCombat.health -= combat.lightHit;
+		combat.timer = combat.lightAttackTime;
+		std::cout<<"ATTACK!!!!\n";
+		ret = BTStatus::Success;
+	 
+	 }
 
 	return ret;
 }

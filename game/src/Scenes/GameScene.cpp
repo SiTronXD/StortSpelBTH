@@ -25,6 +25,7 @@ GameScene::~GameScene()
 void GameScene::init()
 {
 	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+	
 
 	roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
 	roomHandler.generate();
@@ -34,6 +35,8 @@ void GameScene::start()
 {
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+
+	this->setComponent<Combat>(playerID);
 
 	uint32_t swordId = this->getResourceManager()->addMesh("assets/models/Sword.obj");
 	
@@ -46,7 +49,7 @@ void GameScene::start()
     this->aiHandler = this->getAIHandler();
 	this->aiHandler->init(this->getSceneHandler());
     
-	aiEaxample();
+	aiExample();
 
 }
 
@@ -72,7 +75,7 @@ void GameScene::update()
 	decreaseFps();
 }
 
-void GameScene::aiEaxample() 
+void GameScene::aiExample() 
 {
 	auto a = [&](FSM* fsm, uint32_t entityId) -> void {
 		SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
@@ -83,12 +86,16 @@ void GameScene::aiEaxample()
         float& sightRange = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).sightRadius;
         //std::string& groupPtr = std::to_string(&this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).group);
         bool& inCombat = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).inCombat;
+        float& attackPerSec = this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId).lightAttackTime;
+		float& lightAttackDmg = this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId).lightHit;
 		std::string& status = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId).currentNode->status;
 		
 		ImGui::SliderInt("health", &health, 0, 100);
 		ImGui::SliderFloat("speed", &speed, 0, 100);
 		ImGui::SliderFloat("attackRange", &attackRange, 0, 100);
 		ImGui::SliderFloat("sightRange", &sightRange, 0, 100);		
+		ImGui::InputFloat("attack/s", &attackPerSec);		
+		ImGui::InputFloat("lightattackDmg", &lightAttackDmg);		
 		ImGui::Checkbox("inCombat", &inCombat);		
         ImGui::Text(status.c_str());
 	};
@@ -96,7 +103,6 @@ void GameScene::aiEaxample()
 	this->aiHandler->addFSM(&swarmFSM, "swarmFSM");
 	this->aiHandler->addImguiToFSM("swarmFSM", a);
 
-	int ghost = this->getResourceManager()->addMesh("assets/models/ghost.obj");
 	int swarmModel = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 
 	int num_blobs = 6;
