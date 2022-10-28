@@ -69,8 +69,6 @@ void GameScene::update()
 	// Switch scene if the player is dead
 	if (this->hasComponents<Combat>(this->playerID))
 	{
-		this->getComponent<Combat>(this->playerID).health -= 33.0f * Time::getDT();
-
 		if (this->getComponent<Combat>(this->playerID).health <= 0.0f)
 		{
 			this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
