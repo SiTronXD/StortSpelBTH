@@ -55,7 +55,15 @@ void GameScene::update()
 			// Hi
 		}
 	}
-	
+
+	/*if (this->hasComponents<Collider, Rigidbody>(this->playerID))
+	{
+		Rigidbody& rb = this->getComponent<Rigidbody>(this->playerID);
+		glm::vec3 vec = glm::vec3(Input::isKeyDown(Keys::LEFT) - Input::isKeyDown(Keys::RIGHT), 0.0f, Input::isKeyDown(Keys::UP) - Input::isKeyDown(Keys::DOWN));
+		float y = rb.velocity.y;
+		rb.velocity = vec * 10.0f;
+		rb.velocity.y = y + Input::isKeyPressed(Keys::SPACE) * 5.0f;
+	}*/
 
 	decreaseFps();
 }

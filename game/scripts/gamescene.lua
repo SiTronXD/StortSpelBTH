@@ -1,9 +1,4 @@
 local ghost = resources.addMesh("assets/models/ghost.obj")
-print(ghost)
-
---local cam = scene.createEntity()
---scene.setComponent(cam, CompType.Camera)
---scene.setMainCamera(cam)
 
 -- Camera
 local cam = scene.createPrefab("scripts/prefabs/CameraPrefab.lua")
@@ -13,6 +8,8 @@ scene.setMainCamera(cam)
 playerID = scene.createEntity()
 scene.setComponent(playerID, CompType.Mesh, ghost)
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
+scene.setComponent(playerID, CompType.Collider, { type = ColliderType.Capsule, radius = 2, height = 5 })
+scene.setComponent(playerID, CompType.Rigidbody, { mass = 1, gravityMult = 1, rotFactor = vector.fill(0) })
 scene.getComponent(cam, CompType.Script).playerID = playerID
 scene.getComponent(playerID, CompType.Script).camID = cam
 network.sendPlayer(player)

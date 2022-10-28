@@ -18,19 +18,29 @@ function script:init()
 	self.turnSpeed = 200
 	self.timer = 0
     self.slowDown = 80
-    self.transform.position = vector(0, 2, 0)
-    self.transform.rotation = vector(-90, 0, 0)
+    self.transform.position = vector(0, 20, 0)
+    self.transform.rotation = vector(0, 0, 0)
 
     self.maxHP = 100.0
     self.currentHP = self.maxHP
 end
 
 function script:update(dt)
-    self:move2(dt)
-    self:rotate2(dt)
+    -- New movement using rigidbody
+    local rb = scene.getComponent(self.ID, CompType.Rigidbody)
+
+    self.moveDir = vector(core.btoi(input.isKeyDown(Keys.A)) - core.btoi(input.isKeyDown(Keys.D)), 0, core.btoi(input.isKeyDown(Keys.W)) - core.btoi(input.isKeyDown(Keys.S)))
+    local y = rb.velocity.y
+    rb.velocity = self.moveDir * 10.0
+    rb.velocity.y = y + core.btoi(input.isKeyPressed(Keys.SPACE)) * 5.0
+
+    scene.setComponent(self.ID, CompType.Rigidbody, rb)
+
+    --self:move2(dt)
+    --self:rotate2(dt)
 
     -- Test for UI
-    self.currentHP = self.currentHP - dt * 10.0
+    self.currentHP = self.currentHP - dt * 5.0
 end
 
 function script:move(deltaTime)
