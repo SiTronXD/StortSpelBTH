@@ -11,6 +11,8 @@
     <ClCompile Include="src\Scenes\NetworkAI.cpp" />
     <ClCompile Include="src\Scenes\TutorialScene.cpp" />
     <ClCompile Include="src\Scenes\GameOverScene.cpp" />
+    <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmBTs.cpp" />
+    <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmFSM.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -34,6 +36,8 @@
     <ClInclude Include="src\World Handling\Room Layout.h" />
     <ClInclude Include="src\Scenes\TutorialScene.h" />
     <ClInclude Include="src\Scenes\GameOverScene.h" />
+    <ClInclude Include="src\Ai\Behaviors\Swarm\SwarmBTs.hpp" />
+    <ClInclude Include="src\Ai\Behaviors\Swarm\SwarmFSM.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

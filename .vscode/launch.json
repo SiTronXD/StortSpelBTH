@@ -5,15 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(Windows) Launch",
-            "type": "cppvsdbg",
+            "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/build/debug_win32/Debug/3D_VEngine_GameDemo.exe",
+            "name": "Debug",
+            "program": "${command:cmake.launchTargetPath}",
             "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "console": "externalTerminal"
+            "cwd": "${workspaceFolder}/game"
         }
 
     ]

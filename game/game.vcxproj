@@ -270,6 +270,8 @@ SET ERRORLEVEL=0</Command>
   <ItemGroup>
     <ClCompile Include="src\Scenes\GameOverScene.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmBTs.cpp" />
+    <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmFSM.cpp" />
     <ClCompile Include="src\Scenes\CreateAPuzzle.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
     <ClCompile Include="src\World Handling\Room Generator.cpp" />
@@ -283,6 +285,8 @@ SET ERRORLEVEL=0</Command>
     <ClInclude Include="Components\Combat.h" />
     <ClInclude Include="Components\Movement.h" />
     <ClInclude Include="src\Scenes\GameOverScene.h" />
+    <ClInclude Include="src\Ai\Behaviors\Swarm\SwarmBTs.hpp" />
+    <ClInclude Include="src\Ai\Behaviors\Swarm\SwarmFSM.hpp" />
     <ClInclude Include="src\Components\AiCombat.h" />
     <ClInclude Include="src\Components\AiMovement.h" />
     <ClInclude Include="src\Components\CameraMovement.h" />
