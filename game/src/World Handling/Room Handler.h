@@ -36,14 +36,18 @@ private:
 	{
 		Room()
 			:doorIds{-1,-1,-1,-1},
-			connectingIndex{-1,-1,-1,-1}
+			connectingIndex{-1,-1,-1,-1}, finished(false)
 		{		
 		}
 
-		std::vector<Entity> tileIds;
+		std::vector<Entity> tiles;
+		std::vector<Entity> borders;
+		std::vector<Entity> exitPaths;
 
 		Entity doorIds[4];
 		int connectingIndex[4];
+
+		bool finished;
 	};
 
 	// Scene
@@ -52,6 +56,7 @@ private:
 
 	// Layout generation
 	RoomLayout roomLayout;
+	std::vector<bool> verticalConnection;
 	std::vector<std::pair<glm::vec3, glm::vec3>> exitPairs;
 
 	// Room generation
@@ -62,8 +67,11 @@ private:
 	
 	// Create Entities
 	Entity createTileEntity(int tileIndex, const glm::vec3& roomPos);
+	Entity createBorderEntity(int tileIndex, const glm::vec3& roomPos);
+	Entity createExitTileEntity(int tileIndex, const glm::vec3& roomPos);
 	Entity createDoorEntity(float yRotation);
 	Entity createPathEntity();
+	Entity createPathBorderEntity(const glm::vec3& position);
 	
 	// Create tiles
 	void createDoors(int roomIndex);
@@ -80,7 +88,7 @@ private:
 	bool insideDoor = false;
 	bool roomFinished = false; // temp before slayyyy queen yaasss
 
-	void checkRoom(int index, const glm::vec3& playerPos);
+	bool checkRoom(int index, const glm::vec3& playerPos);
 	void setActiveRooms();
 	void flipDoors(bool open);
 
@@ -103,8 +111,12 @@ public:
 	~RoomHandler();
 
 	void init(Scene* scene, ResourceManager* resourceMan, int roomSize, int tileTypes);
-	void update(const glm::vec3& playerPos);
 	void generate();
+
+	void roomCompleted();
+	bool checkPlayer(const glm::vec3& playerPos);
+
+	const std::vector<Entity>& getFreeTiles();
 
 	// Statics
 	static glm::vec3 snapToGrid(const glm::vec3& pos);

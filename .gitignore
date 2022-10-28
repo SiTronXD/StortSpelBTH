@@ -351,6 +351,6 @@ build/.cmake/api/v1/query/client-vscode/query.json
 build/*
 imgui.ini
 Tracy-release
-game/vengine_assets
+game/vengine_assets/*
 vengine_assets
 _vengine_assets

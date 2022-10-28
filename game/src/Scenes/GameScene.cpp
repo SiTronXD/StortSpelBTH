@@ -24,7 +24,7 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
-	int ghost = this->getResourceManager()->addMesh("assets/models/ghost.obj");
+	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 
 	roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
 	roomHandler.generate();
@@ -34,6 +34,13 @@ void GameScene::start()
 {
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+
+	uint32_t swordId = this->getResourceManager()->addMesh("assets/models/Sword.obj");
+	
+	Entity sword = this->createEntity();
+	this->setComponent<MeshComponent>(sword);
+	this->getComponent<MeshComponent>(sword).meshID = swordId;
+
 
     // Ai management 
     this->aiHandler = this->getAIHandler();
@@ -45,10 +52,22 @@ void GameScene::start()
 
 void GameScene::update()
 {
-	if (playerID != -1)
+	if (Input::isKeyPressed(Keys::E)) 
 	{
-		roomHandler.update(this->getComponent<Transform>(playerID).position);
+		// Call when a room is cleared
+		roomHandler.roomCompleted();		
 	}
+
+	// Player entered a new room
+	if (roomHandler.checkPlayer(this->getComponent<Transform>(playerID).position))
+	{
+		const std::vector<Entity>& entites = roomHandler.getFreeTiles();
+		for (Entity entity : entites)
+		{
+			// Hi
+		}
+	}
+	
 
 	decreaseFps();
 }
