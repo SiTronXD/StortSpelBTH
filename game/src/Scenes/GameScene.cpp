@@ -80,11 +80,9 @@ void GameScene::aiExample()
 	auto a = [&](FSM* fsm, uint32_t entityId) -> void {
 		SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
 		int& health = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).life;
-        int& attack = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).attack;
         float& speed = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).speed;
         float& attackRange = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).attackRange;
         float& sightRange = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).sightRadius;
-        //std::string& groupPtr = std::to_string(&this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).group);
         bool& inCombat = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).inCombat;
         float& attackPerSec = this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId).lightAttackTime;
 		float& lightAttackDmg = this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId).lightHit;
