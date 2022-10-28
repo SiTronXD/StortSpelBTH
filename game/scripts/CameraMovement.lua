@@ -20,7 +20,7 @@ function script:init()
     self.shakeScalar   = 0.3
     self.active        = true
     
-    input.setHideCursor(self.active)
+    input.setHideCursor(self.active)   
 end
 
 function script:update(dt)
@@ -29,7 +29,7 @@ function script:update(dt)
         self.active = not self.active
         input.setHideCursor(self.active)
     end
-
+    
     if (not self.active) then
         return
     end

@@ -43,8 +43,6 @@ void GameScene::start()
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 	this->setComponent<Combat>(playerID, 100.0f);
 
-	this->setComponent<Combat>(playerID);
-
 	uint32_t swordId = this->getResourceManager()->addMesh("assets/models/Sword.obj");
 	
 	Entity sword = this->createEntity();

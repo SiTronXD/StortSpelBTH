@@ -16,7 +16,7 @@ void TutorialScene::update()
 	// Actually switch next frame
 	if (this->shouldLoadNextScene)
 	{
-		this->switchScene(new GameScene(), "scripts/GameScene.lua");
+		this->switchScene(new GameScene(), "scripts/gamescene.lua");
 	}
 
 	// Check if the scene should be switched
