@@ -99,9 +99,9 @@ void GameScene::aiExample()
 {
 	auto a = [&](FSM* fsm, uint32_t entityId) -> void {
 		SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
-        auto entitySwarmComponent = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId);
-        auto entityAiCombatComponent = this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId);
-        auto entiyFSMAgentComp = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId);
+        auto& entitySwarmComponent = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId);
+        auto& entityAiCombatComponent = this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId);
+        auto& entiyFSMAgentComp = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId);
 		int& health            = entitySwarmComponent.life;
         float& speed           = entitySwarmComponent.speed;
         float& attackRange     = entitySwarmComponent.attackRange;
