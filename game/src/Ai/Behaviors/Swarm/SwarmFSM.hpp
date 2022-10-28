@@ -10,6 +10,9 @@ struct SwarmComponent
 	int life = FULL_HEALTH ;
 	float speed = 10;
 
+	float deathAnimTimer = 1.0f;
+	float timer = deathAnimTimer;
+
     float sightRadius	= 10;
 	float attackRange	= sightRadius/2;
 	bool inCombat		= false;
@@ -33,6 +36,8 @@ private:
 	static bool escape_idle(Entity entityID);
 	static bool escape_combat(Entity entityID);
 
+	static bool dead(Entity entityID);
+
 
 	EntityEvent idle_to_combat{idle_combat};
 	EntityEvent idle_to_combat_firends_in_fight{idle_combat_FirendsInFight};
@@ -41,6 +46,7 @@ private:
 	EntityEvent combat_to_escape{combat_escape};
 	EntityEvent escape_to_idle{escape_idle};
 	EntityEvent escape_to_combat{escape_combat};
+	EntityEvent to_dead{dead};
 
 public:
 protected:
@@ -57,7 +63,8 @@ protected:
 		addBTs({
 			{"idle", new Swarm_idle},
 		    {"combat", new Swarm_combat},
-		    {"escape", new Swarm_escape}
+		    {"escape", new Swarm_escape},
+			{"dead", new Swarm_dead}
         });
 
 		//TODO: Cehck transitions (Only one should be possible).
@@ -70,6 +77,11 @@ protected:
 
 		addEntityTransition("escape", SwarmFSM::escape_to_combat , "combat");
 		addEntityTransition("escape", SwarmFSM::escape_to_idle, "idle");
+
+		addEntityTransition("idle", SwarmFSM::to_dead, "dead");
+		addEntityTransition("combat", SwarmFSM::to_dead, "dead");
+		addEntityTransition("escape", SwarmFSM::to_dead, "dead");
+
 	
 
 		setInitialNode("idle");

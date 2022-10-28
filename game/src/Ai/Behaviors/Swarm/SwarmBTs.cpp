@@ -261,9 +261,6 @@ BTStatus SwarmBT::closeEnoughToPlayer(Entity entityID)
 
 	return ret;
 }
-
-
-
 BTStatus SwarmBT::attack(Entity entityID)
 {
 	BTStatus ret = BTStatus::Running;
@@ -293,6 +290,32 @@ BTStatus SwarmBT::attack(Entity entityID)
 	return ret;
 }
 
+BTStatus SwarmBT::playDeathAnim(Entity entityID)
+{
+	BTStatus ret = BTStatus::Running;
+	SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+	Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+	float step = swarmComp.deathAnimTimer / 1;
+	if(swarmComp.timer <= 0)
+	{
+		swarmComp.timer = swarmComp.deathAnimTimer;
+		ret = BTStatus::Success;
+	}
+	else
+	{
+		swarmTrans.scale.y -= step*Time::getDT();
+	}
+
+	return ret;
+}
+BTStatus SwarmBT::die(Entity entityID)
+{
+	BTStatus ret = BTStatus::Success;
+
+
+
+	return ret;
+}
 
 void Swarm_idle::start() {
 
@@ -367,4 +390,17 @@ void Swarm_escape::start()
 	escape_to_friends_if_possible->addLeafs({sees_friends, escape_to_friends});
 
 	this->setRoot(root);
+}
+
+void Swarm_dead::start()
+{
+	Sequence* root = c.c.sequence();
+
+	Task* playDeathAnimTask = c.l.task("Play death animation", playDeathAnim);
+	Task* dieTask = c.l.task("die", die);
+
+	root->addLeafs({playDeathAnimTask, dieTask});
+
+	this->setRoot(root);
+
 }

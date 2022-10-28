@@ -156,3 +156,16 @@ bool SwarmFSM::escape_combat(Entity entityID)
 
 	return ret;
 }
+
+bool SwarmFSM::dead(Entity entityID)
+{
+	bool ret = false;
+
+	SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+	if(swarmComp.life <= 0)
+	{
+		ret = true;
+	}
+
+	return ret;
+}
