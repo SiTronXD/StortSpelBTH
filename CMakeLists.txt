@@ -32,6 +32,8 @@ FILE(GLOB_RECURSE GAME_HEADERS CONFIGURE_DEPENDS
 )
 
 
+
+
 add_executable(3D_VEngine_GameDemo  ) #${SOURCES} main.cpp
 
 target_sources(3D_VEngine_GameDemo PRIVATE ${GAME_SOURCES})
@@ -49,6 +51,15 @@ set_target_properties(3D_VEngine_GameDemo PROPERTIES
 
 #
 
+if(${CMAKE_BUILD_TYPE} MATCHES "Debug" OR ${CMAKE_BUILD_TYPE} MATCHES "Release" )
+target_compile_definitions(3D_VEngine_GameDemo PRIVATE "_CONSOLE" )
+
+target_compile_definitions(3D_VEngine_GameDemo PRIVATE "_DEBUG" )
+endif()
+
+if(${CMAKE_BUILD_TYPE} MATCHES "Debug" )
+target_compile_definitions(3D_VEngine_GameDemo PRIVATE "_DEBUG" )
+endif()
 
 set(VENGINE_USE_PROFILING true)
 

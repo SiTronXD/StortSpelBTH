@@ -79,14 +79,17 @@ void GameScene::aiExample()
 {
 	auto a = [&](FSM* fsm, uint32_t entityId) -> void {
 		SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
-		int& health = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).life;
-        float& speed = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).speed;
-        float& attackRange = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).attackRange;
-        float& sightRange = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).sightRadius;
-        bool& inCombat = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId).inCombat;
-        float& attackPerSec = this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId).lightAttackTime;
-		float& lightAttackDmg = this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId).lightHit;
-		std::string& status = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId).currentNode->status;
+        auto entitySwarmComponent = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId);
+        auto entityAiCombatComponent = this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId);
+        auto entiyFSMAgentComp = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId);
+		int& health            = entitySwarmComponent.life;
+        float& speed           = entitySwarmComponent.speed;
+        float& attackRange     = entitySwarmComponent.attackRange;
+        float& sightRange      = entitySwarmComponent.sightRadius;
+        bool& inCombat         = entitySwarmComponent.inCombat;
+        float& attackPerSec    = entityAiCombatComponent.lightAttackTime;
+		float& lightAttackDmg  = entityAiCombatComponent.lightHit;
+		std::string& status    = entiyFSMAgentComp.currentNode->status;
 		
 		ImGui::SliderInt("health", &health, 0, 100);
 		ImGui::SliderFloat("speed", &speed, 0, 100);
