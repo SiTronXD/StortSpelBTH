@@ -1,5 +1,6 @@
 --local playerMesh = resources.addMesh("assets/models/Amogus/source/1.fbx")
 local playerMesh = resources.addMesh("assets/models/run_forward.fbx", "assets/textures/playerMesh")
+local playerAttackMesh = resources.addMesh("assets/models/Hurricane Kick.fbx", "assets/textures/playerMesh")
 print(playerMesh)
 
 --local cam = scene.createEntity()
@@ -21,7 +22,12 @@ local playerAnim =
 scene.setComponent(playerID, CompType.Animation, playerAnim)
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
 scene.getComponent(cam, CompType.Script).playerID = playerID
-scene.getComponent(playerID, CompType.Script).camID = cam
+
+local player = scene.getComponent(playerID, CompType.Script)
+player.camID = cam
+player.playerMesh = playerMesh
+player.playerAttackMesh = playerAttackMesh
+
 network.sendPlayer(player)
 
 -- UI

@@ -12,13 +12,11 @@ private:
 	Scene* scene;
 	bool gotHit = true;
 	Entity playerID;
-	int standardAnim;
-	int spinningAnim;
 
 public:
 
-	CombatSystem(Scene* scene, Entity playerID, int standardAnim, int spinningAnim)
-		: scene(scene), playerID(playerID), standardAnim(standardAnim), spinningAnim(spinningAnim)
+	CombatSystem(Scene* scene, Entity playerID)
+		: scene(scene), playerID(playerID)
 	{
 		if (scene->hasComponents<Combat>(playerID))
 		{
@@ -65,10 +63,6 @@ public:
 			{
 				combat.activeAttack = noActive;
 			}
-			else
-			{
-				scene->setComponent<MeshComponent>(this->playerID, this->standardAnim);
-			}
 			break;
 		case lightActive:
 			// If it takes too long between attacks, resets combo.
@@ -111,7 +105,6 @@ public:
 			combat.hitTimer = std::chrono::duration<float>(combat.spinAttackTime);
 			combat.timer = std::chrono::system_clock::now();
 
-			scene->getComponent<MeshComponent>(this->playerID).meshID = this->spinningAnim;
 			auto view = reg.view<SwarmComponent, Transform>();
 			auto foo = [&](SwarmComponent& swarm, Transform& swarmTrans)
 			{
