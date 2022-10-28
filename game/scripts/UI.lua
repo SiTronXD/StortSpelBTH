@@ -20,12 +20,12 @@ function script:update(dt)
 	hpPercent = math.min(math.max(hpPercent, 0.0), 1.0)
 
 	-- Black HP background
-    uiRenderer.setTexture(self.hpBarBackgroundTextureID)
-	uiRenderer.renderTexture(xPos, yPos, xSize + 10, ySize + 10)
+    -- uiRenderer.setTexture(self.hpBarBackgroundTextureID)
+	-- uiRenderer.renderTexture(xPos, yPos, xSize + 10, ySize + 10)
 
 	-- Red HP bar
-    uiRenderer.setTexture(self.hpBarTextureID)
-	uiRenderer.renderTexture(xPos - (1.0 - hpPercent) * xSize * 0.5, yPos, xSize * hpPercent, ySize)
+    -- uiRenderer.setTexture(self.hpBarTextureID)
+	-- uiRenderer.renderTexture(xPos - (1.0 - hpPercent) * xSize * 0.5, yPos, xSize * hpPercent, ySize)
 
 	-- Perk slots
 	uiRenderer.setTexture(self.perkSlotTextureID)

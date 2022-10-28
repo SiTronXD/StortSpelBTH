@@ -173,6 +173,19 @@ function script:move2(deltaTime)
     self.transform.position = self.transform.position + 
         (forwardVec * self.currentSpeed.y +
         rightVec * self.currentSpeed.x) * deltaTime
+    
+    -- Handle animation speed and timing
+    local anim = scene.getComponent(self.ID, CompType.Animation)
+    local curSpdSqrd = self.currentSpeed * self.currentSpeed
+    local curSpdSum = curSpdSqrd.x + curSpdSqrd.y + curSpdSqrd.z
+    if curSpdSum > 0
+    then
+        anim.timeScale = 1.0
+    else
+        anim.timer = 0.0
+        anim.timeScale = 0.0
+    end
+    scene.setComponent(self.ID, CompType.Animation, anim)
 end
 
 function script:rotate2(deltaTime)
@@ -182,15 +195,27 @@ function script:rotate2(deltaTime)
     if (self.moveDir.y > 0)
     then
         self.transform.rotation.y = (camTransform.rotation.y + 180) + 45 * self.moveDir.x
+        
+        -- Rotate because of player model
+        self.transform.rotation.y = self.transform.rotation.y + 180
     elseif (self.moveDir.y < 0)
     then
         self.transform.rotation.y = (camTransform.rotation.y) - 45 * self.moveDir.x
+        
+        -- Rotate because of player model
+        self.transform.rotation.y = self.transform.rotation.y + 180
     elseif (self.moveDir.x > 0) 
     then
         self.transform.rotation.y = camTransform.rotation.y - 90
+        
+        -- Rotate because of player model
+        self.transform.rotation.y = self.transform.rotation.y + 180
     elseif (self.moveDir.x < 0)
     then
         self.transform.rotation.y = camTransform.rotation.y + 90
+        
+        -- Rotate because of player model
+        self.transform.rotation.y = self.transform.rotation.y + 180
     end
 end
 
