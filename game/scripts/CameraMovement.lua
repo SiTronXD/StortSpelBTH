@@ -71,7 +71,7 @@ function script:update(dt)
     -- Apply position
     local scaledFwd = self.transform:forward() * -self.camDist
     self.camHeight = 6
-    self.camDist = 30
+    self.camDist = 60
     self.transform.position = targetPos + scaledFwd
 end
 
