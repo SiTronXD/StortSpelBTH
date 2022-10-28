@@ -80,7 +80,9 @@ bool RoomHandler::checkPlayer(const glm::vec3& playerPos)
 	if (!this->showAllRooms)
 	{
 		if (this->checkRoom(this->activeIndex, playerPos))
+		{
 			return true;
+		}
 
 		if (this->nextIndex != -1)
 		{ 
@@ -128,8 +130,8 @@ void RoomHandler::generate()
 		// Generate room (no borders)
 		this->roomGenerator.generateRoom();
 
-		this->rooms[i].tiles.reserve(size_t(roomGenerator.getNrTiles()));
-		for (int j = 0; j < roomGenerator.getNrTiles(); j++) 
+		this->rooms[i].tiles.reserve(size_t(this->roomGenerator.getNrTiles()));
+		for (int j = 0; j < this->roomGenerator.getNrTiles(); j++) 
 		{
 			this->rooms[i].tiles.emplace_back(this->createTileEntity(j, roomPos));
 		}
@@ -140,15 +142,15 @@ void RoomHandler::generate()
 		// Save room exit points
 		this->setExitPoints(i);
 
-		this->rooms[i].borders.reserve(size_t(roomGenerator.getNrBorders()));
-		for (int j = 0; j < roomGenerator.getNrBorders(); j++) 
+		this->rooms[i].borders.reserve(size_t(this->roomGenerator.getNrBorders()));
+		for (int j = 0; j < this->roomGenerator.getNrBorders(); j++) 
 		{
 			this->rooms[i].borders.emplace_back(this->createBorderEntity(j, roomPos));
 		}
 
 		// Save exit paths
-		this->rooms[i].exitPaths.reserve(size_t(roomGenerator.getNrExitTiles()));
-		for (int j = 0; j < roomGenerator.getNrExitTiles(); j++) 
+		this->rooms[i].exitPaths.reserve(size_t(this->roomGenerator.getNrExitTiles()));
+		for (int j = 0; j < this->roomGenerator.getNrExitTiles(); j++) 
 		{
 			this->rooms[i].exitPaths.emplace_back(this->createExitTileEntity(j, roomPos));
 		}
@@ -209,7 +211,7 @@ void RoomHandler::generate()
 
 #ifdef _DEBUG
 	if (this->showAllRooms) { this->activateAll(); }
-	else { this->setActiveRooms(); flipDoors(false); }
+	else { this->setActiveRooms(); this->flipDoors(false); }
 #else
 	this->setActiveRooms();
 	flipDoors(false);
@@ -460,7 +462,7 @@ void RoomHandler::createColliders()
 
 	for (Entity entity : this->pathIds)
 	{
-		if (this->scene->getComponent<MeshComponent>(entity).meshID == tileMeshIds[Tile::Border])
+		if (this->scene->getComponent<MeshComponent>(entity).meshID == this->tileMeshIds[Tile::Border])
 		{
 			this->scene->setComponent<Collider>(entity, Collider::createBox(BOX));
 		}
@@ -483,7 +485,7 @@ void RoomHandler::createColliders()
 		else if (pos.z > maxZ) { maxZ = pos.z; }
 	}
 
-	const float HalfRoom = (float)gridSize * TILE_WIDTH * 0.5f + TILE_WIDTH * 0.5f;
+	const float HalfRoom = (float)this->gridSize * TILE_WIDTH * 0.5f + TILE_WIDTH * 0.5f;
 
 	const glm::vec3 floorPos((minX + maxX) * 0.5f, -4.f, (minZ + maxZ) * 0.5f);
 	const glm::vec3 floorDimensions((maxX - minX) * 0.5f + HalfRoom, 4.f, (maxZ - minZ) * 0.5f + HalfRoom);
@@ -541,8 +543,6 @@ Entity RoomHandler::createExitTileEntity(int tileIndex, const glm::vec3& roomPos
 		this->roomGenerator.getExitTiles(tileIndex).position.x,
 		0.f,
 		this->roomGenerator.getExitTiles(tileIndex).position.y);
-
-	//printf("(%f, %f, %f)\n", transform.position.x, transform.position.y, transform.position.z);
 
 	return pieceID;
 }
@@ -603,13 +603,10 @@ bool RoomHandler::checkRoom(int index, const glm::vec3& playerPos)
 		{
 			if (index == this->nextIndex && !this->rooms[index].finished)
 			{
-				printf("Hello\n");
-				printf("A: %d, N: %d, D: %d\n", this->activeIndex, this->nextIndex, this->curDoor);
 				this->activeIndex = index;
 				this->nextIndex = -1;
 				this->roomFinished = false;
 				result = true;
-				printf("A: %d, N: %d, D: %d\n", this->activeIndex, this->nextIndex, this->curDoor);
 
 				setActiveRooms();
 				flipDoors(false);
@@ -617,12 +614,9 @@ bool RoomHandler::checkRoom(int index, const glm::vec3& playerPos)
 
 			else if (this->curDoor == -1 && this->roomFinished)
 			{
-				printf("Bai\n");
-				printf("A: %d, N: %d, D: %d\n", this->activeIndex, this->nextIndex, this->curDoor);
 				this->activeIndex = index;
 				this->nextIndex = this->rooms[index].connectingIndex[j];
 				this->curDoor = j;
-				printf("A: %d, N: %d, D: %d\n", this->activeIndex, this->nextIndex, this->curDoor);
 				
 				setActiveRooms();
 				flipDoors(true);
@@ -735,7 +729,7 @@ void RoomHandler::flipDoors(bool open)
 {
 	const uint32_t doorId = open ? this->openDoorMeshID : this->closedDoorMeshID;
 
-	const Room& curRoom = this->rooms[activeIndex];
+	const Room& curRoom = this->rooms[this->activeIndex];
 
 	if (curRoom.doorIds[0] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doorIds[0]).meshID = doorId; }
 	if (curRoom.doorIds[1] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doorIds[1]).meshID = doorId; }

@@ -40,12 +40,6 @@ void GameScene::start()
 
 void GameScene::update()
 {
-	/*Transform& playerTra = this->getComponent<Transform>(playerID);
-	Collider& playerCol = this->getComponent<Collider>(playerID);
-
-	this->getDebugRenderer()->renderBox(
-		playerTra.position, playerTra.rotation, playerCol.extents * 2.f, glm::vec3(0.f, 1.f, 1.f));*/
-
 	if (Input::isKeyPressed(Keys::E)) 
 	{
 		// Call when a room is cleared
