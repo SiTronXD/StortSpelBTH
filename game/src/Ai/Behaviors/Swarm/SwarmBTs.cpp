@@ -23,6 +23,16 @@ float lookAtY(const Transform& from, const Transform& to)
   
     return angle; 
 }
+void removeFromGroup(SwarmComponent& comp, Entity entityID)
+{
+	for(int i = 0; i < comp.group->members.size(); i++)
+	{
+		if(comp.group->members[i] == entityID)
+		{
+			comp.group->members.erase(comp.group->members.begin()+i);
+		}
+	}
+}
 
 void SwarmBT::registerEntityComponents(Entity entityId)
 {
@@ -312,7 +322,10 @@ BTStatus SwarmBT::die(Entity entityID)
 {
 	BTStatus ret = BTStatus::Success;
 
+	SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 
+	removeFromGroup(swarmComp, entityID);
+	sceneHandler->getScene()->setInactive(entityID);
 
 	return ret;
 }
