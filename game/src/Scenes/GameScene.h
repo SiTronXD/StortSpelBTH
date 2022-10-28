@@ -11,6 +11,10 @@ private:
 
     Entity playerID;
     Entity floor;
+
+    uint32_t hpBarBackgroundTextureID;
+    uint32_t hpBarTextureID;
+
 public:
     GameScene();
     virtual ~GameScene();

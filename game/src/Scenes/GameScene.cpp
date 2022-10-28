@@ -24,6 +24,11 @@ void GameScene::init()
 
 	roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
 	roomHandler.generate();
+
+	this->hpBarBackgroundTextureID =
+		this->getResourceManager()->addTexture("assets/textures/UI/hpBarBackground.png");
+	this->hpBarTextureID = 
+		this->getResourceManager()->addTexture("assets/textures/UI/hpBar.png");
 }
 
 void GameScene::start()
@@ -58,6 +63,23 @@ void GameScene::update()
 	
 
 	decreaseFps();
+
+	// Render HP bar UI
+	float hpPercent = 1.0f;
+	if (this->hasComponents<Combat>(this->playerID))
+	{
+		hpPercent =
+			this->getComponent<Combat>(this->playerID).health * 0.01f;
+	}
+	float xPos = -720;
+	float yPos = -500;
+	float xSize = 1024 * 0.35;
+	float ySize = 64 * 0.35;
+
+	Scene::getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
+	Scene::getUIRenderer()->renderTexture(xPos, yPos, xSize + 10, ySize + 10);
+	Scene::getUIRenderer()->setTexture(this->hpBarTextureID);
+	Scene::getUIRenderer()->renderTexture(xPos - (1.0 - hpPercent) * xSize * 0.5, yPos, xSize * hpPercent, ySize);
 }
 
 void decreaseFps()
