@@ -64,23 +64,21 @@ function script:update(dt)
     rb.velocity.y = y + core.btoi(input.isKeyPressed(Keys.SPACE)) * core.btoi(self.onGround) * 7.5 * rb.gravityMult
     scene.setComponent(self.ID, CompType.Rigidbody, rb)
 
-    -- Rotate
-    if (self.moveDir.y > 0)
+    -- Handle animation speed and timing
+    local anim = scene.getComponent(self.ID, CompType.Animation)
+    local curSpdSqrd = self.currentSpeed * self.currentSpeed
+    local curSpdSum = curSpdSqrd.x + curSpdSqrd.y + curSpdSqrd.z
+    if curSpdSum > 0
     then
-        self.transform.rotation.y = (camTransform.rotation.y + 180) + 45 * self.moveDir.x
-    elseif (self.moveDir.y < 0)
-    then
-        self.transform.rotation.y = (camTransform.rotation.y) - 45 * self.moveDir.x
-    elseif (self.moveDir.x > 0) 
-    then
-        self.transform.rotation.y = camTransform.rotation.y - 90
-    elseif (self.moveDir.x < 0)
-    then
-        self.transform.rotation.y = camTransform.rotation.y + 90
+        anim.timeScale = 1.0
+    else
+        anim.timer = 0.0
+        anim.timeScale = 0.0
     end
+    scene.setComponent(self.ID, CompType.Animation, anim)
 
     --self:move2(dt)
-    --self:rotate2(dt)
+    self:rotate2(dt)
 end
 
 function script:move(deltaTime)
