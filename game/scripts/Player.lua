@@ -20,6 +20,7 @@ function script:init()
     self.slowDown = 80
     self.transform.position = vector(0, 10, 0)
     self.transform.rotation = vector(0, 0, 0)
+    self.tempRotationY = 0
 
     self.maxHP = 100.0
     self.currentHP = self.maxHP
@@ -66,9 +67,9 @@ function script:update(dt)
 
     -- Handle animation speed and timing
     local anim = scene.getComponent(self.ID, CompType.Animation)
-    local curSpdSqrd = self.currentSpeed * self.currentSpeed
-    local curSpdSum = curSpdSqrd.x + curSpdSqrd.y + curSpdSqrd.z
-    if curSpdSum > 0
+    local curMoveSqrd = self.moveDir * self.moveDir
+    local curMoveSum = curMoveSqrd.x + curMoveSqrd.y + curMoveSqrd.z
+    if curMoveSum > 0.1
     then
         anim.timeScale = 1.0
     else
@@ -77,64 +78,7 @@ function script:update(dt)
     end
     scene.setComponent(self.ID, CompType.Animation, anim)
 
-    --self:move2(dt)
     self:rotate2(dt)
-end
-
-function script:move(deltaTime)
-    self.currentSpeed.x = 0
-    self.moveDir.y = (core.btoi(input.isKeyDown(Keys.W))) - (core.btoi(input.isKeyDown(Keys.S)))
-
-    if (self.currentSpeed.y > self.maxSpeed) 
-    then
-        self.currentSpeed.y = self.maxSpeed
-    end
-
-    if (self.moveDir.y ~= 0) 
-    then
-        self.currentSpeed.y = self.currentSpeed.y + self.speedIncrease * self.moveDir.y * deltaTime
-    end
-
-    if(self.moveDir.y == 0 and self.currentSpeed ~= 0)
-    then
-        if (self.currentSpeed.y < 0.001 and self.currentSpeed.y > -0.001)
-        then
-            self.currentSpeed.y = 0
-        elseif (self.currentSpeed.y > 0) 
-        then
-            self.currentSpeed.y = self.currentSpeed.y - self.slowDown * deltaTime
-        elseif (self.currentSpeed.y < 0) 
-        then
-            self.currentSpeed.y = self.currentSpeed.y + self.slowDown * deltaTime
-        end
-    end
-
-    if (self.currentSpeed.y > self.maxSpeed) 
-    then
-        self.currentSpeed.y = self.maxSpeed
-    elseif (self.currentSpeed.y < -self.maxSpeed)
-    then
-        self.currentSpeed.y = -self.maxSpeed
-    end
-
-    self.transform.position = self.transform.position + ((self.currentSpeed.y * self.transform:forward()) * deltaTime)
-end
-
-function script:rotate(deltaTime)
-    self.moveDir.x = core.btoi(input.isKeyDown(Keys.A)) - core.btoi(input.isKeyDown(Keys.D))
-
-    if (self.transform.rotation.y > 359.5 and self.transform.rotation.y ~= 0)
-    then
-        self.transform.rotation.y = 0
-    end
-
-    if (self.moveDir.x > 0)
-    then
-        self.transform.rotation.y = self.transform.rotation.y + self.turnSpeed * deltaTime
-    elseif (self.moveDir.x < 0)
-    then
-        self.transform.rotation.y = self.transform.rotation.y - self.turnSpeed * deltaTime
-    end
 end
 
 function script:move2(deltaTime)
@@ -190,31 +134,37 @@ function script:rotate2(deltaTime)
     local camTransform = scene.getComponent(self.camID, CompType.Transform)
 
     -- Rotate towards movement direction
-    if (self.moveDir.y > 0)
+    if (self.moveDir.y > 0.5)
     then
         self.transform.rotation.y = (camTransform.rotation.y + 180) + 45 * self.moveDir.x
         
         -- Rotate because of player model
-        self.transform.rotation.y = self.transform.rotation.y + 180
-    elseif (self.moveDir.y < 0)
+        self.tempRotationY = self.transform.rotation.y + 180
+    elseif (self.moveDir.y < -0.5)
     then
-        self.transform.rotation.y = (camTransform.rotation.y) - 45 * self.moveDir.x
+        self.transform.rotation.y = camTransform.rotation.y - 45 * self.moveDir.x
         
         -- Rotate because of player model
-        self.transform.rotation.y = self.transform.rotation.y + 180
-    elseif (self.moveDir.x > 0) 
+        self.tempRotationY = self.transform.rotation.y + 180
+    elseif (self.moveDir.x > 0.5) 
     then
         self.transform.rotation.y = camTransform.rotation.y - 90
         
         -- Rotate because of player model
-        self.transform.rotation.y = self.transform.rotation.y + 180
-    elseif (self.moveDir.x < 0)
+        self.tempRotationY = self.transform.rotation.y + 180
+    elseif (self.moveDir.x < -0.5)
     then
         self.transform.rotation.y = camTransform.rotation.y + 90
         
         -- Rotate because of player model
-        self.transform.rotation.y = self.transform.rotation.y + 180
+        self.tempRotationY = self.transform.rotation.y + 180
     end
+
+    self.transform.rotation.y = self.tempRotationY
+    self.transform.rotation.x = 0.0
+    self.transform.rotation.z = 0.0
+    
+    --print(self.moveDir.x .. " " .. self.moveDir.y)
 end
 
 return script
