@@ -469,7 +469,7 @@ void RoomHandler::createColliders()
 	{
 		if (this->scene->getComponent<MeshComponent>(entity).meshID == this->tileMeshIds[Tile::Border])
 		{
-			//this->scene->setComponent<Collider>(entity, Collider::createBox(borderColDims));
+			this->scene->setComponent<Collider>(entity, Collider::createBox(borderColDims));
 		}
 	}
 
@@ -626,9 +626,23 @@ bool RoomHandler::checkRoom(int index, const glm::vec3& playerPos, Entity entity
 				this->curDoor = i;
 				
 				this->activateRoom(this->nextIndex);
-
+				printf("Bai?\n");
 				flipDoors(true);
 			}
+
+			else if (index == this->activeIndex && this->curDoor != i && this->roomFinished)
+			{
+				this->deactivateRoom(this->nextIndex);
+
+				this->curDoor = i;
+				this->nextIndex = curRoom.connectingIndex[i];
+
+				this->activateRoom(this->nextIndex);
+				flipDoors(true);
+
+				printf("Passing through...\n");
+			}
+
 			this->insideDoor = true;
 		}
 	}
@@ -757,19 +771,35 @@ void RoomHandler::flipDoors(bool open)
 
 	const Room& curRoom = this->rooms[this->activeIndex];
 
-	if (curRoom.doors[0] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doors[0]).meshID = doorId; }
-	if (curRoom.doors[1] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doors[1]).meshID = doorId; }
-	if (curRoom.doors[2] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doors[2]).meshID = doorId; }
-	if (curRoom.doors[3] != -1) { this->scene->getComponent<MeshComponent>(curRoom.doors[3]).meshID = doorId; }
+	for (int i = 0; i < 4; i++)
+	{
+		if (curRoom.doors[i] != -1)
+		{
+			this->scene->getComponent<MeshComponent>(curRoom.doors[i]).meshID = doorId;
+			if (open)
+				this->scene->removeComponent<Collider>(curRoom.doors[i]);
+			else
+				this->scene->setComponent<Collider>(curRoom.doors[i], Collider::createBox(glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH, TILE_WIDTH * 0.1f)));
+
+		}
+	}
 
 	if (this->nextIndex != -1)
 	{
 		const Room& nextRoom = this->rooms[nextIndex];
 
-		if (nextRoom.doors[0] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doors[0]).meshID = doorId; }
-		if (nextRoom.doors[1] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doors[1]).meshID = doorId; }
-		if (nextRoom.doors[2] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doors[2]).meshID = doorId; }
-		if (nextRoom.doors[3] != -1) { this->scene->getComponent<MeshComponent>(nextRoom.doors[3]).meshID = doorId; }
+		for (int i = 0; i < 4; i++)
+		{
+			if (nextRoom.doors[i] != -1)
+			{
+				this->scene->getComponent<MeshComponent>(nextRoom.doors[i]).meshID = doorId;
+				if (open)
+					this->scene->removeComponent<Collider>(nextRoom.doors[i]);
+				else
+					this->scene->setComponent<Collider>(nextRoom.doors[i], Collider::createBox(glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH, TILE_WIDTH * 0.1f)));
+
+			}
+		}
 	}
 
 	if (open)
