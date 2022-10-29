@@ -155,8 +155,11 @@ void GameScene::aiExample()
 	};
 	static SwarmFSM swarmFSM;
 	this->aiHandler->addFSM(&swarmFSM, "swarmFSM");
-	this->aiHandler->addImguiToFSM("swarmFSM", a);
 
+//TODO: Cause crash on second run, therefore disabled in distribution... 
+#ifdef _CONSOLE 
+    this->aiHandler->addImguiToFSM("swarmFSM", a);
+#endif 
 	int swarmModel = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 
 	int num_blobs = 6;
