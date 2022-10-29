@@ -81,15 +81,17 @@ private:
 	bool roomFinished = false; // temp before slayyyy queen yaasss
 
 	bool checkRoom(int index, const glm::vec3& playerPos, Entity entity);
-	void setActiveRooms();
-	void flipDoors(bool open);
+
+	void showPaths(bool show);
+
+	void openDoors(int index);
+	void closeDoors(int index);
 
 	void activateRoom(int index);
 	void deactivateRoom(int index);
 
 #ifdef _CONSOLE
 	bool showAllRooms = false;
-	void activateAll();
 #endif
 
 	// Mesh IDs
