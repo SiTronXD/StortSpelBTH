@@ -43,7 +43,6 @@ function script:update(dt)
     -- Limit total zoom
     self.camDist = math.min(self.camDist, self.maxZoom)
     self.camDist = math.max(self.camDist, self.minZoom)
-    self.camDist = 400
 
     -- Camera input controls
     local rotInput = vector()

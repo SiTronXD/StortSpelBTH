@@ -53,8 +53,8 @@ private:
 	RoomGenerator roomGenerator;
 	std::vector<RoomExitPoint> roomExitPoints;
 	bool hasDoor[4];
-	void setExitPoints(int roomIndex);
 	int gridSize;
+	void setExitPoints(int roomIndex);
 
 	// Create Entities
 	Entity createTileEntity(int tileIndex, const glm::vec3& roomPos);
@@ -64,8 +64,9 @@ private:
 	Entity createPathEntity();
 	Entity createPathBorderEntity(const glm::vec3& position);
 	
-	// Create tiles
+	// Tile creation
 	void createDoors(int roomIndex);
+	void setConnections();
 	void generatePathways();
 
 	// IDs
@@ -77,22 +78,14 @@ private:
 	int activeIndex = 0;
 	int nextIndex = -1;
 	int curDoor = -1;
-	bool insideDoor = false;
 	bool roomFinished = false; // temp before slayyyy queen yaasss
-
 	bool checkRoom(int index, const glm::vec3& playerPos, Entity entity);
 
 	void showPaths(bool show);
-
 	void openDoors(int index);
 	void closeDoors(int index);
-
 	void activateRoom(int index);
 	void deactivateRoom(int index);
-
-#ifdef _CONSOLE
-	bool showAllRooms = false;
-#endif
 
 	// Mesh IDs
 	std::unordered_map<Tile::Type, uint32_t> tileMeshIds;
@@ -103,6 +96,10 @@ private:
 	void reset();
 	void scaleRoom(int index, const glm::vec3& roomPos);
 	void createColliders();
+
+#ifdef _CONSOLE
+	bool showAllRooms = false;
+#endif
 
 public:
 	RoomHandler();

@@ -48,8 +48,6 @@ void RoomHandler::roomCompleted()
 
 bool RoomHandler::newRoom(const glm::vec3& playerPos, Entity entity)
 {
-	// Check if passed through door
-
 #ifdef _CONSOLE
 	if (!this->showAllRooms)
 	{
@@ -140,51 +138,8 @@ void RoomHandler::generate()
 		this->scaleRoom(i, roomPos);
 	}
 
-	// Find exit pairs and create pathways
-	{
-		const int NUM_MAIN_ROOMS = this->roomLayout.getNumMainRooms();
-		const std::vector<glm::ivec2>& connections = this->roomLayout.getConnections();
-
-		this->exitPairs.resize(connections.size());
-		this->verticalConnection.resize(connections.size());
-
-		for (size_t i = 0; i < connections.size(); i++)
-		{
-			const glm::ivec2& curCon = connections[i];
-			std::pair<glm::vec3, glm::vec3>& pair = exitPairs[i];
-
-			if (curCon.x < NUM_MAIN_ROOMS && curCon.y < NUM_MAIN_ROOMS)
-			{
-				// Vertical Connection
-				// curCon.x = index of upper room
-				// curCon.y = index of lower room
-
-				this->verticalConnection[i] = true;
-
-				pair.first = this->roomExitPoints[curCon.y].worldPositions[2];
-				pair.first.z += TILE_WIDTH;
-				
-				pair.second = this->roomExitPoints[curCon.x].worldPositions[3];
-				pair.second.z -= TILE_WIDTH;
-			}
-			else
-			{
-				// Horizontal connection
-				// curCon.x = right room
-				// curCon.y = left room
-
-				this->verticalConnection[i] = false;
-
-				pair.first = this->roomExitPoints[curCon.y].worldPositions[0];
-				pair.first.x += TILE_WIDTH;
-
-				pair.second = this->roomExitPoints[curCon.x].worldPositions[1];
-				pair.second.x -= TILE_WIDTH;
-			}
-		}
-
-		this->generatePathways();
-	}
+	this->setConnections();
+	this->generatePathways();
 	
 	this->createColliders();
 	this->roomLayout.clear();
@@ -266,6 +221,50 @@ void RoomHandler::createDoors(int roomIndex)
 			tra.position.x = doorTilePos[i].x + OFFSETS[i].x;
 			tra.position.z = doorTilePos[i].y + OFFSETS[i].y;
 			tra.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE);
+		}
+	}
+}
+
+void RoomHandler::setConnections()
+{
+	const int NUM_MAIN_ROOMS = this->roomLayout.getNumMainRooms();
+	const std::vector<glm::ivec2>& connections = this->roomLayout.getConnections();
+
+	this->exitPairs.resize(connections.size());
+	this->verticalConnection.resize(connections.size());
+
+	for (size_t i = 0; i < connections.size(); i++)
+	{
+		const glm::ivec2& curCon = connections[i];
+		std::pair<glm::vec3, glm::vec3>& pair = exitPairs[i];
+
+		if (curCon.x < NUM_MAIN_ROOMS && curCon.y < NUM_MAIN_ROOMS)
+		{
+			// Vertical Connection
+			// curCon.x = index of upper room
+			// curCon.y = index of lower room
+
+			this->verticalConnection[i] = true;
+
+			pair.first = this->roomExitPoints[curCon.y].worldPositions[2];
+			pair.first.z += TILE_WIDTH;
+
+			pair.second = this->roomExitPoints[curCon.x].worldPositions[3];
+			pair.second.z -= TILE_WIDTH;
+		}
+		else
+		{
+			// Horizontal connection
+			// curCon.x = right room
+			// curCon.y = left room
+
+			this->verticalConnection[i] = false;
+
+			pair.first = this->roomExitPoints[curCon.y].worldPositions[0];
+			pair.first.x += TILE_WIDTH;
+
+			pair.second = this->roomExitPoints[curCon.x].worldPositions[1];
+			pair.second.x -= TILE_WIDTH;
 		}
 	}
 }
@@ -618,7 +617,7 @@ Entity RoomHandler::createPathBorderEntity(const glm::vec3& position)
 
 bool RoomHandler::checkRoom(int index, const glm::vec3& playerPos, Entity entity)
 {
-	this->insideDoor = false;
+	bool insideDoor = false;
 	bool result = false;
 
 	Room& curRoom = this->rooms[index];
@@ -632,67 +631,45 @@ bool RoomHandler::checkRoom(int index, const glm::vec3& playerPos, Entity entity
 		{
 			const Collider& col = this->scene->getComponent<Collider>(id);
 
-			// Entered new room
-			if (index == this->nextIndex && !curRoom.finished)
+			// Entered next room
+			if (index == this->nextIndex)
 			{
-				// deactivate the old room
-				this->deactivateRoom(this->activeIndex);
+				if (!curRoom.finished)
+				{
+					result = true;
+
+					// Hide all other rooms & close doors
+					this->deactivateRoom(this->activeIndex);
+					this->closeDoors(index);
+					this->showPaths(false);
+
+					this->nextIndex = -1;
+					this->curDoor = -1;
+					this->roomFinished = false;
+				}
+				else
+				{
+					this->curDoor = i;
+					this->nextIndex = curRoom.connectingIndex[i];
+				}
 
 				this->activeIndex = index;
-				this->nextIndex = -1;
-				this->roomFinished = false;
-				result = true;
-
-				// Close doors
-				this->closeDoors(this->activeIndex);
-				this->showPaths(false);
 			}
-#if 0
-			
-
-			else if (index == this->activeIndex && this->curDoor != i)
+	
+			// Leaving room
+			else if (index == this->activeIndex && this->curDoor != i && curRoom.finished)
 			{
 				this->deactivateRoom(this->nextIndex);
+				this->activateRoom(curRoom.connectingIndex[i]);
 
 				this->curDoor = i;
 				this->nextIndex = curRoom.connectingIndex[i];
-
-				this->activateRoom(this->nextIndex);
 			}
 
-#elif 1
-
-			// Left finished room
-			else if (this->curDoor == -1 && this->roomFinished)
-			{
-				this->activeIndex = index;
-				this->nextIndex = curRoom.connectingIndex[i];
-				this->curDoor = i;
-				
-				this->activateRoom(this->nextIndex);
-				printf("Bai?\n");
-
-				//flipDoors(true);
-			}
-
-			else if (index == this->activeIndex && this->curDoor != i && this->roomFinished)
-			{
-				this->deactivateRoom(this->nextIndex);
-
-				this->curDoor = i;
-				this->nextIndex = curRoom.connectingIndex[i];
-
-				this->activateRoom(this->nextIndex);
-				//flipDoors(true);
-
-				printf("Passing through...\n");
-			}
-#endif
-
-			this->insideDoor = true;
+			insideDoor = true;
 		}
 	}
-	if (index == this->activeIndex && !this->insideDoor)
+	if (index == this->activeIndex && !insideDoor)
 	{ 
 		this->curDoor = -1;
 	}
@@ -769,6 +746,8 @@ void RoomHandler::reset()
 
 	this->activeIndex = 0;
 	this->nextIndex = -1;
+	this->curDoor = -1;
+	this->roomFinished = false;
 }
 
 void RoomHandler::openDoors(int index)
@@ -898,6 +877,7 @@ void RoomHandler::imgui()
 				{
 					this->activateRoom(i);	
 				}
+				this->showPaths(true);
 			}
 			else 
 			{
