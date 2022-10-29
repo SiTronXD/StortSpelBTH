@@ -309,6 +309,11 @@ int RoomGenerator::getRoomTile(int index) const
     return this->room[index];
 }
 
+int RoomGenerator::getRoomSize() const
+{
+    return ROOM_SIZE;
+}
+
 int RoomGenerator::getNrTiles() const
 {
     return (int)this->tiles.size();

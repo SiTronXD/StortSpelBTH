@@ -189,7 +189,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 		// player triggered a trigger :]
 		Transform& playerTra = this->getComponent<Transform>(playerID);
 		
-		if (roomHandler.newRoom(playerTra.position, other))
+		if (roomHandler.onPlayerTrigger(other))
 		{
 			printf("Hello?\n");
 		}

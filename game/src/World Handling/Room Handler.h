@@ -14,11 +14,13 @@ public:
 
 private:
 
+	enum TileUsage { Default, Border, Exit };
+
 	// Helper structs
 	struct RoomExitPoint
 	{
 		RoomExitPoint() = default;
-		glm::vec3 worldPositions[4]{};
+		glm::vec3 positions[4]{};
 	};
 
 	struct Room
@@ -53,13 +55,11 @@ private:
 	RoomGenerator roomGenerator;
 	std::vector<RoomExitPoint> roomExitPoints;
 	bool hasDoor[4];
-	int gridSize;
 	void setExitPoints(int roomIndex);
+	void roomToWorldSpace(int roomIndex);
 
 	// Create Entities
-	Entity createTileEntity(int tileIndex, const glm::vec3& roomPos);
-	Entity createBorderEntity(int tileIndex, const glm::vec3& roomPos);
-	Entity createExitTileEntity(int tileIndex, const glm::vec3& roomPos);
+	Entity createTileEntity(int tileIndex, TileUsage usage);
 	Entity createDoorEntity(float yRotation);
 	Entity createPathEntity();
 	Entity createPathBorderEntity(const glm::vec3& position);
@@ -78,8 +78,7 @@ private:
 	int activeIndex = 0;
 	int nextIndex = -1;
 	int curDoor = -1;
-	bool roomFinished = false; // temp before slayyyy queen yaasss
-	bool checkRoom(int index, const glm::vec3& playerPos, Entity entity);
+	bool checkRoom(int index, Entity entity);
 
 	void showPaths(bool show);
 	void openDoors(int index);
@@ -92,9 +91,8 @@ private:
 	uint32_t openDoorMeshID;
 	uint32_t closedDoorMeshID;
 
-	// Reset, room scaling & colliders
+	// Other
 	void reset();
-	void scaleRoom(int index, const glm::vec3& roomPos);
 	void createColliders();
 
 #ifdef _CONSOLE
@@ -113,10 +111,7 @@ public:
 #endif //  _CONSOLE
 
 	void roomCompleted();
-	bool newRoom(const glm::vec3& playerPos, Entity entity);
+	bool onPlayerTrigger(Entity otherEntity);
 
 	const std::vector<Entity>& getFreeTiles();
-
-	// Statics
-	static glm::vec3 snapToGrid(const glm::vec3& pos);
 };
