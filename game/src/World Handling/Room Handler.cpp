@@ -1,7 +1,7 @@
 #include "Room Handler.h"
 #include "vengine/application/Scene.hpp"
 
-const float RoomHandler::TILE_WIDTH = 24.f;
+const float RoomHandler::TILE_WIDTH = 25.f;
 const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 3;
 
 RoomHandler::RoomHandler()
@@ -18,6 +18,8 @@ RoomHandler::~RoomHandler()
 
 void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize, int tileTypes)
 {
+	roomSize = 15;
+
 	this->scene = scene;
 	this->resourceMan = resourceMan;
 
