@@ -170,7 +170,7 @@ void RoomGenerator::addPiece(glm::vec2 position, int depth)
             }
         }
 
-        std::uniform_int_distribution<> distr(0, depth + 1); //smaller chance of creating new piece the deeper we are in the tree
+        std::uniform_int_distribution<> distr(0, depth * 1); //smaller chance of creating new piece the deeper we are in the tree
 
         //check if should place tiles above, below, right and left
         for (int i = 0; i < 4; i++)
