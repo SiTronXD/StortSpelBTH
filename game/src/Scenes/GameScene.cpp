@@ -75,39 +75,6 @@ void GameScene::update()
 		roomHandler.roomCompleted();
 	}
 
-	// Player entered a new room
-	if (roomHandler.checkPlayer(this->getComponent<Transform>(playerID).position))
-	{
-
-		int idx = 0;
-        int randNumEnemies = rand() % 8 + 3;
-        int counter = 0;
-        const std::vector<Entity>& entites = roomHandler.getFreeTiles();
-        for (Entity entity : entites)
-        {
-            if (idx != 10 && randNumEnemies - counter != 0)
-            {
-                this->setActive(this->enemyIDs[idx]);
-                Transform& transform = this->getComponent<Transform>(this->enemyIDs[idx]);
-                Transform& tileTrans = this->getComponent<Transform>(entity);
-                float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
-                transform.position = tileTrans.position;
-                transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
-                
-
-				//Temporary enemie reset
-				SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs[idx]);
-				FSMAgentComponent& agentComp = this->getComponent<FSMAgentComponent>(this->enemyIDs[idx]);
-				transform.scale.y = 1.0f;
-				swarmComp.life = swarmComp.FULL_HEALTH;
-				swarmComp.group->huntTimer = swarmComp.group->huntTimerOrig;
-
-				idx++;
-                counter++;
-				
-            }
-        }
-	}
 
 	/*if (this->hasComponents<Collider, Rigidbody>(this->playerID))
 	{
@@ -243,7 +210,11 @@ void GameScene::aiExample()
         
 	};
 	static SwarmFSM swarmFSM;
+	//static int c = 0; 
+	//if(c == 0) {this->aiHandler->addFSM(&swarmFSM, "swarmFSM");}
 	this->aiHandler->addFSM(&swarmFSM, "swarmFSM");
+	//c++;
+	
 
 //TODO: Cause crash on second run, therefore disabled in distribution... 
 #ifdef _CONSOLE 
@@ -311,7 +282,34 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 		Entity other = e1 == player ? e2 : e1;
 		if (roomHandler.onPlayerTrigger(other))
 		{
-			printf("Hello?\n");
+			int idx = 0;
+        int randNumEnemies = rand() % 8 + 3;
+        int counter = 0;
+        const std::vector<Entity>& entites = roomHandler.getFreeTiles();
+        for (Entity entity : entites)
+        {
+            if (idx != 10 && randNumEnemies - counter != 0)
+            {
+                this->setActive(this->enemyIDs[idx]);
+                Transform& transform = this->getComponent<Transform>(this->enemyIDs[idx]);
+                Transform& tileTrans = this->getComponent<Transform>(entity);
+                float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
+                transform.position = tileTrans.position;
+                transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
+                
+
+				//Temporary enemie reset
+				SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs[idx]);
+				FSMAgentComponent& agentComp = this->getComponent<FSMAgentComponent>(this->enemyIDs[idx]);
+				transform.scale.y = 1.0f;
+				swarmComp.life = swarmComp.FULL_HEALTH;
+				swarmComp.group->huntTimer = swarmComp.group->huntTimerOrig;
+
+				idx++;
+                counter++;
+				
+            }
+        }
 		}
 	}
 }
