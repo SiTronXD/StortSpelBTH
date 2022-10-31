@@ -33,7 +33,6 @@ function script:update(dt)
     if (not self.active) then
         return
     end
-    physics.renderDebugShapes(true)
 
     self.shaking = input.isKeyDown(Keys.Q)
 
