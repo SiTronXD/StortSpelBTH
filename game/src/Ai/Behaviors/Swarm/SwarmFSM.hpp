@@ -18,6 +18,9 @@ struct SwarmComponent
 	SwarmGroup* group;
 	std::vector<SwarmGroup*> groupsInSight;
 
+    bool alert_go_up = true;
+    float alert_top;
+
 	SwarmComponent() {};
 };
 
@@ -35,6 +38,9 @@ private:
 	static bool escape_idle(Entity entityID);
 	static bool escape_combat(Entity entityID);
 
+    // static bool notisPlayer(Entity entityID);
+	// static bool playerDissapeared(Entity entityID);
+
 	static bool dead(Entity entityID);
 	static bool revive(Entity entityID);
 
@@ -46,6 +52,10 @@ private:
 	EntityEvent combat_to_escape{combat_escape};
 	EntityEvent escape_to_idle{escape_idle};
 	EntityEvent escape_to_combat{escape_combat};
+
+    // EntityEvent notisPlayer_event{notisPlayer};
+	// EntityEvent playerDissapeared_event{playerDissapeared};
+
 	EntityEvent to_dead{dead};
 	EntityEvent to_living{revive};
 

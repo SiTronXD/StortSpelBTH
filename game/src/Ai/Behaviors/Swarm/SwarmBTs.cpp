@@ -334,6 +334,36 @@ BTStatus SwarmBT::die(Entity entityID)
 	return ret;
 }
 
+BTStatus SwarmBT::alerted(Entity entityID)
+{
+	BTStatus ret = BTStatus::Running;
+	SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+	Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+
+	// if(swarmTrans.scale.y <= 1.0f)
+	// {
+	// 	ret = BTStatus::Success;
+	// }
+	// else
+    static float speed = 10;        
+    if(swarmComp.alert_go_up && swarmTrans.scale.y <= 1.5f)
+	{        
+		swarmTrans.scale.y += speed*Time::getDT();        
+	}
+    else if(swarmTrans.scale.y >= 1.f)
+    {
+        swarmComp.alert_go_up = false; 
+        swarmTrans.scale.y -= speed*Time::getDT();
+    }
+    else 
+    {
+        swarmComp.alert_go_up = true; 
+        BTStatus ret = BTStatus::Success;
+    }
+
+	return ret;
+}
+
 void Swarm_idle::start() {
 
 
@@ -364,9 +394,11 @@ void Swarm_combat::start()
 
 	Sequence* decide_to_snitch = c.c.sequence();
 	Selector* initiate_attack = c.c.selector();
+    Task* alertedOnPlayerDiscover = c.l.task("Alerted", SwarmBT::alerted);        
 
 	Condition* has_firends = c.l.condition("Has freinds", SwarmBT::hasFriends);
 	Task* inform_friends = c.l.task("Inform freinds", SwarmBT::informFriends);
+    	
 
 	Sequence* attack_if_close_enough = c.c.sequence();
 	Task* attack = c.l.task("Attack", SwarmBT::attack);
@@ -377,7 +409,9 @@ void Swarm_combat::start()
 
 
 	
+    root->addLeaf(alertedOnPlayerDiscover);
 	root->addCompositors({decide_to_snitch, initiate_attack});
+
 	decide_to_snitch->addLeafs({has_firends, inform_friends});
 	initiate_attack->addCompositor(attack_if_close_enough);
 	initiate_attack->addLeaf(attack);
@@ -421,3 +455,4 @@ void Swarm_dead::start()
 	this->setRoot(root);
 
 }
+

@@ -37,7 +37,7 @@ class SwarmBT : public BehaviorTree
 	static BTStatus hasFriends(Entity entityID);
 	static BTStatus jumpInCircle(Entity entityID);
 	static BTStatus lookingForGroup(Entity entityID);
-	static BTStatus JoinGroup(Entity entityID);
+	static BTStatus JoinGroup(Entity entityID);	
 
 	static BTStatus seesNewFriends(Entity entityID);
 	static BTStatus escapeToFriends(Entity entityID);
@@ -51,8 +51,7 @@ class SwarmBT : public BehaviorTree
 	static BTStatus playDeathAnim(Entity entityID);
 	static BTStatus die(Entity entityID);
 
-
-
+    static BTStatus alerted(Entity entityID);
 
 };
 
