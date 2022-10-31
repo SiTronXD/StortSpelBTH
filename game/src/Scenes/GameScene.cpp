@@ -231,6 +231,8 @@ void GameScene::aiExample()
         this->setComponent<MeshComponent>(this->enemyIDs.back(), swarm);
         this->setComponent<AiMovement>(this->enemyIDs.back());
         this->setComponent<AiCombat>(this->enemyIDs.back());
+        this->setComponent<Collider>(this->enemyIDs.back(), Collider::createBox(glm::vec3(5.0f, 5.0f, 5.0f)));
+        this->setComponent<Rigidbody>(this->enemyIDs.back());
 		this->aiHandler->createAIEntity(this->enemyIDs.back(), "swarmFSM");
 		this->swarmGroups.back()->members.push_back(this->enemyIDs.back());
         this->setInactive(this->enemyIDs.back());
