@@ -13,7 +13,7 @@ private:
 
     Entity playerID;
     Entity floor;
-    std::vector<int> swarmEnemies;
+    std::vector<int> enemyIDs;
     std::vector<SwarmGroup*> swarmGroups;
 
     uint32_t hpBarBackgroundTextureID;
@@ -31,6 +31,7 @@ public:
 
 private:
     void aiExample();
+    bool allDead();
 
 
 };

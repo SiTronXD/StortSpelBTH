@@ -8,6 +8,11 @@ Entity getPlayerID(SceneHandler*sceneHandler);
 
 struct SwarmGroup
 {
+    private: 
+    static int getNewId; 
+    public: 
+    SwarmGroup() {myId = getNewId++;}
+    int myId;  
 	int max;
 	bool inCombat = false;
 	float huntTimer;
@@ -43,6 +48,9 @@ class SwarmBT : public BehaviorTree
 	static BTStatus closeEnoughToPlayer(Entity entityID);
 	static BTStatus attack(Entity entityID);
 
+	static BTStatus playDeathAnim(Entity entityID);
+	static BTStatus die(Entity entityID);
+
 
 
 
@@ -67,7 +75,6 @@ class Swarm_combat : public SwarmBT
 	void update(Entity entityID){};
 };
 
-
 class Swarm_escape : public SwarmBT
 {
    protected:
@@ -77,4 +84,11 @@ class Swarm_escape : public SwarmBT
 	void update(Entity entityID){};
 };
 
-
+class Swarm_dead: public SwarmBT
+{
+protected:
+	void start();
+public:
+	void initEntityData(Entity entityID){};
+	void update(Entity entityID){};
+};
