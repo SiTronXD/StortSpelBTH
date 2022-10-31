@@ -43,6 +43,11 @@ void RoomLayout::generate()
 			Log::warning("Failed creating branch");
 		}
 	}
+
+	if (!this->setExit())
+	{
+		Log::warning("Failed creating exit");
+	}
 }
 
 void RoomLayout::setUpRooms(int numRooms)
@@ -251,7 +256,7 @@ bool RoomLayout::setExit()
 	return true;
 }
 
-const RoomLayout::RoomData& RoomLayout::getRoom(int index)
+const RoomData& RoomLayout::getRoom(int index)
 {
 	return this->rooms[index];
 }

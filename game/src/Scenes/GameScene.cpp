@@ -13,16 +13,17 @@ void decreaseFps();
 double heavyFunction(double value);
 #endif
 
-GameScene::GameScene() : playerID(-1)
+GameScene::GameScene() 
+	:playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false)
 {
 }
 
 GameScene::~GameScene()
 {
-  for (auto& p : swarmGroups)
-  {
-	  delete p;
-  }
+	for (auto& p : swarmGroups)
+	{
+		delete p;
+	}
 }
 
 void GameScene::init()
@@ -31,6 +32,8 @@ void GameScene::init()
 	
 	roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
 	roomHandler.generate();
+	roomHandler.roomCompleted(); // auto completes first room
+	createPortal();
 
 	this->hpBarBackgroundTextureID =
 		this->getResourceManager()->addTexture("assets/textures/UI/hpBarBackground.png");
@@ -63,15 +66,17 @@ void GameScene::start()
 	this->aiHandler->init(this->getSceneHandler());
     
 	aiExample();
-    
 }
 
 void GameScene::update()
 {
-	if (allDead()) 
+	if (allDead() && this->newRoomFrame) 
 	{
+		this->newRoomFrame = false;
+
 		// Call when a room is cleared
 		roomHandler.roomCompleted();
+		this->numRoomsCleared++;
 	}
 
 
@@ -287,34 +292,67 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 		Entity other = e1 == player ? e2 : e1;
 		if (roomHandler.onPlayerTrigger(other))
 		{
+			this->newRoomFrame = true;
+
 			int idx = 0;
-        int randNumEnemies = rand() % 8 + 3;
-        int counter = 0;
-        const std::vector<Entity>& entites = roomHandler.getFreeTiles();
-        for (Entity entity : entites)
-        {
-            if (idx != 10 && randNumEnemies - counter != 0)
-            {
-                this->setActive(this->enemyIDs[idx]);
-                Transform& transform = this->getComponent<Transform>(this->enemyIDs[idx]);
-                Transform& tileTrans = this->getComponent<Transform>(entity);
-                float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
-                transform.position = tileTrans.position;
-                transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
+			int randNumEnemies = rand() % 8 + 3;
+			int counter = 0;
+			const std::vector<Entity>& entites = roomHandler.getFreeTiles();
+			for (Entity entity : entites)
+			{
+				if (idx != 10 && randNumEnemies - counter != 0)
+				{
+					this->setActive(this->enemyIDs[idx]);
+					Transform& transform = this->getComponent<Transform>(this->enemyIDs[idx]);
+					Transform& tileTrans = this->getComponent<Transform>(entity);
+					float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
+					transform.position = tileTrans.position;
+					transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
                 
 
-				//Temporary enemie reset
-				SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs[idx]);
-				transform.scale.y = 1.0f;
-				swarmComp.life = swarmComp.FULL_HEALTH;
+					//Temporary enemie reset
+					SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs[idx]);
+					transform.scale.y = 1.0f;
+					swarmComp.life = swarmComp.FULL_HEALTH;
 
-				idx++;
-                counter++;
+					idx++;
+					counter++;
 				
-            }
-        }
+				}
+			}
+		}
+
+		if (other == portal && numRoomsCleared == this->roomHandler.getNumRooms() - 1) // -1 not counting start room
+		{
+			this->switchScene(new GameScene(), "scripts/gamescene.lua");
 		}
 	}
+}
+
+void GameScene::createPortal()
+{
+	glm::vec3 portalTriggerDims(6.f, 18.f, 1.f);
+	glm::vec3 portalBlockDims(3.f, 18.f, 3.f);
+
+	uint32_t portalMesh = this->getResourceManager()->addMesh("assets/models/Portal.obj");
+	portal = this->createEntity();
+	this->getComponent<Transform>(portal).position = this->roomHandler.getExitRoom().position;
+	this->setComponent<Collider>(portal, Collider::createBox(portalTriggerDims, true));
+
+	this->setComponent<MeshComponent>(portal);
+	this->getComponent<MeshComponent>(portal).meshID = portalMesh;
+
+	Entity collider1 = this->createEntity();
+	this->getComponent<Transform>(collider1).position = this->getComponent<Transform>(portal).position;
+	this->getComponent<Transform>(collider1).position.x += 9.f;
+	this->getComponent<Transform>(collider1).position.y += 9.f;
+	this->setComponent<Collider>(collider1, Collider::createBox(portalBlockDims));
+
+	Entity collider2 = this->createEntity();
+	this->getComponent<Transform>(collider2).position = this->getComponent<Transform>(portal).position;
+	this->getComponent<Transform>(collider2).position.x -= 9.f;
+	this->getComponent<Transform>(collider2).position.y += 9.f;
+	this->setComponent<Collider>(collider2, Collider::createBox(portalBlockDims));
 }
 
 #ifdef _CONSOLE

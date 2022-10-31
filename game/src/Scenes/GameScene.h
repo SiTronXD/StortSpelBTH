@@ -12,7 +12,11 @@ private:
     AIHandler* aiHandler = nullptr;
 
     Entity playerID;
-    Entity floor;
+    Entity portal;
+
+    int numRoomsCleared;
+    bool newRoomFrame;
+
     std::vector<int> enemyIDs;
     std::vector<SwarmGroup*> swarmGroups;
 
@@ -32,6 +36,6 @@ public:
 private:
     void aiExample();
     bool allDead();
-
-
+	
+	void createPortal();
 };

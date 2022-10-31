@@ -2,25 +2,34 @@
 #include <vector>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
+	
+struct RoomData
+{
+	enum Type : int
+	{
+		INVALID = -1,
+		START_ROOM, 
+		NORMAL_ROOM,
+		HARD_ROOM,
+		BOSS_ROOM, 
+		EXIT_ROOM
+	};
+	
+	Type type;
+	glm::vec3 position;
+
+	// Index of connected rooms
+	int up, down, left, right;
+	RoomData()
+		:up(-1), down(-1), left(-1), right(-1),
+		type(Type::INVALID), position(0.f)
+	{
+	};
+};
 
 class RoomLayout
 {
 public:
-	struct RoomData
-	{
-		enum Type{START_ROOM, NORMAL_ROOM, HARD_ROOM, BOSS_ROOM, EXIT_ROOM};
-		
-		Type type;
-		glm::vec3 position;
-	
-		// Index of connected rooms
-		int up, down, left, right;
-		RoomData()
-			:up(-1), down(-1), left(-1), right(-1),
-			type(Type::NORMAL_ROOM), position(0.f)
-		{
-		};
-	};
 
 	static const int MIN_MAIN_ROOMS = 3;
 	static const int MAX_MAIN_ROOMS = 4;
