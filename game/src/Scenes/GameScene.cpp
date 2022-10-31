@@ -53,7 +53,7 @@ void GameScene::start()
 	this->aiHandler->init(this->getSceneHandler());
     
 	aiExample();
-
+    
 }
 
 void GameScene::update()
@@ -145,26 +145,75 @@ void GameScene::aiExample()
 {
 	auto a = [&](FSM* fsm, uint32_t entityId) -> void {
 		SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
+    
+        auto entityImguiWindow = [&](SwarmFSM* swarmFsm, uint32_t entityId)->void 
+        {
+            auto& entitySwarmComponent = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId);
+            auto& entityAiCombatComponent = this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId);
+            auto& entiyFSMAgentComp = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId);
+            int& health            = entitySwarmComponent.life;
+            float& speed           = entitySwarmComponent.speed;
+            float& attackRange     = entitySwarmComponent.attackRange;
+            float& sightRange      = entitySwarmComponent.sightRadius;
+            bool& inCombat         = entitySwarmComponent.inCombat;
+            float& attackPerSec    = entityAiCombatComponent.lightAttackTime;
+            float& lightAttackDmg  = entityAiCombatComponent.lightHit;
+            std::string& status    = entiyFSMAgentComp.currentNode->status;   
+            ImGui::Text(status.c_str());
+            ImGui::SliderInt("health", &health, 0, 100);
+            ImGui::SliderFloat("speed", &speed, 0, 100);
+            ImGui::SliderFloat("attackRange", &attackRange, 0, 100);
+            ImGui::SliderFloat("sightRange", &sightRange, 0, 100);		
+            ImGui::InputFloat("attack/s", &attackPerSec);		
+            ImGui::InputFloat("lightattackDmg", &lightAttackDmg);		 
+            ImGui::Checkbox("inCombat", &inCombat);		            
+        };
+
+        //TEMP 
+        std::string playerString = "playerID";
+        int playerID;
+        this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerString);
+        auto& playerCombat = this->getSceneHandler()->getScene()->getComponent<Combat>(playerID);
+        if(ImGui::Button("Kill Player")){
+            playerCombat.health = 0; 
+        }
+		ImGui::Separator();
+		ImGui::Separator();
+		entityImguiWindow(swarmFSM, entityId);
+
         auto& entitySwarmComponent = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId);
         auto& entityAiCombatComponent = this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId);
         auto& entiyFSMAgentComp = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId);
-		int& health            = entitySwarmComponent.life;
-        float& speed           = entitySwarmComponent.speed;
-        float& attackRange     = entitySwarmComponent.attackRange;
-        float& sightRange      = entitySwarmComponent.sightRadius;
-        bool& inCombat         = entitySwarmComponent.inCombat;
-        float& attackPerSec    = entityAiCombatComponent.lightAttackTime;
-		float& lightAttackDmg  = entityAiCombatComponent.lightHit;
-		std::string& status    = entiyFSMAgentComp.currentNode->status;
-		
-		ImGui::SliderInt("health", &health, 0, 100);
-		ImGui::SliderFloat("speed", &speed, 0, 100);
-		ImGui::SliderFloat("attackRange", &attackRange, 0, 100);
-		ImGui::SliderFloat("sightRange", &sightRange, 0, 100);		
-		ImGui::InputFloat("attack/s", &attackPerSec);		
-		ImGui::InputFloat("lightattackDmg", &lightAttackDmg);		
-		ImGui::Checkbox("inCombat", &inCombat);		
-        ImGui::Text(status.c_str());
+
+        std::string groupName = "GroupMembers["+std::to_string(entitySwarmComponent.group->myId)+"]";
+        if(ImGui::TreeNode(groupName.c_str()))
+        {
+            if(ImGui::Button("Kill All")){
+                entitySwarmComponent.life = 0; 
+                for(auto& ent : entitySwarmComponent.group->members)
+                {              
+                    auto& entSwarmComp = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(ent);                    
+                    entSwarmComp.life = 0; 
+                }
+            }
+
+            static int selected_friend = -1; 
+
+            for(auto& ent : entitySwarmComponent.group->members)
+            {              
+                std::string entityName = "entity["+std::to_string(ent)+"]";
+                if(ImGui::Button(entityName.c_str())){selected_friend = ent;}
+            }
+            if(selected_friend != -1)
+            {
+                std::string entityName = "entity["+std::to_string(selected_friend)+"]";
+                ImGui::Begin((entityName + "_popup").c_str());
+                entityImguiWindow(swarmFSM, selected_friend);
+                ImGui::End();
+            }            
+            ImGui::TreePop();
+        }
+        
 	};
 	static SwarmFSM swarmFSM;
 	this->aiHandler->addFSM(&swarmFSM, "swarmFSM");

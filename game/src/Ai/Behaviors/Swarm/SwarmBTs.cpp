@@ -3,6 +3,8 @@
 #include "../../../Components/Combat.h"
 #include "../../../Components/AiCombat.h"
 
+int SwarmGroup::getNewId = 0;
+
 Entity getPlayerID(SceneHandler* sceneHandler) 
 {
     int playerID = 0;

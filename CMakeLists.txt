@@ -53,7 +53,7 @@ set_target_properties(3D_VEngine_GameDemo PROPERTIES
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug" OR ${CMAKE_BUILD_TYPE} MATCHES "Release" )
 target_compile_definitions(3D_VEngine_GameDemo PRIVATE "_CONSOLE" )
-
+target_compile_definitions(3D_VEngine_GameDemo PRIVATE "NO_MOUSE_GRAB" )
 target_compile_definitions(3D_VEngine_GameDemo PRIVATE "_DEBUG" )
 endif()
 
