@@ -84,7 +84,9 @@ function script:update(dt)
     local actualDist = self.camDist + self.distMargin
     local payload = physics.raycast(targetPos, -forward, actualDist)
     if (payload) then
-        actualDist = vector.length(payload.hitPoint - targetPos)
+        if(scene.getComponent(payload.entity, CompType.Collider).isTrigger == false) then
+            actualDist = vector.length(payload.hitPoint - targetPos)
+        end
     end
     -- Apply position
     local scaledFwd = forward * (actualDist - self.distMargin)
