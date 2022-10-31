@@ -20,7 +20,6 @@ function script:init()
     self.slowDown = 80
     self.transform.position = vector(0, 10, 0)
     self.transform.rotation = vector(0, 0, 0)
-    self.tempRotationY = 0
 
     self.maxHP = 100.0
     self.currentHP = self.maxHP
@@ -161,31 +160,23 @@ function script:rotate2(deltaTime)
     then
         self.transform.rotation.y = (camTransform.rotation.y + 180) + 45 * self.moveDir.x
         
-        -- Rotate because of player model
-        self.tempRotationY = self.transform.rotation.y + 180
+        self.transform.rotation.y = self.transform.rotation.y + 180
     elseif (self.moveDir.y < -0.5)
     then
         self.transform.rotation.y = camTransform.rotation.y - 45 * self.moveDir.x
         
-        -- Rotate because of player model
-        self.tempRotationY = self.transform.rotation.y + 180
+        self.transform.rotation.y = self.transform.rotation.y + 180
     elseif (self.moveDir.x > 0.5) 
     then
         self.transform.rotation.y = camTransform.rotation.y - 90
         
-        -- Rotate because of player model
-        self.tempRotationY = self.transform.rotation.y + 180
+        self.transform.rotation.y = self.transform.rotation.y + 180
     elseif (self.moveDir.x < -0.5)
     then
         self.transform.rotation.y = camTransform.rotation.y + 90
         
-        -- Rotate because of player model
-        self.tempRotationY = self.transform.rotation.y + 180
+        self.transform.rotation.y = self.transform.rotation.y + 180
     end
-
-    self.transform.rotation.y = self.tempRotationY
-    self.transform.rotation.x = 0.0
-    self.transform.rotation.z = 0.0
     
     --print(self.moveDir.x .. " " .. self.moveDir.y)
 end
