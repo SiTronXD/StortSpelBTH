@@ -7,9 +7,11 @@
 #include "../Systems/AiCombatSystem.hpp"
 #include "GameOverScene.h"
 
+#ifdef _CONSOLE
 // decreaseFps used for testing game with different framerates
 void decreaseFps();
 double heavyFunction(double value);
+#endif
 
 GameScene::GameScene() : playerID(-1)
 {
@@ -41,10 +43,19 @@ void GameScene::start()
 {
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
-	this->setComponent<Combat>(playerID, 100.0f);
+	
+	//int spinningMesh = this->getResourceManager()->addMesh("assets/models/Hurricane Kick.fbx");
+	//int runningMesh = this->getResourceManager()->addMesh("assets/models/run_forward.fbx");
+	this->setComponent<Combat>(playerID);
+	//this->setComponent<MeshComponent>(this->playerID, runningMesh);
+	this->createSystem<CombatSystem>(this, this->playerID);
+
+	//this->setComponent<Combat>(playerID, 100.0f);
 
 	uint32_t swordId = this->getResourceManager()->addMesh("assets/models/Sword.obj");
 	
+	this->setComponent<Collider>(playerID, Collider::createBox(glm::vec3(2.f)));
+
 	Entity sword = this->createEntity();
 	this->setComponent<MeshComponent>(sword);
 	this->getComponent<MeshComponent>(sword).meshID = swordId;
@@ -107,7 +118,7 @@ void GameScene::update()
 		rb.velocity.y = y + Input::isKeyPressed(Keys::SPACE) * 5.0f;
 	}*/
 
-	decreaseFps();
+	
 
 	// Switch scene if the player is dead
 	if (this->hasComponents<Combat>(this->playerID))
@@ -134,6 +145,27 @@ void GameScene::update()
 	Scene::getUIRenderer()->renderTexture(xPos, yPos, xSize + 10, ySize + 10);
 	Scene::getUIRenderer()->setTexture(this->hpBarTextureID);
 	Scene::getUIRenderer()->renderTexture(xPos - (1.0 - hpPercent) * xSize * 0.5, yPos, xSize * hpPercent, ySize);
+	
+#ifdef _CONSOLE
+
+	static bool renderDebug = false;
+	if (ImGui::Begin("Debug"))
+	{
+		if (ImGui::Checkbox("Render debug shapes", &renderDebug))
+		{
+			this->getPhysicsEngine()->renderDebugShapes(renderDebug);
+		}
+		const glm::vec3& playerPos = this->getComponent<Transform>(playerID).position;
+		ImGui::Text("Player pos: (%d, %d, %d)", (int)playerPos.x, (int)playerPos.y, (int)playerPos.z);
+		ImGui::Separator();
+	}
+	ImGui::End();
+
+	roomHandler.imgui();
+
+	decreaseFps();
+#endif
+
 }
 
 void GameScene::aiExample() 
@@ -270,12 +302,27 @@ bool GameScene::allDead()
 	return ret;
 }
 
+void GameScene::onTriggerStay(Entity e1, Entity e2)
+{
+	Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
+	
+	if (player == playerID) // player triggered a trigger :]
+	{
+		Entity other = e1 == player ? e2 : e1;
+		if (roomHandler.onPlayerTrigger(other))
+		{
+			printf("Hello?\n");
+		}
+	}
+}
+
+#ifdef _CONSOLE
 void decreaseFps()
 {
 	static double result = 1234567890.0;
 
 	static int num = 0;
-	if (ImGui::Begin("FPS decrease"))
+	if (ImGui::Begin("Debug"))
 	{
 		ImGui::Text("Fps %f", 1.f / Time::getDT());
 		ImGui::InputInt("Loops", &num);
@@ -306,3 +353,4 @@ double heavyFunction(double value)
 
 	return result;
 }
+#endif

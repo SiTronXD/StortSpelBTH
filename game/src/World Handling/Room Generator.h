@@ -52,19 +52,19 @@ public:
 
     void generateRoom();
     void generateBorders(const bool* hasDoors);
-
-    const glm::vec2* getExitTilesPos() const;
-    const glm::vec2* getMinMaxPos() const;
     
-    int getRoomTile(int index) const;
-
+    int getRoomSize() const;
     int getNrTiles() const;
     int getNrBorders() const;
     int getNrExitTiles() const;
 
+    int getRoomTile(int index) const;
     const Tile& getTile(int index) const;
     const Tile& getBorder(int index) const;
     const Tile& getExitTiles(int index) const;
+    
+    const glm::vec2* getExitTilesPos() const;
+    const glm::vec2* getMinMaxPos() const;
 
     void reset();
 };

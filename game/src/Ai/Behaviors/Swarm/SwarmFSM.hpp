@@ -7,7 +7,7 @@ struct SwarmComponent
 {
 	int LOW_HEALTH = 30;
 	int FULL_HEALTH = 100;
-	int life = FULL_HEALTH ;
+	int life = FULL_HEALTH;
 	float speed = 10;
 
 	float deathAnimTimer = 1.0f;
@@ -18,9 +18,9 @@ struct SwarmComponent
 	float attackRange	= 10;
 	bool inCombat		= false;
 	SwarmGroup* group;
-	std::vector<SwarmGroup*> groupsInSight;	
+	std::vector<SwarmGroup*> groupsInSight;
 
-	SwarmComponent(){};
+	SwarmComponent() {};
 };
 
 
@@ -30,7 +30,7 @@ private:
 	static bool idle_combat(Entity entityID);
 	static bool idle_combat_FirendsInFight(Entity entityID);
 	static bool idle_escape(Entity entityID);
-	
+
 	static bool combat_idle(Entity entityID);
 	static bool combat_escape(Entity entityID);
 
@@ -54,11 +54,11 @@ private:
 public:
 protected:
 	// Inherited via FSM
-    virtual void registerEntityComponents(Entity entityId) override
-    {
-        addRequiredComponent<SwarmComponent>(entityId);
-        addRequiredComponent<AiCombat>(entityId);
-    }
+	virtual void registerEntityComponents(Entity entityId) override
+	{
+		addRequiredComponent<SwarmComponent>(entityId);
+		addRequiredComponent<AiCombat>(entityId);
+	}
 
 	virtual void real_init() override
 	{
@@ -71,14 +71,14 @@ protected:
         });
 
 		//TODO: Cehck transitions (Only one should be possible).
-		addEntityTransition("idle", SwarmFSM::idle_to_escape , "escape");
-		addEntityTransition("idle", SwarmFSM::idle_to_combat , "combat");
-		addEntityTransition("idle", SwarmFSM::idle_to_combat_firends_in_fight , "combat");
+		addEntityTransition("idle", SwarmFSM::idle_to_escape, "escape");
+		addEntityTransition("idle", SwarmFSM::idle_to_combat, "combat");
+		addEntityTransition("idle", SwarmFSM::idle_to_combat_firends_in_fight, "combat");
 
 		addEntityTransition("combat", SwarmFSM::combat_to_escape, "escape");
 		addEntityTransition("combat", SwarmFSM::combat_to_idle, "idle");
 
-		addEntityTransition("escape", SwarmFSM::escape_to_combat , "combat");
+		addEntityTransition("escape", SwarmFSM::escape_to_combat, "combat");
 		addEntityTransition("escape", SwarmFSM::escape_to_idle, "idle");
 
 		addEntityTransition("idle", SwarmFSM::to_dead, "dead");
@@ -88,6 +88,7 @@ protected:
 		addEntityTransition("dead", SwarmFSM::to_living, "idle");
 
 	
+
 
 		setInitialNode("idle");
 	}
