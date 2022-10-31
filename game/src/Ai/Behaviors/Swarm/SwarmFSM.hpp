@@ -11,10 +11,11 @@ struct SwarmComponent
 	float speed = 10;
 
 	float deathAnimTimer = 1.0f;
+	float alertAnimTimer = 1.0f;
 	float timer = deathAnimTimer;
 
-    float sightRadius	= 30;
-	float attackRange	= sightRadius/2;
+    float sightRadius	= 70;
+	float attackRange	= 10;
 	bool inCombat		= false;
 	SwarmGroup* group;
 	std::vector<SwarmGroup*> groupsInSight;	
@@ -37,6 +38,7 @@ private:
 	static bool escape_combat(Entity entityID);
 
 	static bool dead(Entity entityID);
+	static bool revive(Entity entityID);
 
 
 	EntityEvent idle_to_combat{idle_combat};
@@ -47,6 +49,7 @@ private:
 	EntityEvent escape_to_idle{escape_idle};
 	EntityEvent escape_to_combat{escape_combat};
 	EntityEvent to_dead{dead};
+	EntityEvent to_living{revive};
 
 public:
 protected:
@@ -81,6 +84,8 @@ protected:
 		addEntityTransition("idle", SwarmFSM::to_dead, "dead");
 		addEntityTransition("combat", SwarmFSM::to_dead, "dead");
 		addEntityTransition("escape", SwarmFSM::to_dead, "dead");
+
+		addEntityTransition("dead", SwarmFSM::to_living, "idle");
 
 	
 

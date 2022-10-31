@@ -30,5 +30,6 @@ public:
 
 private:
     void aiExample();
+    bool allDead();
 
 };

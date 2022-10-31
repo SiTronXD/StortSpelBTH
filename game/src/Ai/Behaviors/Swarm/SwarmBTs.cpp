@@ -313,7 +313,9 @@ BTStatus SwarmBT::playDeathAnim(Entity entityID)
 	}
 	else
 	{
+		swarmTrans.rotation.y +=  1000*step*Time::getDT();
 		swarmTrans.scale.y -= step*Time::getDT();
+		swarmComp.timer -= Time::getDT();
 	}
 
 	return ret;
@@ -322,9 +324,10 @@ BTStatus SwarmBT::die(Entity entityID)
 {
 	BTStatus ret = BTStatus::Success;
 
-	SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+	//TODO: Sometgin goes wrong when we remove from group.
+	//SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 
-	removeFromGroup(swarmComp, entityID);
+	//removeFromGroup(swarmComp, entityID);
 	sceneHandler->getScene()->setInactive(entityID);
 
 	return ret;
@@ -409,8 +412,8 @@ void Swarm_dead::start()
 {
 	Sequence* root = c.c.sequence();
 
-	Task* playDeathAnimTask = c.l.task("Play death animation", playDeathAnim);
-	Task* dieTask = c.l.task("die", die);
+	Task* playDeathAnimTask = c.l.task("Play death animation", SwarmBT::playDeathAnim);
+	Task* dieTask = c.l.task("die", SwarmBT::die);
 
 	root->addLeafs({playDeathAnimTask, dieTask});
 

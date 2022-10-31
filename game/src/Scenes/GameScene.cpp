@@ -58,15 +58,10 @@ void GameScene::start()
 
 void GameScene::update()
 {
-	if (Input::isKeyPressed(Keys::E)) 
+	if (allDead()) 
 	{
 		// Call when a room is cleared
 		roomHandler.roomCompleted();
-		for(auto p: enemyIDs)
-		{
-			SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(p);
-			swarmComp.life = 0.0f;
-		}
 	}
 
 	// Player entered a new room
@@ -87,25 +82,20 @@ void GameScene::update()
                 float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
                 transform.position = tileTrans.position;
                 transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
-                idx++;
-                counter++;
+                
 
 				//Temporary enemie reset
 				SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs[idx]);
 				FSMAgentComponent& agentComp = this->getComponent<FSMAgentComponent>(this->enemyIDs[idx]);
+				transform.scale.y = 1.0f;
 				swarmComp.life = swarmComp.FULL_HEALTH;
-				FSM_Node* tempNode = agentComp.fsm->getCurrentNode();
-				agentComp.fsm->setCurrentNode("idle");
-				agentComp.currentNode =  agentComp.fsm->getCurrentNode();
-				agentComp.fsm->setCurrentNode(tempNode);
+				swarmComp.group->huntTimer = swarmComp.group->huntTimerOrig;
+
+				idx++;
+                counter++;
 				
             }
         }
-		//const std::vector<Entity>& entites = roomHandler.getFreeTiles();
-		//for (Entity entity : entites)
-		//{
-		//	// Hi
-		//}
 	}
 	
 
@@ -143,6 +133,7 @@ void GameScene::aiExample()
         bool& inCombat         = entitySwarmComponent.inCombat;
         float& attackPerSec    = entityAiCombatComponent.lightAttackTime;
 		float& lightAttackDmg  = entityAiCombatComponent.lightHit;
+		int numInGroup			=entitySwarmComponent.group->members.size();
 		std::string& status    = entiyFSMAgentComp.currentNode->status;
 		
 		ImGui::SliderInt("health", &health, 0, 100);
@@ -152,6 +143,7 @@ void GameScene::aiExample()
 		ImGui::InputFloat("attack/s", &attackPerSec);		
 		ImGui::InputFloat("lightattackDmg", &lightAttackDmg);		
 		ImGui::Checkbox("inCombat", &inCombat);		
+		ImGui::Text(std::to_string(numInGroup).c_str());
         ImGui::Text(status.c_str());
 	};
 	static SwarmFSM swarmFSM;
@@ -171,6 +163,8 @@ void GameScene::aiExample()
 		this->swarmGroups.back()->members.push_back(this->enemyIDs.back());
         this->setInactive(this->enemyIDs.back());
 		this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->enemyIDs.back()).group = this->swarmGroups.back();
+		SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs.back());
+		swarmComp.life = 0.0f;
     }
 
 	/*int swarmModel = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
@@ -193,6 +187,26 @@ void GameScene::aiExample()
         this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->swarmEnemies.back()).group = this->swarmGroups.back();
 	}*/
     
+}
+
+bool GameScene::allDead()
+{
+	bool ret = true;
+	for(auto p: enemyIDs)
+	{
+		if(this->isActive(p))
+		{
+			ret = false;
+			break;
+			/*SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(p);
+			if(swarmComp.life > 0)
+			{
+				ret = false;
+				break;
+			}*/
+		}
+	}
+	return ret;
 }
 
 void decreaseFps()
