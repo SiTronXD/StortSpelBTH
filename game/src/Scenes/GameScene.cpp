@@ -236,7 +236,7 @@ void GameScene::aiExample()
         this->setComponent<MeshComponent>(this->enemyIDs.back(), swarm);
         this->setComponent<AiMovement>(this->enemyIDs.back());
         this->setComponent<AiCombat>(this->enemyIDs.back());
-        this->setComponent<Collider>(this->enemyIDs.back(), Collider::createBox(glm::vec3(5.0f, 5.0f, 5.0f)));
+        this->setComponent<Collider>(this->enemyIDs.back(), Collider::createBox(glm::vec3(5.0f, 3.5f, 5.0f)));
         this->setComponent<Rigidbody>(this->enemyIDs.back());
 		this->getComponent<Rigidbody>(this->enemyIDs.back()).rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
 		this->aiHandler->createAIEntity(this->enemyIDs.back(), "swarmFSM");
