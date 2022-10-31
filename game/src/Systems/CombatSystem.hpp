@@ -133,7 +133,7 @@ public:
 				if (distance <= 20.f)
 				{
 					swarm.life -= combat.spinHit;
-					return true;
+					
 				}
 			};
 			view.each(foo);
