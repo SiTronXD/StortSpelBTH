@@ -48,7 +48,7 @@ public:
 		combat.hitTimer = std::chrono::system_clock::now() - combat.timer;
 		if (spinning && combat.hitTimer.count() > 1.f)
 		{
-			auto enemyView = reg.view<SwarmComponent, Transform>();
+			auto enemyView = reg.view<SwarmComponent, Transform>(entt::exclude<Inactive>);
 			auto enemyFoo = [&](SwarmComponent& swarm, Transform& swarmTrans)
 			{
 				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
