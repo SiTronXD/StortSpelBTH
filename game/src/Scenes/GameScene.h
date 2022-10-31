@@ -27,8 +27,10 @@ public:
     virtual void init() override;
     virtual void start() override;
     virtual void update() override;
+    virtual void onTriggerStay(Entity e1, Entity e2) override;
 
 private:
     void aiExample();
+
 
 };

@@ -3,10 +3,6 @@ local playerMesh = resources.addMesh("assets/models/Standard_Run.fbx", "assets/t
 local playerAttackMesh = resources.addMesh("assets/models/Hurricane Kick.fbx", "assets/textures/playerMesh")
 print(playerMesh)
 
---local cam = scene.createEntity()
---scene.setComponent(cam, CompType.Camera)
---scene.setMainCamera(cam)
-
 -- Camera
 local cam = scene.createPrefab("scripts/prefabs/CameraPrefab.lua")
 scene.setMainCamera(cam)
@@ -21,6 +17,8 @@ local playerAnim =
 }
 scene.setComponent(playerID, CompType.Animation, playerAnim)
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
+scene.setComponent(playerID, CompType.Collider, { type = ColliderType.Capsule, radius = 2, height = 5 })
+scene.setComponent(playerID, CompType.Rigidbody, { mass = 1, gravityMult = 5, rotFactor = vector.fill(0) })
 scene.getComponent(cam, CompType.Script).playerID = playerID
 
 local player = scene.getComponent(playerID, CompType.Script)

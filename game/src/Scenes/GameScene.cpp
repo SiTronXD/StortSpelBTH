@@ -5,10 +5,13 @@
 #include "../Systems/CameraMovementSystem.hpp"
 #include "../Systems/AiMovementSystem.hpp"
 #include "../Systems/AiCombatSystem.hpp"
+#include "GameOverScene.h"
 
+#ifdef _CONSOLE
 // decreaseFps used for testing game with different framerates
 void decreaseFps();
 double heavyFunction(double value);
+#endif
 
 GameScene::GameScene() : playerID(-1)
 {
@@ -40,14 +43,19 @@ void GameScene::start()
 {
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+	
 	//int spinningMesh = this->getResourceManager()->addMesh("assets/models/Hurricane Kick.fbx");
 	//int runningMesh = this->getResourceManager()->addMesh("assets/models/run_forward.fbx");
 	this->setComponent<Combat>(playerID);
 	//this->setComponent<MeshComponent>(this->playerID, runningMesh);
 	this->createSystem<CombatSystem>(this, this->playerID);
 
+	//this->setComponent<Combat>(playerID, 100.0f);
+
 	uint32_t swordId = this->getResourceManager()->addMesh("assets/models/Sword.obj");
 	
+	this->setComponent<Collider>(playerID, Collider::createBox(glm::vec3(2.f)));
+
 	Entity sword = this->createEntity();
 	this->setComponent<MeshComponent>(sword);
 	this->getComponent<MeshComponent>(sword).meshID = swordId;
@@ -61,30 +69,37 @@ void GameScene::start()
 
 void GameScene::update()
 {
-	if (Input::isKeyPressed(Keys::E)) 
+	if (Input::isKeyPressed(Keys::E))
 	{
 		// Call when a room is cleared
-		roomHandler.roomCompleted();		
+		roomHandler.roomCompleted();
 	}
 
-	// Player entered a new room
-	if (roomHandler.checkPlayer(this->getComponent<Transform>(playerID).position))
+	/*if (this->hasComponents<Collider, Rigidbody>(this->playerID))
 	{
-		const std::vector<Entity>& entites = roomHandler.getFreeTiles();
-		for (Entity entity : entites)
-		{
-			// Hi
-		}
-	}
+		Rigidbody& rb = this->getComponent<Rigidbody>(this->playerID);
+		glm::vec3 vec = glm::vec3(Input::isKeyDown(Keys::LEFT) - Input::isKeyDown(Keys::RIGHT), 0.0f, Input::isKeyDown(Keys::UP) - Input::isKeyDown(Keys::DOWN));
+		float y = rb.velocity.y;
+		rb.velocity = vec * 10.0f;
+		rb.velocity.y = y + Input::isKeyPressed(Keys::SPACE) * 5.0f;
+	}*/
+
 	
 
-	decreaseFps();
+	// Switch scene if the player is dead
+	if (this->hasComponents<Combat>(this->playerID))
+	{
+		if (this->getComponent<Combat>(this->playerID).health <= 0.0f)
+		{
+			this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+		}
+	}
 
 	// Render HP bar UI
 	float hpPercent = 1.0f;
 	if (this->hasComponents<Combat>(this->playerID))
 	{
-		hpPercent =
+		hpPercent = 
 			this->getComponent<Combat>(this->playerID).health * 0.01f;
 	}
 	float xPos = -720;
@@ -96,6 +111,27 @@ void GameScene::update()
 	Scene::getUIRenderer()->renderTexture(xPos, yPos, xSize + 10, ySize + 10);
 	Scene::getUIRenderer()->setTexture(this->hpBarTextureID);
 	Scene::getUIRenderer()->renderTexture(xPos - (1.0 - hpPercent) * xSize * 0.5, yPos, xSize * hpPercent, ySize);
+	
+#ifdef _CONSOLE
+
+	static bool renderDebug = false;
+	if (ImGui::Begin("Debug"))
+	{
+		if (ImGui::Checkbox("Render debug shapes", &renderDebug))
+		{
+			this->getPhysicsEngine()->renderDebugShapes(renderDebug);
+		}
+		const glm::vec3& playerPos = this->getComponent<Transform>(playerID).position;
+		ImGui::Text("Player pos: (%d, %d, %d)", (int)playerPos.x, (int)playerPos.y, (int)playerPos.z);
+		ImGui::Separator();
+	}
+	ImGui::End();
+
+	roomHandler.imgui();
+
+	decreaseFps();
+#endif
+
 }
 
 void GameScene::aiExample() 
@@ -125,8 +161,11 @@ void GameScene::aiExample()
 	};
 	static SwarmFSM swarmFSM;
 	this->aiHandler->addFSM(&swarmFSM, "swarmFSM");
-	this->aiHandler->addImguiToFSM("swarmFSM", a);
 
+//TODO: Cause crash on second run, therefore disabled in distribution... 
+#ifdef _CONSOLE 
+    this->aiHandler->addImguiToFSM("swarmFSM", a);
+#endif 
 	int swarmModel = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 
 	int num_blobs = 6;
@@ -146,15 +185,29 @@ void GameScene::aiExample()
         this->swarmGroups.back()->members.push_back(this->swarmEnemies.back());
         this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->swarmEnemies.back()).group = this->swarmGroups.back();
 	}
-    
 }
 
+void GameScene::onTriggerStay(Entity e1, Entity e2)
+{
+	Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
+	
+	if (player == playerID) // player triggered a trigger :]
+	{
+		Entity other = e1 == player ? e2 : e1;
+		if (roomHandler.onPlayerTrigger(other))
+		{
+			printf("Hello?\n");
+		}
+	}
+}
+
+#ifdef _CONSOLE
 void decreaseFps()
 {
 	static double result = 1234567890.0;
 
 	static int num = 0;
-	if (ImGui::Begin("FPS decrease"))
+	if (ImGui::Begin("Debug"))
 	{
 		ImGui::Text("Fps %f", 1.f / Time::getDT());
 		ImGui::InputInt("Loops", &num);
@@ -185,3 +238,4 @@ double heavyFunction(double value)
 
 	return result;
 }
+#endif
