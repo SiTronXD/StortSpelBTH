@@ -11,7 +11,10 @@ class RoomHandler
 public:
 	static const float TILE_WIDTH;
 	static const uint32_t TILES_BETWEEN_ROOMS;
-
+	static const uint32_t NUM_BORDER;
+	static const uint32_t NUM_ONE_X_ONE;
+	static const uint32_t NUM_ONE_X_TWO;
+	static const uint32_t NUM_TWO_X_TWO;
 private:
 
 	enum TileUsage { Default, Border, Exit };
@@ -91,7 +94,10 @@ private:
 	void deactivateRoom(int index);
 
 	// Mesh IDs
-	std::unordered_map<Tile::Type, uint32_t> tileMeshIds;
+	std::vector<uint32_t> oneXOneMeshIds;
+	std::vector<uint32_t> borderMeshIds;
+	//std::vector<uint32_t> oneXTwoMeshIds;
+	//std::vector<uint32_t> twoXTwoMeshIds;
 	uint32_t openDoorMeshID;
 	uint32_t closedDoorMeshID;
 
