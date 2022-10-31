@@ -5,6 +5,7 @@
 #include "../Systems/CameraMovementSystem.hpp"
 #include "../Systems/AiMovementSystem.hpp"
 #include "../Systems/AiCombatSystem.hpp"
+#include "GameOverScene.h"
 
 // decreaseFps used for testing game with different framerates
 void decreaseFps();
@@ -40,8 +41,7 @@ void GameScene::start()
 {
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
-
-	this->setComponent<Combat>(playerID);
+	this->setComponent<Combat>(playerID, 100.0f);
 
 	uint32_t swordId = this->getResourceManager()->addMesh("assets/models/Sword.obj");
 	
@@ -58,15 +58,10 @@ void GameScene::start()
 
 void GameScene::update()
 {
-	if (Input::isKeyPressed(Keys::E)) 
+	if (Input::isKeyPressed(Keys::E))
 	{
 		// Call when a room is cleared
 		roomHandler.roomCompleted();
-		for(auto p: enemyIDs)
-		{
-			SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(p);
-			swarmComp.life = 0.0f;
-		}
 	}
 
 	// Player entered a new room
@@ -107,15 +102,32 @@ void GameScene::update()
 		//	// Hi
 		//}
 	}
-	
+
+	/*if (this->hasComponents<Collider, Rigidbody>(this->playerID))
+	{
+		Rigidbody& rb = this->getComponent<Rigidbody>(this->playerID);
+		glm::vec3 vec = glm::vec3(Input::isKeyDown(Keys::LEFT) - Input::isKeyDown(Keys::RIGHT), 0.0f, Input::isKeyDown(Keys::UP) - Input::isKeyDown(Keys::DOWN));
+		float y = rb.velocity.y;
+		rb.velocity = vec * 10.0f;
+		rb.velocity.y = y + Input::isKeyPressed(Keys::SPACE) * 5.0f;
+	}*/
 
 	decreaseFps();
+
+	// Switch scene if the player is dead
+	if (this->hasComponents<Combat>(this->playerID))
+	{
+		if (this->getComponent<Combat>(this->playerID).health <= 0.0f)
+		{
+			this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+		}
+	}
 
 	// Render HP bar UI
 	float hpPercent = 1.0f;
 	if (this->hasComponents<Combat>(this->playerID))
 	{
-		hpPercent =
+		hpPercent = 
 			this->getComponent<Combat>(this->playerID).health * 0.01f;
 	}
 	float xPos = -720;
@@ -156,8 +168,11 @@ void GameScene::aiExample()
 	};
 	static SwarmFSM swarmFSM;
 	this->aiHandler->addFSM(&swarmFSM, "swarmFSM");
-	this->aiHandler->addImguiToFSM("swarmFSM", a);
 
+//TODO: Cause crash on second run, therefore disabled in distribution... 
+#ifdef _CONSOLE 
+    this->aiHandler->addImguiToFSM("swarmFSM", a);
+#endif 
 
 	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 	this->swarmGroups.push_back(new SwarmGroup);
