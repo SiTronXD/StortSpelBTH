@@ -210,10 +210,9 @@ void GameScene::aiExample()
         
 	};
 	static SwarmFSM swarmFSM;
-	//static int c = 0; 
-	//if(c == 0) {this->aiHandler->addFSM(&swarmFSM, "swarmFSM");}
+
 	this->aiHandler->addFSM(&swarmFSM, "swarmFSM");
-	//c++;
+
 	
 
 //TODO: Cause crash on second run, therefore disabled in distribution... 
@@ -300,10 +299,8 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 
 				//Temporary enemie reset
 				SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs[idx]);
-				FSMAgentComponent& agentComp = this->getComponent<FSMAgentComponent>(this->enemyIDs[idx]);
 				transform.scale.y = 1.0f;
 				swarmComp.life = swarmComp.FULL_HEALTH;
-				swarmComp.group->huntTimer = swarmComp.group->huntTimerOrig;
 
 				idx++;
                 counter++;

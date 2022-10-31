@@ -10,9 +10,7 @@ struct SwarmComponent
 	int life = FULL_HEALTH;
 	float speed = 10;
 
-	float deathAnimTimer = 1.0f;
-	float alertAnimTimer = 1.0f;
-	float timer = deathAnimTimer;
+	float deathAnimSpeed = 1.0f;
 
     float sightRadius	= 70;
 	float attackRange	= 10;
