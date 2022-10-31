@@ -171,6 +171,13 @@ void RoomHandler::generate()
 #endif // _CONSOLE
 
 	this->rooms[this->activeIndex].finished = true;
+	for (int i = 0; i < 4; i++)
+	{
+		if (this->rooms[this->activeIndex].doors[i] != -1)
+		{
+			this->scene->setScriptComponent(this->rooms[this->activeIndex].doors[i], "scripts/opendoor.lua");
+		}
+	}
 }
 
 const std::vector<Entity>& RoomHandler::getFreeTiles()
@@ -639,8 +646,6 @@ bool RoomHandler::checkRoom(int index, Entity otherEntity)
 		// Will also skip invalid doors (-1)
 		if (otherEntity == id)
 		{
-			const Collider& col = this->scene->getComponent<Collider>(id);
-
 			// Entered next room
 			if (index == this->nextIndex)
 			{

@@ -51,15 +51,7 @@ void GameScene::start()
 	//this->setComponent<MeshComponent>(this->playerID, runningMesh);
 	this->createSystem<CombatSystem>(this, this->playerID);
 
-	//this->setComponent<Combat>(playerID, 100.0f);
 
-	uint32_t swordId = this->getResourceManager()->addMesh("assets/models/Sword.obj");
-	
-	//this->setComponent<Collider>(playerID, Collider::createBox(glm::vec3(2.f)));
-
-	Entity sword = this->createEntity();
-	this->setComponent<MeshComponent>(sword);
-	this->getComponent<MeshComponent>(sword).meshID = swordId;
     // Ai management 
     this->aiHandler = this->getAIHandler();
 	this->aiHandler->init(this->getSceneHandler());
