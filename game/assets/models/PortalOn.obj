@@ -1,6 +1,6 @@
 # This file uses centimeters as units for non-parametric coordinates.
 
-mtllib Portal.mtl
+mtllib PortalOn.mtl
 v -6.050115 6.474407 1.063024
 v -0.000005 6.474407 1.063024
 v -6.050115 12.524518 1.063024

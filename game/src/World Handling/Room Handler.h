@@ -97,8 +97,7 @@ private:
 	std::vector<uint32_t> borderMeshIds;
 	//std::vector<uint32_t> oneXTwoMeshIds;
 	//std::vector<uint32_t> twoXTwoMeshIds;
-	uint32_t openDoorMeshID;
-	uint32_t closedDoorMeshID;
+	uint32_t doorMeshID;
 
 	// Other
 	void reset();

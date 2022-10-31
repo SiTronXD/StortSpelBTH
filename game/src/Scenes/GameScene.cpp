@@ -76,6 +76,11 @@ void GameScene::update()
 		// Call when a room is cleared
 		roomHandler.roomCompleted();
 		this->numRoomsCleared++;
+
+		if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+		{
+			this->getComponent<MeshComponent>(portal).meshID = portalOnMesh;
+		}
 	}
 
 
@@ -321,7 +326,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 			}
 		}
 
-		if (other == portal && numRoomsCleared == this->roomHandler.getNumRooms() - 1) // -1 not counting start room
+		if (other == portal && numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
 		{
 			this->switchScene(new GameScene(), "scripts/gamescene.lua");
 		}
@@ -333,13 +338,15 @@ void GameScene::createPortal()
 	glm::vec3 portalTriggerDims(6.f, 18.f, 1.f);
 	glm::vec3 portalBlockDims(3.f, 18.f, 3.f);
 
-	uint32_t portalMesh = this->getResourceManager()->addMesh("assets/models/Portal.obj");
+	portalOffMesh = this->getResourceManager()->addMesh("assets/models/PortalOff.obj");
+	portalOnMesh = this->getResourceManager()->addMesh("assets/models/PortalOn.obj");
+
 	portal = this->createEntity();
 	this->getComponent<Transform>(portal).position = this->roomHandler.getExitRoom().position;
 	this->setComponent<Collider>(portal, Collider::createBox(portalTriggerDims, true));
 
 	this->setComponent<MeshComponent>(portal);
-	this->getComponent<MeshComponent>(portal).meshID = portalMesh;
+	this->getComponent<MeshComponent>(portal).meshID = portalOffMesh;
 
 	Entity collider1 = this->createEntity();
 	this->getComponent<Transform>(collider1).position = this->getComponent<Transform>(portal).position;

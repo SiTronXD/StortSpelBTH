@@ -22,7 +22,8 @@ private:
 
     uint32_t hpBarBackgroundTextureID;
     uint32_t hpBarTextureID;
-
+    uint32_t portalOffMesh;
+    uint32_t portalOnMesh;
 public:
     GameScene();
     virtual ~GameScene();
