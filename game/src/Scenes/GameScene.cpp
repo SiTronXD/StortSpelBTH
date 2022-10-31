@@ -225,7 +225,7 @@ void GameScene::aiExample()
 
 	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 	
-    int numOfGroups = 3;
+    int numOfGroups = 4;
 	int group_size = 3;
     for(size_t j = 0; j < numOfGroups; j++)
     {
