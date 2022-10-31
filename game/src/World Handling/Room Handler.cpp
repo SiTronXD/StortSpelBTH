@@ -9,7 +9,7 @@ const uint32_t RoomHandler::NUM_ONE_X_TWO = 0;
 const uint32_t RoomHandler::NUM_TWO_X_TWO = 0;
 
 RoomHandler::RoomHandler()
-	:scene(nullptr), resourceMan(nullptr), hasDoor{},
+	:scene(nullptr), hasDoor{false, false, false, false},
 	activeIndex(0), nextIndex(-1), floor(-1),
 	openDoorMeshID(0), closedDoorMeshID(0)
 {
@@ -24,7 +24,6 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize,
 	roomSize = 15;
 
 	this->scene = scene;
-	this->resourceMan = resourceMan;
 
 	this->roomGenerator.init(roomSize, tileTypes);
 	this->roomLayout.setRoomDistance(TILE_WIDTH * roomSize + TILE_WIDTH * TILES_BETWEEN_ROOMS);	
@@ -159,7 +158,7 @@ void RoomHandler::generate()
 				this->deactivateRoom(i); 
 			}
 		}
-		this->showPaths(false);
+		this->showPaths(true);
 	}
 #else
 	for (int i = 0; i < (int)this->rooms.size(); i++)
@@ -169,11 +168,9 @@ void RoomHandler::generate()
 			this->deactivateRoom(i);
 		}
 	}
-	this->showPaths(false);
+	this->showPaths(true);
 
 #endif // _CONSOLE
-
-	this->closeDoors(this->activeIndex);
 }
 
 const std::vector<Entity>& RoomHandler::getFreeTiles()
@@ -197,6 +194,11 @@ const RoomHandler::Room& RoomHandler::getExitRoom() const
 	}
 
 	return this->rooms[0];
+}
+
+int RoomHandler::getNumRooms() const
+{
+	return (int)this->rooms.size();
 }
 
 void RoomHandler::createDoors(int roomIndex)
@@ -579,6 +581,7 @@ Entity RoomHandler::createTileEntity(int tileIndex, TileUsage usage)
 	Transform& transform = this->scene->getComponent<Transform>(pieceID);
 	transform.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE);
 	transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
+	transform.rotation.y = (rand() % 4) * 90.f;
 
 	return pieceID;
 }
@@ -602,7 +605,9 @@ Entity RoomHandler::createPathEntity()
 	this->scene->setComponent<MeshComponent>(entity);
 	this->scene->getComponent<MeshComponent>(entity).meshID = (int)this->oneXOneMeshIds[ rand() % NUM_ONE_X_ONE];
 	
-	this->scene->getComponent<Transform>(entity).scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE) * TILE_WIDTH;
+	Transform& transform = this->scene->getComponent<Transform>(entity);
+	transform.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE) * TILE_WIDTH;
+	transform.rotation.y = (rand() % 4) * 90.f;
 
 	return entity;
 }
@@ -613,9 +618,10 @@ Entity RoomHandler::createPathBorderEntity(const glm::vec3& position)
 	this->scene->setComponent<MeshComponent>(entity);
 	this->scene->getComponent<MeshComponent>(entity).meshID = (int)this->borderMeshIds[rand() % NUM_BORDER];
 
-	Transform& tra = this->scene->getComponent<Transform>(entity);
-	tra.position = position;
-	tra.scale *= RoomGenerator::DEFAULT_TILE_SCALE * TILE_WIDTH;
+	Transform& transform = this->scene->getComponent<Transform>(entity);
+	transform.position = position;
+	transform.scale *= RoomGenerator::DEFAULT_TILE_SCALE * TILE_WIDTH;
+	transform.rotation.y = (rand() % 4) * 90.f;
 
 	return entity;
 }

@@ -51,7 +51,6 @@ private:
 
 	// Scene
 	Scene* scene;
-	ResourceManager* resourceMan;
 
 	// Layout generation
 	RoomLayout roomLayout;
@@ -126,4 +125,5 @@ public:
 	const std::vector<Entity>& getFreeTiles();
 	const RoomData::Type& getActiveRoomType() const;
 	const Room& getExitRoom() const;
+	int getNumRooms() const;
 };

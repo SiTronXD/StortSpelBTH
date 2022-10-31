@@ -14,6 +14,9 @@ private:
     Entity playerID;
     Entity portal;
 
+    int numRoomsCleared;
+    bool newRoomFrame;
+
     std::vector<int> enemyIDs;
     std::vector<SwarmGroup*> swarmGroups;
 
