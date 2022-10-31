@@ -168,6 +168,10 @@ void GameScene::aiExample()
         };
 
         //TEMP 
+
+        if(ImGui::Button("SWITCHsCENE")){
+            this->switchScene(new GameScene(), "scripts/gamescene.lua");            
+        }
         std::string playerString = "playerID";
         int playerID;
         this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerString);
