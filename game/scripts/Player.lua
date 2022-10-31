@@ -104,7 +104,7 @@ function script:update(dt)
             anim.timer = 0.0
             anim.timeScale = 0.0
         end
-        self.transform.position.y = 0
+
         scene.setComponent(self.ID, CompType.Animation, anim)
     end
 
