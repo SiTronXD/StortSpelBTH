@@ -22,14 +22,20 @@ public:
 		};
 	};
 
-	static const int MIN_MAIN_ROOMS = 2;
+	static const int MIN_MAIN_ROOMS = 3;
 	static const int MAX_MAIN_ROOMS = 4;
 
 	static const int MIN_NUM_BRANCHES = 1;
-	static const int MAX_NUM_BRANCHES = 3; // Cannot exceed (MAX_MAIN_ROOMS * 2)
+	static const int MAX_NUM_BRANCHES = 3; // Will cap at numMainRooms
 
 	static const int MIN_BRANCH_SIZE = 1;
 	static const int MAX_BRANCH_SIZE = 2;
+
+	// Total minimum rooms: 
+	// MIN_MAIN_ROOMS + MIN_NUM_BRANCHES * MIN_BRANCH_SIZE
+
+	// Total maximum rooms:
+	// MAX_MAIN_ROOMS + MAX_NUM_BRANCHES * MAX_BRANCH_SIZE
 
 private:
 	float distance;
