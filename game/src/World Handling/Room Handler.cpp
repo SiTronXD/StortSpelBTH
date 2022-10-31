@@ -13,7 +13,6 @@ RoomHandler::RoomHandler()
 	activeIndex(0), nextIndex(-1), floor(-1),
 	openDoorMeshID(0), closedDoorMeshID(0)
 {
-	srand((unsigned)time(0));
 }
 
 RoomHandler::~RoomHandler()
@@ -33,13 +32,13 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize,
 	this->borderMeshIds.resize(NUM_BORDER);
 	for (uint32_t i = 0; i < NUM_BORDER; i++)
 	{
-		this->borderMeshIds[i] = resourceMan->addMesh("assets/models/Tiles/Border/" + std::to_string(i + 1) + ".obj");
+		this->borderMeshIds[i] = resourceMan->addMesh("assets/models/Tiles/Border/" + std::to_string(i + 1u) + ".obj");
 	}
 
 	this->oneXOneMeshIds.resize(NUM_ONE_X_ONE);
 	for (uint32_t i = 0; i < NUM_ONE_X_ONE; i++)
 	{
-		this->oneXOneMeshIds[i] = resourceMan->addMesh("assets/models/Tiles/OneXOne/" + std::to_string(i + 1) + ".obj");
+		this->oneXOneMeshIds[i] = resourceMan->addMesh("assets/models/Tiles/OneXOne/" + std::to_string(i + 1u) + ".obj");
 	}
 
 	// OneXTwo
@@ -511,9 +510,14 @@ void RoomHandler::createColliders()
 
 	for (Entity entity : this->pathIds)
 	{
-		if (this->scene->getComponent<MeshComponent>(entity).meshID == this->borderMeshIds[0]) // temp
+		const int meshID = this->scene->getComponent<MeshComponent>(entity).meshID;
+		for (int i = 0; i < (int)borderMeshIds.size(); i++)
 		{
-			this->scene->setComponent<Collider>(entity, Collider::createBox(borderColDims));
+			if (meshID == (int)borderMeshIds[i])
+			{
+				this->scene->setComponent<Collider>(entity, Collider::createBox(borderColDims));
+				i = (int)borderMeshIds.size();
+			}
 		}
 	}
 

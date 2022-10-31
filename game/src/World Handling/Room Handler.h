@@ -31,7 +31,7 @@ private:
 		Room()
 			:doors{-1,-1,-1,-1}, doorTriggers{-1,-1,-1,-1},
 			connectingIndex{-1,-1,-1,-1}, finished(false), 
-			type(RoomData::INVALID)
+			type(RoomData::INVALID), position(0.f)
 		{		
 		}
 
