@@ -611,7 +611,12 @@ Entity RoomHandler::createPathEntity()
 {
 	Entity entity = this->scene->createEntity();
 	this->scene->setComponent<MeshComponent>(entity);
-	this->scene->getComponent<MeshComponent>(entity).meshID = (int)this->oneXOneMeshIds[ rand() % NUM_ONE_X_ONE];
+
+	int meshId;
+	if (rand() % 3 < 2) { meshId = (int)this->oneXOneMeshIds[0]; }
+	else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }
+
+	this->scene->getComponent<MeshComponent>(entity).meshID = meshId;
 	
 	Transform& transform = this->scene->getComponent<Transform>(entity);
 	transform.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE) * TILE_WIDTH;
