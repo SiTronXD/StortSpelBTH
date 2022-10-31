@@ -43,8 +43,14 @@ void GameScene::start()
 {
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+	
+	//int spinningMesh = this->getResourceManager()->addMesh("assets/models/Hurricane Kick.fbx");
+	//int runningMesh = this->getResourceManager()->addMesh("assets/models/run_forward.fbx");
+	this->setComponent<Combat>(playerID);
+	//this->setComponent<MeshComponent>(this->playerID, runningMesh);
+	this->createSystem<CombatSystem>(this, this->playerID);
 
-	this->setComponent<Combat>(playerID, 100.0f);
+	//this->setComponent<Combat>(playerID, 100.0f);
 
 	uint32_t swordId = this->getResourceManager()->addMesh("assets/models/Sword.obj");
 	

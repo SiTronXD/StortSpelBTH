@@ -24,6 +24,8 @@ function script:init()
 
     self.maxHP = 100.0
     self.currentHP = self.maxHP
+
+    self.animTimer = -1
     self.onGround = false
     self.active = true
 end
@@ -69,14 +71,42 @@ function script:update(dt)
     local anim = scene.getComponent(self.ID, CompType.Animation)
     local curMoveSqrd = self.moveDir * self.moveDir
     local curMoveSum = curMoveSqrd.x + curMoveSqrd.y + curMoveSqrd.z
-    if curMoveSum > 0.1
+
+    if (self.animTimer > -2)
     then
-        anim.timeScale = 1.0
-    else
-        anim.timer = 0.0
-        anim.timeScale = 0.0
+        self.animTimer = self.animTimer - dt
     end
-    scene.setComponent(self.ID, CompType.Animation, anim)
+    
+    if (input.isMouseButtonPressed(Mouse.LEFT) and self.animTimer < -1)
+    then
+        local meshChange = scene.getComponent(self.ID, CompType.Mesh)
+        meshChange = self.playerAttackMesh
+        scene.setComponent(self.ID, CompType.Mesh, meshChange)
+
+        local anim = scene.getComponent(self.ID, CompType.Animation)
+        anim.timeScale = 1.0
+
+        scene.setComponent(self.ID, CompType.Animation, anim)
+        self.animTimer = 2
+    elseif (self.animTimer < 0)
+    then
+        local meshChange = scene.getComponent(self.ID, CompType.Mesh)
+        meshChange = self.playerMesh
+        scene.setComponent(self.ID, CompType.Mesh, meshChange)
+
+        local anim = scene.getComponent(self.ID, CompType.Animation)
+        local curSpdSqrd = self.currentSpeed * self.currentSpeed
+        local curSpdSum = curSpdSqrd.x + curSpdSqrd.y + curSpdSqrd.z
+        if curMoveSum > 0.1
+        then
+            anim.timeScale = 1.0
+        else
+            anim.timer = 0.0
+            anim.timeScale = 0.0
+        end
+        self.transform.position.y = 0
+        scene.setComponent(self.ID, CompType.Animation, anim)
+    end
 
     self:rotate2(dt)
 end
@@ -117,17 +147,7 @@ function script:move2(deltaTime)
         rightVec * self.currentSpeed.x) * deltaTime
     
     -- Handle animation speed and timing
-    local anim = scene.getComponent(self.ID, CompType.Animation)
-    local curSpdSqrd = self.currentSpeed * self.currentSpeed
-    local curSpdSum = curSpdSqrd.x + curSpdSqrd.y + curSpdSqrd.z
-    if curSpdSum > 0
-    then
-        anim.timeScale = 1.0
-    else
-        anim.timer = 0.0
-        anim.timeScale = 0.0
-    end
-    scene.setComponent(self.ID, CompType.Animation, anim)
+
 end
 
 function script:rotate2(deltaTime)

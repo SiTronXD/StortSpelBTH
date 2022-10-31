@@ -2,6 +2,7 @@
 
 #include <vengine.h>
 #include "../Components/Combat.h"
+#include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include <string>
 
 class CombatSystem : public System
@@ -9,12 +10,13 @@ class CombatSystem : public System
 private:
 
 	Scene* scene;
-	bool gotHit = true;
+	Entity playerID;
+	bool spinning = false;
 
 public:
 
-	CombatSystem(Scene* scene, int playerID)
-		:scene(scene) 
+	CombatSystem(Scene* scene, Entity playerID)
+		: scene(scene), playerID(playerID)
 	{
 		if (scene->hasComponents<Combat>(playerID))
 		{
@@ -22,15 +24,6 @@ public:
 			combat.combos.emplace_back("Light Light ");
 			combat.combos.emplace_back("Light Heavy Light ");
 			combat.combos.emplace_back("Heavy Light Heavy ");
-			combat.health = 100.f;
-			combat.lightHit = 15.f;
-			combat.heavyHit = 20.f;
-			combat.comboLightHit = 30.f;
-			combat.comboMixHit = 40.f;
-			combat.comboHeavyHit = 50.f;
-			combat.lightAttackTime = 3.f;
-			combat.heavyAttackTime = 5.f;
-			combat.comboAttackTime = 7.f;
 		}
 	}
 
@@ -39,16 +32,36 @@ public:
 		auto view = reg.view<Combat>();
 		auto foo = [&](Combat& combat)
 		{
-			if (Input::isMouseButtonPressed(Mouse::LEFT) && gotHit == true)
+			if (Input::isMouseButtonPressed(Mouse::LEFT))
 			{
-				lightAttack(combat, gotHit);
+				//lightAttack(combat, gotHit);
+				spinAttack(reg, combat);
 			}
-			else if (Input::isMouseButtonPressed(Mouse::RIGHT) && gotHit == true)
-			{
-				heavyAttack(combat, gotHit);
-			}
+			//else if (Input::isMouseButtonPressed(Mouse::RIGHT) && gotHit == true)
+			//{
+			//	heavyAttack(combat, gotHit);
+			//}
 		};
 		view.each(foo);
+
+		Combat& combat = scene->getComponent<Combat>(playerID);
+		combat.hitTimer = std::chrono::system_clock::now() - combat.timer;
+		if (spinning && combat.hitTimer.count() > 1.f)
+		{
+			std::cout << combat.hitTimer.count() << std::endl;
+			auto enemyView = reg.view<SwarmComponent, Transform>();
+			auto enemyFoo = [&](SwarmComponent& swarm, Transform& swarmTrans)
+			{
+				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
+				float distance = glm::length(playerTrans.position - swarmTrans.position);
+				if (distance <= 20.f)
+				{
+					swarm.life -= combat.spinHit;
+				}
+			};
+			enemyView.each(enemyFoo);
+			spinning = false;
+		}
 
 		return false;
 	}
@@ -64,6 +77,12 @@ public:
 
 		switch (combat.activeAttack)
 		{
+		case spinActive:
+			if (combat.hitTimer.count() > combat.spinAttackTime + 1.f)
+			{
+				combat.activeAttack = noActive;
+			}
+			break;
 		case lightActive:
 			// If it takes too long between attacks, resets combo.
 			if (combat.hitTimer.count() > combat.lightAttackTime + 2.f)
@@ -94,6 +113,34 @@ public:
 				combat.activeAttack = noActive;
 			}
 		}
+	};
+
+	bool spinAttack(entt::registry& reg, Combat& combat)
+	{
+		checkActiveAttack(combat);
+
+		if (combat.activeAttack == noActive)
+		{
+			combat.hitTimer = std::chrono::duration<float>(combat.spinAttackTime);
+			combat.timer = std::chrono::system_clock::now();
+			spinning = true;
+			combat.activeAttack = spinActive;
+
+			auto view = reg.view<SwarmComponent, Transform>();
+			auto foo = [&](SwarmComponent& swarm, Transform& swarmTrans)
+			{
+				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
+				float distance = glm::length(playerTrans.position - swarmTrans.position);
+				if (distance <= 20.f)
+				{
+					swarm.life -= combat.spinHit;
+					return true;
+				}
+			};
+			view.each(foo);
+		}
+
+		return false;
 	};
 
 	bool lightAttack(Combat& combat, bool gotHit)
