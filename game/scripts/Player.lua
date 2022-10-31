@@ -18,9 +18,8 @@ function script:init()
 	self.turnSpeed = 200
 	self.timer = 0
     self.slowDown = 80
-    self.transform.position = vector(0, 10, 0)
+    self.transform.position = vector(0, 12, 0)
     self.transform.rotation = vector(0, 0, 0)
-    self.tempRotationY = 0
 
     self.maxHP = 100.0
     self.currentHP = self.maxHP
@@ -43,7 +42,7 @@ function script:update(dt)
     -- Check if grounded
     local payload = physics.raycast(self.transform.position, vector(0, -1, 0))
     if (payload) then
-        self.onGround = (self.transform.position - payload.hitPoint):length() < 5
+        self.onGround = (self.transform.position - payload.hitPoint):length() < 7.5
     end
 
     -- New movement using rigidbody
@@ -64,7 +63,7 @@ function script:update(dt)
     local rb = scene.getComponent(self.ID, CompType.Rigidbody)
     local y = rb.velocity.y
     rb.velocity = self.currentSpeed
-    rb.velocity.y = y + core.btoi(input.isKeyPressed(Keys.SPACE)) * core.btoi(self.onGround) * 7.5 * rb.gravityMult
+    rb.velocity.y = y + core.btoi(input.isKeyPressed(Keys.SPACE)) * core.btoi(self.onGround) * 6.5 * rb.gravityMult
     scene.setComponent(self.ID, CompType.Rigidbody, rb)
 
     -- Handle animation speed and timing
@@ -161,31 +160,23 @@ function script:rotate2(deltaTime)
     then
         self.transform.rotation.y = (camTransform.rotation.y + 180) + 45 * self.moveDir.x
         
-        -- Rotate because of player model
-        self.tempRotationY = self.transform.rotation.y + 180
+        self.transform.rotation.y = self.transform.rotation.y + 180
     elseif (self.moveDir.y < -0.5)
     then
         self.transform.rotation.y = camTransform.rotation.y - 45 * self.moveDir.x
         
-        -- Rotate because of player model
-        self.tempRotationY = self.transform.rotation.y + 180
+        self.transform.rotation.y = self.transform.rotation.y + 180
     elseif (self.moveDir.x > 0.5) 
     then
         self.transform.rotation.y = camTransform.rotation.y - 90
         
-        -- Rotate because of player model
-        self.tempRotationY = self.transform.rotation.y + 180
+        self.transform.rotation.y = self.transform.rotation.y + 180
     elseif (self.moveDir.x < -0.5)
     then
         self.transform.rotation.y = camTransform.rotation.y + 90
         
-        -- Rotate because of player model
-        self.tempRotationY = self.transform.rotation.y + 180
+        self.transform.rotation.y = self.transform.rotation.y + 180
     end
-
-    self.transform.rotation.y = self.tempRotationY
-    self.transform.rotation.x = 0.0
-    self.transform.rotation.z = 0.0
     
     --print(self.moveDir.x .. " " .. self.moveDir.y)
 end

@@ -48,7 +48,6 @@ public:
 		combat.hitTimer = std::chrono::system_clock::now() - combat.timer;
 		if (spinning && combat.hitTimer.count() > 1.f)
 		{
-			std::cout << combat.hitTimer.count() << std::endl;
 			auto enemyView = reg.view<SwarmComponent, Transform>();
 			auto enemyFoo = [&](SwarmComponent& swarm, Transform& swarmTrans)
 			{

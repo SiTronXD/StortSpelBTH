@@ -30,7 +30,6 @@ void GameScene::init()
 {
 	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 	
-
 	roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
 	roomHandler.generate();
 	roomHandler.roomCompleted(); // auto completes first room
@@ -57,7 +56,7 @@ void GameScene::start()
 
 	uint32_t swordId = this->getResourceManager()->addMesh("assets/models/Sword.obj");
 	
-	this->setComponent<Collider>(playerID, Collider::createBox(glm::vec3(2.f)));
+	//this->setComponent<Collider>(playerID, Collider::createBox(glm::vec3(2.f)));
 
 	Entity sword = this->createEntity();
 	this->setComponent<MeshComponent>(sword);
@@ -233,6 +232,9 @@ void GameScene::aiExample()
         this->setComponent<MeshComponent>(this->enemyIDs.back(), swarm);
         this->setComponent<AiMovement>(this->enemyIDs.back());
         this->setComponent<AiCombat>(this->enemyIDs.back());
+        this->setComponent<Collider>(this->enemyIDs.back(), Collider::createBox(glm::vec3(5.0f, 5.0f, 5.0f)));
+        this->setComponent<Rigidbody>(this->enemyIDs.back());
+		this->getComponent<Rigidbody>(this->enemyIDs.back()).rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
 		this->aiHandler->createAIEntity(this->enemyIDs.back(), "swarmFSM");
 		this->swarmGroups.back()->members.push_back(this->enemyIDs.back());
         this->setInactive(this->enemyIDs.back());

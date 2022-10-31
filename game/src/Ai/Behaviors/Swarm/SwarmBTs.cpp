@@ -198,6 +198,7 @@ BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 	SwarmComponent& thisSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	Transform playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(player);
 	SwarmComponent& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+	Rigidbody& rigidbody = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
 
 	if (glm::length((thisTransform.position - playerTransform.position)) > thisSwarmComp.sightRadius)
 	{
@@ -209,7 +210,7 @@ BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 
 	 glm::vec3 dir = -glm::normalize(playerTransform.position- thisTransform.position);
 	 dir.y = 0;
-	 thisTransform.position += dir * Time::getDT() * swarmComp.speed;
+	 rigidbody.velocity = dir * swarmComp.speed;
 
 	//TODO BTStatus: failure not returned.
 	//TODO : Check if cornered, return failure
@@ -239,13 +240,14 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 	Transform& thisTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Transform& playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(getPlayerID(sceneHandler));
 	SwarmComponent& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
-
-     thisTransform.rotation.y = lookAtY(thisTransform, playerTransform);
-	 thisTransform.updateMatrix();
+	Rigidbody& rigidbody = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
+    thisTransform.rotation.y = lookAtY(thisTransform, playerTransform);
+	thisTransform.updateMatrix();
 
 	 glm::vec3 dir = glm::normalize(playerTransform.position- thisTransform.position);
 	 dir.y = 0;
-     thisTransform.position += dir * Time::getDT() * swarmComp.speed;
+	 rigidbody.velocity = dir * swarmComp.speed;
+
 
     
 
