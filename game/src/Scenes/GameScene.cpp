@@ -224,24 +224,30 @@ void GameScene::aiExample()
 #endif 
 
 	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
-	this->swarmGroups.push_back(new SwarmGroup);
-    for (size_t i = 0; i < 10; i++)
+	
+    int numOfGroups = 3;
+	int group_size = 3;
+    for(size_t j = 0; j < numOfGroups; j++)
     {
-		this->enemyIDs.push_back(this->createEntity());
-        this->setComponent<MeshComponent>(this->enemyIDs.back(), swarm);
-        this->setComponent<AiMovement>(this->enemyIDs.back());
-        this->setComponent<AiCombat>(this->enemyIDs.back());
-        this->setComponent<Collider>(this->enemyIDs.back(), Collider::createBox(glm::vec3(5.0f, 5.0f, 5.0f)));
-        this->setComponent<Rigidbody>(this->enemyIDs.back());
-		this->getComponent<Rigidbody>(this->enemyIDs.back()).rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
-		this->aiHandler->createAIEntity(this->enemyIDs.back(), "swarmFSM");
-		this->swarmGroups.back()->members.push_back(this->enemyIDs.back());
-        this->setInactive(this->enemyIDs.back());
-		this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->enemyIDs.back()).group = this->swarmGroups.back();
-		SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs.back());
-		swarmComp.life = 0.0f;
-    }
+        this->swarmGroups.push_back(new SwarmGroup);
+        for (size_t i = 0; i < group_size; i++)
+        {
+            this->enemyIDs.push_back(this->createEntity());
+            this->setComponent<MeshComponent>(this->enemyIDs.back(), swarm);
+            this->setComponent<AiMovement>(this->enemyIDs.back());
+            this->setComponent<AiCombat>(this->enemyIDs.back());
+            this->setComponent<Collider>(this->enemyIDs.back(), Collider::createBox(glm::vec3(5.0f, 5.0f, 5.0f)));
+            this->setComponent<Rigidbody>(this->enemyIDs.back());
+            this->getComponent<Rigidbody>(this->enemyIDs.back()).rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+            this->aiHandler->createAIEntity(this->enemyIDs.back(), "swarmFSM");
+            this->swarmGroups.back()->members.push_back(this->enemyIDs.back());
+            this->setInactive(this->enemyIDs.back());
+            this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->enemyIDs.back()).group = this->swarmGroups.back();
+            SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs.back());
+            swarmComp.life = 0.0f;
+        }
 
+    }
 	/*int swarmModel = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 
 	int num_blobs = 6;
