@@ -8,6 +8,11 @@ Entity getPlayerID(SceneHandler*sceneHandler);
 
 struct SwarmGroup
 {
+    private: 
+    static int getNewId; 
+    public: 
+    SwarmGroup() {myId = getNewId++;}
+    int myId;  
 	int max;
 	bool inCombat = false;
 	float huntTimer;
