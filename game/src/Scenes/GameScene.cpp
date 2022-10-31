@@ -13,7 +13,8 @@ void decreaseFps();
 double heavyFunction(double value);
 #endif
 
-GameScene::GameScene() : playerID(-1)
+GameScene::GameScene() 
+	:playerID(-1), portal(-1)
 {
 }
 
@@ -32,6 +33,7 @@ void GameScene::init()
 
 	roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
 	roomHandler.generate();
+	createPortal();
 
 	this->hpBarBackgroundTextureID =
 		this->getResourceManager()->addTexture("assets/textures/UI/hpBarBackground.png");
@@ -192,7 +194,38 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 		{
 			printf("Hello?\n");
 		}
+
+		if (other == portal) // && all rooms cleared
+		{
+			this->switchScene(new GameScene(), "scripts/gamescene.lua");
+		}
 	}
+}
+
+void GameScene::createPortal()
+{
+	glm::vec3 portalTriggerDims(6.f, 18.f, 1.f);
+	glm::vec3 portalBlockDims(3.f, 18.f, 3.f);
+
+	uint32_t portalMesh = this->getResourceManager()->addMesh("assets/models/Portal.obj");
+	portal = this->createEntity();
+	this->getComponent<Transform>(portal).position = this->roomHandler.getExitRoom().position;
+	this->setComponent<Collider>(portal, Collider::createBox(portalTriggerDims, true));
+
+	this->setComponent<MeshComponent>(portal);
+	this->getComponent<MeshComponent>(portal).meshID = portalMesh;
+
+	Entity collider1 = this->createEntity();
+	this->getComponent<Transform>(collider1).position = this->getComponent<Transform>(portal).position;
+	this->getComponent<Transform>(collider1).position.x += 9.f;
+	this->getComponent<Transform>(collider1).position.y += 9.f;
+	this->setComponent<Collider>(collider1, Collider::createBox(portalBlockDims));
+
+	Entity collider2 = this->createEntity();
+	this->getComponent<Transform>(collider2).position = this->getComponent<Transform>(portal).position;
+	this->getComponent<Transform>(collider2).position.x -= 9.f;
+	this->getComponent<Transform>(collider2).position.y += 9.f;
+	this->setComponent<Collider>(collider2, Collider::createBox(portalBlockDims));
 }
 
 #ifdef _CONSOLE

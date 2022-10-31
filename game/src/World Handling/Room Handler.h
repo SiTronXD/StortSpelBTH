@@ -27,9 +27,13 @@ private:
 	{
 		Room()
 			:doors{-1,-1,-1,-1}, doorTriggers{-1,-1,-1,-1},
-			connectingIndex{-1,-1,-1,-1}, finished(false)
+			connectingIndex{-1,-1,-1,-1}, finished(false), 
+			type(RoomData::INVALID)
 		{		
 		}
+
+		glm::vec3 position;
+		RoomData::Type type;
 
 		std::vector<Entity> tiles;
 		std::vector<Entity> borders;
@@ -114,4 +118,6 @@ public:
 	bool onPlayerTrigger(Entity otherEntity);
 
 	const std::vector<Entity>& getFreeTiles();
+	const RoomData::Type& getActiveRoomType() const;
+	const Room& getExitRoom() const;
 };

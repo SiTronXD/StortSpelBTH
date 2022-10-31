@@ -74,7 +74,10 @@ void RoomHandler::generate()
 
 	for (int i = 0; i < numRooms; i++)
 	{
-		const RoomLayout::RoomData& roomRef = this->roomLayout.getRoom(i);
+		const RoomData& roomRef = this->roomLayout.getRoom(i);
+
+		this->rooms[i].position = roomRef.position;
+		this->rooms[i].type = roomRef.type;
 
 		// Save connecting indices
 		this->rooms[i].connectingIndex[0] = roomRef.left;
@@ -101,7 +104,7 @@ void RoomHandler::generate()
 		this->rooms[i].borders.reserve(size_t(this->roomGenerator.getNrBorders()));
 		for (int j = 0; j < this->roomGenerator.getNrBorders(); j++) 
 		{
-			this->rooms[i].borders.emplace_back(this->createTileEntity(j, TileUsage::Border));
+			//this->rooms[i].borders.emplace_back(this->createTileEntity(j, TileUsage::Border));
 		}
 
 		// Save exit paths
@@ -168,9 +171,27 @@ const std::vector<Entity>& RoomHandler::getFreeTiles()
 	return this->rooms[this->activeIndex].tiles;
 }
 
+const RoomData::Type& RoomHandler::getActiveRoomType() const
+{
+	return this->rooms[this->activeIndex].type;
+}
+
+const RoomHandler::Room& RoomHandler::getExitRoom() const
+{
+	for (const RoomHandler::Room& room : this->rooms)
+	{
+		if (room.type == RoomData::Type::EXIT_ROOM)
+		{
+			return room;
+		}
+	}
+
+	return this->rooms[0];
+}
+
 void RoomHandler::createDoors(int roomIndex)
 {
-	const RoomLayout::RoomData& curRoom = this->roomLayout.getRoom(roomIndex);
+	const RoomData& curRoom = this->roomLayout.getRoom(roomIndex);
 	const glm::vec3& roomPos = curRoom.position;
 
 	Room& curRoomIds = this->rooms[roomIndex];
@@ -365,7 +386,9 @@ void RoomHandler::generatePathways()
 				{
 					if (m != j)
 					{
-						const glm::vec3 mPosToOffset = offsetPos - this->scene->getComponent<Transform>(this->pathIds[m]).position;
+						glm::vec3 mPosToOffset = offsetPos - this->scene->getComponent<Transform>(this->pathIds[m]).position;
+						mPosToOffset.y = 0.f;
+
 						if (glm::dot(mPosToOffset, mPosToOffset) < (TILE_WIDTH * TILE_WIDTH))
 						{
 							canPlace = false;
