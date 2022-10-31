@@ -1,5 +1,5 @@
 --local playerMesh = resources.addMesh("assets/models/Amogus/source/1.fbx")
-local playerMesh = resources.addMesh("assets/models/run_forward.fbx", "assets/textures/playerMesh")
+local playerMesh = resources.addMesh("assets/models/Standard_Run.fbx", "assets/textures/playerMesh")
 local playerAttackMesh = resources.addMesh("assets/models/Hurricane Kick.fbx", "assets/textures/playerMesh")
 print(playerMesh)
 

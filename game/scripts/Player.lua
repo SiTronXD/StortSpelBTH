@@ -25,7 +25,7 @@ function script:init()
     self.maxHP = 100.0
     self.currentHP = self.maxHP
 
-    self.animTimer = 0
+    self.animTimer = -1
 end
 
 function script:update(dt)
@@ -128,12 +128,12 @@ function script:move2(deltaTime)
         rightVec * self.currentSpeed.x) * deltaTime
     
     -- Handle animation speed and timing
-    if (self.animTimer > 0)
+    if (self.animTimer > -2)
     then
         self.animTimer = self.animTimer - deltaTime
     end
 
-    if (self.animTimer < 2)
+    if (self.animTimer < 0)
     then
         local meshChange = scene.getComponent(self.ID, CompType.Mesh)
         meshChange = self.playerMesh
@@ -149,18 +149,21 @@ function script:move2(deltaTime)
             anim.timer = 0.0
             anim.timeScale = 0.0
         end
+        self.transform.position.y = 0
         scene.setComponent(self.ID, CompType.Animation, anim)
     end
-    if (self.animTimer <= 0 and input.isMouseButtonPressed(Mouse.LEFT))
+    if (input.isMouseButtonPressed(Mouse.LEFT) and self.animTimer < -1)
     then
         local meshChange = scene.getComponent(self.ID, CompType.Mesh)
         meshChange = self.playerAttackMesh
         scene.setComponent(self.ID, CompType.Mesh, meshChange)
-        print("hej")
+
         local anim = scene.getComponent(self.ID, CompType.Animation)
         local curSpdSqrd = self.currentSpeed * self.currentSpeed
         local curSpdSum = curSpdSqrd.x + curSpdSqrd.y + curSpdSqrd.z
-        anim.timeScale = 20.0
+        anim.timeScale = 1.0
+
+        self.transform.position.y = -5
 
         scene.setComponent(self.ID, CompType.Animation, anim)
         self.animTimer = 2

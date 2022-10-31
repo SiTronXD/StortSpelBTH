@@ -10,8 +10,8 @@ class CombatSystem : public System
 private:
 
 	Scene* scene;
-	bool gotHit = true;
 	Entity playerID;
+	bool spinning = false;
 
 public:
 
@@ -43,6 +43,25 @@ public:
 			//}
 		};
 		view.each(foo);
+
+		Combat& combat = scene->getComponent<Combat>(playerID);
+		combat.hitTimer = std::chrono::system_clock::now() - combat.timer;
+		if (spinning && combat.hitTimer.count() > 1.f)
+		{
+			std::cout << combat.hitTimer.count() << std::endl;
+			auto enemyView = reg.view<SwarmComponent, Transform>();
+			auto enemyFoo = [&](SwarmComponent& swarm, Transform& swarmTrans)
+			{
+				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
+				float distance = glm::length(playerTrans.position - swarmTrans.position);
+				if (distance <= 20.f)
+				{
+					swarm.life -= combat.spinHit;
+				}
+			};
+			enemyView.each(enemyFoo);
+			spinning = false;
+		}
 
 		return false;
 	}
@@ -104,13 +123,15 @@ public:
 		{
 			combat.hitTimer = std::chrono::duration<float>(combat.spinAttackTime);
 			combat.timer = std::chrono::system_clock::now();
+			spinning = true;
+			combat.activeAttack = spinActive;
 
 			auto view = reg.view<SwarmComponent, Transform>();
 			auto foo = [&](SwarmComponent& swarm, Transform& swarmTrans)
 			{
 				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
 				float distance = glm::length(playerTrans.position - swarmTrans.position);
-				if (distance <= 15.f)
+				if (distance <= 20.f)
 				{
 					swarm.life -= combat.spinHit;
 					return true;
