@@ -478,7 +478,7 @@ void RoomHandler::createColliders()
 		glm::vec3(0.f, halfTile, offset)
 	};
 
-	const glm::vec3 borderColDims(halfTile, TILE_WIDTH, halfTile);
+	const glm::vec3 borderColDims(halfTile, TILE_WIDTH * 2.f, halfTile);
 	const glm::vec3 doorColDims(halfTile, TILE_WIDTH, TILE_WIDTH * 0.1f);
 	const glm::vec3 doorTrigCol(halfTile, halfTile, TILE_WIDTH - offset);
 
