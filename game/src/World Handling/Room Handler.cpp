@@ -171,6 +171,8 @@ void RoomHandler::generate()
 	this->showPaths(true);
 
 #endif // _CONSOLE
+
+	this->rooms[this->activeIndex].finished = true;
 }
 
 const std::vector<Entity>& RoomHandler::getFreeTiles()
@@ -559,7 +561,8 @@ Entity RoomHandler::createTileEntity(int tileIndex, TileUsage usage)
 	{
 	case RoomHandler::Default:
 		tile = this->roomGenerator.getTile(tileIndex);
-		meshId = (int)this->oneXOneMeshIds[rand() % NUM_ONE_X_ONE];
+		if (rand() % 3 < 2) {meshId = (int)this->oneXOneMeshIds[0]; }
+		else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }
 		break;
 	case RoomHandler::Border:
 		tile = this->roomGenerator.getBorder(tileIndex);

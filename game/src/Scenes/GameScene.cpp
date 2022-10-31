@@ -32,7 +32,6 @@ void GameScene::init()
 	
 	roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
 	roomHandler.generate();
-	roomHandler.roomCompleted(); // auto completes first room
 	createPortal();
 
 	this->hpBarBackgroundTextureID =
