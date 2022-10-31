@@ -38,7 +38,7 @@ public:
 	static const int MAX_NUM_BRANCHES = 2; // Will cap at numMainRooms
 
 	static const int MIN_BRANCH_SIZE = 1;
-	static const int MAX_BRANCH_SIZE = 2;
+	static const int MAX_BRANCH_SIZE = 1;
 
 	// Total minimum rooms: 
 	// MIN_MAIN_ROOMS + MIN_NUM_BRANCHES * MIN_BRANCH_SIZE
