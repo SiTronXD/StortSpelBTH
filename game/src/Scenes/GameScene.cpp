@@ -184,14 +184,10 @@ void GameScene::aiExample()
 void GameScene::onTriggerStay(Entity e1, Entity e2)
 {
 	Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
-	//printf("trig stay\n");
-	if (player == playerID)
+	
+	if (player == playerID) // player triggered a trigger :]
 	{
 		Entity other = e1 == player ? e2 : e1;
-
-		// player triggered a trigger :]
-		Transform& playerTra = this->getComponent<Transform>(playerID);
-		
 		if (roomHandler.onPlayerTrigger(other))
 		{
 			printf("Hello?\n");
