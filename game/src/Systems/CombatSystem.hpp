@@ -125,7 +125,7 @@ public:
 			spinning = true;
 			combat.activeAttack = spinActive;
 
-			auto view = reg.view<SwarmComponent, Transform>();
+			auto view = reg.view<SwarmComponent, Transform>(entt::exclude<Inactive>);
 			auto foo = [&](SwarmComponent& swarm, Transform& swarmTrans)
 			{
 				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
