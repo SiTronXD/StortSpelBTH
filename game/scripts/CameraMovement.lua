@@ -3,44 +3,58 @@ local script = {}
 function script:init()
 	print("init with ID: " .. self.ID)
 
-	self.maxXRot       = math.pi / 2 - ((math.pi / 2) * 0.15)
-    self.minXRot       = -(math.pi / 4) + ((math.pi / 4) * 0.1)
+	self.maxXRot       = 75
+    self.minXRot       = -40
+    self.minZoom       = 10
+    self.maxZoom       = 25
+
     self.camDist       = 30
     self.camHeight     = 6
-    self.sens          = 2
+    self.sens          = 25
+    self.distAcc       = 0
+    self.distMargin    = 1
 
     self.shaking       = false
     self.shakeTimer    = 0
     self.shakeDuration = 0.3
     self.shakeScalar   = 0.3
-    self.camRot        = vector()
-
+    self.active        = true
+    
+    input.setHideCursor(self.active)   
 end
 
 function script:update(dt)
-    if (input.isKeyDown(Keys.Q))
-    then
-        self.shaking = true
+    -- Set and use active
+    if (input.isKeyPressed(Keys.ESCAPE)) then
+        self.active = not self.active
+        input.setHideCursor(self.active)
     end
+    
+    if (not self.active) then
+        return
+    end
+
+    self.shaking = input.isKeyDown(Keys.Q)
+
+    -- Change camera distance
+    self.distAcc = (self.distAcc - input.getScrollWheelDelta() * 0.5) * 0.01 ^ dt
+    self.camDist = self.camDist + self.distAcc
+    
+    -- Limit total zoom
+    self.camDist = math.min(self.camDist, self.maxZoom)
+    self.camDist = math.max(self.camDist, self.minZoom)
 
     -- Camera input controls
-    local XInput = core.btoi(input.isKeyDown(Keys.H)) - core.btoi(input.isKeyDown(Keys.K))
-    local YInput = core.btoi(input.isKeyDown(Keys.J)) - core.btoi(input.isKeyDown(Keys.U))
-    --local XInput = input.getMouseDelta().x
-    --local YInput = -input.getMouseDelta().y
+    local rotInput = vector()
+    rotInput.x = input.getMouseDelta().y
+    rotInput.y = -input.getMouseDelta().x
 
     -- Rotate camera
-    self.camRot.x = self.camRot.x + self.sens * YInput * dt
-    self.camRot.y = self.camRot.y + self.sens * XInput * dt
+    local camRot = self.transform.rotation + vector.fill(self.sens) * rotInput * dt
 
     -- Limit camera angle
-    if (self.camRot.x >= self.maxXRot)
-    then
-        self.camRot.x = self.maxXRot
-    elseif (self.camRot.x <= self.minXRot) 
-    then
-        self.camRot.x = self.minXRot
-    end
+    camRot.x = math.min(camRot.x, self.maxXRot)
+    camRot.x = math.max(camRot.x, self.minXRot)
 
     -- Create target pos
     local targetPos = scene.getComponent(self.playerID, CompType.Transform).position
@@ -58,21 +72,25 @@ function script:update(dt)
             self.shaking = false
         else 
             -- Start shaking
-            local offsetVector = vector()
-            offsetVector:randomVector(self.shakeScalar)
-            targetPos = targetPos + offsetVector
+            targetPos = targetPos + vector.random(self.shakeScalar)
         end
     end
 
     -- Apply rotation
-    self.transform.rotation.y = self.camRot.y * (180 / math.pi)
-    self.transform.rotation.x = self.camRot.x * (180 / math.pi)
-    
+    self.transform.rotation = camRot
+    local forward = self.transform:forward()
+
+    -- Limit distance
+    local actualDist = self.camDist + self.distMargin
+    local payload = physics.raycast(targetPos, -forward, actualDist)
+    if (payload) then
+        if(scene.getComponent(payload.entity, CompType.Collider).isTrigger == false) then
+            actualDist = vector.length(payload.hitPoint - targetPos)
+        end
+    end
     -- Apply position
-    local scaledFwd = self.transform:forward() * -self.camDist
-    self.camHeight = 6
-    self.camDist = 30
-    self.transform.position = targetPos + scaledFwd
+    local scaledFwd = forward * (actualDist - self.distMargin)
+    self.transform.position = targetPos - scaledFwd
 end
 
 return script

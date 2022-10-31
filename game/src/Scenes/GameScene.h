@@ -12,10 +12,12 @@ private:
     AIHandler* aiHandler = nullptr;
 
     Entity playerID;
-    std::vector<int> swarmEnemies;
+    Entity floor;
+    std::vector<int> enemyIDs;
     std::vector<SwarmGroup*> swarmGroups;
-    int camEntity;
-	int entity;
+
+    uint32_t hpBarBackgroundTextureID;
+    uint32_t hpBarTextureID;
 
 public:
     GameScene();
@@ -25,8 +27,11 @@ public:
     virtual void init() override;
     virtual void start() override;
     virtual void update() override;
+    virtual void onTriggerStay(Entity e1, Entity e2) override;
 
 private:
     void aiExample();
+    bool allDead();
+
 
 };

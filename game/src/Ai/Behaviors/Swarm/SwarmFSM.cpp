@@ -1,7 +1,6 @@
 #include "SwarmFSM.hpp"
 
 
-
 bool SwarmFSM::idle_combat(Entity entityID)
 {
 	bool ret = false;
@@ -19,6 +18,11 @@ bool SwarmFSM::idle_combat(Entity entityID)
 		ret = true;
     }
 
+	if(!sceneHandler->getScene()->isActive(entityID))
+	{
+		ret = false;
+	}
+
 	return ret;
 }
 
@@ -32,6 +36,12 @@ bool SwarmFSM::idle_combat_FirendsInFight(Entity entityID)
     {
 		ret = true;
     }
+
+	if(!sceneHandler->getScene()->isActive(entityID))
+	{
+		ret = false;
+	}
+
 	return ret;
 }
 
@@ -51,6 +61,11 @@ bool SwarmFSM::idle_escape(Entity entityID)
       {
 		ret = true;
       }
+
+	if(!sceneHandler->getScene()->isActive(entityID))
+	{
+		ret = false;
+	}
 
 	return ret;
 }
@@ -153,6 +168,32 @@ bool SwarmFSM::escape_combat(Entity entityID)
     {
 		ret = true;
     }
+
+	return ret;
+}
+
+bool SwarmFSM::dead(Entity entityID)
+{
+	bool ret = false;
+
+	SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+	if(swarmComp.life <= 0)
+	{
+		ret = true;
+	}
+
+	return ret;
+}
+
+bool SwarmFSM::revive(Entity entityID)
+{
+	bool ret = false;
+
+	SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+	if(swarmComp.life > 0)
+	{
+		ret = true;
+	}
 
 	return ret;
 }
