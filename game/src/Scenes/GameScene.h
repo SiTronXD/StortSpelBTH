@@ -14,7 +14,7 @@ private:
     Entity playerID;
     Entity portal;
 
-    std::vector<int> swarmEnemies;
+    std::vector<int> enemyIDs;
     std::vector<SwarmGroup*> swarmGroups;
 
     uint32_t hpBarBackgroundTextureID;
@@ -32,5 +32,7 @@ public:
 
 private:
     void aiExample();
-    void createPortal();
+    bool allDead();
+	
+	void createPortal();
 };

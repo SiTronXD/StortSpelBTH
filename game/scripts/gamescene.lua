@@ -1,4 +1,6 @@
-local playerMesh = resources.addMesh("assets/models/run_forward.fbx", "assets/textures/playerMesh")
+--local playerMesh = resources.addMesh("assets/models/Amogus/source/1.fbx")
+local playerMesh = resources.addMesh("assets/models/Standard_Run.fbx", "assets/textures/playerMesh")
+local playerAttackMesh = resources.addMesh("assets/models/Hurricane Kick.fbx", "assets/textures/playerMesh")
 print(playerMesh)
 
 -- Camera
@@ -11,14 +13,19 @@ scene.setComponent(playerID, CompType.Mesh, playerMesh)
 local playerAnim = 
 { 
 	timer = 0.0, 
-	timeScale = 1.0 
+	timeScale = 0.0
 }
 scene.setComponent(playerID, CompType.Animation, playerAnim)
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
 scene.setComponent(playerID, CompType.Collider, { type = ColliderType.Capsule, radius = 2, height = 5 })
 scene.setComponent(playerID, CompType.Rigidbody, { mass = 1, gravityMult = 5, rotFactor = vector.fill(0) })
 scene.getComponent(cam, CompType.Script).playerID = playerID
-scene.getComponent(playerID, CompType.Script).camID = cam
+
+local player = scene.getComponent(playerID, CompType.Script)
+player.camID = cam
+player.playerMesh = playerMesh
+player.playerAttackMesh = playerAttackMesh
+
 network.sendPlayer(player)
 
 -- UI
