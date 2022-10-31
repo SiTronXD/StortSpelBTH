@@ -11,7 +11,7 @@ const uint32_t RoomHandler::NUM_TWO_X_TWO = 0;
 RoomHandler::RoomHandler()
 	:scene(nullptr), hasDoor{false, false, false, false},
 	activeIndex(0), nextIndex(-1), floor(-1),
-	openDoorMeshID(0), closedDoorMeshID(0)
+	doorMeshID(0)
 {
 }
 
@@ -43,8 +43,7 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize,
 	// OneXTwo
 	// TwoXTwo
 
-	this->openDoorMeshID = resourceMan->addMesh("assets/models/doorOpen.obj");
-	this->closedDoorMeshID = resourceMan->addMesh("assets/models/doorClosed.obj");
+	this->doorMeshID = resourceMan->addMesh("assets/models/door.obj");
 }
 
 void RoomHandler::roomCompleted()
@@ -93,7 +92,6 @@ void RoomHandler::generate()
 		this->rooms[i].connectingIndex[1] = roomRef.right;
 		this->rooms[i].connectingIndex[2] = roomRef.up;
 		this->rooms[i].connectingIndex[3] = roomRef.down;
-		
 
 		// Generate room (no borders)
 		this->roomGenerator.generateRoom();
@@ -594,7 +592,7 @@ Entity RoomHandler::createDoorEntity(float yRotation)
 	Entity entity = scene->createEntity();
 
 	this->scene->setComponent<MeshComponent>(entity);
-	this->scene->getComponent<MeshComponent>(entity).meshID = this->openDoorMeshID;
+	this->scene->getComponent<MeshComponent>(entity).meshID = this->doorMeshID;
 
 	Transform& transform = this->scene->getComponent<Transform>(entity);
 	transform.rotation.y = yRotation;
@@ -784,7 +782,7 @@ void RoomHandler::openDoors(int index)
 	{
 		if (room.doors[i] != -1)
 		{
-			this->scene->getComponent<MeshComponent>(room.doors[i]).meshID = openDoorMeshID;
+			this->scene->setScriptComponent(room.doors[i], "scripts/opendoor.lua");
 			this->scene->removeComponent<Collider>(room.doors[i]);
 		}
 	}
@@ -803,7 +801,7 @@ void RoomHandler::closeDoors(int index)
 	{
 		if (room.doors[i] != -1)
 		{
-			this->scene->getComponent<MeshComponent>(room.doors[i]).meshID = closedDoorMeshID;
+			this->scene->setScriptComponent(room.doors[i], "scripts/closedoor.lua");
 			this->scene->setComponent<Collider>(room.doors[i], 
 				Collider::createBox(glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH, TILE_WIDTH * 0.1f)));
 		}
@@ -838,6 +836,7 @@ void RoomHandler::activateRoom(int index)
 		{
 			 this->scene->setActive(curRoom.doors[i]);
 			 this->scene->setActive(curRoom.doorTriggers[i]);
+			 this->scene->getComponent<Transform>(curRoom.doors[i]).position.y = -25;
 		}
 	}
 }
