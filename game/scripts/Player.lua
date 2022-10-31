@@ -108,7 +108,10 @@ function script:update(dt)
         scene.setComponent(self.ID, CompType.Animation, anim)
     end
 
-    self:rotate2(dt)
+    if (scene.getComponent(self.ID, CompType.Mesh).meshID == self.playerMesh)
+    then
+        self:rotate2(dt)
+    end
 end
 
 function script:move2(deltaTime)

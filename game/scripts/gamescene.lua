@@ -13,7 +13,7 @@ scene.setComponent(playerID, CompType.Mesh, playerMesh)
 local playerAnim = 
 { 
 	timer = 0.0, 
-	timeScale = 1.0 
+	timeScale = 0.0
 }
 scene.setComponent(playerID, CompType.Animation, playerAnim)
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
