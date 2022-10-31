@@ -3,6 +3,8 @@
 #include "../../../Components/Combat.h"
 #include "../../../Components/AiCombat.h"
 
+int SwarmGroup::getNewId = 0;
+
 Entity getPlayerID(SceneHandler* sceneHandler) 
 {
     int playerID = 0;
@@ -22,6 +24,16 @@ float lookAtY(const Transform& from, const Transform& to)
     angle = glm::degrees(angle);
   
     return angle; 
+}
+void removeFromGroup(SwarmComponent& comp, Entity entityID)
+{
+	for(int i = 0; i < comp.group->members.size(); i++)
+	{
+		if(comp.group->members[i] == entityID)
+		{
+			comp.group->members.erase(comp.group->members.begin()+i);
+		}
+	}
 }
 
 void SwarmBT::registerEntityComponents(Entity entityId)
@@ -261,9 +273,6 @@ BTStatus SwarmBT::closeEnoughToPlayer(Entity entityID)
 
 	return ret;
 }
-
-
-
 BTStatus SwarmBT::attack(Entity entityID)
 {
 	BTStatus ret = BTStatus::Running;
@@ -293,6 +302,35 @@ BTStatus SwarmBT::attack(Entity entityID)
 	return ret;
 }
 
+BTStatus SwarmBT::playDeathAnim(Entity entityID)
+{
+	BTStatus ret = BTStatus::Running;
+	SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+	Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+	if(swarmTrans.scale.y <= 0.0f)
+	{
+		ret = BTStatus::Success;
+	}
+	else
+	{
+		swarmTrans.rotation.y +=  1000*swarmComp.deathAnimSpeed*Time::getDT();
+		swarmTrans.scale.y -= swarmComp.deathAnimSpeed*Time::getDT();
+	}
+
+	return ret;
+}
+BTStatus SwarmBT::die(Entity entityID)
+{
+	BTStatus ret = BTStatus::Success;
+
+	//TODO: Sometgin goes wrong when we remove from group.
+	//SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+
+	//removeFromGroup(swarmComp, entityID);
+	sceneHandler->getScene()->setInactive(entityID);
+
+	return ret;
+}
 
 void Swarm_idle::start() {
 
@@ -367,4 +405,17 @@ void Swarm_escape::start()
 	escape_to_friends_if_possible->addLeafs({sees_friends, escape_to_friends});
 
 	this->setRoot(root);
+}
+
+void Swarm_dead::start()
+{
+	Sequence* root = c.c.sequence();
+
+	Task* playDeathAnimTask = c.l.task("Play death animation", SwarmBT::playDeathAnim);
+	Task* dieTask = c.l.task("die", SwarmBT::die);
+
+	root->addLeafs({playDeathAnimTask, dieTask});
+
+	this->setRoot(root);
+
 }
