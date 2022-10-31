@@ -29,7 +29,6 @@ void GameScene::init()
 {
 	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 	
-
 	roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
 	roomHandler.generate();
 
@@ -54,7 +53,7 @@ void GameScene::start()
 
 	uint32_t swordId = this->getResourceManager()->addMesh("assets/models/Sword.obj");
 	
-	this->setComponent<Collider>(playerID, Collider::createBox(glm::vec3(2.f)));
+	//this->setComponent<Collider>(playerID, Collider::createBox(glm::vec3(2.f)));
 
 	Entity sword = this->createEntity();
 	this->setComponent<MeshComponent>(sword);

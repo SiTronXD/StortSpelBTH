@@ -18,7 +18,7 @@ function script:init()
 	self.turnSpeed = 200
 	self.timer = 0
     self.slowDown = 80
-    self.transform.position = vector(0, 10, 0)
+    self.transform.position = vector(0, 12, 0)
     self.transform.rotation = vector(0, 0, 0)
     self.tempRotationY = 0
 
@@ -43,7 +43,7 @@ function script:update(dt)
     -- Check if grounded
     local payload = physics.raycast(self.transform.position, vector(0, -1, 0))
     if (payload) then
-        self.onGround = (self.transform.position - payload.hitPoint):length() < 5
+        self.onGround = (self.transform.position - payload.hitPoint):length() < 7.5
     end
 
     -- New movement using rigidbody
@@ -64,7 +64,7 @@ function script:update(dt)
     local rb = scene.getComponent(self.ID, CompType.Rigidbody)
     local y = rb.velocity.y
     rb.velocity = self.currentSpeed
-    rb.velocity.y = y + core.btoi(input.isKeyPressed(Keys.SPACE)) * core.btoi(self.onGround) * 7.5 * rb.gravityMult
+    rb.velocity.y = y + core.btoi(input.isKeyPressed(Keys.SPACE)) * core.btoi(self.onGround) * 6.5 * rb.gravityMult
     scene.setComponent(self.ID, CompType.Rigidbody, rb)
 
     -- Handle animation speed and timing
