@@ -146,6 +146,8 @@ void GameScene::aiExample()
             auto& entityAiCombatComponent = this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId);
             auto& entiyFSMAgentComp = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId);
             int& health            = entitySwarmComponent.life;
+			float& jumpForce		=entitySwarmComponent.jumpForce;
+			float& jumpForceY		=entitySwarmComponent.jumpY;
             float& speed           = entitySwarmComponent.speed;
             float& attackRange     = entitySwarmComponent.attackRange;
             float& sightRange      = entitySwarmComponent.sightRadius;
@@ -156,6 +158,8 @@ void GameScene::aiExample()
             ImGui::Text(status.c_str());
             ImGui::SliderInt("health", &health, 0, 100);
             ImGui::SliderFloat("speed", &speed, 0, 100);
+            ImGui::SliderFloat("jumpForce", &jumpForce, 0, 100);
+            ImGui::SliderFloat("jumpForceY", &jumpForceY, 0, 100);
             ImGui::SliderFloat("attackRange", &attackRange, 0, 100);
             ImGui::SliderFloat("sightRange", &sightRange, 0, 100);		
             ImGui::InputFloat("attack/s", &attackPerSec);		

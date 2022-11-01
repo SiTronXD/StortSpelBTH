@@ -8,12 +8,14 @@ struct SwarmComponent
 	int LOW_HEALTH = 30;
 	int FULL_HEALTH = 100;
 	int life = FULL_HEALTH;
-	float speed = 10;
+	float speed = 10.0f;
+	float jumpForce = 30.0f;
+	float jumpY = 20.0f;
 
 	float deathAnimSpeed = 1.0f;
 
     float sightRadius	= 70;
-	float attackRange	= 20;
+	float attackRange	= 40;
 	bool inCombat		= false;
 	SwarmGroup* group;
 	std::vector<SwarmGroup*> groupsInSight;

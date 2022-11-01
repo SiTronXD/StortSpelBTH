@@ -210,7 +210,9 @@ BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 
 	 glm::vec3 dir = -glm::normalize(playerTransform.position- thisTransform.position);
 	 dir.y = 0;
+	 float tempYvel =  rigidbody.velocity.y;
 	 rigidbody.velocity = dir * swarmComp.speed;
+	 rigidbody.velocity.y = tempYvel;
 
 	//TODO BTStatus: failure not returned.
 	//TODO : Check if cornered, return failure
@@ -243,10 +245,11 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 	Rigidbody& rigidbody = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
     thisTransform.rotation.y = lookAtY(thisTransform, playerTransform);
 	thisTransform.updateMatrix();
-
 	 glm::vec3 dir = glm::normalize(playerTransform.position- thisTransform.position);
 	 dir.y = 0;
+	 float tempYvel =  rigidbody.velocity.y;
 	 rigidbody.velocity = dir * swarmComp.speed;
+	 rigidbody.velocity.y = tempYvel;
 
 
     
@@ -284,6 +287,11 @@ BTStatus SwarmBT::attack(Entity entityID)
 	Transform& playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(getPlayerID(sceneHandler));
 	SwarmComponent& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	AiCombat& combat = BehaviorTree::sceneHandler->getScene()->getComponent<AiCombat>(entityID);
+	Rigidbody& rigidbody = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
+
+	glm::vec3 dir = playerTransform.position - thisTransform.position;
+	dir.y += swarmComp.jumpY;
+	dir = glm::normalize(dir);
 
      thisTransform.rotation.y = lookAtY(thisTransform, playerTransform);
 	 thisTransform.updateMatrix();
@@ -293,6 +301,10 @@ BTStatus SwarmBT::attack(Entity entityID)
 	 }
 	 else
 	 {
+		 //JUMP!
+		rigidbody.velocity = dir * swarmComp.jumpForce;
+
+
 		Combat& playerCombat = BehaviorTree::sceneHandler->getScene()->getComponent<Combat>(getPlayerID(sceneHandler));
 		playerCombat.health -= combat.lightHit;
 		combat.timer = combat.lightAttackTime;
@@ -351,7 +363,7 @@ BTStatus SwarmBT::alerted(Entity entityID)
 	// 	ret = BTStatus::Success;
 	// }
 	// else
-    static float speed = 10;        
+  /*  static float speed = 10;        
     if(swarmComp.alert_go_up && swarmTrans.scale.y <= 1.5f)
 	{        
 		swarmTrans.scale.y += speed*Time::getDT();        
@@ -365,7 +377,7 @@ BTStatus SwarmBT::alerted(Entity entityID)
     {
         swarmComp.alert_go_up = true; 
         BTStatus ret = BTStatus::Success;
-    }
+    }*/
 
 	return ret;
 }
