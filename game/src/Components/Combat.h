@@ -11,17 +11,15 @@ struct Combat
 {
 	float health = 100.f;
 	
-	float spinHit = 25.f;
-	float lightHit = 50.f;
-	float heavyHit = 75.f;
+	float lightHit = 1.f;
+	float heavyHit = 10.f;
 
 	float comboLightHit = 100.f;
 	float comboMixHit = 150.f;
 	float comboHeavyHit = 125.f;
 
-	float spinAttackTime = 2.f;
-	float lightAttackTime = 3.f;
-	float heavyAttackTime = 5.f;
+	float lightAttackTime = 0.5f;
+	float heavyAttackTime = 1.f;
 
 	// Probably make more combo timers
 	// Depends on if the combos should take different amount of time.
@@ -30,8 +28,7 @@ struct Combat
 	std::string comboOrder;
 	std::vector<std::string> combos;
 
-	std::chrono::time_point<std::chrono::system_clock> timer;
-	std::chrono::duration<float> hitTimer;
+	float timer = 0;
 
 	ActiveAttack activeAttack = noActive;
 };

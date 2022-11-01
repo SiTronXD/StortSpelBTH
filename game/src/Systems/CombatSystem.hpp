@@ -11,7 +11,6 @@ private:
 
 	Scene* scene;
 	Entity playerID;
-	bool spinning = false;
 
 public:
 
@@ -32,35 +31,21 @@ public:
 		auto view = reg.view<Combat>();
 		auto foo = [&](Combat& combat)
 		{
+			if (combat.timer > -1.f)
+			{
+				combat.timer -= deltaTime;
+			}
+
 			if (Input::isMouseButtonPressed(Mouse::LEFT))
 			{
-				//lightAttack(combat, gotHit);
-				spinAttack(reg, combat);
+				lightAttack(combat);
 			}
-			//else if (Input::isMouseButtonPressed(Mouse::RIGHT) && gotHit == true)
-			//{
-			//	heavyAttack(combat, gotHit);
-			//}
+			else if (Input::isMouseButtonPressed(Mouse::RIGHT))
+			{
+				heavyAttack(combat);
+			}
 		};
 		view.each(foo);
-
-		Combat& combat = scene->getComponent<Combat>(playerID);
-		combat.hitTimer = std::chrono::system_clock::now() - combat.timer;
-		if (spinning && combat.hitTimer.count() > 1.f)
-		{
-			auto enemyView = reg.view<SwarmComponent, Transform>(entt::exclude<Inactive>);
-			auto enemyFoo = [&](SwarmComponent& swarm, Transform& swarmTrans)
-			{
-				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
-				float distance = glm::length(playerTrans.position - swarmTrans.position);
-				if (distance <= 20.f)
-				{
-					swarm.life -= combat.spinHit;
-				}
-			};
-			enemyView.each(enemyFoo);
-			spinning = false;
-		}
 
 		return false;
 	}
@@ -72,84 +57,47 @@ public:
 
 	void checkActiveAttack(Combat& combat)
 	{
-		combat.hitTimer = std::chrono::system_clock::now() - combat.timer;
-
 		switch (combat.activeAttack)
 		{
-		case spinActive:
-			if (combat.hitTimer.count() > combat.spinAttackTime + 1.f)
-			{
-				combat.activeAttack = noActive;
-			}
-			break;
 		case lightActive:
 			// If it takes too long between attacks, resets combo.
-			if (combat.hitTimer.count() > combat.lightAttackTime + 2.f)
+			if (combat.timer < 0.f)
 			{
 				combat.activeAttack = noActive;
 				combat.comboOrder.clear();
 			}
-			else if (combat.hitTimer.count() > combat.lightAttackTime)
+			else if (combat.timer < 0.f)
 			{
 				combat.activeAttack = noActive;
 			}
 			break;
 		case heavyActive:
 			// If it takes too long between attacks, resets combo.
-			if (combat.hitTimer.count() > combat.heavyAttackTime + 2.f)
+			if (combat.timer < 0.f)
 			{
 				combat.activeAttack = noActive;
 				combat.comboOrder.clear();
 			}
-			else if (combat.hitTimer.count() > combat.heavyAttackTime)
+			else if (combat.timer < 0.f)
 			{
 				combat.activeAttack = noActive;
 			}
 			break;
 		case comboActive:
-			if (combat.hitTimer.count() > combat.comboAttackTime)
+			if (combat.timer < 0.f)
 			{
 				combat.activeAttack = noActive;
 			}
 		}
 	};
 
-	bool spinAttack(entt::registry& reg, Combat& combat)
+	bool lightAttack(Combat& combat)
 	{
 		checkActiveAttack(combat);
 
 		if (combat.activeAttack == noActive)
 		{
-			combat.hitTimer = std::chrono::duration<float>(combat.spinAttackTime);
-			combat.timer = std::chrono::system_clock::now();
-			spinning = true;
-			combat.activeAttack = spinActive;
-
-			auto view = reg.view<SwarmComponent, Transform>(entt::exclude<Inactive>);
-			auto foo = [&](SwarmComponent& swarm, Transform& swarmTrans)
-			{
-				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
-				float distance = glm::length(playerTrans.position - swarmTrans.position);
-				if (distance <= 20.f)
-				{
-					swarm.life -= combat.spinHit;
-					return true;
-				}
-			};
-			view.each(foo);
-		}
-
-		return false;
-	};
-
-	bool lightAttack(Combat& combat, bool gotHit)
-	{
-		checkActiveAttack(combat);
-
-		if (combat.activeAttack == noActive)
-		{
-			combat.hitTimer = std::chrono::duration<float>(combat.lightAttackTime);
-			combat.timer = std::chrono::system_clock::now();
+			combat.timer = combat.lightAttackTime;
 			combat.comboOrder.append("Light ");
 
 			// If combo is lhh there can be no combo, combo is reset.
@@ -160,29 +108,26 @@ public:
 
 			combat.activeAttack = lightActive;
 
-			if (gotHit)
+			if (checkCombo(combat))
 			{
-				if (checkCombo(combat))
-				{
-					return true;
-				}
-				else
-				{
-					combat.health -= combat.lightHit;
-					return true;
-				}
+				return true;
+			}
+			else
+			{
+				combat.health -= combat.lightHit;
+				return true;
 			}
 		}
 		return false;
 	};
-	bool heavyAttack(Combat& combat, bool gotHit)
+
+	bool heavyAttack(Combat& combat)
 	{
 		checkActiveAttack(combat);
 
 		if (combat.activeAttack == noActive)
 		{
-			combat.hitTimer = std::chrono::duration<float>(combat.heavyAttackTime);
-			combat.timer = std::chrono::system_clock::now();
+			combat.timer = combat.heavyAttackTime;
 			combat.comboOrder.append("Heavy ");
 
 			// If combo starts with Heavy Heavy , there can be no combo, combo is reset.
@@ -190,14 +135,11 @@ public:
 
 			combat.activeAttack = heavyActive;
 
-			if (gotHit)
+			if (checkCombo(combat)) { return true; }
+			else
 			{
-				if (checkCombo(combat)) { return true; }
-				else
-				{
-					combat.health -= combat.heavyHit;
-					return true;
-				}
+				combat.health -= combat.heavyHit;
+				return true;
 			}
 		}
 
