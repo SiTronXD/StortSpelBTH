@@ -43,7 +43,6 @@ function script:update(dt)
     -- Limit total zoom
     self.camDist = math.min(self.camDist, self.maxZoom)
     self.camDist = math.max(self.camDist, self.minZoom)
-
     -- Camera input controls
     local rotInput = vector()
     rotInput.x = input.getMouseDelta().y
@@ -84,7 +83,8 @@ function script:update(dt)
     local actualDist = self.camDist + self.distMargin
     local payload = physics.raycast(targetPos, -forward, actualDist)
     if (payload) then
-        if(scene.getComponent(payload.entity, CompType.Collider).isTrigger == false) then
+        if(scene.getComponent(payload.entity, CompType.Collider).isTrigger == false and
+           payload.entity ~= self.playerID) then
             actualDist = vector.length(payload.hitPoint - targetPos)
         end
     end

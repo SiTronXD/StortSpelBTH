@@ -325,6 +325,12 @@ BTStatus SwarmBT::die(Entity entityID)
 {
 	BTStatus ret = BTStatus::Success;
 
+	Combat& playerCombat = sceneHandler->getScene()->getComponent<Combat>(getPlayerID(sceneHandler));
+	if (playerCombat.health <= 90.f)
+	{
+		playerCombat.health += 10.f;
+	}
+
 	//TODO: Sometgin goes wrong when we remove from group.
 	//SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 

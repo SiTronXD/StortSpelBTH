@@ -11,7 +11,10 @@ class RoomHandler
 public:
 	static const float TILE_WIDTH;
 	static const uint32_t TILES_BETWEEN_ROOMS;
-
+	static const uint32_t NUM_BORDER;
+	static const uint32_t NUM_ONE_X_ONE;
+	static const uint32_t NUM_ONE_X_TWO;
+	static const uint32_t NUM_TWO_X_TWO;
 private:
 
 	enum TileUsage { Default, Border, Exit };
@@ -27,9 +30,13 @@ private:
 	{
 		Room()
 			:doors{-1,-1,-1,-1}, doorTriggers{-1,-1,-1,-1},
-			connectingIndex{-1,-1,-1,-1}, finished(false)
+			connectingIndex{-1,-1,-1,-1}, finished(false), 
+			type(RoomData::INVALID), position(0.f)
 		{		
 		}
+
+		glm::vec3 position;
+		RoomData::Type type;
 
 		std::vector<Entity> tiles;
 		std::vector<Entity> borders;
@@ -44,7 +51,6 @@ private:
 
 	// Scene
 	Scene* scene;
-	ResourceManager* resourceMan;
 
 	// Layout generation
 	RoomLayout roomLayout;
@@ -87,9 +93,11 @@ private:
 	void deactivateRoom(int index);
 
 	// Mesh IDs
-	std::unordered_map<Tile::Type, uint32_t> tileMeshIds;
-	uint32_t openDoorMeshID;
-	uint32_t closedDoorMeshID;
+	std::vector<uint32_t> oneXOneMeshIds;
+	std::vector<uint32_t> borderMeshIds;
+	//std::vector<uint32_t> oneXTwoMeshIds;
+	//std::vector<uint32_t> twoXTwoMeshIds;
+	uint32_t doorMeshID;
 
 	// Other
 	void reset();
@@ -114,4 +122,7 @@ public:
 	bool onPlayerTrigger(Entity otherEntity);
 
 	const std::vector<Entity>& getFreeTiles();
+	const RoomData::Type& getActiveRoomType() const;
+	const Room& getExitRoom() const;
+	int getNumRooms() const;
 };
