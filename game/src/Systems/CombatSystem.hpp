@@ -37,9 +37,6 @@ public:
 		auto view = reg.view<Combat>();
 		auto foo = [&](Combat& combat)
 		{
-			Transform& playerTrans = scene->getComponent<Transform>(playerID);
-			playerTrans.updateMatrix();
-			debug->renderCapsule(playerTrans.position, glm::vec3(0.f, 0.f, 0.f), 0.1f, 10.f, glm::vec3(0.5f, 0.5f, 0.5f));
 			if (combat.attackTimer > -1.f)
 			{
 				combat.attackTimer -= deltaTime;
