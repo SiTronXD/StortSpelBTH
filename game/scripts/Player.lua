@@ -76,6 +76,7 @@ function script:update(dt)
         self.animTimer = self.animTimer - dt
     end
     
+    --[[
     if (input.isMouseButtonPressed(Mouse.LEFT) and self.animTimer < -1)
     then
         local meshChange = scene.getComponent(self.ID, CompType.Mesh)
@@ -87,7 +88,8 @@ function script:update(dt)
 
         scene.setComponent(self.ID, CompType.Animation, anim)
         self.animTimer = 2
-    elseif (self.animTimer < 0)
+    ]]--
+    if (self.animTimer < 0)
     then
         local meshChange = scene.getComponent(self.ID, CompType.Mesh)
         meshChange = self.playerMesh

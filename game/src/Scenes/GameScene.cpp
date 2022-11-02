@@ -49,7 +49,7 @@ void GameScene::start()
 	//int runningMesh = this->getResourceManager()->addMesh("assets/models/run_forward.fbx");
 	this->setComponent<Combat>(playerID);
 	//this->setComponent<MeshComponent>(this->playerID, runningMesh);
-	this->createSystem<CombatSystem>(this, this->playerID);
+	this->createSystem<CombatSystem>(this, this->playerID, this->getPhysicsEngine(), this->getDebugRenderer());
 
 
     // Ai management 
@@ -105,13 +105,13 @@ void GameScene::update()
 	}
 	float xPos = -720;
 	float yPos = -500;
-	float xSize = 1024 * 0.35;
-	float ySize = 64 * 0.35;
+	float xSize = 1024 * 0.35f;
+	float ySize = 64 * 0.35f;
 
 	Scene::getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
 	Scene::getUIRenderer()->renderTexture(xPos, yPos, xSize + 10, ySize + 10);
 	Scene::getUIRenderer()->setTexture(this->hpBarTextureID);
-	Scene::getUIRenderer()->renderTexture(xPos - (1.0 - hpPercent) * xSize * 0.5, yPos, xSize * hpPercent, ySize);
+	Scene::getUIRenderer()->renderTexture(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos, xSize * hpPercent, ySize);
 	
 #ifdef _CONSOLE
 
@@ -240,7 +240,7 @@ void GameScene::aiExample()
         this->setInactive(this->enemyIDs.back());
 		this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->enemyIDs.back()).group = this->swarmGroups.back();
 		SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs.back());
-		swarmComp.life = 0.0f;
+		swarmComp.life = 0;
     }
 
 	/*int swarmModel = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
