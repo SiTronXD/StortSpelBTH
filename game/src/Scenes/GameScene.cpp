@@ -336,13 +336,35 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 				
 				}
 			}
-		}
+		}        
 
 		if (other == portal && numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
 		{
 			this->switchScene(new GameScene(), "scripts/gamescene.lua");
 		}
 	}
+}
+
+void GameScene::onCollisionStay(Entity e1, Entity e2)
+{
+    Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
+	
+	if (player == playerID) // player triggered a trigger :]
+	{
+		Entity other = e1 == player ? e2 : e1;
+        if(this->hasComponents<SwarmComponent>(other))
+        {
+            auto& swarmComp = this->getComponent<SwarmComponent>(other);
+            if(swarmComp.inAttack)
+            {
+                auto& aiCombat = this->getComponent<AiCombat>(other);
+                swarmComp.inAttack = false; 
+                this->getComponent<Combat>(player).health -= aiCombat.lightHit;
+                std::cout << "WAS HIT\n";
+                
+            }            
+        }
+    }
 }
 
 void GameScene::createPortal()

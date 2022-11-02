@@ -17,6 +17,7 @@ struct SwarmComponent
     float sightRadius	= 70;
 	float attackRange	= 40;
 	bool inCombat		= false;
+    bool inAttack		= false;
 	SwarmGroup* group;
 	std::vector<SwarmGroup*> groupsInSight;
 

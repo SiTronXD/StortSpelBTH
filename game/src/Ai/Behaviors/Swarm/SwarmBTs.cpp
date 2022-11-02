@@ -286,8 +286,9 @@ BTStatus SwarmBT::closeEnoughToPlayer(Entity entityID)
 
 	return ret;
 }
+
 BTStatus SwarmBT::attack(Entity entityID)
-{
+{    
 	BTStatus ret = BTStatus::Running;
 
 	//SwarmComponent& thisSwarmComp = BehaviorTree::scene->getComponent<SwarmComponent>(entityID);
@@ -307,19 +308,35 @@ BTStatus SwarmBT::attack(Entity entityID)
 	 if(combat.timer > 0.0f){
 		combat.timer -= Time::getDT();
 	 }
-	 else
+	 else if(!swarmComp.inAttack)
 	 {
 		 //JUMP!
 		rigidbody.velocity = dir * swarmComp.jumpForce;
-
+        swarmComp.inAttack = true; 
 
 		Combat& playerCombat = BehaviorTree::sceneHandler->getScene()->getComponent<Combat>(getPlayerID(sceneHandler));
 		//playerCombat.health -= combat.lightHit;
 		combat.timer = combat.lightAttackTime;
 		std::cout<<"ATTACK!!!!\n";
+        
 		ret = BTStatus::Success;
 	 
-	 }
+	 }else
+     {
+
+        Ray downRay{
+            thisTransform.position,
+            glm::vec3(0.f,-1.f,0.1f)
+        };
+        
+        float heightOfSwarmBlob = 10;//TODO: get height of swarmblob
+        RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(downRay,heightOfSwarmBlob);        
+        if(rp.hit)
+        {
+            swarmComp.inAttack = false; 
+        }
+     }
+
 
 	return ret;
 }
