@@ -2,12 +2,15 @@
 
 #include <vengine.h>
 #include "../Components/Combat.h"
+#include "../Components/Perks.h"
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include <string>
 
 class CombatSystem : public System
 {
 private:
+
+	Perks perks[3];
 
 	Scene* scene;
 	Entity playerID;
@@ -29,6 +32,12 @@ public:
 			combat.combos.emplace_back("Heavy Light Heavy ");
 			sword = Collider::createCapsule(1.f, 6.f, true);
 			swordSpin = Collider::createCapsule(10.f, 0.1f, true);
+			
+			for (size_t i = 0; i < 3; i++)
+			{
+				perks[i].multiplier = 0;
+				perks[i].perkType = empty;
+			}
 		}
 	}
 
@@ -37,6 +46,39 @@ public:
 		auto view = reg.view<Combat>();
 		auto foo = [&](Combat& combat)
 		{
+			Collider& playerColl = scene->getComponent<Collider>(playerID);
+			Transform& playerTrans = scene->getComponent<Transform>(playerID);
+			std::vector<int> hitID = physics->testContact(playerColl, playerTrans.position, playerTrans.rotation);
+			for (size_t i = 0; i < hitID.size(); i++)
+			{
+				if (scene->hasComponents<Perks>(hitID[i]))
+				{
+					Perks& perk = scene->getComponent<Perks>(hitID[i]);
+					for (size_t j = 0; j < 3; j++)
+					{
+						if (this->perks[j].perkType == empty)
+						{
+							this->perks[j] = perk;
+
+							switch (this->perks[j].perkType)
+							{
+							case hpUp:
+								upgradeHealth(combat, this->perks[j]);
+								break;
+							case dmgUp:
+								upgradeDmg(combat, this->perks[j]);
+								break;
+							case attackSpeedUp:
+								upgradeAttackSpeed(combat, this->perks[j]);
+								break;
+							}
+							j = 3;
+						}
+					}
+					scene->removeEntity(hitID[i]);
+				}
+			}
+
 			if (combat.attackTimer > -1.f)
 			{
 				combat.attackTimer -= deltaTime;
@@ -247,4 +289,72 @@ public:
 		return false;
 	};
 
+	void upgradeHealth(Combat& combat, Perks& perk)
+	{
+		setDefaultHp(combat, perk);
+		combat.hpMultiplier += perk.multiplier;
+		combat.maxHealth *= combat.hpMultiplier;
+	}
+
+	void upgradeDmg(Combat& combat, Perks& perk)
+	{
+		setDefaultDmg(combat, perk);
+		combat.dmgMultiplier += perk.multiplier;
+		combat.lightHit *= combat.dmgMultiplier;
+		combat.heavyHit *= combat.dmgMultiplier;
+		combat.comboLightHit *= combat.dmgMultiplier;
+		combat.comboHeavyHit *= combat.dmgMultiplier;
+		combat.comboMixHit *= combat.dmgMultiplier;
+	}
+
+	void upgradeAttackSpeed(Combat& combat, Perks& perk)
+	{
+		setDefaultAtttackSpeed(combat, perk);
+		combat.attackSpeedMultiplier -= perk.multiplier;
+		combat.lightAttackTime *= combat.attackSpeedMultiplier;
+		combat.heavyAttackTime *= combat.attackSpeedMultiplier;
+		combat.comboLightTime *= combat.attackSpeedMultiplier;
+		combat.comboHeavyTime *= combat.attackSpeedMultiplier;
+		combat.comboMixTime *= combat.attackSpeedMultiplier;
+	}
+
+	void setDefaultHp(Combat& combat, Perks& perk)
+	{
+		combat.maxHealth /= combat.hpMultiplier;
+	}
+
+	void setDefaultDmg(Combat& combat, Perks& perk)
+	{
+		combat.lightHit /= combat.dmgMultiplier;
+		combat.heavyHit /= combat.dmgMultiplier;
+		combat.comboLightHit /= combat.dmgMultiplier;
+		combat.comboHeavyHit /= combat.dmgMultiplier;
+		combat.comboMixHit /= combat.dmgMultiplier;
+	}
+
+	void setDefaultAtttackSpeed(Combat& combat, Perks& perk)
+	{
+		combat.lightAttackTime /= combat.attackSpeedMultiplier;
+		combat.heavyAttackTime /= combat.attackSpeedMultiplier;
+		combat.comboLightTime /= combat.attackSpeedMultiplier;
+		combat.comboHeavyTime /= combat.attackSpeedMultiplier;
+		combat.comboMixTime /= combat.attackSpeedMultiplier;
+	}
+
+	void removePerk(Combat& combat, Perks& perk)
+	{
+		switch (perk.perkType)
+		{
+		case hpUp:
+			setDefaultHp(combat, perk);
+			break;
+		case dmgUp:
+			setDefaultDmg(combat, perk);
+			break;
+		case attackSpeedUp:
+			setDefaultAtttackSpeed(combat, perk);
+		}
+		perk.multiplier = 0;
+		perk.perkType = empty;
+	}
 };
