@@ -8,9 +8,9 @@ struct SwarmComponent
 	int LOW_HEALTH = 30;
 	int FULL_HEALTH = 100;
 	int life = FULL_HEALTH;
-	float speed = 10.0f;
-	float jumpForce = 30.0f;
-	float jumpY = 20.0f;
+	float speed = 17.0f;
+	float jumpForce = 70.0f;
+	float jumpY = 10.0f;
 
 	float deathAnimSpeed = 1.0f;
 

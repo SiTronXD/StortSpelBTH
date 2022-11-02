@@ -145,6 +145,7 @@ void GameScene::aiExample()
             auto& entitySwarmComponent = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId);
             auto& entityAiCombatComponent = this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId);
             auto& entiyFSMAgentComp = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId);
+            auto& entityRigidBody = this->getSceneHandler()->getScene()->getComponent<Rigidbody>(entityId);
             int& health            = entitySwarmComponent.life;
 			float& jumpForce		=entitySwarmComponent.jumpForce;
 			float& jumpForceY		=entitySwarmComponent.jumpY;
@@ -154,12 +155,14 @@ void GameScene::aiExample()
             bool& inCombat         = entitySwarmComponent.inCombat;
             float& attackPerSec    = entityAiCombatComponent.lightAttackTime;
             float& lightAttackDmg  = entityAiCombatComponent.lightHit;
+			float& gravity 			= entityRigidBody.gravityMult;
             std::string& status    = entiyFSMAgentComp.currentNode->status;   
             ImGui::Text(status.c_str());
             ImGui::SliderInt("health", &health, 0, 100);
             ImGui::SliderFloat("speed", &speed, 0, 100);
             ImGui::SliderFloat("jumpForce", &jumpForce, 0, 100);
             ImGui::SliderFloat("jumpForceY", &jumpForceY, 0, 100);
+            ImGui::SliderFloat("gravity", &gravity, 0, 10);
             ImGui::SliderFloat("attackRange", &attackRange, 0, 100);
             ImGui::SliderFloat("sightRange", &sightRange, 0, 100);		
             ImGui::InputFloat("attack/s", &attackPerSec);		
@@ -244,9 +247,13 @@ void GameScene::aiExample()
             this->setComponent<MeshComponent>(this->enemyIDs.back(), swarm);
             this->setComponent<AiMovement>(this->enemyIDs.back());
             this->setComponent<AiCombat>(this->enemyIDs.back());
-            this->setComponent<Collider>(this->enemyIDs.back(), Collider::createBox(glm::vec3(5.0f, 3.5f, 5.0f)));
+            this->setComponent<Collider>(this->enemyIDs.back(), Collider::createSphere(4.0f));
+            //this->setComponent<Collider>(this->enemyIDs.back(), Collider::createBox(glm::vec3(5.0f, 3.5f, 5.0f)));
             this->setComponent<Rigidbody>(this->enemyIDs.back());
-            this->getComponent<Rigidbody>(this->enemyIDs.back()).rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+			Rigidbody& rb = this->getComponent<Rigidbody>(this->enemyIDs.back());
+            rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+			rb.gravityMult = 5.0f;
+			rb.friction = 1.5f;
             this->aiHandler->createAIEntity(this->enemyIDs.back(), "swarmFSM");
             this->swarmGroups.back()->members.push_back(this->enemyIDs.back());
             this->setInactive(this->enemyIDs.back());
