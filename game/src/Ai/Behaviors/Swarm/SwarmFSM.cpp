@@ -12,30 +12,20 @@ bool SwarmFSM::idle_combat(Entity entityID)
 	Transform& enemyTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(entityID);
 	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
     
+
+	float groupHealth = enemySwarmComp.getGroupHealth(FSM::sceneHandler->getScene());
 	if (glm::length(enemyTransform.position - playerTransform.position) <= enemySwarmComp.sightRadius && 
-		enemySwarmComp.life > enemySwarmComp.LOW_HEALTH)
+		groupHealth > enemySwarmComp.LOW_HEALTH)
     {
 		ret = true;
     }
-
-	if(!sceneHandler->getScene()->isActive(entityID))
+	else if(enemySwarmComp.group->inCombat && 
+		groupHealth > enemySwarmComp.LOW_HEALTH)
 	{
-		ret = false;
-	}
-
-	return ret;
-}
-
-bool SwarmFSM::idle_combat_FirendsInFight(Entity entityID)
-{
-	bool ret = false;
-
-	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
-    
-	if (enemySwarmComp.group->inCombat)
-    {
 		ret = true;
-    }
+	}
+	
+
 
 	if(!sceneHandler->getScene()->isActive(entityID))
 	{
@@ -56,11 +46,14 @@ bool SwarmFSM::idle_escape(Entity entityID)
 	Transform& enemyTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(entityID);
 	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
     
+
 	if (glm::length(enemyTransform.position - playerTransform.position) <=
-        enemySwarmComp.sightRadius && enemySwarmComp.life <= enemySwarmComp.LOW_HEALTH)
-      {
+        enemySwarmComp.sightRadius && 
+		enemySwarmComp.getGroupHealth(FSM::sceneHandler->getScene()) <= enemySwarmComp.LOW_HEALTH &&
+		enemySwarmComp.life > 0)
+    {
 		ret = true;
-      }
+    }
 
 	if(!sceneHandler->getScene()->isActive(entityID))
 	{
@@ -90,6 +83,7 @@ bool SwarmFSM::combat_idle(Entity entityID)
 	else
 	{
 		bool noPlayerInSight = true;
+
 		for(auto& p: enemySwarmComp.group->members)
 		{
 			Transform& enmyTrans = FSM::sceneHandler->getScene()->getComponent<Transform>(p);
@@ -127,10 +121,11 @@ bool SwarmFSM::combat_escape(Entity entityID)
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
 	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
     
-	if (enemySwarmComp.life <= enemySwarmComp.LOW_HEALTH)
-    {
+	if(enemySwarmComp.getGroupHealth(FSM::sceneHandler->getScene()) < enemySwarmComp.LOW_HEALTH &&
+		enemySwarmComp.life > 0)
+	{
 		ret = true;
-    }
+	}
 
 	return ret;
 }
@@ -163,11 +158,14 @@ bool SwarmFSM::escape_combat(Entity entityID)
 	std::string playerString = "playerID";
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
 	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+	Transform& enemyTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(entityID);
+	Transform& playerTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(playerID);
     
-	if (enemySwarmComp.group->members.size() > 1)
-    {
+	if(enemySwarmComp.getGroupHealth(FSM::sceneHandler->getScene()) >= enemySwarmComp.LOW_HEALTH)
+	{
 		ret = true;
-    }
+		enemySwarmComp.group->inCombat = true;
+	}
 
 	return ret;
 }

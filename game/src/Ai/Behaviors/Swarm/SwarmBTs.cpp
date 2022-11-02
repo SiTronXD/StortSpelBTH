@@ -225,13 +225,18 @@ BTStatus SwarmBT::informFriends(Entity entityID)
 	BTStatus ret = BTStatus::Success;
 
 	SwarmComponent& thisSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
-	for (auto& f : thisSwarmComp.group->members)
+	if(thisSwarmComp.getGroupHealth(BehaviorTree::sceneHandler->getScene()) > thisSwarmComp.LOW_HEALTH)
 	{
-		SwarmComponent& curSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(f);
-		curSwarmComp.group->inCombat = true;
+		for (auto& f : thisSwarmComp.group->members)
+		{
+			SwarmComponent& curSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(f);
+			curSwarmComp.group->inCombat = true;
+		}
 	}
-
-	//TODO BTStatus: failure not returned.
+	else
+	{
+		ret = BTStatus::Failure;
+	}
 
 	return ret;
 }
@@ -239,10 +244,13 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 {
 	BTStatus ret = BTStatus::Running;
 
+	
+
 	Transform& thisTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Transform& playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(getPlayerID(sceneHandler));
 	SwarmComponent& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	Rigidbody& rigidbody = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
+
     thisTransform.rotation.y = lookAtY(thisTransform, playerTransform);
 	thisTransform.updateMatrix();
 	 glm::vec3 dir = glm::normalize(playerTransform.position- thisTransform.position);
@@ -306,7 +314,7 @@ BTStatus SwarmBT::attack(Entity entityID)
 
 
 		Combat& playerCombat = BehaviorTree::sceneHandler->getScene()->getComponent<Combat>(getPlayerID(sceneHandler));
-		playerCombat.health -= combat.lightHit;
+		//playerCombat.health -= combat.lightHit;
 		combat.timer = combat.lightAttackTime;
 		std::cout<<"ATTACK!!!!\n";
 		ret = BTStatus::Success;

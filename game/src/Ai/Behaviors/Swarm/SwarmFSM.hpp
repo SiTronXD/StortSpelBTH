@@ -24,6 +24,20 @@ struct SwarmComponent
     float alert_top;
 
 	SwarmComponent() {};
+
+	float getGroupHealth(Scene* scene)
+	{
+		float ret = 0.0f;
+		for(auto p: group->members)
+		{
+			ret += scene->getComponent<SwarmComponent>(p).life;
+		}
+		if(group->members.size() > 0)
+		{
+			ret /= group->members.size();
+		}
+		return ret;
+	};
 };
 
 
@@ -31,7 +45,6 @@ class SwarmFSM : public FSM
 {
 private:
 	static bool idle_combat(Entity entityID);
-	static bool idle_combat_FirendsInFight(Entity entityID);
 	static bool idle_escape(Entity entityID);
 
 	static bool combat_idle(Entity entityID);
@@ -48,7 +61,6 @@ private:
 
 
 	EntityEvent idle_to_combat{"idle To Combat", idle_combat};
-	EntityEvent idle_to_combat_firends_in_fight{"idle To Combat (frineds in Fight)", idle_combat_FirendsInFight};
 	EntityEvent idle_to_escape{"idle To escape", idle_escape};
 	EntityEvent combat_to_idle{"combat to idle", combat_idle};
 	EntityEvent combat_to_escape{"combat to escape", combat_escape};
@@ -83,7 +95,6 @@ protected:
 		//TODO: Cehck transitions (Only one should be possible).
 		addEntityTransition("idle", SwarmFSM::idle_to_escape, "escape");
 		addEntityTransition("idle", SwarmFSM::idle_to_combat, "combat");
-		addEntityTransition("idle", SwarmFSM::idle_to_combat_firends_in_fight, "combat");
 
 		addEntityTransition("combat", SwarmFSM::combat_to_escape, "escape");
 		addEntityTransition("combat", SwarmFSM::combat_to_idle, "idle");
