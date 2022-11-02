@@ -14,16 +14,18 @@ struct Combat
 	float lightHit = 1.f;
 	float heavyHit = 10.f;
 
-	float comboLightHit = 100.f;
-	float comboMixHit = 150.f;
-	float comboHeavyHit = 125.f;
+	float comboLightHit = 20.f;
+	float comboMixHit = 30.f;
+	float comboHeavyHit = 50.f;
 
 	float lightAttackTime = 0.5f;
 	float heavyAttackTime = 1.f;
 
 	// Probably make more combo timers
 	// Depends on if the combos should take different amount of time.
-	float comboAttackTime = 7.f;
+	float comboLightTime = 1.5f;
+	float comboHeavyTime = 2.f;
+	float comboMixTime = 2.f;
 
 	std::string comboOrder;
 	std::vector<std::string> combos;

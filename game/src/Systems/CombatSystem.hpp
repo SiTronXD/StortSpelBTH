@@ -20,7 +20,7 @@ public:
 		if (scene->hasComponents<Combat>(playerID))
 		{
 			Combat& combat = scene->getComponent<Combat>(playerID);
-			combat.combos.emplace_back("Light Light ");
+			combat.combos.emplace_back("Light Light Light ");
 			combat.combos.emplace_back("Light Heavy Light ");
 			combat.combos.emplace_back("Heavy Light Heavy ");
 		}
@@ -61,7 +61,7 @@ public:
 		{
 		case lightActive:
 			// If it takes too long between attacks, resets combo.
-			if (combat.timer < 0.f)
+			if (combat.timer > 1.f)
 			{
 				combat.activeAttack = noActive;
 				combat.comboOrder.clear();
@@ -73,7 +73,7 @@ public:
 			break;
 		case heavyActive:
 			// If it takes too long between attacks, resets combo.
-			if (combat.timer < 0.f)
+			if (combat.timer > 1.f)
 			{
 				combat.activeAttack = noActive;
 				combat.comboOrder.clear();
@@ -151,18 +151,21 @@ public:
 	{
 		if (idx == 0)
 		{
+			combat.timer = combat.comboLightTime;
 			combat.health -= combat.comboLightHit;
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive;
 		}
 		else if (idx == 1)
 		{
+			combat.timer = combat.comboMixTime;
 			combat.health -= combat.comboMixHit;
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive;
 		}
 		else if (idx == 2)
 		{
+			combat.timer = combat.comboHeavyTime;
 			combat.health -= combat.comboHeavyHit;
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive;
