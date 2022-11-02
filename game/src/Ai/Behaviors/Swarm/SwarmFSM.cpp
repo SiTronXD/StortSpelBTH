@@ -75,15 +75,13 @@ bool SwarmFSM::combat_idle(Entity entityID)
 	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 
 	glm::vec3 groupMidPos = glm::vec3(0.0f, 0.0f, 0.0f);
-    
+    bool noPlayerInSight = true;
 	if(!enemySwarmComp.group->inCombat)
 	{
 		ret = true;
 	}
 	else
 	{
-		bool noPlayerInSight = true;
-
 		for(auto& p: enemySwarmComp.group->members)
 		{
 			Transform& enmyTrans = FSM::sceneHandler->getScene()->getComponent<Transform>(p);
@@ -106,8 +104,14 @@ bool SwarmFSM::combat_idle(Entity entityID)
 			enemySwarmComp.group->inCombat = false;			
 		}
 	}
-	
-
+	if(enemySwarmComp.forcedToAttack && !noPlayerInSight)
+	{
+		ret = false;
+	}
+	if(ret == true)
+	{
+		enemySwarmComp.forcedToAttack = false;
+	}
 
 	return ret;
 }
@@ -122,7 +126,8 @@ bool SwarmFSM::combat_escape(Entity entityID)
 	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
     
 	if(enemySwarmComp.getGroupHealth(FSM::sceneHandler->getScene()) < enemySwarmComp.LOW_HEALTH &&
-		enemySwarmComp.life > 0)
+		enemySwarmComp.life > 0 &&
+		!enemySwarmComp.forcedToAttack)
 	{
 		ret = true;
 	}
@@ -158,13 +163,19 @@ bool SwarmFSM::escape_combat(Entity entityID)
 	std::string playerString = "playerID";
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
 	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+	Rigidbody& enemyRb = FSM::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
 	Transform& enemyTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Transform& playerTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(playerID);
-    
+    float velAbs = abs(glm::length(enemyRb.velocity));
 	if(enemySwarmComp.getGroupHealth(FSM::sceneHandler->getScene()) >= enemySwarmComp.LOW_HEALTH)
 	{
 		ret = true;
 		enemySwarmComp.group->inCombat = true;
+	}
+	else if(velAbs <= 0.001f)
+	{
+		ret = true;
+		enemySwarmComp.forcedToAttack = true;
 	}
 
 	return ret;
