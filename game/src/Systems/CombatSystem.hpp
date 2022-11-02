@@ -11,11 +11,15 @@ private:
 
 	Scene* scene;
 	Entity playerID;
+	Collider sword;
+	Collider swordSpin;
+	PhysicsEngine* physics;
+	DebugRenderer* debug;
 
 public:
 
-	CombatSystem(Scene* scene, Entity playerID)
-		: scene(scene), playerID(playerID)
+	CombatSystem(Scene* scene, Entity playerID, PhysicsEngine* physics, DebugRenderer* debug)
+		: scene(scene), playerID(playerID), physics(physics), debug(debug)
 	{
 		if (scene->hasComponents<Combat>(playerID))
 		{
@@ -23,6 +27,8 @@ public:
 			combat.combos.emplace_back("Light Light Light ");
 			combat.combos.emplace_back("Light Heavy Light ");
 			combat.combos.emplace_back("Heavy Light Heavy ");
+			sword = Collider::createCapsule(1.f, 6.f, true);
+			swordSpin = Collider::createCapsule(10.f, 0.1f, true);
 		}
 	}
 
@@ -31,11 +37,17 @@ public:
 		auto view = reg.view<Combat>();
 		auto foo = [&](Combat& combat)
 		{
-			if (combat.timer > -1.f)
+			Transform& playerTrans = scene->getComponent<Transform>(playerID);
+			playerTrans.updateMatrix();
+			debug->renderCapsule(playerTrans.position, glm::vec3(0.f, 0.f, 0.f), 0.1f, 10.f, glm::vec3(0.5f, 0.5f, 0.5f));
+			if (combat.attackTimer > -1.f)
 			{
-				combat.timer -= deltaTime;
+				combat.attackTimer -= deltaTime;
 			}
-
+			if (combat.comboClearTimer > -1.f)
+			{
+				combat.comboClearTimer -= deltaTime;
+			}
 			if (Input::isMouseButtonPressed(Mouse::LEFT))
 			{
 				lightAttack(combat);
@@ -61,30 +73,30 @@ public:
 		{
 		case lightActive:
 			// If it takes too long between attacks, resets combo.
-			if (combat.timer > 1.f)
+			if (combat.comboClearTimer <= 0.f)
 			{
 				combat.activeAttack = noActive;
 				combat.comboOrder.clear();
 			}
-			else if (combat.timer < 0.f)
+			else if (combat.attackTimer < 0.f)
 			{
 				combat.activeAttack = noActive;
 			}
 			break;
 		case heavyActive:
 			// If it takes too long between attacks, resets combo.
-			if (combat.timer > 1.f)
+			if (combat.comboClearTimer <= 0.f)
 			{
 				combat.activeAttack = noActive;
 				combat.comboOrder.clear();
 			}
-			else if (combat.timer < 0.f)
+			else if (combat.attackTimer < 0.f)
 			{
 				combat.activeAttack = noActive;
 			}
 			break;
 		case comboActive:
-			if (combat.timer < 0.f)
+			if (combat.attackTimer < 1.f)
 			{
 				combat.activeAttack = noActive;
 			}
@@ -97,7 +109,8 @@ public:
 
 		if (combat.activeAttack == noActive)
 		{
-			combat.timer = combat.lightAttackTime;
+			combat.attackTimer = combat.lightAttackTime;
+			combat.comboClearTimer = combat.comboClearDelay;
 			combat.comboOrder.append("Light ");
 
 			// If combo is lhh there can be no combo, combo is reset.
@@ -114,8 +127,18 @@ public:
 			}
 			else
 			{
-				combat.health -= combat.lightHit;
-				return true;
+				Transform& playerTrans = scene->getComponent<Transform>(playerID);
+				playerTrans.updateMatrix();
+				std::vector<int> hitID = physics->testContact(sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
+				for (size_t i = 0; i < hitID.size(); i++)
+				{
+					if (scene->hasComponents<SwarmComponent>(hitID[i]))
+					{
+						SwarmComponent& enemy = scene->getComponent<SwarmComponent>(hitID[i]);
+						enemy.life -= (int)combat.lightHit;
+						return true;
+					}
+				}
 			}
 		}
 		return false;
@@ -127,7 +150,8 @@ public:
 
 		if (combat.activeAttack == noActive)
 		{
-			combat.timer = combat.heavyAttackTime;
+			combat.attackTimer = combat.heavyAttackTime;
+			combat.comboClearTimer = combat.comboClearDelay;
 			combat.comboOrder.append("Heavy ");
 
 			// If combo starts with Heavy Heavy , there can be no combo, combo is reset.
@@ -138,8 +162,18 @@ public:
 			if (checkCombo(combat)) { return true; }
 			else
 			{
-				combat.health -= combat.heavyHit;
-				return true;
+				Transform& playerTrans = scene->getComponent<Transform>(playerID);
+				playerTrans.updateMatrix();
+				std::vector<int> hitID = physics->testContact(sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
+				for (size_t i = 0; i < hitID.size(); i++)
+				{
+					if (scene->hasComponents<SwarmComponent>(hitID[i]))
+					{
+						SwarmComponent& enemy = scene->getComponent<SwarmComponent>(hitID[i]);
+						enemy.life -= (int)combat.heavyHit;
+						return true;
+					}
+				}
 			}
 		}
 
@@ -151,22 +185,52 @@ public:
 	{
 		if (idx == 0)
 		{
-			combat.timer = combat.comboLightTime;
-			combat.health -= combat.comboLightHit;
+			combat.attackTimer = combat.comboLightTime;
+			Transform& playerTrans = scene->getComponent<Transform>(playerID);
+			playerTrans.updateMatrix();
+			std::vector<int> hitID = physics->testContact(swordSpin, playerTrans.position, glm::vec3(0.f, 0.f, 0.f));
+			for (size_t i = 0; i < hitID.size(); i++)
+			{
+				if (scene->hasComponents<SwarmComponent>(hitID[i]))
+				{
+					SwarmComponent& enemy = scene->getComponent<SwarmComponent>(hitID[i]);
+					enemy.life -= (int)combat.comboLightHit;
+				}
+			}
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive;
 		}
 		else if (idx == 1)
 		{
-			combat.timer = combat.comboMixTime;
-			combat.health -= combat.comboMixHit;
+			combat.attackTimer = combat.comboMixTime;
+			Transform& playerTrans = scene->getComponent<Transform>(playerID);
+			playerTrans.updateMatrix();
+			std::vector<int> hitID = physics->testContact(sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
+			for (size_t i = 0; i < hitID.size(); i++)
+			{
+				if (scene->hasComponents<SwarmComponent>(hitID[i]))
+				{
+					SwarmComponent& enemy = scene->getComponent<SwarmComponent>(hitID[i]);
+					enemy.life -= (int)combat.comboMixHit;
+				}
+			}
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive;
 		}
 		else if (idx == 2)
 		{
-			combat.timer = combat.comboHeavyTime;
-			combat.health -= combat.comboHeavyHit;
+			combat.attackTimer = combat.comboHeavyTime;
+			Transform& playerTrans = scene->getComponent<Transform>(playerID);
+			playerTrans.updateMatrix();
+			std::vector<int> hitID = physics->testContact(sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
+			for (size_t i = 0; i < hitID.size(); i++)
+			{
+				if (scene->hasComponents<SwarmComponent>(hitID[i]))
+				{
+					SwarmComponent& enemy = scene->getComponent<SwarmComponent>(hitID[i]);
+					enemy.life -= (int)combat.comboMixHit;
+				}
+			}
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive;
 		}

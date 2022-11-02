@@ -11,12 +11,12 @@ struct Combat
 {
 	float health = 100.f;
 	
-	float lightHit = 1.f;
-	float heavyHit = 10.f;
+	float lightHit = 50.f;
+	float heavyHit = 75.f;
 
-	float comboLightHit = 20.f;
-	float comboMixHit = 30.f;
-	float comboHeavyHit = 50.f;
+	float comboLightHit = 100.f;
+	float comboMixHit = 125.f;
+	float comboHeavyHit = 150.f;
 
 	float lightAttackTime = 0.5f;
 	float heavyAttackTime = 1.f;
@@ -30,7 +30,9 @@ struct Combat
 	std::string comboOrder;
 	std::vector<std::string> combos;
 
-	float timer = 0;
+	float attackTimer = 0.f;
+	float comboClearTimer = 0.f;
+	float comboClearDelay = 2.f;
 
 	ActiveAttack activeAttack = noActive;
 };
