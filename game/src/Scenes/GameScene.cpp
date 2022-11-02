@@ -179,6 +179,9 @@ void GameScene::aiExample()
         if(ImGui::Button("Kill Player")){
             playerCombat.health = 0; 
         }
+        if(ImGui::Button("INVINCIBLE Player")){
+            playerCombat.health = INT_MAX; 
+        }
 		ImGui::Separator();
 		ImGui::Separator();
 		entityImguiWindow(swarmFSM, entityId);

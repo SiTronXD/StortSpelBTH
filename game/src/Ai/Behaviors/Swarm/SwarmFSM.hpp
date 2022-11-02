@@ -47,19 +47,19 @@ private:
 	static bool revive(Entity entityID);
 
 
-	EntityEvent idle_to_combat{idle_combat};
-	EntityEvent idle_to_combat_firends_in_fight{idle_combat_FirendsInFight};
-	EntityEvent idle_to_escape{idle_escape};
-	EntityEvent combat_to_idle{combat_idle};
-	EntityEvent combat_to_escape{combat_escape};
-	EntityEvent escape_to_idle{escape_idle};
-	EntityEvent escape_to_combat{escape_combat};
+	EntityEvent idle_to_combat{"idle To Combat", idle_combat};
+	EntityEvent idle_to_combat_firends_in_fight{"idle To Combat (frineds in Fight)", idle_combat_FirendsInFight};
+	EntityEvent idle_to_escape{"idle To escape", idle_escape};
+	EntityEvent combat_to_idle{"combat to idle", combat_idle};
+	EntityEvent combat_to_escape{"combat to escape", combat_escape};
+	EntityEvent escape_to_idle{"idle To Combat", escape_idle};
+	EntityEvent escape_to_combat{"escape to combat", escape_combat};
 
     // EntityEvent notisPlayer_event{notisPlayer};
 	// EntityEvent playerDissapeared_event{playerDissapeared};
 
-	EntityEvent to_dead{dead};
-	EntityEvent to_living{revive};
+	EntityEvent to_dead{"to Dead",dead};
+	EntityEvent to_living{"to Living" ,revive};
 
 public:
 protected:
