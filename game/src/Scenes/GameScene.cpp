@@ -38,6 +38,25 @@ void GameScene::init()
 		this->getResourceManager()->addTexture("assets/textures/UI/hpBarBackground.png");
 	this->hpBarTextureID = 
 		this->getResourceManager()->addTexture("assets/textures/UI/hpBar.png");
+
+    // Add textures for ui renderer
+	TextureSamplerSettings samplerSettings{};
+	samplerSettings.filterMode = vk::Filter::eNearest;	
+	samplerSettings.unnormalizedCoordinates = VK_TRUE;
+    this->fontTextureIndex = Scene::getResourceManager()->addTexture("assets/textures/testBitmapFont.png", { samplerSettings, true });
+
+	Scene::getUIRenderer()->setBitmapFont(
+		{
+			"abcdefghij",
+			"klmnopqrst",
+			"uvwxyz+-.'",
+			"0123456789",
+			"!?,<>:()#^",
+			"@         "
+		},
+		fontTextureIndex,
+		16, 16
+	);
 }
 
 void GameScene::start()
@@ -113,7 +132,6 @@ void GameScene::update()
 		}
 	}
 
-
 	/*if (this->hasComponents<Collider, Rigidbody>(this->playerID))
 	{
 		Rigidbody& rb = this->getComponent<Rigidbody>(this->playerID);
@@ -178,6 +196,9 @@ void GameScene::update()
 
 void GameScene::aiExample() 
 {
+
+
+
 	auto a = [&](FSM* fsm, uint32_t entityId) -> void {
 		SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
     
@@ -210,8 +231,25 @@ void GameScene::aiExample()
             ImGui::InputFloat("lightattackDmg", &lightAttackDmg);		 
             ImGui::Checkbox("inCombat", &inCombat);		            
         };
+        //TEMP             
 
-        //TEMP 
+        static bool showEntityId = false;
+        ImGui::Checkbox("Show Entity ID", &showEntityId);
+        if(showEntityId)
+        {
+            
+            // Show all entity ID over entitties             
+            glm::vec4 entityPos = glm::vec4(this->getSceneHandler()->getScene()->getComponent<Transform>(entityId).position, 1.f);
+
+            auto screenPos = this->getMainCamera()->projection * this->getMainCamera()->view * entityPos;
+            glm::vec3 realScreenPos; 
+            realScreenPos.x = (screenPos.x / screenPos.w) * 1920/2;
+            realScreenPos.y = (screenPos.y / screenPos.w) * 1080/2;
+            realScreenPos.z = screenPos.z / screenPos.w;
+
+            Scene::getUIRenderer()->setTexture(this->fontTextureIndex);
+            Scene::getUIRenderer()->renderString(std::to_string(entityId), realScreenPos.x, realScreenPos.y, 20, 20); 
+        }    
 
         if(ImGui::Button("SWITCHsCENE")){
             this->switchScene(new GameScene(), "scripts/gamescene.lua");            
@@ -261,14 +299,13 @@ void GameScene::aiExample()
                 ImGui::End();
             }            
             ImGui::TreePop();
-        }
+        }       
         
 	};
 	static SwarmFSM swarmFSM;
 
 	this->aiHandler->addFSM(&swarmFSM, "swarmFSM");
 
-	
 
 //TODO: Cause crash on second run, therefore disabled in distribution... 
 #ifdef _CONSOLE 
