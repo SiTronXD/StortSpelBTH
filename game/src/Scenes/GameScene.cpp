@@ -54,7 +54,9 @@ void GameScene::start()
 	Transform& perkTrans = this->getComponent<Transform>(this->perk);
 	perkTrans.position = glm::vec3(30.f, 5.f, 20.f);
 	perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
-	this->setComponent<Collider>(this->perk, Collider::createSphere(2.f, true));
+    this->setComponent<Collider>(
+        this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true)
+    );
 	this->setComponent<Perks>(this->perk);
 	Perks& perkSetting = this->getComponent<Perks>(this->perk);
 	perkSetting.multiplier = 1.f;
@@ -66,7 +68,9 @@ void GameScene::start()
 	Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
 	perkTrans1.position = glm::vec3(30.f, 5.f, -20.f);
 	perkTrans1.scale = glm::vec3(2.f, 2.f, 2.f);
-	this->setComponent<Collider>(this->perk1, Collider::createSphere(2.f, true));
+    this->setComponent<Collider>(
+        this->perk1, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true)
+    );
 	this->setComponent<Perks>(this->perk1);
 	Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
 	perkSetting1.multiplier = 1.f;
@@ -78,7 +82,9 @@ void GameScene::start()
 	Transform& perkTrans2 = this->getComponent<Transform>(this->perk2);
 	perkTrans2.position = glm::vec3(30.f, 5.f, 0.f);
 	perkTrans2.scale = glm::vec3(2.f, 2.f, 2.f);
-	this->setComponent<Collider>(this->perk2, Collider::createSphere(2.f, true));
+    this->setComponent<Collider>(
+        this->perk2, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true)
+    );
 	this->setComponent<Perks>(this->perk2);
 	Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
 	perkSetting2.multiplier = 1.f;
@@ -370,7 +376,9 @@ void GameScene::createPortal()
 
 	portal = this->createEntity();
 	this->getComponent<Transform>(portal).position = this->roomHandler.getExitRoom().position;
-	this->setComponent<Collider>(portal, Collider::createBox(portalTriggerDims, true));
+    this->setComponent<Collider>(
+        portal, Collider::createBox(portalTriggerDims, glm::vec3(0, 0, 0), true)
+    );
 
 	this->setComponent<MeshComponent>(portal);
 	this->getComponent<MeshComponent>(portal).meshID = portalOffMesh;
