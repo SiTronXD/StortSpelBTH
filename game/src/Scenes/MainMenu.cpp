@@ -38,11 +38,9 @@ void MainMenu::update()
 	{
 		this->switchScene(new GameScene(), "scripts/gamescene.lua");
 	}
-	else
-	{
-		this->getUIRenderer()->setTexture(this->backgroundId);
-		this->getUIRenderer()->renderTexture(0.f, 0.f, 1920.f, 1080.f);
-	}
+
+	this->getUIRenderer()->setTexture(this->backgroundId);
+	this->getUIRenderer()->renderTexture(0.f, 0.f, 1920.f, 1080.f);
 
 	switch (this->state)
 	{
