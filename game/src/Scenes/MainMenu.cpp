@@ -59,7 +59,7 @@ void MainMenu::update()
 		if (Input::isKeyReleased(Keys::ONE)) { this->state = State::Play; }
 		else if (Input::isKeyReleased(Keys::TWO)) { this->state = State::Settings; }
 		else if (Input::isKeyReleased(Keys::THREE)) { this->state = State::HowToPlay; }
-		//else if (Input::isKeyReleased(Keys::FOUR)) { this->state = State::Quit; }
+		else if (Input::isKeyReleased(Keys::FOUR)) { this->state = State::Quit; }
 
 		break;
 		
@@ -82,7 +82,7 @@ void MainMenu::update()
 		this->getUIRenderer()->renderString("back", -(1920/2) + 100, (1080/2) - 100, 50.f, 50.f);
 		break;
 	case Quit:
-		// Coming soon
+		this->getSceneHandler()->getWindow()->close();
 		break;
 	}
 
