@@ -246,18 +246,60 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 
 	
 
-	Transform& thisTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
+	Collider& entityCollider = BehaviorTree::sceneHandler->getScene()->getComponent<Collider>(entityID);
+	Collider& playerCollider = BehaviorTree::sceneHandler->getScene()->getComponent<Collider>(getPlayerID(sceneHandler));
+	Transform& entityTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Transform& playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(getPlayerID(sceneHandler));
 	SwarmComponent& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	Rigidbody& rigidbody = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
+    
+    auto d = entityCollider.radius;
+    auto e = playerCollider.radius;
+    //TODO: FORTSÄTT HÄR...
+    //playerTransform.position;
 
-    thisTransform.rotation.y = lookAtY(thisTransform, playerTransform);
-	thisTransform.updateMatrix();
-	 glm::vec3 dir = glm::normalize(playerTransform.position- thisTransform.position);
-	 dir.y = 0;
-	 float tempYvel =  rigidbody.velocity.y;
-	 rigidbody.velocity = dir * swarmComp.speed;
-	 rigidbody.velocity.y = tempYvel;
+    entityTransform.rotation.y = lookAtY(entityTransform, playerTransform);
+	entityTransform.updateMatrix();    
+    
+    glm::vec3 dirEntityToPlayer = glm::normalize(playerTransform.position- entityTransform.position);
+    glm::vec3 entityTargetPos = entityTransform.position;
+    float distEntityTargetPosToPlayer = glm::length(playerTransform.position- entityTransform.position);
+    glm::vec3 dirEntityTargetPosToPlayer = glm::normalize(playerTransform.position- entityTargetPos);
+
+    bool canSeePlayer = false; 
+    while(!canSeePlayer) 
+    {
+        distEntityTargetPosToPlayer = glm::length(playerTransform.position- entityTargetPos) ;
+        dirEntityTargetPosToPlayer = glm::normalize(playerTransform.position- entityTargetPos);
+        Ray rayToPlayer{entityTargetPos, dirEntityTargetPosToPlayer};    
+        RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, distEntityTargetPosToPlayer+10.f);
+
+        if (rp.hit)
+        {        
+            int playerId = -1;
+            std::string playerStr = "playerID";
+            BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(playerId, playerStr);
+
+            if(playerId != rp.entity)
+            {
+                glm::vec3 leftOfPlayer = glm::cross(dirEntityTargetPosToPlayer, glm::vec3(0.f,1.f,0.f));
+                dirEntityToPlayer = glm::normalize(leftOfPlayer + dirEntityTargetPosToPlayer); 
+                entityTargetPos += dirEntityToPlayer;
+
+            }else if(rp.entity )
+            {
+
+            }
+
+            canSeePlayer = rp.entity == playerId;
+        }
+
+    }
+
+    dirEntityToPlayer.y = 0;
+    float tempYvel =  rigidbody.velocity.y;
+    rigidbody.velocity = dirEntityToPlayer * swarmComp.speed;
+    rigidbody.velocity.y = tempYvel;
 
 
     
