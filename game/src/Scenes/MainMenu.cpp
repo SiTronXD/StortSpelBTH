@@ -23,7 +23,7 @@ void MainMenu::init()
 			"!?,<>:()#^",
 			"@         "
 		},
-		fontTextureId, 16, 16);
+		this->fontTextureId, 16, 16);
 }
 
 void MainMenu::start() 
