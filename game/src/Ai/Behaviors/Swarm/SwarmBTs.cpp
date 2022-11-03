@@ -214,6 +214,15 @@ BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 	 rigidbody.velocity = dir * swarmComp.speed;
 	 rigidbody.velocity.y = tempYvel;
 
+	 if(rand()%2==0)
+	 {
+		 thisTransform.rotation.y += 100 * thisSwarmComp.escapeAnimSpeed * Time::getDT();
+	 }
+	 else
+	 {
+		 thisTransform.rotation.y -= 100 * thisSwarmComp.escapeAnimSpeed * Time::getDT();
+	 }
+
 	//TODO BTStatus: failure not returned.
 	//TODO : Check if cornered, return failure
 

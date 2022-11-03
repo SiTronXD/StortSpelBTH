@@ -254,7 +254,7 @@ bool SwarmFSM::escape_combat(Entity entityID)
 		ret = true;
 		enemySwarmComp.group->inCombat = true;
 	}
-	else if(velAbs <= 0.001f)
+	else if(velAbs <= 0.000001f)
 	{
 		ret = true;
 		enemySwarmComp.forcedToAttack = true;

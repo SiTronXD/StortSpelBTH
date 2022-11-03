@@ -16,7 +16,7 @@ struct SwarmComponent
 	float deathAnimSpeed	= 1.0f;
 	float alertAnimSpeed	= 2.0f;
 	float chargeAnimSpeed	= 1.0f;
-	float escapeAnimSpeed	= 1.0f;
+	float escapeAnimSpeed	= 2.0f;
 	float alertScale	 = 1.5f;
 	float alertTempYpos	= 0.0f;
 	bool alertAtTop = false;
