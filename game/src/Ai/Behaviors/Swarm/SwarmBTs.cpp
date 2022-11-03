@@ -363,7 +363,7 @@ BTStatus SwarmBT::die(Entity entityID)
 	BTStatus ret = BTStatus::Success;
 
 	Combat& playerCombat = sceneHandler->getScene()->getComponent<Combat>(getPlayerID(sceneHandler));
-	if (playerCombat.health <= 90.f)
+	if (playerCombat.health <= (playerCombat.maxHealth - 10))
 	{
 		playerCombat.health += 10.f;
 	}
