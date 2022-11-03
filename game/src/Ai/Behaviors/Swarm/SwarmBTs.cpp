@@ -214,6 +214,15 @@ BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 	 rigidbody.velocity = dir * swarmComp.speed;
 	 rigidbody.velocity.y = tempYvel;
 
+	 if(rand()%2==0)
+	 {
+		 thisTransform.rotation.y += 100 * thisSwarmComp.escapeAnimSpeed * Time::getDT();
+	 }
+	 else
+	 {
+		 thisTransform.rotation.y -= 100 * thisSwarmComp.escapeAnimSpeed * Time::getDT();
+	 }
+
 	//TODO BTStatus: failure not returned.
 	//TODO : Check if cornered, return failure
 
@@ -349,10 +358,15 @@ BTStatus SwarmBT::attack(Entity entityID)
 
 	 if(combat.timer > 0.0f){
 		combat.timer -= Time::getDT();
+		if(thisTransform.scale.y > 0.5f)
+		{
+			thisTransform.scale.y -= swarmComp.chargeAnimSpeed * Time::getDT();
+		}
 	 }
 	 else if(!swarmComp.inAttack)
 	 {
 		 //JUMP!
+		thisTransform.scale.y = 1.0f;
 		rigidbody.velocity = dir * swarmComp.jumpForce;
         swarmComp.inAttack = true; 
 
