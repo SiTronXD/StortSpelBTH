@@ -261,28 +261,7 @@ void GameScene::aiExample()
             SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs.back());
             swarmComp.life = 0.0f;
         }
-
     }
-	/*int swarmModel = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
-
-	int num_blobs = 6;
-	int group_size = 3;
-	for (int i = 0; i < num_blobs; i++)
-    {
-		this->swarmEnemies.push_back(this->createEntity());   
-		Transform& trans = this->getSceneHandler()->getScene()->getComponent<Transform>(this->swarmEnemies.back());
-        trans.position.x += rand()%50 - 25;
-        trans.position.z += rand()%50 - 25;
-		this->setComponent<MeshComponent>(this->swarmEnemies.back(), swarmModel);
-		this->aiHandler->createAIEntity(this->swarmEnemies.back(), "swarmFSM");
-        if ((i)%group_size == 0)
-        {
-			this->swarmGroups.push_back(new SwarmGroup);
-        }
-        this->swarmGroups.back()->members.push_back(this->swarmEnemies.back());
-        this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->swarmEnemies.back()).group = this->swarmGroups.back();
-	}*/
-    
 }
 
 bool GameScene::allDead()
@@ -330,6 +309,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 					SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs[idx]);
 					transform.scale.y = 1.0f;
 					swarmComp.life = swarmComp.FULL_HEALTH;
+					swarmComp.group->inCombat = false;
 
 					idx++;
 					counter++;

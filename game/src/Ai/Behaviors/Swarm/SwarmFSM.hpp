@@ -3,6 +3,7 @@
 #include "SwarmBTs.hpp"
 #include "../../../Components/AiCombat.h"
 
+
 struct SwarmComponent
 {
 	int LOW_HEALTH = 30;
@@ -13,12 +14,17 @@ struct SwarmComponent
 	float jumpY = 10.0f;
 
 	float deathAnimSpeed = 1.0f;
+	float alertAnimSpeed = 2.0f;
+	float alertScale	 = 1.5f;
+	float alertTempYpos	= 0.0f;
+	bool alertAtTop = false;
 
     float sightRadius	= 70;
 	float attackRange	= 40;
 	bool inCombat		= false;
 	bool forcedToAttack = false;
     bool inAttack		= false;
+	bool alertDone		= false;
 	SwarmGroup* group;
 	std::vector<SwarmGroup*> groupsInSight;
 
@@ -46,7 +52,10 @@ struct SwarmComponent
 class SwarmFSM : public FSM
 {
 private:
-	static bool idle_combat(Entity entityID);
+	static float getEntityDist(int one, int two);
+private:
+	static bool idle_alerted(Entity entityID);
+	static bool alerted_combat(Entity entityID);
 	static bool idle_escape(Entity entityID);
 
 	static bool combat_idle(Entity entityID);
@@ -62,11 +71,12 @@ private:
 	static bool revive(Entity entityID);
 
 
-	EntityEvent idle_to_combat{"idle To Combat", idle_combat};
-	EntityEvent idle_to_escape{"idle To escape", idle_escape};
+	EntityEvent idle_to_alerted{"idle to alert", idle_alerted};
+	EntityEvent alerted_to_combat{"alert to combat", alerted_combat};
+	EntityEvent idle_to_escape{"idle to escape", idle_escape};
 	EntityEvent combat_to_idle{"combat to idle", combat_idle};
 	EntityEvent combat_to_escape{"combat to escape", combat_escape};
-	EntityEvent escape_to_idle{"idle To Combat", escape_idle};
+	EntityEvent escape_to_idle{"escape to idle", escape_idle};
 	EntityEvent escape_to_combat{"escape to combat", escape_combat};
 
     // EntityEvent notisPlayer_event{notisPlayer};
@@ -89,6 +99,7 @@ protected:
 
 		addBTs({
 			{"idle", new Swarm_idle},
+			{"alerted", new Swarm_alerted},
 		    {"combat", new Swarm_combat},
 		    {"escape", new Swarm_escape},
 			{"dead", new Swarm_dead}
@@ -96,7 +107,8 @@ protected:
 
 		//TODO: Cehck transitions (Only one should be possible).
 		addEntityTransition("idle", SwarmFSM::idle_to_escape, "escape");
-		addEntityTransition("idle", SwarmFSM::idle_to_combat, "combat");
+		addEntityTransition("idle", SwarmFSM::idle_to_alerted, "alerted");
+		addEntityTransition("alerted", SwarmFSM::alerted_to_combat, "combat");
 
 		addEntityTransition("combat", SwarmFSM::combat_to_escape, "escape");
 		addEntityTransition("combat", SwarmFSM::combat_to_idle, "idle");
@@ -105,6 +117,7 @@ protected:
 		addEntityTransition("escape", SwarmFSM::escape_to_idle, "idle");
 
 		addEntityTransition("idle", SwarmFSM::to_dead, "dead");
+		addEntityTransition("alerted", SwarmFSM::to_dead, "dead");
 		addEntityTransition("combat", SwarmFSM::to_dead, "dead");
 		addEntityTransition("escape", SwarmFSM::to_dead, "dead");
 

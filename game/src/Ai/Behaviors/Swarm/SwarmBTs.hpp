@@ -64,6 +64,15 @@ class Swarm_idle : public SwarmBT
 	void update(Entity entityID){};
 };
 
+class Swarm_alerted : public SwarmBT
+{
+   protected:
+	void start();
+  public:
+	void initEntityData(Entity entityID){};
+	void update(Entity entityID){};
+};
+
 class Swarm_combat : public SwarmBT
 {
    protected:
