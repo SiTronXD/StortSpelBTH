@@ -14,7 +14,7 @@ void TheServerGame::init() {
 void TheServerGame::update(float dt) 
 {
   static bool wentIn = false;
-  if (this->scene->getComponent<Transform>(this->scene->getPlayer(0))
+  if (this->getComponent<Transform>(this->getPlayer(0))
               .position.z > 0 &&
       !wentIn)
     {
