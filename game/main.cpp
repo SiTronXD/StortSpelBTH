@@ -7,7 +7,7 @@
 #include <cstdlib>
 
 #include "vengine.h"
-#include "src/Scenes/TutorialScene.h"
+#include "src/Scenes/MainMenu.h"
 #include "src/Scenes/GameScene.h"
 #include "src/Scenes/CreateAPuzzle.h"
 #include "src/Scenes/NetworkAI.h"
@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
     srand((unsigned int)time(0));
     {
         Engine engine;
-        engine.run("Presumed Dead", "scripts/TutorialScene.lua", new TutorialScene());
+        engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
         //engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
     }
 
