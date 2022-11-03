@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
     srand((unsigned int)time(0));
     {
         Engine engine;
-        engine.run("Presumed Dead", "scripts/TutorialScene.lua", new LobbyScene());
+        engine.run("Presumed Dead", "", new LobbyScene());
         //engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
     }
 
