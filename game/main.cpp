@@ -7,7 +7,7 @@
 #include <cstdlib>
 
 #include "vengine.h"
-#include "src/Scenes/TutorialScene.h"
+#include "src/Scenes/MainMenu.h"
 #include "src/Scenes/GameScene.h"
 #include "src/Scenes/NetworkAI.h"
 #include "src/Scenes/LobbyScene.h"
