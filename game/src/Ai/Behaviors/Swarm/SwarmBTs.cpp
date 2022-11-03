@@ -307,10 +307,15 @@ BTStatus SwarmBT::attack(Entity entityID)
 
 	 if(combat.timer > 0.0f){
 		combat.timer -= Time::getDT();
+		if(thisTransform.scale.y > 0.5f)
+		{
+			thisTransform.scale.y -= swarmComp.chargeAnimSpeed * Time::getDT();
+		}
 	 }
 	 else if(!swarmComp.inAttack)
 	 {
 		 //JUMP!
+		thisTransform.scale.y = 1.0f;
 		rigidbody.velocity = dir * swarmComp.jumpForce;
         swarmComp.inAttack = true; 
 

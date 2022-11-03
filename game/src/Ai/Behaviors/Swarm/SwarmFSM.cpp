@@ -95,6 +95,8 @@ bool SwarmFSM::combat_idle(Entity entityID)
 		return false;
 	}
 
+	
+
 	int playerID;
 	std::string playerString = "playerID";
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
@@ -148,7 +150,12 @@ bool SwarmFSM::combat_idle(Entity entityID)
 	if(ret == true)
 	{
 		enemySwarmComp.forcedToAttack = false;
-		enemySwarmComp.group->inCombat = false;		
+		enemySwarmComp.group->inCombat = false;	
+		//Reset Combat timer
+		AiCombat& combat = FSM::sceneHandler->getScene()->getComponent<AiCombat>(entityID);
+		combat.timer = combat.lightAttackTime;
+		//Reset scale
+		FSM::sceneHandler->getScene()->getComponent<Transform>(entityID).scale.y = 1.0f;
 	}
 
 	return ret;
@@ -167,6 +174,7 @@ bool SwarmFSM::combat_escape(Entity entityID)
 	int playerID;
 	std::string playerString = "playerID";
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
+	
 
 	float groupHealth = enemySwarmComp.getGroupHealth(FSM::sceneHandler->getScene());
     
@@ -174,6 +182,16 @@ bool SwarmFSM::combat_escape(Entity entityID)
 		!enemySwarmComp.forcedToAttack)
 	{
 		ret = true;
+	}
+
+	if(ret == true)
+	{
+		//Reset Combat timer
+		AiCombat& combat = FSM::sceneHandler->getScene()->getComponent<AiCombat>(entityID);
+		combat.timer = combat.lightAttackTime;
+
+		//Reset scale
+		FSM::sceneHandler->getScene()->getComponent<Transform>(entityID).scale.y = 1.0f;
 	}
 
 	return ret;
@@ -203,6 +221,11 @@ bool SwarmFSM::escape_idle(Entity entityID)
     {
 		ret = true;
     }
+
+	if(ret == true)
+	{
+		FSM::sceneHandler->getScene()->getComponent<Transform>(entityID).scale.x = 1.0f;
+	}
 
 	return ret;
 }
@@ -237,6 +260,11 @@ bool SwarmFSM::escape_combat(Entity entityID)
 		enemySwarmComp.forcedToAttack = true;
 	}
 
+	if(ret == true)
+	{
+		enemyTransform.scale.x = 1.0f;
+	}
+
 	return ret;
 }
 
@@ -247,8 +275,15 @@ bool SwarmFSM::dead(Entity entityID)
 	SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	if(swarmComp.life <= 0)
 	{
-		swarmComp.alertDone = false;
 		ret = true;
+	}
+
+	if(ret == true)
+	{
+		swarmComp.alertDone = false;
+		//Reset Combat timer
+		AiCombat& combat = FSM::sceneHandler->getScene()->getComponent<AiCombat>(entityID);
+		combat.timer = combat.lightAttackTime;
 	}
 
 	return ret;
