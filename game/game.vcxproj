@@ -279,7 +279,7 @@ SET ERRORLEVEL=0</Command>
     <ClCompile Include="src\World Handling\Room Layout.cpp" />
     <ClCompile Include="src\ServerGameModes\TheServerGame.cpp" />
     <ClCompile Include="src\Scenes\NetworkAI.cpp" />
-    <ClCompile Include="src\Scenes\TutorialScene.cpp" />
+    <ClCompile Include="src\Scenes\MainMenu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -304,7 +304,7 @@ SET ERRORLEVEL=0</Command>
     <ClInclude Include="src\World Handling\Room Generator.h" />
     <ClInclude Include="src\World Handling\Room Handler.h" />
     <ClInclude Include="src\World Handling\Room Layout.h" />
-    <ClInclude Include="src\Scenes\TutorialScene.h" />
+    <ClInclude Include="src\Scenes\MainMenu.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\deps\vengine\src\vengine\vengine.vcxproj">
