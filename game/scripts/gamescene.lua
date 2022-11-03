@@ -34,15 +34,17 @@ scene.setComponent(uiID, CompType.Script, "scripts/UI.lua")
 scene.getComponent(uiID, CompType.Script).playerScript = scene.getComponent(playerID, CompType.Script)
 
 -- UI textures
-local pixelArtSamplerSettings = { filterMode = Filters.Nearest }
+local pixelArtSettings = {}
+pixelArtSettings.samplerSettings = {}
+pixelArtSettings.samplerSettings.filterMode = Filters.Nearest
 scene.getComponent(uiID, CompType.Script).hpBarBackgroundTextureID =
 	resources.addTexture("assets/textures/UI/hpBarBackground.png")
 scene.getComponent(uiID, CompType.Script).hpBarTextureID = 
 	resources.addTexture("assets/textures/UI/hpBar.png")
 scene.getComponent(uiID, CompType.Script).perkSlotTextureID = 
-	resources.addTexture("assets/textures/UI/perkSlot.png", pixelArtSamplerSettings)
+	resources.addTexture("assets/textures/UI/perkSlot.png", pixelArtSettings)
 scene.getComponent(uiID, CompType.Script).crosshairTextureID = 
-	resources.addTexture("assets/textures/UI/crosshair.png", pixelArtSamplerSettings)
+	resources.addTexture("assets/textures/UI/crosshair.png", pixelArtSettings)
 
 --[[local p = scene.createPrefab("scripts/prefabs/prefab.lua")
 
