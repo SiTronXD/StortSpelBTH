@@ -52,7 +52,8 @@ void GameScene::start()
 	int perkHp = this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
 	this->setComponent<MeshComponent>(this->perk, perkHp);
 	Transform& perkTrans = this->getComponent<Transform>(this->perk);
-	perkTrans.position = glm::vec3(20.f, 5.f, 0.f);
+	perkTrans.position = glm::vec3(30.f, 5.f, 20.f);
+	perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
 	this->setComponent<Collider>(this->perk, Collider::createSphere(2.f, true));
 	this->setComponent<Perks>(this->perk);
 	Perks& perkSetting = this->getComponent<Perks>(this->perk);
@@ -63,7 +64,8 @@ void GameScene::start()
 	int perkDmg = this->getResourceManager()->addMesh("assets/models/Perk_Dmg.obj");
 	this->setComponent<MeshComponent>(this->perk1, perkDmg);
 	Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
-	perkTrans1.position = glm::vec3(30.f, 5.f, 0.f);
+	perkTrans1.position = glm::vec3(30.f, 5.f, -20.f);
+	perkTrans1.scale = glm::vec3(2.f, 2.f, 2.f);
 	this->setComponent<Collider>(this->perk1, Collider::createSphere(2.f, true));
 	this->setComponent<Perks>(this->perk1);
 	Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
@@ -74,7 +76,8 @@ void GameScene::start()
 	int perkAtkSpeed = this->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");
 	this->setComponent<MeshComponent>(this->perk2, perkAtkSpeed);
 	Transform& perkTrans2 = this->getComponent<Transform>(this->perk2);
-	perkTrans2.position = glm::vec3(40.f, 5.f, 0.f);
+	perkTrans2.position = glm::vec3(30.f, 5.f, 0.f);
+	perkTrans2.scale = glm::vec3(2.f, 2.f, 2.f);
 	this->setComponent<Collider>(this->perk2, Collider::createSphere(2.f, true));
 	this->setComponent<Perks>(this->perk2);
 	Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
@@ -127,18 +130,21 @@ void GameScene::update()
 
 	// Render HP bar UI
 	float hpPercent = 1.0f;
+	float maxHpPercent = 1.0f;
 	if (this->hasComponents<Combat>(this->playerID))
 	{
 		hpPercent = 
 			this->getComponent<Combat>(this->playerID).health * 0.01f;
+		maxHpPercent =
+			this->getComponent<Combat>(this->playerID).maxHealth * 0.01f;
 	}
-	float xPos = -720;
-	float yPos = -500;
-	float xSize = 1024 * 0.35f;
-	float ySize = 64 * 0.35f;
+	float xPos = -720.f;
+	float yPos = -500.f;
+	float xSize = 1024.f * 0.35f;
+	float ySize = 64.f * 0.35f;
 
 	Scene::getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
-	Scene::getUIRenderer()->renderTexture(xPos, yPos, xSize + 10, ySize + 10);
+	Scene::getUIRenderer()->renderTexture(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos, (xSize * maxHpPercent) + 10, ySize + 10);
 	Scene::getUIRenderer()->setTexture(this->hpBarTextureID);
 	Scene::getUIRenderer()->renderTexture(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos, xSize * hpPercent, ySize);
 	
