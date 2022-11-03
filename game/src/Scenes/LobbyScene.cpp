@@ -1,10 +1,16 @@
 #include "LobbyScene.h"
 
+LobbyScene::LobbyScene() {}
 
-LobbyScene::LobbyScene()
+LobbyScene::~LobbyScene() {}
+
+void LobbyScene::init()
 {
-  this->fontTextureIndex = Scene::getResourceManager()->addTexture(
-      "assets/textures/UI/testBitmapFont.png"
+  TextureSamplerSettings samplerSettings{};
+  samplerSettings.filterMode = vk::Filter::eNearest;
+  samplerSettings.unnormalizedCoordinates = VK_TRUE;
+  this->fontTextureId = Scene::getResourceManager()->addTexture(
+      "assets/textures/UI/testBitmapFont.png", {samplerSettings, true}
   );
   Scene::getUIRenderer()->setBitmapFont(
       {"abcdefghij",
@@ -13,27 +19,22 @@ LobbyScene::LobbyScene()
        "0123456789",
        "!?,<>:()#^",
        "@         "},
-      fontTextureIndex,
+      fontTextureId,
       16,
       16
   );
-}
-
-LobbyScene::~LobbyScene() {
 
 }
 
-void LobbyScene::init() {
+void LobbyScene::start() {}
 
-}
-
-void LobbyScene::start() {
-
-}
-
-void LobbyScene::update() {
+void LobbyScene::update()
+{
   ///this is handle in networkHandler
-
+  Scene::getUIRenderer()->setTexture(this->fontTextureId);
+  this->getUIRenderer()->renderString(
+      "Play 1\nSettings 2\nQuit 3", 0.f, 0.f, 50.f, 50.f
+  );
 
   ////////////////
 }

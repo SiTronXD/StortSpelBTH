@@ -6,7 +6,7 @@ class LobbyScene : public Scene
 private:
 	
 	Entity Players[4];//Max 4 players
-  uint32_t fontTextureIndex;
+  uint32_t fontTextureId;
 
 public:
     LobbyScene();

@@ -10,6 +10,7 @@
 #include "src/Scenes/TutorialScene.h"
 #include "src/Scenes/GameScene.h"
 #include "src/Scenes/NetworkAI.h"
+#include "src/Scenes/LobbyScene.h"
 
 #include <fstream>
 
@@ -23,7 +24,7 @@ int main(int argc, char* argv[])
     srand((unsigned int)time(0));
     {
         Engine engine;
-        engine.run("Presumed Dead", "scripts/TutorialScene.lua", new TutorialScene());
+        engine.run("Presumed Dead", "scripts/TutorialScene.lua", new LobbyScene());
         //engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
     }
 
