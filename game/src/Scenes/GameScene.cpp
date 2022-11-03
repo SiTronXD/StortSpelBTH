@@ -14,7 +14,7 @@ double heavyFunction(double value);
 #endif
 
 GameScene::GameScene() 
-	:playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false)
+	:playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1)
 {
 }
 
@@ -45,12 +45,44 @@ void GameScene::start()
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 	
-	//int spinningMesh = this->getResourceManager()->addMesh("assets/models/Hurricane Kick.fbx");
-	//int runningMesh = this->getResourceManager()->addMesh("assets/models/run_forward.fbx");
 	this->setComponent<Combat>(playerID);
-	//this->setComponent<MeshComponent>(this->playerID, runningMesh);
 	this->createSystem<CombatSystem>(this, this->playerID, this->getPhysicsEngine(), this->getDebugRenderer());
 
+	this->perk = this->createEntity();
+	int perkHp = this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
+	this->setComponent<MeshComponent>(this->perk, perkHp);
+	Transform& perkTrans = this->getComponent<Transform>(this->perk);
+	perkTrans.position = glm::vec3(30.f, 5.f, 20.f);
+	perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
+	this->setComponent<Collider>(this->perk, Collider::createSphere(2.f, true));
+	this->setComponent<Perks>(this->perk);
+	Perks& perkSetting = this->getComponent<Perks>(this->perk);
+	perkSetting.multiplier = 1.f;
+	perkSetting.perkType = hpUp;
+
+	this->perk1 = this->createEntity();
+	int perkDmg = this->getResourceManager()->addMesh("assets/models/Perk_Dmg.obj");
+	this->setComponent<MeshComponent>(this->perk1, perkDmg);
+	Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
+	perkTrans1.position = glm::vec3(30.f, 5.f, -20.f);
+	perkTrans1.scale = glm::vec3(2.f, 2.f, 2.f);
+	this->setComponent<Collider>(this->perk1, Collider::createSphere(2.f, true));
+	this->setComponent<Perks>(this->perk1);
+	Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
+	perkSetting1.multiplier = 1.f;
+	perkSetting1.perkType = dmgUp;
+
+	this->perk2 = this->createEntity();
+	int perkAtkSpeed = this->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");
+	this->setComponent<MeshComponent>(this->perk2, perkAtkSpeed);
+	Transform& perkTrans2 = this->getComponent<Transform>(this->perk2);
+	perkTrans2.position = glm::vec3(30.f, 5.f, 0.f);
+	perkTrans2.scale = glm::vec3(2.f, 2.f, 2.f);
+	this->setComponent<Collider>(this->perk2, Collider::createSphere(2.f, true));
+	this->setComponent<Perks>(this->perk2);
+	Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
+	perkSetting2.multiplier = 1.f;
+	perkSetting2.perkType = attackSpeedUp;
 
     // Ai management 
     this->aiHandler = this->getAIHandler();
@@ -98,18 +130,21 @@ void GameScene::update()
 
 	// Render HP bar UI
 	float hpPercent = 1.0f;
+	float maxHpPercent = 1.0f;
 	if (this->hasComponents<Combat>(this->playerID))
 	{
 		hpPercent = 
 			this->getComponent<Combat>(this->playerID).health * 0.01f;
+		maxHpPercent =
+			this->getComponent<Combat>(this->playerID).maxHealth * 0.01f;
 	}
-	float xPos = -720;
-	float yPos = -500;
-	float xSize = 1024 * 0.35f;
-	float ySize = 64 * 0.35f;
+	float xPos = -720.f;
+	float yPos = -500.f;
+	float xSize = 1024.f * 0.35f;
+	float ySize = 64.f * 0.35f;
 
 	Scene::getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
-	Scene::getUIRenderer()->renderTexture(xPos, yPos, xSize + 10, ySize + 10);
+	Scene::getUIRenderer()->renderTexture(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos, (xSize * maxHpPercent) + 10, ySize + 10);
 	Scene::getUIRenderer()->setTexture(this->hpBarTextureID);
 	Scene::getUIRenderer()->renderTexture(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos, xSize * hpPercent, ySize);
 	
