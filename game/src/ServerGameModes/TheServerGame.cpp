@@ -14,17 +14,17 @@ void TheServerGame::init() {
 void TheServerGame::update(float dt) 
 {
   static bool wentIn = false;
-  if (this->scene->getComponent<Transform>(this->scene->getPlayer(0))
+  if (this->getComponent<Transform>(this->getPlayer(0))
               .position.z > 0 &&
       !wentIn)
     {
       std::cout << "step over 1" << std::endl;
       wentIn = true;
-      this->scene->createEnemy(1);
+      this->createEnemy(1);
     }
-  for (int i = 0; i < this->scene->getEnemySize(); i++)
+  for (int i = 0; i < this->getEnemySize(); i++)
     {
-      this->scene->getComponent<Transform>(this->scene->getEnemies(i))
+      this->getComponent<Transform>(this->getEnemies(i))
           .rotation += dt * 50 * (i + 1);
     }
     
