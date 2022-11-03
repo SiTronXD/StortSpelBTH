@@ -38,6 +38,7 @@
     <ClInclude Include="src\Scenes\GameOverScene.h" />
     <ClInclude Include="src\Ai\Behaviors\Swarm\SwarmBTs.hpp" />
     <ClInclude Include="src\Ai\Behaviors\Swarm\SwarmFSM.hpp" />
+    <ClInclude Include="src\Components\Perks.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

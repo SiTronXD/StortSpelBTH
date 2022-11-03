@@ -9,6 +9,7 @@ enum ActiveAttack { noActive, spinActive, lightActive, heavyActive, comboActive 
 
 struct Combat
 {
+	float maxHealth = 100.f;
 	float health = 100.f;
 	
 	float lightHit = 50.f;
@@ -33,6 +34,10 @@ struct Combat
 	float attackTimer = 0.f;
 	float comboClearTimer = 0.f;
 	float comboClearDelay = 2.f;
+
+	float hpMultiplier = 1.f;
+	float dmgMultiplier = 1.f;
+	float attackSpeedMultiplier = 1.f;
 
 	ActiveAttack activeAttack = noActive;
 };

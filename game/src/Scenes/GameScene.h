@@ -13,6 +13,9 @@ private:
 
     Entity playerID;
     Entity portal;
+    Entity perk;
+    Entity perk1;
+    Entity perk2;
 
     int numRoomsCleared;
     bool newRoomFrame;
