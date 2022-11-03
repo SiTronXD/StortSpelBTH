@@ -19,6 +19,8 @@ private:
     uint32_t loadingTextureId;
     uint32_t backgroundId;
     bool startGame;
+
+    void howToPlay();
     void settings();
 
 public:

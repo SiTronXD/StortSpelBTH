@@ -33,8 +33,6 @@ void MainMenu::start()
 
 void MainMenu::update() 
 {
-	UIRenderer* uiRenderer = this->getUIRenderer();
-
 	// Switches next frame to render loading texture
 	if (this->startGame) 
 	{
@@ -56,10 +54,10 @@ void MainMenu::update()
 		this->getUIRenderer()->renderString("how to play: 3", 0.f, 0.f, 50.f, 50.f);
 		this->getUIRenderer()->renderString("quit: 4", 0.f, -100.f, 50.f, 50.f);
 
-		if (Input::isKeyReleased(Keys::ONE)) { this->state = State::Play; }
-		else if (Input::isKeyReleased(Keys::TWO)) { this->state = State::Settings; }
+		if		(Input::isKeyReleased(Keys::ONE))	{ this->state = State::Play; }
+		else if (Input::isKeyReleased(Keys::TWO))	{ this->state = State::Settings; }
 		else if (Input::isKeyReleased(Keys::THREE)) { this->state = State::HowToPlay; }
-		else if (Input::isKeyReleased(Keys::FOUR)) { this->state = State::Quit; }
+		else if (Input::isKeyReleased(Keys::FOUR))	{ this->state = State::Quit; }
 
 		break;
 		
@@ -70,37 +68,75 @@ void MainMenu::update()
 		break;
 
 	case Settings:
-		if (Input::isKeyReleased(Keys::ONE)) { this->state = State::Menu; }
-		Scene::getUIRenderer()->setTexture(this->fontTextureId);
-		this->getUIRenderer()->renderString("my settings", 0.f, 0.f, 50.f, 50.f);
-		this->getUIRenderer()->renderString("back: 1", -(1920/2) + 100, (1080/2) - 100, 50.f, 50.f);
+		this->settings();
 		break;
 	case HowToPlay:
-	{
-		Scene::getUIRenderer()->setTexture(this->fontTextureId);
-		this->getUIRenderer()->renderString("back: 1", -(1920/2) + 100, (1080/2) - 100, 50.f, 50.f);
-		
-		static const float XPos1 = -500.f;
-		uiRenderer->renderString("-- controls --", XPos1, 100.f, 50.f, 50.f);
-		uiRenderer->renderString("move: wasd", XPos1, 0.f, 50.f, 50.f);
-		uiRenderer->renderString("jump: space", XPos1, -100.f, 50.f, 50.f);
-		uiRenderer->renderString("attack: mouse 1", XPos1, -200.f, 50.f, 50.f);
-		
-		static const float XPos2 = 500.f;
-		uiRenderer->renderString("-- objective --", XPos2, 100.f, 50.f, 50.f);
-		uiRenderer->renderString("kill everything", XPos2, 0.f, 50.f, 50.f);
-
-		if (Input::isKeyReleased(Keys::ONE)) { this->state = State::Menu; }
+		this->howToPlay();		
 		break;
-	}
+	
 	case Quit:
 		this->getSceneHandler()->getWindow()->close();
 		break;
 	}
-
-
 }
 
 void MainMenu::settings()
 {
+	static bool fullscreen = false;
+	bool prevFrame = fullscreen;
+	static float q = 100.f;
+	if (Input::isKeyReleased(Keys::ONE))
+	{ 
+		this->state = State::Menu;
+	}
+	else if (Input::isKeyReleased(Keys::TWO)) 
+	{ 
+		fullscreen = fullscreen ? false : true;
+	}
+	else if (Input::isKeyReleased(Keys::THREE)) 
+	{ 
+		//this->getAudioHandler()->setMasterVolume(this->getAudioHandler()->getMasterVolume() - 10.f);
+	}
+	else if (Input::isKeyReleased(Keys::FOUR)) 
+	{ 
+		//this->getAudioHandler()->setMasterVolume(this->getAudioHandler()->getMasterVolume() + 10.f);
+	}
+
+	if (prevFrame != fullscreen)
+	{
+		this->getSceneHandler()->getWindow()->setFullscreen(fullscreen);
+	}
+
+	UIRenderer* uiRenderer = this->getUIRenderer();
+
+	uiRenderer->setTexture(this->fontTextureId);
+	uiRenderer->renderString("back: 1", -(1920/2) + 200, (1080/2) - 100, 50.f, 50.f);
+	
+	uiRenderer->renderString("-- settings --", 0.f, 300.f, 50.f, 50.f);
+
+	uiRenderer->renderString("temp switch key: 2", 0.f, 240.f, 15.f, 15.f);
+	uiRenderer->renderString(fullscreen ? "fullscreen: on" : "fullscreen: off", 0.f, 200.f, 50.f, 50.f);
+
+	//uiRenderer->renderString("temp volume change keys: 3-4", 0.f, 140.f, 15.f, 15.f);
+	//uiRenderer->renderString("volume: " + std::to_string(this->getAudioHandler()->getMasterVolume()), 0.f, 100.f, 50.f, 50.f);
+}
+
+void MainMenu::howToPlay()
+{
+	if (Input::isKeyReleased(Keys::ONE)) { this->state = State::Menu; }
+
+	UIRenderer* uiRenderer = this->getUIRenderer();
+
+	uiRenderer->setTexture(this->fontTextureId);
+	uiRenderer->renderString("back: 1", -(1920/2) + 200, (1080/2) - 100, 50.f, 50.f);
+	
+	static const float XPos1 = -500.f;
+	uiRenderer->renderString("-- controls --", XPos1, 100.f, 50.f, 50.f);
+	uiRenderer->renderString("move: wasd", XPos1, 0.f, 50.f, 50.f);
+	uiRenderer->renderString("jump: space", XPos1, -100.f, 50.f, 50.f);
+	uiRenderer->renderString("attack: mouse 1", XPos1, -200.f, 50.f, 50.f);
+	
+	static const float XPos2 = 500.f;
+	uiRenderer->renderString("-- objective --", XPos2, 100.f, 50.f, 50.f);
+	uiRenderer->renderString("kill everything", XPos2, 0.f, 50.f, 50.f);
 }
