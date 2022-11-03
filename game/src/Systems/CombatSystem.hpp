@@ -59,7 +59,6 @@ public:
 						if (this->perks[j].perkType == empty)
 						{
 							this->perks[j] = perk;
-
 							switch (this->perks[j].perkType)
 							{
 							case hpUp:
@@ -291,14 +290,14 @@ public:
 
 	void upgradeHealth(Combat& combat, Perks& perk)
 	{
-		setDefaultHp(combat, perk);
+		setDefaultHp(combat);
 		combat.hpMultiplier += perk.multiplier;
 		combat.maxHealth *= combat.hpMultiplier;
 	}
 
 	void upgradeDmg(Combat& combat, Perks& perk)
 	{
-		setDefaultDmg(combat, perk);
+		setDefaultDmg(combat);
 		combat.dmgMultiplier += perk.multiplier;
 		combat.lightHit *= combat.dmgMultiplier;
 		combat.heavyHit *= combat.dmgMultiplier;
@@ -309,7 +308,7 @@ public:
 
 	void upgradeAttackSpeed(Combat& combat, Perks& perk)
 	{
-		setDefaultAtttackSpeed(combat, perk);
+		setDefaultAtttackSpeed(combat);
 		combat.attackSpeedMultiplier -= perk.multiplier;
 		combat.lightAttackTime *= combat.attackSpeedMultiplier;
 		combat.heavyAttackTime *= combat.attackSpeedMultiplier;
@@ -318,12 +317,12 @@ public:
 		combat.comboMixTime *= combat.attackSpeedMultiplier;
 	}
 
-	void setDefaultHp(Combat& combat, Perks& perk)
+	void setDefaultHp(Combat& combat)
 	{
 		combat.maxHealth /= combat.hpMultiplier;
 	}
 
-	void setDefaultDmg(Combat& combat, Perks& perk)
+	void setDefaultDmg(Combat& combat)
 	{
 		combat.lightHit /= combat.dmgMultiplier;
 		combat.heavyHit /= combat.dmgMultiplier;
@@ -332,7 +331,7 @@ public:
 		combat.comboMixHit /= combat.dmgMultiplier;
 	}
 
-	void setDefaultAtttackSpeed(Combat& combat, Perks& perk)
+	void setDefaultAtttackSpeed(Combat& combat)
 	{
 		combat.lightAttackTime /= combat.attackSpeedMultiplier;
 		combat.heavyAttackTime /= combat.attackSpeedMultiplier;
@@ -346,13 +345,13 @@ public:
 		switch (perk.perkType)
 		{
 		case hpUp:
-			setDefaultHp(combat, perk);
+			setDefaultHp(combat);
 			break;
 		case dmgUp:
-			setDefaultDmg(combat, perk);
+			setDefaultDmg(combat);
 			break;
 		case attackSpeedUp:
-			setDefaultAtttackSpeed(combat, perk);
+			setDefaultAtttackSpeed(combat);
 		}
 		perk.multiplier = 0;
 		perk.perkType = empty;
