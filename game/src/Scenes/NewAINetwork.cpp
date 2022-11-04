@@ -25,7 +25,6 @@ void NewAINetwork::init()
     int groundMesh =
         this->getResourceManager()->addMesh("vengine_assets/models/Cube.fbx");
     this->setComponent<Collider>(ground, Collider::createBox(glm::vec3(100,1,100)));
-    this->setComponent<Transform>(ground);
     this->setComponent<MeshComponent>(ground, groundMesh);
     Transform& transform2 = this->getComponent<Transform>(ground);
     transform2.position = glm::vec3(0.0f, -10.0f, 0.0f);

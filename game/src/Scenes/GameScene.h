@@ -9,7 +9,6 @@ class GameScene: public Scene
 private:
 
     RoomHandler roomHandler;
-    AIHandler* aiHandler = nullptr;
 
     Entity playerID;
     Entity portal;
@@ -41,8 +40,6 @@ public:
     virtual void onCollisionStay(Entity e1, Entity e2) override;
 
 private:
-    void aiExample();
-    bool allDead();
 	
 	void createPortal();
 };
