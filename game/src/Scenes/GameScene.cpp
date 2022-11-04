@@ -366,6 +366,10 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 	}
 }
 
+void GameScene::onCollisionStay(Entity e1, Entity e2)
+{
+}
+
 void GameScene::createPortal()
 {
 	glm::vec3 portalTriggerDims(6.f, 18.f, 1.f);

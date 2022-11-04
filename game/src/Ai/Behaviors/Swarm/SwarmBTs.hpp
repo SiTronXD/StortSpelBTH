@@ -9,7 +9,7 @@ Entity getPlayerID(SceneHandler*sceneHandler);
 struct SwarmGroup
 {
     private: 
-    static int getNewId; 
+    static int getNewId;
     public: 
     SwarmGroup() {myId = getNewId++;}
     int myId;  
@@ -26,6 +26,7 @@ struct SwarmGroup
 class SwarmBT : public BehaviorTree
 {
    protected:
+	static int perkMeshes[3];
 	virtual void start() = 0;
     void registerEntityComponents(Entity entityId) override;
 
