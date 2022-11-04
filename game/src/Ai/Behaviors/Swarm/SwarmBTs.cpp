@@ -200,6 +200,7 @@ BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 	SwarmComponent& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	Rigidbody& rigidbody = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
 
+
 	if (glm::length((thisTransform.position - playerTransform.position)) > thisSwarmComp.sightRadius)
 	{
 		return BTStatus::Success;
@@ -262,24 +263,38 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 	SwarmComponent& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	Rigidbody& rigidbody = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
     
-    auto d = entityCollider.radius;
-    auto e = playerCollider.radius;
-    //TODO: FORTSÄTT HÄR...
-    //playerTransform.position;
 
     entityTransform.rotation.y = lookAtY(entityTransform, playerTransform);
 	entityTransform.updateMatrix();    
+	//TODO: the player transform origin can change to the bottom instead of the middle, this needs to change then.
+	//TODO: change this stuff good //Lowe
+	// + 3.5f is temporary to match collider and transform
+	/*
+	//Use this if player transform is at the bottom
+	glm::vec3 newPlayerPos = playerTransform.position;
+	float swarmLen = entityCollider.radius;
+	newPlayerPos = newPlayerPos + playerTransform.up() * swarmLen;
+	*/
+	//If player transform is at the bottom use the code above instead.
+	//Temp code start----------------------------------------
+	glm::vec3 newPlayerPos = playerTransform.position + 3.5f;
+	glm::vec3 playerDown = -playerTransform.up();
+	float playerLen = playerCollider.height;
+	float swarmLen = entityCollider.radius;
+	float newPosOffset = playerLen - swarmLen;
+	newPlayerPos = newPlayerPos + playerDown * newPosOffset;
+	//Temp code end------------------------------------------
     
-    glm::vec3 dirEntityToPlayer = glm::normalize(playerTransform.position- entityTransform.position);
+    glm::vec3 dirEntityToPlayer = glm::normalize(newPlayerPos - entityTransform.position);
     glm::vec3 entityTargetPos = entityTransform.position;
-    float distEntityTargetPosToPlayer = glm::length(playerTransform.position- entityTransform.position);
-    glm::vec3 dirEntityTargetPosToPlayer = glm::normalize(playerTransform.position- entityTargetPos);
+    float distEntityTargetPosToPlayer = glm::length(newPlayerPos - entityTargetPos);
+    glm::vec3 dirEntityTargetPosToPlayer = glm::normalize(newPlayerPos - entityTargetPos);
 
     bool canSeePlayer = false; 
     while(!canSeePlayer) 
     {
-        distEntityTargetPosToPlayer = glm::length(playerTransform.position- entityTargetPos) ;
-        dirEntityTargetPosToPlayer = glm::normalize(playerTransform.position- entityTargetPos);
+        distEntityTargetPosToPlayer = glm::length(playerTransform.position - entityTargetPos) ;
+        dirEntityTargetPosToPlayer = glm::normalize(playerTransform.position - entityTargetPos);
         Ray rayToPlayer{entityTargetPos, dirEntityTargetPosToPlayer};    
         RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, distEntityTargetPosToPlayer+10.f);
 
@@ -295,7 +310,8 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
                 dirEntityToPlayer = glm::normalize(leftOfPlayer + dirEntityTargetPosToPlayer); 
                 entityTargetPos += dirEntityToPlayer;
 
-            }else if(rp.entity )
+            }
+			else if(rp.entity )
             {
 
             }
