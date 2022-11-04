@@ -52,12 +52,13 @@ void MainMenu::update()
 		this->getUIRenderer()->renderString("play: 1", 0.f, 200.f, 50.f, 50.f);
 		this->getUIRenderer()->renderString("settings: 2", 0.f, 100.f, 50.f, 50.f);
 		this->getUIRenderer()->renderString("how to play: 3", 0.f, 0.f, 50.f, 50.f);
-		this->getUIRenderer()->renderString("quit: 4", 0.f, -100.f, 50.f, 50.f);
+		this->getUIRenderer()->renderString("quit: esc", 0.f, -100.f, 50.f, 50.f);
 
 		if (Input::isKeyReleased(Keys::ONE)) { this->state = State::Play; }
 		else if (Input::isKeyReleased(Keys::TWO)) { this->state = State::Settings; }
 		else if (Input::isKeyReleased(Keys::THREE)) { this->state = State::HowToPlay; }
-		else if (Input::isKeyReleased(Keys::FOUR)) { this->state = State::Quit; }
+		else if (Input::isKeyReleased(Keys::FOUR)) { this->state = State::LevelEdit; }
+		else if (Input::isKeyReleased(Keys::ESC)) { this->state = State::Quit; }
 
 		break;
 
@@ -75,7 +76,7 @@ void MainMenu::update()
 		break;
 
 	case LevelEdit:
-		this->switchScene(new LevelEditor(), "");
+		this->switchScene(new LevelEditor(), "scripts/levelEditor.lua");
 		
 		break;
 
