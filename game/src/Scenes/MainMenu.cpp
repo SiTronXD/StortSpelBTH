@@ -83,8 +83,6 @@ void MainMenu::update()
 void MainMenu::settings()
 {
 	static bool fullscreen = false;
-	bool prevFrame = fullscreen;
-	static float q = 100.f;
 	if (Input::isKeyReleased(Keys::ONE))
 	{ 
 		this->state = State::Menu;
@@ -92,18 +90,6 @@ void MainMenu::settings()
 	else if (Input::isKeyReleased(Keys::TWO)) 
 	{ 
 		fullscreen = fullscreen ? false : true;
-	}
-	else if (Input::isKeyReleased(Keys::THREE)) 
-	{ 
-		//this->getAudioHandler()->setMasterVolume(this->getAudioHandler()->getMasterVolume() - 10.f);
-	}
-	else if (Input::isKeyReleased(Keys::FOUR)) 
-	{ 
-		//this->getAudioHandler()->setMasterVolume(this->getAudioHandler()->getMasterVolume() + 10.f);
-	}
-
-	if (prevFrame != fullscreen)
-	{
 		this->getSceneHandler()->getWindow()->setFullscreen(fullscreen);
 	}
 
@@ -117,8 +103,8 @@ void MainMenu::settings()
 	uiRenderer->renderString("temp switch key: 2", 0.f, 240.f, 15.f, 15.f);
 	uiRenderer->renderString(fullscreen ? "fullscreen: on" : "fullscreen: off", 0.f, 200.f, 50.f, 50.f);
 
-	//uiRenderer->renderString("temp volume change keys: 3-4", 0.f, 140.f, 15.f, 15.f);
-	//uiRenderer->renderString("volume: " + std::to_string(this->getAudioHandler()->getMasterVolume()), 0.f, 100.f, 50.f, 50.f);
+	uiRenderer->renderString("volume change disable until sound is happy happy", 0.f, 140.f, 15.f, 15.f);
+	uiRenderer->renderString("volume: " + std::to_string(this->getAudioHandler()->getMasterVolume()), 0.f, 100.f, 50.f, 50.f);
 }
 
 void MainMenu::howToPlay()
