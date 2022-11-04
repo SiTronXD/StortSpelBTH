@@ -10,7 +10,6 @@ void MainMenu::init()
 	samplerSettings.filterMode = vk::Filter::eNearest;
 	samplerSettings.unnormalizedCoordinates = VK_TRUE;
 
-	this->loadingTextureId = this->getResourceManager()->addTexture("assets/textures/UI/loading.png");
 	this->backgroundId = this->getResourceManager()->addTexture("assets/textures/UI/background.png");
 
 	this->fontTextureId = Scene::getResourceManager()->addTexture("assets/textures/UI/testBitmapFont.png", { samplerSettings, true });
@@ -54,39 +53,75 @@ void MainMenu::update()
 		this->getUIRenderer()->renderString("how to play: 3", 0.f, 0.f, 50.f, 50.f);
 		this->getUIRenderer()->renderString("quit: 4", 0.f, -100.f, 50.f, 50.f);
 
-		if (Input::isKeyReleased(Keys::ONE)) { this->state = State::Play; }
-		else if (Input::isKeyReleased(Keys::TWO)) { this->state = State::Settings; }
+		if		(Input::isKeyReleased(Keys::ONE))	{ this->state = State::Play; }
+		else if (Input::isKeyReleased(Keys::TWO))	{ this->state = State::Settings; }
 		else if (Input::isKeyReleased(Keys::THREE)) { this->state = State::HowToPlay; }
-		else if (Input::isKeyReleased(Keys::FOUR)) { this->state = State::Quit; }
+		else if (Input::isKeyReleased(Keys::FOUR))	{ this->state = State::Quit; }
 
 		break;
 		
 	case Play:
-		this->getUIRenderer()->setTexture(this->loadingTextureId);
-		this->getUIRenderer()->renderTexture(0.f, 0.f, 1920.f, 1080.f);
+		this->getUIRenderer()->setTexture(this->fontTextureId);
+		this->getUIRenderer()->renderString("loading...", 0.f, 0.f, 100.f, 100.f);
 		this->startGame = true;
 		break;
 
 	case Settings:
-		if (Input::isKeyReleased(Keys::ONE)) { this->state = State::Menu; }
-		Scene::getUIRenderer()->setTexture(this->fontTextureId);
-		this->getUIRenderer()->renderString("my settings", 0.f, 0.f, 50.f, 50.f);
-		this->getUIRenderer()->renderString("back", -(1920/2) + 100, (1080/2) - 100, 50.f, 50.f);
+		this->settings();
 		break;
 	case HowToPlay:
-		if (Input::isKeyReleased(Keys::ONE)) { this->state = State::Menu; }
-		Scene::getUIRenderer()->setTexture(this->fontTextureId);
-		this->getUIRenderer()->renderString("how to play", 0.f, 0.f, 50.f, 50.f);
-		this->getUIRenderer()->renderString("back", -(1920/2) + 100, (1080/2) - 100, 50.f, 50.f);
+		this->howToPlay();		
 		break;
+	
 	case Quit:
 		this->getSceneHandler()->getWindow()->close();
 		break;
 	}
-
-
 }
 
 void MainMenu::settings()
 {
+	static bool fullscreen = false;
+	if (Input::isKeyReleased(Keys::ONE))
+	{ 
+		this->state = State::Menu;
+	}
+	else if (Input::isKeyReleased(Keys::TWO)) 
+	{ 
+		fullscreen = fullscreen ? false : true;
+		this->getSceneHandler()->getWindow()->setFullscreen(fullscreen);
+	}
+
+	UIRenderer* uiRenderer = this->getUIRenderer();
+
+	uiRenderer->setTexture(this->fontTextureId);
+	uiRenderer->renderString("back: 1", -(1920/2) + 200, (1080/2) - 100, 50.f, 50.f);
+	
+	uiRenderer->renderString("-- settings --", 0.f, 300.f, 50.f, 50.f);
+
+	uiRenderer->renderString("temp switch key: 2", 0.f, 240.f, 15.f, 15.f);
+	uiRenderer->renderString(fullscreen ? "fullscreen: on" : "fullscreen: off", 0.f, 200.f, 50.f, 50.f);
+
+	uiRenderer->renderString("volume change disable until sound is happy happy", 0.f, 140.f, 15.f, 15.f);
+	uiRenderer->renderString("volume: " + std::to_string((int)this->getAudioHandler()->getMasterVolume()), 0.f, 100.f, 50.f, 50.f);
+}
+
+void MainMenu::howToPlay()
+{
+	if (Input::isKeyReleased(Keys::ONE)) { this->state = State::Menu; }
+
+	UIRenderer* uiRenderer = this->getUIRenderer();
+
+	uiRenderer->setTexture(this->fontTextureId);
+	uiRenderer->renderString("back: 1", -(1920/2) + 200, (1080/2) - 100, 50.f, 50.f);
+	
+	static const float XPos1 = -500.f;
+	uiRenderer->renderString("-- controls --", XPos1, 100.f, 50.f, 50.f);
+	uiRenderer->renderString("move: wasd", XPos1, 0.f, 50.f, 50.f);
+	uiRenderer->renderString("jump: space", XPos1, -100.f, 50.f, 50.f);
+	uiRenderer->renderString("attack: mouse 1", XPos1, -200.f, 50.f, 50.f);
+	
+	static const float XPos2 = 500.f;
+	uiRenderer->renderString("-- objective --", XPos2, 100.f, 50.f, 50.f);
+	uiRenderer->renderString("kill everything", XPos2, 0.f, 50.f, 50.f);
 }
