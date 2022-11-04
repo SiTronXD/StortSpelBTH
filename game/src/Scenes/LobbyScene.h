@@ -4,12 +4,14 @@
 class LobbyScene : public Scene
 {
 private:
-	
-	Entity Players[4];//Max 4 players
+  static const int MaxNumberOfPlayers = 4;
+  Entity Players[MaxNumberOfPlayers];
   uint32_t fontTextureId;
 
+  std::vector<glm::vec3> playerPositions;
+
 public:
-    LobbyScene();
+  LobbyScene();
   virtual ~LobbyScene();
 
   // Inherited via Scene
