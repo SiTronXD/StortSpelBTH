@@ -50,12 +50,25 @@ void NewAINetwork::start()
     }
     //no visulation that we connected
 
+    int cube = this->createEntity();
+    int a = this->getResourceManager()->addMesh("vengine_assets/models/Cube.fbx");
+    this->setComponent<MeshComponent>(cube, a);
+    this->setComponent<Collider>(cube, Collider::createBox(glm::vec3(8,16,1)));
+    auto& c = this->getComponent<Transform>(cube);
+    c.scale.x*=8;
+    c.scale.y*=16;
+    
+    c.position.z += 10.f;
+
+    this->getNetworkHandler()->sendAIPolygons({glm::vec2{c.position.x+4,c.position.z+1.f},glm::vec2{c.position.x-4,c.position.z-1.f},glm::vec2{c.position.x+4,c.position.z-1.f},glm::vec2{ c.position.x-4,c.position.z+1.f},});
 }
 
 
 void NewAINetwork::update()
 {
 
+    this->getPhysicsEngine()->renderDebugShapes(true);
+    
     if (Input::isKeyPressed(Keys::N)) {
         this->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent { GameEvents::START });
     }
