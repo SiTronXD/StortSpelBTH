@@ -30,8 +30,8 @@ public:
 			combat.combos.emplace_back("Light Light Light ");
 			combat.combos.emplace_back("Light Heavy Light ");
 			combat.combos.emplace_back("Heavy Light Heavy ");
-			sword = Collider::createCapsule(1.f, 6.f, true);
-			swordSpin = Collider::createCapsule(10.f, 0.1f, true);
+			sword = Collider::createCapsule(1.f, 6.f, glm::vec3(0),true);
+            swordSpin = Collider::createCapsule(10.f, 0.1f, glm::vec3(0), true);
 			
 			for (size_t i = 0; i < 3; i++)
 			{

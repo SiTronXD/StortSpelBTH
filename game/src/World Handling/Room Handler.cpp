@@ -511,7 +511,10 @@ void RoomHandler::createColliders()
 				triggerTra.position = doorTra.position + offsets[i];
 				triggerTra.rotation = doorTra.rotation;
 				
-				this->scene->setComponent<Collider>(room.doorTriggers[i], Collider::createBox(doorTrigCol, true));
+				this->scene->setComponent<Collider>(
+                    room.doorTriggers[i],
+                    Collider::createBox(doorTrigCol, glm::vec3(0), true)
+                );
 
 			}
 		}
