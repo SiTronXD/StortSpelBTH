@@ -277,7 +277,8 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 	*/
 	//If player transform is at the bottom use the code above instead.
 	//Temp code start----------------------------------------
-	glm::vec3 newPlayerPos = playerTransform.position + 3.5f;
+	glm::vec3 newPlayerPos = playerTransform.position;
+	newPlayerPos.y+=3.5f;
 	glm::vec3 playerDown = -playerTransform.up();
 	float playerLen = playerCollider.height;
 	float swarmLen = entityCollider.radius;
@@ -289,17 +290,18 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
     glm::vec3 entityTargetPos = entityTransform.position;
     float distEntityTargetPosToPlayer = glm::length(newPlayerPos - entityTargetPos);
     glm::vec3 dirEntityTargetPosToPlayer = glm::normalize(newPlayerPos - entityTargetPos);
-
+	int safetyBreak = 0;
     bool canSeePlayer = false; 
+	//TODO: saftybeak is bad stuff, fix this shit
     while(!canSeePlayer) 
     {
-        distEntityTargetPosToPlayer = glm::length(playerTransform.position - entityTargetPos) ;
-        dirEntityTargetPosToPlayer = glm::normalize(playerTransform.position - entityTargetPos);
+        distEntityTargetPosToPlayer = glm::length(newPlayerPos - entityTargetPos) ;
+        dirEntityTargetPosToPlayer = glm::normalize(newPlayerPos - entityTargetPos);
         Ray rayToPlayer{entityTargetPos, dirEntityTargetPosToPlayer};    
         RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, distEntityTargetPosToPlayer+10.f);
 
         if (rp.hit)
-        {        
+        {    
             int playerId = -1;
             std::string playerStr = "playerID";
             BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(playerId, playerStr);
@@ -318,6 +320,15 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 
             canSeePlayer = rp.entity == playerId;
         }
+		else
+		{
+
+			if(++safetyBreak>100)
+			{
+				Log::warning("Swarm ray check running too many times,this is bad");
+				break;
+			}
+		}
 
     }
 
@@ -364,50 +375,75 @@ BTStatus SwarmBT::attack(Entity entityID)
 	SwarmComponent& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	AiCombat& combat = BehaviorTree::sceneHandler->getScene()->getComponent<AiCombat>(entityID);
 	Rigidbody& rigidbody = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
+	Collider& sawrmCollider = BehaviorTree::sceneHandler->getScene()->getComponent<Collider>(entityID);
 
 	glm::vec3 dir = playerTransform.position - thisTransform.position;
 	dir.y += swarmComp.jumpY;
 	dir = glm::normalize(dir);
 
-     thisTransform.rotation.y = lookAtY(thisTransform, playerTransform);
-	 thisTransform.updateMatrix();
+    thisTransform.rotation.y = lookAtY(thisTransform, playerTransform);
+	thisTransform.updateMatrix();
 
-	 if(combat.timer > 0.0f){
+	static float initialFriction = rigidbody.friction;
+
+	
+	 bool canIEvenJump= false; 
+    Ray downRay{
+        thisTransform.position,
+        glm::vec3(0.0f,-1.0f,0.0f)
+    };
+        
+    float heightOfSwarmBlob = sawrmCollider.radius + 1.f;//TODO: get height of swarmblob
+    RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(downRay,heightOfSwarmBlob);        
+    if(rp.hit)
+    {
+        canIEvenJump = true; 		
+    }
+     
+
+
+	 if(combat.timer > 0.0f)
+	 {
 		combat.timer -= Time::getDT();
 		if(thisTransform.scale.y > 0.5f)
 		{
 			thisTransform.scale.y -= swarmComp.chargeAnimSpeed * Time::getDT();
 		}
 	 }
-	 else if(!swarmComp.inAttack)
+	 else if(!swarmComp.inAttack &&
+			!swarmComp.touchedPlayer)
 	 {
 		 //JUMP!
 		thisTransform.scale.y = 1.0f;
 		rigidbody.velocity = dir * swarmComp.jumpForce;
         swarmComp.inAttack = true; 
-
-		Combat& playerCombat = BehaviorTree::sceneHandler->getScene()->getComponent<Combat>(getPlayerID(sceneHandler));
-		//playerCombat.health -= combat.lightHit;
-		combat.timer = combat.lightAttackTime;
+		rigidbody.friction = 0.0f;
+		
 		std::cout<<"ATTACK!!!!\n";
         
 		ret = BTStatus::Success;
 	 
-	 }else
+	 }
+	 else if ( canIEvenJump)
      {
 
         Ray downRay{
             thisTransform.position,
-            glm::vec3(0.f,-1.f,0.1f)
+            glm::vec3(0.0f,-1.0f,0.0f)
         };
         
-        float heightOfSwarmBlob = 10;//TODO: get height of swarmblob
+        float heightOfSwarmBlob = sawrmCollider.radius + 0.0f;//TODO: get height of swarmblob
         RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(downRay,heightOfSwarmBlob);        
         if(rp.hit)
         {
             swarmComp.inAttack = false; 
+			swarmComp.touchedPlayer = false; 
+			rigidbody.friction = initialFriction;
+			combat.timer = combat.lightAttackTime;
         }
      }
+
+
 
 
 	return ret;

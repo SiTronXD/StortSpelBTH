@@ -10,6 +10,6 @@ void GameOverScene::update()
 	// Switch scene
 	if (Input::isKeyPressed(Keys::SPACE))
 	{
-		this->switchScene(new MainMenu(), "scripts/TutorialScene.lua");
+		this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
 	}
 }

@@ -417,6 +417,8 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
             {
                 auto& aiCombat = this->getComponent<AiCombat>(other);
                 swarmComp.inAttack = false; 
+                swarmComp.touchedPlayer = true; 
+				//aiCombat.timer = aiCombat.lightAttackTime;
                 this->getComponent<Combat>(player).health -= aiCombat.lightHit;
                 std::cout << "WAS HIT\n";
                 
