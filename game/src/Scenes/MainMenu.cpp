@@ -10,7 +10,6 @@ void MainMenu::init()
 	samplerSettings.filterMode = vk::Filter::eNearest;
 	samplerSettings.unnormalizedCoordinates = VK_TRUE;
 
-	this->loadingTextureId = this->getResourceManager()->addTexture("assets/textures/UI/loading.png");
 	this->backgroundId = this->getResourceManager()->addTexture("assets/textures/UI/background.png");
 
 	this->fontTextureId = Scene::getResourceManager()->addTexture("assets/textures/UI/testBitmapFont.png", { samplerSettings, true });
@@ -62,8 +61,8 @@ void MainMenu::update()
 		break;
 		
 	case Play:
-		this->getUIRenderer()->setTexture(this->loadingTextureId);
-		this->getUIRenderer()->renderTexture(0.f, 0.f, 1920.f, 1080.f);
+		this->getUIRenderer()->setTexture(this->fontTextureId);
+		this->getUIRenderer()->renderString("loading...", 0.f, 0.f, 100.f, 100.f);
 		this->startGame = true;
 		break;
 
@@ -104,7 +103,7 @@ void MainMenu::settings()
 	uiRenderer->renderString(fullscreen ? "fullscreen: on" : "fullscreen: off", 0.f, 200.f, 50.f, 50.f);
 
 	uiRenderer->renderString("volume change disable until sound is happy happy", 0.f, 140.f, 15.f, 15.f);
-	uiRenderer->renderString("volume: " + std::to_string(this->getAudioHandler()->getMasterVolume()), 0.f, 100.f, 50.f, 50.f);
+	uiRenderer->renderString("volume: " + std::to_string((int)this->getAudioHandler()->getMasterVolume()), 0.f, 100.f, 50.f, 50.f);
 }
 
 void MainMenu::howToPlay()
