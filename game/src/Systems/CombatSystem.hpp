@@ -154,6 +154,10 @@ public:
 					{
 						SwarmComponent& enemy = scene->getComponent<SwarmComponent>(hitID[i]);
 						enemy.life -= (int)combat.lightHit;
+						Rigidbody& enemyRB = scene->getComponent<Rigidbody>(hitID[i]);
+						Transform& enemyTrans = scene->getComponent<Transform>(hitID[i]);
+						glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+						enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * 200.f;
 						return true;
 					}
 				}
@@ -268,17 +272,23 @@ public:
 		return false;
 	};
 
-	void upgradeHealth(Combat& combat, Perks& perk)
+	void updateHealth(Combat& combat, Perks& perk, bool doUpgrade = true)
 	{
-		setDefaultHp(combat);
-		combat.hpMultiplier += perk.multiplier;
+		if (doUpgrade)
+		{
+			setDefaultHp(combat);
+			combat.hpMultiplier += perk.multiplier;
+		}
 		combat.maxHealth *= combat.hpMultiplier;
 	}
 
-	void upgradeDmg(Combat& combat, Perks& perk)
+	void updateDmg(Combat& combat, Perks& perk, bool doUpgrade = true)
 	{
-		setDefaultDmg(combat);
-		combat.dmgMultiplier += perk.multiplier;
+		if (doUpgrade)
+		{
+			setDefaultDmg(combat);
+			combat.dmgMultiplier += perk.multiplier;
+		}
 		combat.lightHit *= combat.dmgMultiplier;
 		combat.heavyHit *= combat.dmgMultiplier;
 		combat.comboLightHit *= combat.dmgMultiplier;
@@ -286,10 +296,13 @@ public:
 		combat.comboMixHit *= combat.dmgMultiplier;
 	}
 
-	void upgradeAttackSpeed(Combat& combat, Perks& perk)
+	void updateAttackSpeed(Combat& combat, Perks& perk, bool doUpgrade = true)
 	{
-		setDefaultAtttackSpeed(combat);
-		combat.attackSpeedMultiplier -= perk.multiplier;
+		if (doUpgrade)
+		{
+			setDefaultAtttackSpeed(combat);
+			combat.attackSpeedMultiplier -= perk.multiplier;
+		}
 		combat.lightAttackTime *= combat.attackSpeedMultiplier;
 		combat.heavyAttackTime *= combat.attackSpeedMultiplier;
 		combat.comboLightTime *= combat.attackSpeedMultiplier;
@@ -300,6 +313,7 @@ public:
 	void setDefaultHp(Combat& combat)
 	{
 		combat.maxHealth /= combat.hpMultiplier;
+		combat.health = std::min(combat.health, combat.maxHealth);
 	}
 
 	void setDefaultDmg(Combat& combat)
@@ -328,12 +342,18 @@ public:
 			{
 			case hpUp:
 				setDefaultHp(combat);
+				combat.hpMultiplier -= perk.multiplier;
+				updateHealth(combat, perk, false);
 				break;
 			case dmgUp:
 				setDefaultDmg(combat);
+				combat.dmgMultiplier -= perk.multiplier;
+				updateDmg(combat, perk, false);
 				break;
 			case attackSpeedUp:
 				setDefaultAtttackSpeed(combat);
+				combat.attackSpeedMultiplier += perk.multiplier;
+				updateAttackSpeed(combat, perk, false);
 			}
 			perk.multiplier = 0;
 			perk.perkType = empty;
@@ -358,13 +378,13 @@ public:
 						switch (combat.perks[j].perkType)
 						{
 						case hpUp:
-							upgradeHealth(combat, combat.perks[j]);
+							updateHealth(combat, combat.perks[j]);
 							break;
 						case dmgUp:
-							upgradeDmg(combat, combat.perks[j]);
+							updateDmg(combat, combat.perks[j]);
 							break;
 						case attackSpeedUp:
-							upgradeAttackSpeed(combat, combat.perks[j]);
+							updateAttackSpeed(combat, combat.perks[j]);
 							break;
 						}
 						j = 3;
