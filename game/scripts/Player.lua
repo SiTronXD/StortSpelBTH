@@ -26,6 +26,7 @@ function script:init()
 
     self.animTimer = -1
     self.onGround = false
+    self.jumpTimer = 0
     self.active = true
 end
 
@@ -59,11 +60,30 @@ function script:update(dt)
     -- Final vector in 3D using cameras directional vectors
     self.currentSpeed = forward:normalize() * self.currentSpeed.y + right:normalize() * self.currentSpeed.x
 
+    if (input.isKeyDown(Keys.SPACE) and self.onGround) then
+        self.jumpTimer = 0.25
+    elseif (self.jumpTimer > 0) then
+        self.jumpTimer = self.jumpTimer - dt
+    end
+    --print(self.jumpTimer)
+
     -- Apply to rigidbody velocity
     local rb = scene.getComponent(self.ID, CompType.Rigidbody)
     local y = rb.velocity.y
     rb.velocity = self.currentSpeed
-    rb.velocity.y = y + core.btoi(input.isKeyPressed(Keys.SPACE)) * core.btoi(self.onGround) * 6.5 * rb.gravityMult
+
+    -- Apply jump via acceleration
+    local jump = self.jumpTimer > 0 and input.isKeyDown(Keys.SPACE)
+    if(jump) then
+        rb.acceleration.y = 100
+    else
+        rb.acceleration.y = -300
+    end
+    if(input.isKeyPressed(Keys.SPACE)) then
+        y = y + 50
+    end
+
+    rb.velocity.y = y
     scene.setComponent(self.ID, CompType.Rigidbody, rb)
 
     -- Handle animation speed and timing
