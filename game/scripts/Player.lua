@@ -108,7 +108,7 @@ function script:update(dt)
 
         scene.setComponent(self.ID, CompType.Animation, anim)
         self.animTimer = 2
-    ]]--
+    
     if (self.animTimer < 0)
     then
         local meshChange = scene.getComponent(self.ID, CompType.Mesh)
@@ -128,6 +128,7 @@ function script:update(dt)
 
         scene.setComponent(self.ID, CompType.Animation, anim)
     end
+    ]]
 
     if (scene.getComponent(self.ID, CompType.Mesh).meshID == self.playerMesh)
     then
