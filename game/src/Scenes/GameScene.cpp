@@ -323,10 +323,8 @@ void GameScene::aiExample()
         {
             this->enemyIDs.push_back(this->createEntity());
             this->setComponent<MeshComponent>(this->enemyIDs.back(), swarm);
-            //this->setComponent<AiMovement>(this->enemyIDs.back());
             this->setComponent<AiCombat>(this->enemyIDs.back());
             this->setComponent<Collider>(this->enemyIDs.back(), Collider::createSphere(4.0f));
-            //this->setComponent<Collider>(this->enemyIDs.back(), Collider::createBox(glm::vec3(5.0f, 3.5f, 5.0f)));
             this->setComponent<Rigidbody>(this->enemyIDs.back());
 			Rigidbody& rb = this->getComponent<Rigidbody>(this->enemyIDs.back());
             rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);

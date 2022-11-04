@@ -387,13 +387,13 @@ BTStatus SwarmBT::attack(Entity entityID)
 	static float initialFriction = rigidbody.friction;
 
 	
-	 bool canIEvenJump= false; 
+	bool canIEvenJump= false; 
     Ray downRay{
         thisTransform.position,
         glm::vec3(0.0f,-1.0f,0.0f)
     };
         
-    float heightOfSwarmBlob = sawrmCollider.radius + 1.f;//TODO: get height of swarmblob
+    float heightOfSwarmBlob = sawrmCollider.radius + 1.0f;//TODO: get height of swarmblob
     RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(downRay,heightOfSwarmBlob);        
     if(rp.hit)
     {
@@ -401,8 +401,8 @@ BTStatus SwarmBT::attack(Entity entityID)
     }
      
 
-
-	 if(combat.timer > 0.0f)
+	 if(combat.timer > 0.0f && 
+		 canIEvenJump)
 	 {
 		combat.timer -= Time::getDT();
 		if(thisTransform.scale.y > 0.5f)
@@ -411,7 +411,8 @@ BTStatus SwarmBT::attack(Entity entityID)
 		}
 	 }
 	 else if(!swarmComp.inAttack &&
-			!swarmComp.touchedPlayer)
+			!swarmComp.touchedPlayer &&
+			canIEvenJump)
 	 {
 		 //JUMP!
 		thisTransform.scale.y = 1.0f;
@@ -424,7 +425,7 @@ BTStatus SwarmBT::attack(Entity entityID)
 		ret = BTStatus::Success;
 	 
 	 }
-	 else if ( canIEvenJump)
+	 else if (canIEvenJump)
      {
 
         Ray downRay{
