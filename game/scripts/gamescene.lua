@@ -15,7 +15,7 @@ local playerAnim =
 	timer = 0.0, 
 	timeScale = 0.0
 }
-scene.setComponent(playerID, CompType.Animation, playerAnim)
+--scene.setComponent(playerID, CompType.Animation, playerAnim)
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
 scene.setComponent(playerID, CompType.Collider, { type = ColliderType.Capsule, radius = 2, height = 11 })
 scene.setComponent(playerID, CompType.Rigidbody, { mass = 1, gravityMult = 5, rotFactor = vector.fill(0), friction = 0.1 })

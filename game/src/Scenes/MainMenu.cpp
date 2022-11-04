@@ -1,7 +1,7 @@
 #include "MainMenu.h"
 #include "GameScene.h"
 
-void MainMenu::init() 
+void MainMenu::init()
 {
 	this->state = State::Menu;
 	this->startGame = false;
@@ -25,15 +25,15 @@ void MainMenu::init()
 		this->fontTextureId, 16, 16);
 }
 
-void MainMenu::start() 
+void MainMenu::start()
 {
-	
+
 }
 
-void MainMenu::update() 
+void MainMenu::update()
 {
 	// Switches next frame to render loading texture
-	if (this->startGame) 
+	if (this->startGame)
 	{
 		this->switchScene(new GameScene(), "scripts/gamescene.lua");
 	}
@@ -46,20 +46,20 @@ void MainMenu::update()
 	default:
 		break;
 	case Menu:
-		
+
 		this->getUIRenderer()->setTexture(this->fontTextureId);
 		this->getUIRenderer()->renderString("play: 1", 0.f, 200.f, 50.f, 50.f);
 		this->getUIRenderer()->renderString("settings: 2", 0.f, 100.f, 50.f, 50.f);
 		this->getUIRenderer()->renderString("how to play: 3", 0.f, 0.f, 50.f, 50.f);
 		this->getUIRenderer()->renderString("quit: 4", 0.f, -100.f, 50.f, 50.f);
 
-		if		(Input::isKeyReleased(Keys::ONE))	{ this->state = State::Play; }
-		else if (Input::isKeyReleased(Keys::TWO))	{ this->state = State::Settings; }
+		if (Input::isKeyReleased(Keys::ONE)) { this->state = State::Play; }
+		else if (Input::isKeyReleased(Keys::TWO)) { this->state = State::Settings; }
 		else if (Input::isKeyReleased(Keys::THREE)) { this->state = State::HowToPlay; }
-		else if (Input::isKeyReleased(Keys::FOUR))	{ this->state = State::Quit; }
+		else if (Input::isKeyReleased(Keys::FOUR)) { this->state = State::Quit; }
 
 		break;
-		
+
 	case Play:
 		this->getUIRenderer()->setTexture(this->fontTextureId);
 		this->getUIRenderer()->renderString("loading...", 0.f, 0.f, 100.f, 100.f);
@@ -70,9 +70,9 @@ void MainMenu::update()
 		this->settings();
 		break;
 	case HowToPlay:
-		this->howToPlay();		
+		this->howToPlay();
 		break;
-	
+
 	case Quit:
 		this->getSceneHandler()->getWindow()->close();
 		break;
@@ -83,11 +83,11 @@ void MainMenu::settings()
 {
 	static bool fullscreen = false;
 	if (Input::isKeyReleased(Keys::ONE))
-	{ 
+	{
 		this->state = State::Menu;
 	}
-	else if (Input::isKeyReleased(Keys::TWO)) 
-	{ 
+	else if (Input::isKeyReleased(Keys::TWO))
+	{
 		fullscreen = fullscreen ? false : true;
 		this->getSceneHandler()->getWindow()->setFullscreen(fullscreen);
 	}
@@ -95,8 +95,8 @@ void MainMenu::settings()
 	UIRenderer* uiRenderer = this->getUIRenderer();
 
 	uiRenderer->setTexture(this->fontTextureId);
-	uiRenderer->renderString("back: 1", -(1920/2) + 200, (1080/2) - 100, 50.f, 50.f);
-	
+	uiRenderer->renderString("back: 1", -(1920 / 2) + 200, (1080 / 2) - 100, 50.f, 50.f);
+
 	uiRenderer->renderString("-- settings --", 0.f, 300.f, 50.f, 50.f);
 
 	uiRenderer->renderString("temp switch key: 2", 0.f, 240.f, 15.f, 15.f);
@@ -113,14 +113,14 @@ void MainMenu::howToPlay()
 	UIRenderer* uiRenderer = this->getUIRenderer();
 
 	uiRenderer->setTexture(this->fontTextureId);
-	uiRenderer->renderString("back: 1", -(1920/2) + 200, (1080/2) - 100, 50.f, 50.f);
-	
+	uiRenderer->renderString("back: 1", -(1920 / 2) + 200, (1080 / 2) - 100, 50.f, 50.f);
+
 	static const float XPos1 = -500.f;
 	uiRenderer->renderString("-- controls --", XPos1, 100.f, 50.f, 50.f);
 	uiRenderer->renderString("move: wasd", XPos1, 0.f, 50.f, 50.f);
 	uiRenderer->renderString("jump: space", XPos1, -100.f, 50.f, 50.f);
 	uiRenderer->renderString("attack: mouse 1", XPos1, -200.f, 50.f, 50.f);
-	
+
 	static const float XPos2 = 500.f;
 	uiRenderer->renderString("-- objective --", XPos2, 100.f, 50.f, 50.f);
 	uiRenderer->renderString("kill everything", XPos2, 0.f, 50.f, 50.f);
