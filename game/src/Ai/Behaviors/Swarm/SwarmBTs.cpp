@@ -386,66 +386,55 @@ BTStatus SwarmBT::attack(Entity entityID)
 
 	static float initialFriction = rigidbody.friction;
 
-	
-	bool canIEvenJump= false; 
+
     Ray downRay{
         thisTransform.position,
         glm::vec3(0.0f,-1.0f,0.0f)
     };
         
-    float heightOfSwarmBlob = sawrmCollider.radius + 1.0f;//TODO: get height of swarmblob
-    RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(downRay,heightOfSwarmBlob);        
-    if(rp.hit)
+    float heightOfSwarmBlob = sawrmCollider.radius + 2.0f;//TODO: get height of swarmblob
+    RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(downRay,heightOfSwarmBlob);   
+    if(rp.hit && swarmComp.groundTimer <= 0.0f)
     {
-        canIEvenJump = true; 		
+        swarmComp.grounded = true;	
+		swarmComp.groundTimer = swarmComp.groundTimerOrig;
     }
      
 
-	 if(combat.timer > 0.0f && 
-		 canIEvenJump)
-	 {
+
+	if(!swarmComp.grounded && swarmComp.groundTimer > 0.0f)
+	{
+		swarmComp.groundTimer -= Time::getDT();
+	}
+
+
+	if(swarmComp.grounded && combat.timer > 0.0f)
+	{
 		combat.timer -= Time::getDT();
 		if(thisTransform.scale.y > 0.5f)
 		{
 			thisTransform.scale.y -= swarmComp.chargeAnimSpeed * Time::getDT();
 		}
-	 }
-	 else if(!swarmComp.inAttack &&
-			!swarmComp.touchedPlayer &&
-			canIEvenJump)
-	 {
-		 //JUMP!
+	}
+	else if(!swarmComp.inAttack && !swarmComp.touchedPlayer && swarmComp.grounded)
+	{
+		//JUMP!
+		swarmComp.grounded = false;
 		thisTransform.scale.y = 1.0f;
 		rigidbody.velocity = dir * swarmComp.jumpForce;
-        swarmComp.inAttack = true; 
+		swarmComp.inAttack = true; 
 		rigidbody.friction = 0.0f;
-		
+	
 		std::cout<<"ATTACK!!!!\n";
-        
 		ret = BTStatus::Success;
-	 
-	 }
-	 else if (canIEvenJump)
-     {
-
-        Ray downRay{
-            thisTransform.position,
-            glm::vec3(0.0f,-1.0f,0.0f)
-        };
-        
-        float heightOfSwarmBlob = sawrmCollider.radius + 0.0f;//TODO: get height of swarmblob
-        RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(downRay,heightOfSwarmBlob);        
-        if(rp.hit)
-        {
-            swarmComp.inAttack = false; 
-			swarmComp.touchedPlayer = false; 
-			rigidbody.friction = initialFriction;
-			combat.timer = combat.lightAttackTime;
-        }
-     }
-
-
-
+	}
+	else if (swarmComp.grounded)
+    {
+		swarmComp.inAttack = false; 
+		swarmComp.touchedPlayer = false; 
+		rigidbody.friction = initialFriction;
+		combat.timer = combat.lightAttackTime;
+    }
 
 	return ret;
 }

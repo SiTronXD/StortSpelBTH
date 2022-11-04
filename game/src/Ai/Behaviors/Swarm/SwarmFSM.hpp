@@ -28,6 +28,9 @@ struct SwarmComponent
 	bool alertDone		= false;
     bool inAttack		= false;
 	bool touchedPlayer	= false;
+	bool grounded		= true;
+	float groundTimer	= 0.0f;
+	float groundTimerOrig	= 0.5f;
 
 
 	SwarmGroup* group;
