@@ -1,6 +1,6 @@
 #include "SwarmFSM.hpp"
 
-float SwarmFSM::getEntityDist(int one, int two)
+float SwarmFSM::getEntityDist(Entity one, Entity two)
 {
 	Transform& trans1 = FSM::sceneHandler->getScene()->getComponent<Transform>(one);
 	Transform& trans2 = FSM::sceneHandler->getScene()->getComponent<Transform>(two);
@@ -17,7 +17,7 @@ bool SwarmFSM::idle_alerted(Entity entityID)
 		return false;
 	}
 
-	int playerID;
+	Entity playerID;
 	std::string playerString = "playerID";
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
 
@@ -70,7 +70,7 @@ bool SwarmFSM::idle_escape(Entity entityID)
 		return false;
 	}
 
-	int playerID;
+	Entity playerID;
 	std::string playerString = "playerID";
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
     
@@ -97,7 +97,7 @@ bool SwarmFSM::combat_idle(Entity entityID)
 
 	
 
-	int playerID;
+	Entity playerID;
 	std::string playerString = "playerID";
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
 	Transform& playerTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(playerID);
@@ -171,7 +171,7 @@ bool SwarmFSM::combat_escape(Entity entityID)
 	}
 
 
-	int playerID;
+	Entity playerID;
 	std::string playerString = "playerID";
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
 	
@@ -206,7 +206,7 @@ bool SwarmFSM::escape_idle(Entity entityID)
 		return false;
 	}
 
-	int playerID;
+	Entity playerID;
 	std::string playerString = "playerID";
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
 	Rigidbody& enemyRb = FSM::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
@@ -239,7 +239,7 @@ bool SwarmFSM::escape_combat(Entity entityID)
 		return ret;
 	}
 
-	int playerID;
+	Entity playerID;
 	std::string playerString = "playerID";
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
 	Rigidbody& enemyRb = FSM::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);

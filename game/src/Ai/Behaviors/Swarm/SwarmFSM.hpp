@@ -54,7 +54,7 @@ struct SwarmComponent
 class SwarmFSM : public FSM
 {
 private:
-	static float getEntityDist(int one, int two);
+	static float getEntityDist(Entity one, Entity two);
 private:
 	static bool idle_alerted(Entity entityID);
 	static bool alerted_combat(Entity entityID);
