@@ -23,6 +23,9 @@ private:
     std::vector<int> enemyIDs;
     std::vector<SwarmGroup*> swarmGroups;
 
+    uint32_t perkTextures[4];
+    uint32_t fontTextureIndex;
+
     uint32_t hpBarBackgroundTextureID;
     uint32_t hpBarTextureID;
     uint32_t portalOffMesh;
@@ -36,6 +39,7 @@ public:
     virtual void start() override;
     virtual void update() override;
     virtual void onTriggerStay(Entity e1, Entity e2) override;
+    virtual void onCollisionStay(Entity e1, Entity e2) override;
 
 private:
     void aiExample();

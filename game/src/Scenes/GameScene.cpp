@@ -34,10 +34,37 @@ void GameScene::init()
 	roomHandler.generate();
 	createPortal();
 
+	perkTextures[0] = 
+		this->getResourceManager()->addTexture("assets/textures/UI/hpUp.png");
+	perkTextures[1] = 
+		this->getResourceManager()->addTexture("assets/textures/UI/dmgUp.png");
+	perkTextures[2] = 
+		this->getResourceManager()->addTexture("assets/textures/UI/atkSpeedUp.png");
+	perkTextures[3] = 
+		this->getResourceManager()->addTexture("assets/textures/UI/empty.png");
 	this->hpBarBackgroundTextureID =
 		this->getResourceManager()->addTexture("assets/textures/UI/hpBarBackground.png");
 	this->hpBarTextureID = 
 		this->getResourceManager()->addTexture("assets/textures/UI/hpBar.png");
+
+    // Add textures for ui renderer
+	TextureSamplerSettings samplerSettings{};
+	samplerSettings.filterMode = vk::Filter::eNearest;	
+	samplerSettings.unnormalizedCoordinates = VK_TRUE;
+    this->fontTextureIndex = Scene::getResourceManager()->addTexture("assets/textures/testBitmapFont.png", { samplerSettings, true });
+
+	Scene::getUIRenderer()->setBitmapFont(
+		{
+			"abcdefghij",
+			"klmnopqrst",
+			"uvwxyz+-.'",
+			"0123456789",
+			"!?,<>:()#^",
+			"@         "
+		},
+		fontTextureIndex,
+		16, 16
+	);
 }
 
 void GameScene::start()
@@ -113,7 +140,6 @@ void GameScene::update()
 		}
 	}
 
-
 	/*if (this->hasComponents<Collider, Rigidbody>(this->playerID))
 	{
 		Rigidbody& rb = this->getComponent<Rigidbody>(this->playerID);
@@ -134,25 +160,52 @@ void GameScene::update()
 		}
 	}
 
+	Combat& playerCombat = this->getComponent<Combat>(this->playerID);
+	float perkXPos = -720.f;
+	float perkYPos = -500.f;
+	for (size_t i = 0; i < 4; i++)
+	{
+		switch (playerCombat.perks[i].perkType)
+		{
+		case hpUp:
+			this->getUIRenderer()->setTexture(perkTextures[hpUp]);
+			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
+			break;
+		case dmgUp:
+			this->getUIRenderer()->setTexture(perkTextures[dmgUp]);
+			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
+			break;
+		case attackSpeedUp:
+			this->getUIRenderer()->setTexture(perkTextures[attackSpeedUp]);
+			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
+			break;
+		case empty:
+			this->getUIRenderer()->setTexture(perkTextures[empty]);
+			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
+			break;
+		}
+	}
+
 	// Render HP bar UI
 	float hpPercent = 1.0f;
 	float maxHpPercent = 1.0f;
 	if (this->hasComponents<Combat>(this->playerID))
 	{
 		hpPercent = 
-			this->getComponent<Combat>(this->playerID).health * 0.01f;
+			playerCombat.health * 0.01f;
 		maxHpPercent =
-			this->getComponent<Combat>(this->playerID).maxHealth * 0.01f;
+			playerCombat.maxHealth * 0.01f;
+
 	}
 	float xPos = -720.f;
 	float yPos = -500.f;
 	float xSize = 1024.f * 0.35f;
 	float ySize = 64.f * 0.35f;
 
-	Scene::getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
-	Scene::getUIRenderer()->renderTexture(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos, (xSize * maxHpPercent) + 10, ySize + 10);
-	Scene::getUIRenderer()->setTexture(this->hpBarTextureID);
-	Scene::getUIRenderer()->renderTexture(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos, xSize * hpPercent, ySize);
+	this->getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
+	this->getUIRenderer()->renderTexture(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos, (xSize * maxHpPercent) + 10, ySize + 10);
+	this->getUIRenderer()->setTexture(this->hpBarTextureID);
+	this->getUIRenderer()->renderTexture(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos, xSize * hpPercent, ySize);
 	
 #ifdef _CONSOLE
 
@@ -178,6 +231,9 @@ void GameScene::update()
 
 void GameScene::aiExample() 
 {
+
+
+
 	auto a = [&](FSM* fsm, uint32_t entityId) -> void {
 		SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
     
@@ -186,25 +242,49 @@ void GameScene::aiExample()
             auto& entitySwarmComponent = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId);
             auto& entityAiCombatComponent = this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId);
             auto& entiyFSMAgentComp = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId);
+            auto& entityRigidBody = this->getSceneHandler()->getScene()->getComponent<Rigidbody>(entityId);
             int& health            = entitySwarmComponent.life;
+			float& jumpForce		=entitySwarmComponent.jumpForce;
+			float& jumpForceY		=entitySwarmComponent.jumpY;
             float& speed           = entitySwarmComponent.speed;
             float& attackRange     = entitySwarmComponent.attackRange;
             float& sightRange      = entitySwarmComponent.sightRadius;
             bool& inCombat         = entitySwarmComponent.inCombat;
             float& attackPerSec    = entityAiCombatComponent.lightAttackTime;
             float& lightAttackDmg  = entityAiCombatComponent.lightHit;
+			float& gravity 			= entityRigidBody.gravityMult;
             std::string& status    = entiyFSMAgentComp.currentNode->status;   
             ImGui::Text(status.c_str());
             ImGui::SliderInt("health", &health, 0, 100);
             ImGui::SliderFloat("speed", &speed, 0, 100);
+            ImGui::SliderFloat("jumpForce", &jumpForce, 0, 100);
+            ImGui::SliderFloat("jumpForceY", &jumpForceY, 0, 100);
+            ImGui::SliderFloat("gravity", &gravity, 0, 10);
             ImGui::SliderFloat("attackRange", &attackRange, 0, 100);
             ImGui::SliderFloat("sightRange", &sightRange, 0, 100);		
             ImGui::InputFloat("attack/s", &attackPerSec);		
             ImGui::InputFloat("lightattackDmg", &lightAttackDmg);		 
             ImGui::Checkbox("inCombat", &inCombat);		            
         };
+        //TEMP             
 
-        //TEMP 
+        static bool showEntityId = false;
+        ImGui::Checkbox("Show Entity ID", &showEntityId);
+        if(showEntityId)
+        {
+            
+            // Show all entity ID over entitties             
+            glm::vec4 entityPos = glm::vec4(this->getSceneHandler()->getScene()->getComponent<Transform>(entityId).position, 1.f);
+
+            auto screenPos = this->getMainCamera()->projection * this->getMainCamera()->view * entityPos;
+            glm::vec3 realScreenPos; 
+            realScreenPos.x = (screenPos.x / screenPos.w) * 1920/2;
+            realScreenPos.y = (screenPos.y / screenPos.w) * 1080/2;
+            realScreenPos.z = screenPos.z / screenPos.w;
+
+            Scene::getUIRenderer()->setTexture(this->fontTextureIndex);
+            Scene::getUIRenderer()->renderString(std::to_string(entityId), realScreenPos.x, realScreenPos.y, 20, 20); 
+        }    
 
         if(ImGui::Button("SWITCHsCENE")){
             this->switchScene(new GameScene(), "scripts/gamescene.lua");            
@@ -215,6 +295,9 @@ void GameScene::aiExample()
         auto& playerCombat = this->getSceneHandler()->getScene()->getComponent<Combat>(playerID);
         if(ImGui::Button("Kill Player")){
             playerCombat.health = 0; 
+        }
+        if(ImGui::Button("INVINCIBLE Player")){
+            playerCombat.health = INT_MAX; 
         }
 		ImGui::Separator();
 		ImGui::Separator();
@@ -251,14 +334,13 @@ void GameScene::aiExample()
                 ImGui::End();
             }            
             ImGui::TreePop();
-        }
+        }       
         
 	};
 	static SwarmFSM swarmFSM;
 
 	this->aiHandler->addFSM(&swarmFSM, "swarmFSM");
 
-	
 
 //TODO: Cause crash on second run, therefore disabled in distribution... 
 #ifdef _CONSOLE 
@@ -266,44 +348,33 @@ void GameScene::aiExample()
 #endif 
 
 	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
-	this->swarmGroups.push_back(new SwarmGroup);
-    for (size_t i = 0; i < 10; i++)
-    {
-		this->enemyIDs.push_back(this->createEntity());
-        this->setComponent<MeshComponent>(this->enemyIDs.back(), swarm);
-        this->setComponent<AiMovement>(this->enemyIDs.back());
-        this->setComponent<AiCombat>(this->enemyIDs.back());
-        this->setComponent<Collider>(this->enemyIDs.back(), Collider::createBox(glm::vec3(5.0f, 3.5f, 5.0f)));
-        this->setComponent<Rigidbody>(this->enemyIDs.back());
-		this->getComponent<Rigidbody>(this->enemyIDs.back()).rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
-		this->aiHandler->createAIEntity(this->enemyIDs.back(), "swarmFSM");
-		this->swarmGroups.back()->members.push_back(this->enemyIDs.back());
-        this->setInactive(this->enemyIDs.back());
-		this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->enemyIDs.back()).group = this->swarmGroups.back();
-		SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs.back());
-		swarmComp.life = 0;
-    }
-
-	/*int swarmModel = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
-
-	int num_blobs = 6;
+	
+    int numOfGroups = 4;
 	int group_size = 3;
-	for (int i = 0; i < num_blobs; i++)
+    for(size_t j = 0; j < numOfGroups; j++)
     {
-		this->swarmEnemies.push_back(this->createEntity());   
-		Transform& trans = this->getSceneHandler()->getScene()->getComponent<Transform>(this->swarmEnemies.back());
-        trans.position.x += rand()%50 - 25;
-        trans.position.z += rand()%50 - 25;
-		this->setComponent<MeshComponent>(this->swarmEnemies.back(), swarmModel);
-		this->aiHandler->createAIEntity(this->swarmEnemies.back(), "swarmFSM");
-        if ((i)%group_size == 0)
+        this->swarmGroups.push_back(new SwarmGroup);
+        for (size_t i = 0; i < group_size; i++)
         {
-			this->swarmGroups.push_back(new SwarmGroup);
+            this->enemyIDs.push_back(this->createEntity());
+            this->setComponent<MeshComponent>(this->enemyIDs.back(), swarm);
+            //this->setComponent<AiMovement>(this->enemyIDs.back());
+            this->setComponent<AiCombat>(this->enemyIDs.back());
+            this->setComponent<Collider>(this->enemyIDs.back(), Collider::createSphere(4.0f));
+            //this->setComponent<Collider>(this->enemyIDs.back(), Collider::createBox(glm::vec3(5.0f, 3.5f, 5.0f)));
+            this->setComponent<Rigidbody>(this->enemyIDs.back());
+			Rigidbody& rb = this->getComponent<Rigidbody>(this->enemyIDs.back());
+            rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+			rb.gravityMult = 5.0f;
+			rb.friction = 1.5f;
+            this->aiHandler->createAIEntity(this->enemyIDs.back(), "swarmFSM");
+            this->swarmGroups.back()->members.push_back(this->enemyIDs.back());
+            this->setInactive(this->enemyIDs.back());
+            this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->enemyIDs.back()).group = this->swarmGroups.back();
+            SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs.back());
+            swarmComp.life = 0.0f;
         }
-        this->swarmGroups.back()->members.push_back(this->swarmEnemies.back());
-        this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->swarmEnemies.back()).group = this->swarmGroups.back();
-	}*/
-    
+    }
 }
 
 bool GameScene::allDead()
@@ -351,19 +422,42 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 					SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs[idx]);
 					transform.scale.y = 1.0f;
 					swarmComp.life = swarmComp.FULL_HEALTH;
+					swarmComp.group->inCombat = false;
 
 					idx++;
 					counter++;
 				
 				}
 			}
-		}
+		}        
 
 		if (other == portal && numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
 		{
 			this->switchScene(new GameScene(), "scripts/gamescene.lua");
 		}
 	}
+}
+
+void GameScene::onCollisionStay(Entity e1, Entity e2)
+{
+    Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
+	
+	if (player == playerID) // player triggered a trigger :]
+	{
+		Entity other = e1 == player ? e2 : e1;
+        if(this->hasComponents<SwarmComponent>(other))
+        {
+            auto& swarmComp = this->getComponent<SwarmComponent>(other);
+            if(swarmComp.inAttack)
+            {
+                auto& aiCombat = this->getComponent<AiCombat>(other);
+                swarmComp.inAttack = false; 
+                this->getComponent<Combat>(player).health -= aiCombat.lightHit;
+                std::cout << "WAS HIT\n";
+                
+            }            
+        }
+    }
 }
 
 void GameScene::createPortal()

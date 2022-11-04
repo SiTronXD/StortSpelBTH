@@ -5,6 +5,6 @@
 struct AiCombat
 {
 	float lightHit = 10.f;
-	float lightAttackTime = 5.f;
+	float lightAttackTime = 2.0f;
 	float timer = 0.f;
 };

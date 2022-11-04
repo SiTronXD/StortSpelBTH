@@ -170,6 +170,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)deps\vengine\src\vengine\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -207,6 +208,7 @@ SET ERRORLEVEL=0</Command>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)deps\vengine\src\vengine\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -242,6 +244,7 @@ SET ERRORLEVEL=0</Command>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)deps\vengine\src\vengine\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -280,7 +283,7 @@ SET ERRORLEVEL=0</Command>
     <ClCompile Include="src\World Handling\Room Layout.cpp" />
     <ClCompile Include="src\ServerGameModes\TheServerGame.cpp" />
     <ClCompile Include="src\Scenes\NetworkAI.cpp" />
-    <ClCompile Include="src\Scenes\TutorialScene.cpp" />
+    <ClCompile Include="src\Scenes\MainMenu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -308,7 +311,7 @@ SET ERRORLEVEL=0</Command>
     <ClInclude Include="src\World Handling\Room Generator.h" />
     <ClInclude Include="src\World Handling\Room Handler.h" />
     <ClInclude Include="src\World Handling\Room Layout.h" />
-    <ClInclude Include="src\Scenes\TutorialScene.h" />
+    <ClInclude Include="src\Scenes\MainMenu.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\deps\vengine\src\vengine\vengine.vcxproj">

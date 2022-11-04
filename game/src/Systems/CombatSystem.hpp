@@ -2,15 +2,12 @@
 
 #include <vengine.h>
 #include "../Components/Combat.h"
-#include "../Components/Perks.h"
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include <string>
 
 class CombatSystem : public System
 {
 private:
-
-	Perks perks[3];
 
 	Scene* scene;
 	Entity playerID;
@@ -35,8 +32,8 @@ public:
 			
 			for (size_t i = 0; i < 3; i++)
 			{
-				perks[i].multiplier = 0;
-				perks[i].perkType = empty;
+				combat.perks[i].multiplier = 0;
+				combat.perks[i].perkType = empty;
 			}
 		}
 	}
@@ -46,38 +43,7 @@ public:
 		auto view = reg.view<Combat>();
 		auto foo = [&](Combat& combat)
 		{
-			Collider& playerColl = scene->getComponent<Collider>(playerID);
-			Transform& playerTrans = scene->getComponent<Transform>(playerID);
-			std::vector<int> hitID = physics->testContact(playerColl, playerTrans.position, playerTrans.rotation);
-			for (size_t i = 0; i < hitID.size(); i++)
-			{
-				if (scene->hasComponents<Perks>(hitID[i]))
-				{
-					Perks& perk = scene->getComponent<Perks>(hitID[i]);
-					for (size_t j = 0; j < 3; j++)
-					{
-						if (this->perks[j].perkType == empty)
-						{
-							this->perks[j] = perk;
-
-							switch (this->perks[j].perkType)
-							{
-							case hpUp:
-								upgradeHealth(combat, this->perks[j]);
-								break;
-							case dmgUp:
-								upgradeDmg(combat, this->perks[j]);
-								break;
-							case attackSpeedUp:
-								upgradeAttackSpeed(combat, this->perks[j]);
-								break;
-							}
-							j = 3;
-						}
-					}
-					scene->removeEntity(hitID[i]);
-				}
-			}
+			checkPerkCollision(combat);
 
 			if (combat.attackTimer > -1.f)
 			{
@@ -94,6 +60,18 @@ public:
 			else if (Input::isMouseButtonPressed(Mouse::RIGHT))
 			{
 				heavyAttack(combat);
+			}
+			if (Input::isKeyPressed(Keys::ONE))
+			{
+				removePerk(combat, combat.perks[0]);
+			}
+			if (Input::isKeyPressed(Keys::TWO))
+			{
+				removePerk(combat, combat.perks[1]);
+			}
+			if (Input::isKeyPressed(Keys::THREE))
+			{
+				removePerk(combat, combat.perks[2]);
 			}
 		};
 		view.each(foo);
@@ -291,14 +269,14 @@ public:
 
 	void upgradeHealth(Combat& combat, Perks& perk)
 	{
-		setDefaultHp(combat, perk);
+		setDefaultHp(combat);
 		combat.hpMultiplier += perk.multiplier;
 		combat.maxHealth *= combat.hpMultiplier;
 	}
 
 	void upgradeDmg(Combat& combat, Perks& perk)
 	{
-		setDefaultDmg(combat, perk);
+		setDefaultDmg(combat);
 		combat.dmgMultiplier += perk.multiplier;
 		combat.lightHit *= combat.dmgMultiplier;
 		combat.heavyHit *= combat.dmgMultiplier;
@@ -309,7 +287,7 @@ public:
 
 	void upgradeAttackSpeed(Combat& combat, Perks& perk)
 	{
-		setDefaultAtttackSpeed(combat, perk);
+		setDefaultAtttackSpeed(combat);
 		combat.attackSpeedMultiplier -= perk.multiplier;
 		combat.lightAttackTime *= combat.attackSpeedMultiplier;
 		combat.heavyAttackTime *= combat.attackSpeedMultiplier;
@@ -318,12 +296,12 @@ public:
 		combat.comboMixTime *= combat.attackSpeedMultiplier;
 	}
 
-	void setDefaultHp(Combat& combat, Perks& perk)
+	void setDefaultHp(Combat& combat)
 	{
 		combat.maxHealth /= combat.hpMultiplier;
 	}
 
-	void setDefaultDmg(Combat& combat, Perks& perk)
+	void setDefaultDmg(Combat& combat)
 	{
 		combat.lightHit /= combat.dmgMultiplier;
 		combat.heavyHit /= combat.dmgMultiplier;
@@ -332,7 +310,7 @@ public:
 		combat.comboMixHit /= combat.dmgMultiplier;
 	}
 
-	void setDefaultAtttackSpeed(Combat& combat, Perks& perk)
+	void setDefaultAtttackSpeed(Combat& combat)
 	{
 		combat.lightAttackTime /= combat.attackSpeedMultiplier;
 		combat.heavyAttackTime /= combat.attackSpeedMultiplier;
@@ -343,18 +321,56 @@ public:
 
 	void removePerk(Combat& combat, Perks& perk)
 	{
-		switch (perk.perkType)
+		if (perk.perkType != empty)
 		{
-		case hpUp:
-			setDefaultHp(combat, perk);
-			break;
-		case dmgUp:
-			setDefaultDmg(combat, perk);
-			break;
-		case attackSpeedUp:
-			setDefaultAtttackSpeed(combat, perk);
+			switch (perk.perkType)
+			{
+			case hpUp:
+				setDefaultHp(combat);
+				break;
+			case dmgUp:
+				setDefaultDmg(combat);
+				break;
+			case attackSpeedUp:
+				setDefaultAtttackSpeed(combat);
+			}
+			perk.multiplier = 0;
+			perk.perkType = empty;
 		}
-		perk.multiplier = 0;
-		perk.perkType = empty;
+	}
+
+	void checkPerkCollision(Combat& combat)
+	{
+		Collider& playerColl = scene->getComponent<Collider>(playerID);
+		Transform& playerTrans = scene->getComponent<Transform>(playerID);
+		std::vector<int> hitID = physics->testContact(playerColl, playerTrans.position, playerTrans.rotation);
+		for (size_t i = 0; i < hitID.size(); i++)
+		{
+			if (scene->hasComponents<Perks>(hitID[i]))
+			{
+				Perks& perk = scene->getComponent<Perks>(hitID[i]);
+				for (size_t j = 0; j < 3; j++)
+				{
+					if (combat.perks[j].perkType == empty)
+					{
+						combat.perks[j] = perk;
+						switch (combat.perks[j].perkType)
+						{
+						case hpUp:
+							upgradeHealth(combat, combat.perks[j]);
+							break;
+						case dmgUp:
+							upgradeDmg(combat, combat.perks[j]);
+							break;
+						case attackSpeedUp:
+							upgradeAttackSpeed(combat, combat.perks[j]);
+							break;
+						}
+						j = 3;
+					}
+				}
+				scene->removeEntity(hitID[i]);
+			}
+		}
 	}
 };

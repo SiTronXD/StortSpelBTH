@@ -9,7 +9,7 @@ Entity getPlayerID(SceneHandler*sceneHandler);
 struct SwarmGroup
 {
     private: 
-    static int getNewId; 
+    static int getNewId;
     public: 
     SwarmGroup() {myId = getNewId++;}
     int myId;  
@@ -26,6 +26,7 @@ struct SwarmGroup
 class SwarmBT : public BehaviorTree
 {
    protected:
+	static int perkMeshes[3];
 	virtual void start() = 0;
     void registerEntityComponents(Entity entityId) override;
 
@@ -37,7 +38,7 @@ class SwarmBT : public BehaviorTree
 	static BTStatus hasFriends(Entity entityID);
 	static BTStatus jumpInCircle(Entity entityID);
 	static BTStatus lookingForGroup(Entity entityID);
-	static BTStatus JoinGroup(Entity entityID);
+	static BTStatus JoinGroup(Entity entityID);	
 
 	static BTStatus seesNewFriends(Entity entityID);
 	static BTStatus escapeToFriends(Entity entityID);
@@ -51,12 +52,20 @@ class SwarmBT : public BehaviorTree
 	static BTStatus playDeathAnim(Entity entityID);
 	static BTStatus die(Entity entityID);
 
-
-
+    static BTStatus alerted(Entity entityID);
 
 };
 
 class Swarm_idle : public SwarmBT
+{
+   protected:
+	void start();
+  public:
+	void initEntityData(Entity entityID){};
+	void update(Entity entityID){};
+};
+
+class Swarm_alerted : public SwarmBT
 {
    protected:
 	void start();

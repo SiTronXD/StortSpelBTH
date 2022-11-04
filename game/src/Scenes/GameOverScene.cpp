@@ -1,5 +1,5 @@
 #include "GameOverScene.h"
-#include "TutorialScene.h"
+#include "MainMenu.h"
 
 void GameOverScene::init() {}
 
@@ -10,6 +10,6 @@ void GameOverScene::update()
 	// Switch scene
 	if (Input::isKeyPressed(Keys::SPACE))
 	{
-		this->switchScene(new TutorialScene(), "scripts/TutorialScene.lua");
+		this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
 	}
 }
