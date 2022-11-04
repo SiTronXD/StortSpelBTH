@@ -65,7 +65,6 @@ function script:update(dt)
     elseif (self.jumpTimer > 0) then
         self.jumpTimer = self.jumpTimer - dt
     end
-    --print(self.jumpTimer)
 
     -- Apply to rigidbody velocity
     local rb = scene.getComponent(self.ID, CompType.Rigidbody)
@@ -108,6 +107,7 @@ function script:update(dt)
 
         scene.setComponent(self.ID, CompType.Animation, anim)
         self.animTimer = 2
+    ]]
     
     if (self.animTimer < 0)
     then
@@ -128,7 +128,6 @@ function script:update(dt)
 
         scene.setComponent(self.ID, CompType.Animation, anim)
     end
-    ]]
 
     if (scene.getComponent(self.ID, CompType.Mesh).meshID == self.playerMesh)
     then
