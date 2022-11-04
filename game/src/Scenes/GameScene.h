@@ -23,6 +23,7 @@ private:
     std::vector<int> enemyIDs;
     std::vector<SwarmGroup*> swarmGroups;
 
+    uint32_t perkTextures[4];
     uint32_t hpBarBackgroundTextureID;
     uint32_t hpBarTextureID;
     uint32_t portalOffMesh;

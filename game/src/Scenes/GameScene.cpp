@@ -34,6 +34,14 @@ void GameScene::init()
 	roomHandler.generate();
 	createPortal();
 
+	perkTextures[0] = 
+		this->getResourceManager()->addTexture("assets/textures/UI/hpUp.png");
+	perkTextures[1] = 
+		this->getResourceManager()->addTexture("assets/textures/UI/dmgUp.png");
+	perkTextures[2] = 
+		this->getResourceManager()->addTexture("assets/textures/UI/atkSpeedUp.png");
+	perkTextures[3] = 
+		this->getResourceManager()->addTexture("assets/textures/UI/empty.png");
 	this->hpBarBackgroundTextureID =
 		this->getResourceManager()->addTexture("assets/textures/UI/hpBarBackground.png");
 	this->hpBarTextureID = 
@@ -134,25 +142,52 @@ void GameScene::update()
 		}
 	}
 
+	Combat& playerCombat = this->getComponent<Combat>(this->playerID);
+	float perkXPos = -720.f;
+	float perkYPos = -500.f;
+	for (size_t i = 0; i < 4; i++)
+	{
+		switch (playerCombat.perks[i].perkType)
+		{
+		case hpUp:
+			this->getUIRenderer()->setTexture(perkTextures[hpUp]);
+			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
+			break;
+		case dmgUp:
+			this->getUIRenderer()->setTexture(perkTextures[dmgUp]);
+			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
+			break;
+		case attackSpeedUp:
+			this->getUIRenderer()->setTexture(perkTextures[attackSpeedUp]);
+			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
+			break;
+		case empty:
+			this->getUIRenderer()->setTexture(perkTextures[empty]);
+			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
+			break;
+		}
+	}
+
 	// Render HP bar UI
 	float hpPercent = 1.0f;
 	float maxHpPercent = 1.0f;
 	if (this->hasComponents<Combat>(this->playerID))
 	{
 		hpPercent = 
-			this->getComponent<Combat>(this->playerID).health * 0.01f;
+			playerCombat.health * 0.01f;
 		maxHpPercent =
-			this->getComponent<Combat>(this->playerID).maxHealth * 0.01f;
+			playerCombat.maxHealth * 0.01f;
+
 	}
 	float xPos = -720.f;
 	float yPos = -500.f;
 	float xSize = 1024.f * 0.35f;
 	float ySize = 64.f * 0.35f;
 
-	Scene::getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
-	Scene::getUIRenderer()->renderTexture(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos, (xSize * maxHpPercent) + 10, ySize + 10);
-	Scene::getUIRenderer()->setTexture(this->hpBarTextureID);
-	Scene::getUIRenderer()->renderTexture(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos, xSize * hpPercent, ySize);
+	this->getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
+	this->getUIRenderer()->renderTexture(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos, (xSize * maxHpPercent) + 10, ySize + 10);
+	this->getUIRenderer()->setTexture(this->hpBarTextureID);
+	this->getUIRenderer()->renderTexture(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos, xSize * hpPercent, ySize);
 	
 #ifdef _CONSOLE
 
