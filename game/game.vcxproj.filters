@@ -14,6 +14,7 @@
     <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmBTs.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmFSM.cpp" />
     <ClCompile Include="src\Scenes\LevelEditor.cpp" />
+    <ClCompile Include="src\LevelEditor\ObjectHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -42,6 +43,7 @@
     <ClInclude Include="src\Components\Perks.h" />
     <ClInclude Include="src\Scenes\LevelEditor.h" />
     <ClInclude Include="src\LevelEditor\mayaStructures.h" />
+    <ClInclude Include="src\LevelEditor\ObjectHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

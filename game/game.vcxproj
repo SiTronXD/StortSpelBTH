@@ -271,6 +271,7 @@ SET ERRORLEVEL=0</Command>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\LevelEditor\ObjectHandler.cpp" />
     <ClCompile Include="src\Scenes\GameOverScene.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmBTs.cpp" />
@@ -290,6 +291,7 @@ SET ERRORLEVEL=0</Command>
     <ClInclude Include="Components\Movement.h" />
     <ClInclude Include="src\Components\Perks.h" />
     <ClInclude Include="src\LevelEditor\mayaStructures.h" />
+    <ClInclude Include="src\LevelEditor\ObjectHandler.h" />
     <ClInclude Include="src\Scenes\GameOverScene.h" />
     <ClInclude Include="src\Ai\Behaviors\Swarm\SwarmBTs.hpp" />
     <ClInclude Include="src\Ai\Behaviors\Swarm\SwarmFSM.hpp" />

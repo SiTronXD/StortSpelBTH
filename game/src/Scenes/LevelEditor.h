@@ -3,16 +3,17 @@
 #include "vengine.h"
 #include "vengine/shared_memory/Comlib.h"
 #include "vengine/shared_memory/mayaStructures.h"
+#include "../LevelEditor/ObjectHandler.h"
 
 class LevelEditor: public Scene
 {
 private:
-  Comlib* comlib;
-  char* msg;
-  MessageHeader* header;
-
-  Entity playerID;
-  std::unordered_map<std::string, Entity> mayaObjects;
+    Comlib* comlib;
+    char* data;
+    MessageHeader* header;
+    
+    Entity playerID;
+    ObjectHandler objectHandler;
 
 public:
     LevelEditor();
