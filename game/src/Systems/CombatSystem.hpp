@@ -152,10 +152,10 @@ public:
 				{
 					if (scene->hasComponents<SwarmComponent>(hitID[i]))
 					{
-						SwarmComponent& enemy = scene->getComponent<SwarmComponent>(hitID[i]);
+						SwarmComponent& enemy = this->scene->getComponent<SwarmComponent>(hitID[i]);
 						enemy.life -= (int)combat.lightHit;
-						Rigidbody& enemyRB = scene->getComponent<Rigidbody>(hitID[i]);
-						Transform& enemyTrans = scene->getComponent<Transform>(hitID[i]);
+						Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(hitID[i]);
+						Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
 						glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
 						enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * 200.f;
 						return true;
