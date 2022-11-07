@@ -9,12 +9,17 @@ int SwarmBT::perkMeshes[] = { 0, 0, 0 };
 
 Entity getPlayerID(SceneHandler* sceneHandler) 
 {
-    int playerID = 0;
+  int playerID = -1;
 
-    std::string playerString = "playerID";
-    sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
-
-	return playerID; 
+  std::string playerString = "playerID";
+  NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+  if (s != nullptr)
+    {
+      //now it only goes to host make so it goes to any one
+      return s->getPlayer(0);
+    }
+  sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
+  return playerID;
 }
 
 
@@ -302,9 +307,7 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 
         if (rp.hit)
         {        
-            int playerId = -1;
-            std::string playerStr = "playerID";
-            BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(playerId, playerStr);
+            int playerId = getPlayerID(sceneHandler);
 
             if(playerId != rp.entity)
             {
@@ -443,6 +446,8 @@ BTStatus SwarmBT::die(Entity entityID)
 	}
 
 	int spawnPerk = rand() % 11;
+    //TODO : what shall we do
+    /* make it a event call
 	if (spawnPerk < 4)
 	{
 		// Spawn Perk
@@ -461,6 +466,7 @@ BTStatus SwarmBT::die(Entity entityID)
 		perkRb.velocity = glm::normalize(dir) * 15.f;
 		sceneHandler->getScene()->setComponent<Perks>(perkEnt, perk);
 	}
+	*/
 
 	//TODO: Sometgin goes wrong when we remove from group.
 	//SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
@@ -615,9 +621,10 @@ void Swarm_escape::start()
 
 void Swarm_dead::start()
 {
-	this->perkMeshes[0] = sceneHandler->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
-	this->perkMeshes[1] = sceneHandler->getResourceManager()->addMesh("assets/models/Perk_Dmg.obj");
-	this->perkMeshes[2] = sceneHandler->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");
+	//TODO : what shall we do
+	//this->perkMeshes[0] = sceneHandler->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
+	//this->perkMeshes[1] = sceneHandler->getResourceManager()->addMesh("assets/models/Perk_Dmg.obj");
+	//this->perkMeshes[2] = sceneHandler->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");
 
 	Sequence* root = c.c.sequence();
 
