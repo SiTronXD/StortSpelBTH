@@ -39,7 +39,7 @@ void TheServerGame::update(float dt)
   //    this->getComponent<Transform>(this->getEnemies(i)).rotation.y +=
   //        dt * 50 * (i + 1);
   //  }
-  //aiHandler->update();
+  aiHandler->update();
   //Transform& t = this->getComponent<Transform>(this->enemyIDs[0]);
   Transform& pt = this->getComponent<Transform>(this->getPlayer(0));
   //glm::vec3 enemyToPlayer = pt.position - t.position;
@@ -55,9 +55,6 @@ void TheServerGame::update(float dt)
   //  {
   //    std::cout << "don't hit" << std::endl;
   //  }
-
-  std::cout << "PlayerPos: " << pt.position.x << ", " << pt.position.y << ", "
-            << pt.position.z << std::endl;
 }
 
 void TheServerGame::aiExample()
