@@ -11,11 +11,11 @@ NewAINetwork::~NewAINetwork() {}
 
 void NewAINetwork::init()
 {
+  int groundMesh =
+      this->getResourceManager()->addMesh("vengine_assets/models/cube.obj");
 
     //ground
-    int ground = this->createEntity();
-    int groundMesh =
-        this->getResourceManager()->addMesh("vengine_assets/models/Cube.fbx");
+    int ground = this->createEntity();  
     this->setComponent<Collider>(ground, Collider::createBox(glm::vec3(100,1,100)));
     this->setComponent<MeshComponent>(ground, groundMesh);
     Transform& transform2 = this->getComponent<Transform>(ground);
@@ -42,7 +42,8 @@ void NewAINetwork::start()
     //no visulation that we connected
 
     int cube = this->createEntity();
-    int a = this->getResourceManager()->addMesh("vengine_assets/models/Cube.fbx");
+    int a = this->getResourceManager()->addMesh("vengine_assets/models/cube.obj");
+
     this->setComponent<MeshComponent>(cube, a);
     this->setComponent<Collider>(cube, Collider::createBox(glm::vec3(8,16,1)));
     auto& c = this->getComponent<Transform>(cube);
@@ -75,7 +76,6 @@ void NewAINetwork::update()
     }
     Transform& t =  this->getComponent<Transform>(player);
 
-    // std::cout << t.position.x << ", " << t.position.x << ", " << t.position.z << std::endl;
     this->getNetworkHandler()->sendUDPDataToClient(
         this->getComponent<Transform>(player).position,
         this->getComponent<Transform>(player).rotation

@@ -39,10 +39,24 @@ void TheServerGame::update(float dt)
   //    this->getComponent<Transform>(this->getEnemies(i)).rotation.y +=
   //        dt * 50 * (i + 1);
   //  }
-  aiHandler->update();
-  Transform& t = this->getComponent<Transform>(this->enemyIDs[0]);
+  //aiHandler->update();
+  //Transform& t = this->getComponent<Transform>(this->enemyIDs[0]);
+  Transform& pt = this->getComponent<Transform>(this->getPlayer(0));
+  //glm::vec3 enemyToPlayer = pt.position - t.position;
+  //Ray rayToPlayer{t.position, enemyToPlayer};
+  //RayPayload rp = this->getSceneHandler()->getPhysicsEngine()->raycast(
+  //    rayToPlayer, 1000.0f
+  //);
+  //if (rp.hit)
+  //  {
+  //    std::cout << "hit" << std::endl;
+  //  }
+  //else
+  //  {
+  //    std::cout << "don't hit" << std::endl;
+  //  }
 
-  std::cout << t.position.x << ", " << t.position.y << ", " << t.position.z << std::endl;
+  std::cout << pt.position.x << ", " << pt.position.y << ", " << pt.position.z << std::endl;
 }
 
 void TheServerGame::aiExample()
