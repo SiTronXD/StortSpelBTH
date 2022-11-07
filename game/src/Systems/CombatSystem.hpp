@@ -151,9 +151,9 @@ public:
 			}
 			else
 			{
-				Transform& playerTrans = scene->getComponent<Transform>(playerID);
+				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
 				playerTrans.updateMatrix();
-				std::vector<int> hitID = physics->testContact(sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
+				std::vector<int> hitID = physics->testContact(this->sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
 				for (size_t i = 0; i < hitID.size(); i++)
 				{
 					if (scene->hasComponents<SwarmComponent>(hitID[i]))
@@ -188,9 +188,9 @@ public:
 			if (checkCombo(combat)) { return true; }
 			else
 			{
-				Transform& playerTrans = scene->getComponent<Transform>(playerID);
+				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
 				playerTrans.updateMatrix();
-				std::vector<int> hitID = physics->testContact(sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
+				std::vector<int> hitID = physics->testContact(this->sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
 				for (size_t i = 0; i < hitID.size(); i++)
 				{
 					if (scene->hasComponents<SwarmComponent>(hitID[i]))
@@ -220,9 +220,9 @@ public:
 			if (checkCombo(combat)) { return true; }
 			else
 			{
-				Transform& playerTrans = scene->getComponent<Transform>(playerID);
+				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
 				playerTrans.updateMatrix();
-				std::vector<int> hitID = physics->testContact(swordSpin, playerTrans.position, glm::vec3(0.f));
+				std::vector<int> hitID = physics->testContact(this->swordSpin, playerTrans.position, glm::vec3(0.f));
 				for (size_t i = 0; i < hitID.size(); i++)
 				{
 					if (scene->hasComponents<SwarmComponent>(hitID[i]))
@@ -248,9 +248,9 @@ public:
 		if (idx == 0)
 		{
 			combat.attackTimer = combat.comboLightCd;
-			Transform& playerTrans = scene->getComponent<Transform>(playerID);
+			Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
 			playerTrans.updateMatrix();
-			std::vector<int> hitID = physics->testContact(swordSpin, playerTrans.position, glm::vec3(0.f));
+			std::vector<int> hitID = physics->testContact(this->swordSpin, playerTrans.position, glm::vec3(0.f));
 			for (size_t i = 0; i < hitID.size(); i++)
 			{
 				if (scene->hasComponents<SwarmComponent>(hitID[i]))
@@ -269,9 +269,9 @@ public:
 		else if (idx == 1)
 		{
 			combat.attackTimer = combat.comboMixCd;
-			Transform& playerTrans = scene->getComponent<Transform>(playerID);
+			Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
 			playerTrans.updateMatrix();
-			std::vector<int> hitID = physics->testContact(sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
+			std::vector<int> hitID = physics->testContact(this->sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
 			for (size_t i = 0; i < hitID.size(); i++)
 			{
 				if (scene->hasComponents<SwarmComponent>(hitID[i]))
@@ -290,7 +290,7 @@ public:
 		else if (idx == 2)
 		{
 			combat.attackTimer = combat.comboHeavyCd;
-			Transform& playerTrans = scene->getComponent<Transform>(playerID);
+			Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
 			playerTrans.updateMatrix();
 			std::vector<int> hitID = physics->testContact(sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
 			for (size_t i = 0; i < hitID.size(); i++)
