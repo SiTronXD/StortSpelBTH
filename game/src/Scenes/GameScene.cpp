@@ -372,7 +372,7 @@ void GameScene::aiExample()
             this->setInactive(this->enemyIDs.back());
             this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->enemyIDs.back()).group = this->swarmGroups.back();
             SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs.back());
-            swarmComp.life = 0.0f;
+            swarmComp.life = 0;
         }
     }
 }
@@ -452,7 +452,7 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
             {
                 auto& aiCombat = this->getComponent<AiCombat>(other);
                 swarmComp.inAttack = false; 
-                this->getComponent<Combat>(player).health -= aiCombat.lightHit;
+                this->getComponent<Combat>(player).health -= (int)aiCombat.lightHit;
                 std::cout << "WAS HIT\n";
                 
             }            
