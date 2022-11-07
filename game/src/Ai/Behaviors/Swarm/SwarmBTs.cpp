@@ -2,8 +2,10 @@
 #include "SwarmFSM.hpp"
 #include "../../../Components/Combat.h"
 #include "../../../Components/AiCombat.h"
+#include "../../../Components/Perks.h"
 
 int SwarmGroup::getNewId = 0;
+int SwarmBT::perkMeshes[] = { 0, 0, 0 };
 
 Entity getPlayerID(SceneHandler* sceneHandler) 
 {
@@ -466,6 +468,27 @@ BTStatus SwarmBT::die(Entity entityID)
 		playerCombat.health += 10.f;
 	}
 
+	int spawnPerk = rand() % 11;
+	if (spawnPerk < 4)
+	{
+		// Spawn Perk
+		PerkType perkType = (PerkType)(rand() % 3);
+		Perks perk{ .multiplier = 0.2f, .perkType = perkType };
+		Entity perkEnt = sceneHandler->getScene()->createEntity();
+		sceneHandler->getScene()->setComponent<MeshComponent>(perkEnt, SwarmBT::perkMeshes[perkType]);
+		Transform& perkTrans = sceneHandler->getScene()->getComponent<Transform>(perkEnt);
+		Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+		perkTrans.position = swarmTrans.position;
+		perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
+		sceneHandler->getScene()->setComponent<Collider>(perkEnt, Collider::createSphere(2.f));
+		sceneHandler->getScene()->setComponent<Rigidbody>(perkEnt);
+		Rigidbody& perkRb = sceneHandler->getScene()->getComponent<Rigidbody>(perkEnt);
+		glm::vec3 dir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
+		perkRb.velocity = glm::normalize(dir) * 15.f;
+		sceneHandler->getScene()->setComponent<Perks>(perkEnt, perk);
+	}
+
+	//TODO: Sometgin goes wrong when we remove from group.
 	//SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 
 	sceneHandler->getScene()->setInactive(entityID);
@@ -618,6 +641,10 @@ void Swarm_escape::start()
 
 void Swarm_dead::start()
 {
+	this->perkMeshes[0] = sceneHandler->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
+	this->perkMeshes[1] = sceneHandler->getResourceManager()->addMesh("assets/models/Perk_Dmg.obj");
+	this->perkMeshes[2] = sceneHandler->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");
+
 	Sequence* root = c.c.sequence();
 
 	Task* playDeathAnimTask = c.l.task("Play death animation", SwarmBT::playDeathAnim);

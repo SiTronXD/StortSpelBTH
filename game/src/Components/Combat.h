@@ -4,6 +4,7 @@
 #include <vector>
 #include <chrono>
 #include "glm/glm.hpp"
+#include "../Components/Perks.h"
 
 enum ActiveAttack { noActive, spinActive, lightActive, heavyActive, comboActive };
 
@@ -35,6 +36,7 @@ struct Combat
 	float comboClearTimer = 0.f;
 	float comboClearDelay = 2.f;
 
+	Perks perks[3];
 	float hpMultiplier = 1.f;
 	float dmgMultiplier = 1.f;
 	float attackSpeedMultiplier = 1.f;

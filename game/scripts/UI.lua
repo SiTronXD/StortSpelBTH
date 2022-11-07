@@ -28,11 +28,11 @@ function script:update(dt)
 	-- uiRenderer.renderTexture(xPos - (1.0 - hpPercent) * xSize * 0.5, yPos, xSize * hpPercent, ySize)
 
 	-- Perk slots
-	uiRenderer.setTexture(self.perkSlotTextureID)
-	for i = 1, 3 
-	do
-		uiRenderer.renderTexture(-xPos - 70 + i * 80, yPos + 10, 70, 70)
-	end
+	--uiRenderer.setTexture(self.perkSlotTextureID)
+	--for i = 1, 3 
+	--do
+	--	uiRenderer.renderTexture(-xPos - 70 + i * 80, yPos + 10, 70, 70)
+	--end
 
 	-- Crosshair
 	uiRenderer.setTexture(self.crosshairTextureID)

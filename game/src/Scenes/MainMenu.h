@@ -16,9 +16,10 @@ private:
 
     State state;
     uint32_t fontTextureId;
-    uint32_t loadingTextureId;
     uint32_t backgroundId;
     bool startGame;
+
+    void howToPlay();
     void settings();
 
 public:
