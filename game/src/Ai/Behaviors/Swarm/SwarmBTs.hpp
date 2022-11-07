@@ -18,6 +18,7 @@ struct SwarmGroup
 	float huntTimer;
 	float huntTimerOrig = 2.0f;
 	glm::vec3 idleMidBos = glm::vec3(0.0f, 0.0f, 0.0f);
+	float idleRadius = 0.0f;
 	glm::vec3 lastKnownPlayerPos = glm::vec3(0.0f, 0.0f, 0.0f);
 	std::vector<uint32_t> members;
 };

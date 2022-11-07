@@ -422,6 +422,36 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 					swarmComp.life = swarmComp.FULL_HEALTH;
 					swarmComp.group->inCombat = false;
 
+					//Set idle mid pos
+					swarmComp.group->idleMidBos = glm::vec3(0.0f, 0.0f, 0.0f);
+					int numAlive = 0;
+					for(auto b: swarmComp.group->members)
+					{
+						if(isActive(b))
+						{
+							swarmComp.group->idleMidBos += this->getComponent<Transform>(b).position;
+							numAlive++;
+						}
+					}
+					swarmComp.group->idleMidBos /= numAlive;
+					//Set ilde radius
+					for(auto b: swarmComp.group->members)
+					{
+						if(isActive(b))
+						{
+							float len = glm::length(swarmComp.group->idleMidBos - this->getComponent<Transform>(b).position);
+							if(len > swarmComp.group->idleRadius)
+							{
+								swarmComp.group->idleRadius = len;
+							}
+						}
+					}
+
+					//Set move to
+					swarmComp.idleMoveTo = swarmComp.group->idleMidBos;
+					glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
+					swarmComp.idleMoveTo = swarmComp.group->idleMidBos + dir * swarmComp.group->idleRadius;
+
 					idx++;
 					counter++;
 				
@@ -434,6 +464,17 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 			this->switchScene(new GameScene(), "scripts/gamescene.lua");
 		}
 	}
+}
+
+void GameScene::onCollisionEnter(Entity e1, Entity e2)
+{
+   
+	if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<SwarmComponent>(e2))
+	{
+		this->getComponent<SwarmComponent>(e1).touchedFriend = true;
+		this->getComponent<SwarmComponent>(e2).touchedFriend = true;
+	}
+
 }
 
 void GameScene::onCollisionStay(Entity e1, Entity e2)
@@ -458,6 +499,17 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
             }            
         }
     }
+}
+
+void GameScene::onCollisionExit(Entity e1, Entity e2)
+{
+   
+	if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<SwarmComponent>(e2))
+	{
+		this->getComponent<SwarmComponent>(e1).touchedFriend = false;
+		this->getComponent<SwarmComponent>(e2).touchedFriend = false;
+	}
+
 }
 
 void GameScene::createPortal()

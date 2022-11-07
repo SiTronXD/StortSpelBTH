@@ -27,6 +27,16 @@ float lookAtY(const Transform& from, const Transform& to)
   
     return angle; 
 }
+float lookAtY(const glm::vec3& from, const glm::vec3& to)
+{
+    float posX = from.x - to.x;
+    float posZ = from.z - to.z;
+    float angle = atan2(posX, posZ);
+    angle = glm::degrees(angle);
+  
+    return angle; 
+}
+
 void removeFromGroup(SwarmComponent& comp, Entity entityID)
 {
 	for(int i = 0; i < comp.group->members.size(); i++)
@@ -60,20 +70,54 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 {
 
 	BTStatus ret = BTStatus::Running;
-	//TODO: Make blob jump in circle!
-
-	//Transform& thisTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
-	//SwarmComponent& thisSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
-	//glm::vec3 dir = glm::normalize(thisSwarmComp.group->idleMidBos - thisTransform.position);
-	//thisTransform.position += Time::getDT() * dir * thisSwarmComp.speed;
-
-
-
 	if (hasFriends(entityID) == BTStatus::Failure)
 	{
 		return BTStatus::Failure;
-
 	}
+
+
+	Transform& swarmTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
+	SwarmComponent& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+	Rigidbody& swarmRB = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
+	Collider& swarmCol = BehaviorTree::sceneHandler->getScene()->getComponent<Collider>(entityID);
+
+
+	float len = glm::length(swarmComp.idleMoveTo - swarmTransform.position);
+	glm::vec3 dir = glm::normalize(swarmComp.idleMoveTo - swarmTransform.position);
+	swarmRB.velocity = dir * swarmComp.idleSpeed;
+	swarmTransform.rotation.y = lookAtY(swarmTransform.position, swarmComp.idleMoveTo);
+	swarmTransform.updateMatrix();
+
+
+	if(swarmComp.touchedFriend)
+	{
+		swarmComp.touchedFriend = false;
+
+		//Set move to
+		swarmComp.idleMoveTo = swarmComp.group->idleMidBos;
+		glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
+		swarmComp.idleMoveTo = swarmComp.group->idleMidBos + dir * swarmComp.group->idleRadius;
+	}
+	else if(swarmCol.radius*2 > len)
+	{
+		//Set move to
+		swarmComp.idleMoveTo = swarmComp.group->idleMidBos;
+		glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
+		swarmComp.idleMoveTo = swarmComp.group->idleMidBos + dir * swarmComp.group->idleRadius;
+	}
+
+
+
+	//float  len = glm::length(swarmTransform.position - swarmComp.group->idleMidBos);
+	//if(len > swarmComp.group->idleRadius)
+	//{
+	//	//Change dir
+
+	//	//swarmComp.idleDir
+	//
+	//}
+
+
 	return ret;
 }
 BTStatus SwarmBT::lookingForGroup(Entity entityID)

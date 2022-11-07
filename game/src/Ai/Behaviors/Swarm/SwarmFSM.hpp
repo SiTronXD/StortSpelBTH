@@ -10,6 +10,7 @@ struct SwarmComponent
 	int FULL_HEALTH = 100;
 	int life = FULL_HEALTH;
 	float speed = 17.0f;
+	float idleSpeed = 10.0f;
 	float jumpForce = 70.0f;
 	float jumpY = 10.0f;
 
@@ -28,9 +29,12 @@ struct SwarmComponent
 	bool alertDone		= false;
     bool inAttack		= false;
 	bool touchedPlayer	= false;
+	bool touchedFriend	= false;
 	bool grounded		= true;
 	float groundTimer	= 0.0f;
 	float groundTimerOrig	= 0.5f;
+
+	glm::vec3 idleMoveTo = glm::vec3(0.0f, 0.0f, 0.0f);
 
 
 	SwarmGroup* group;
