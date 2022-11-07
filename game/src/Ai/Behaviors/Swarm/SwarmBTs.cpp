@@ -10,11 +10,15 @@ Entity getPlayerID(SceneHandler* sceneHandler)
     int playerID = 0;
 
     std::string playerString = "playerID";
+    NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+    if (s != nullptr)
+    {
+        //now it only goes to host make so it goes to any one
+        return s->getPlayer(0);
+	}
     sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
-
 	return playerID; 
 }
-
 
 float lookAtY(const Transform& from, const Transform& to)
 {
@@ -25,6 +29,7 @@ float lookAtY(const Transform& from, const Transform& to)
   
     return angle; 
 }
+
 void removeFromGroup(SwarmComponent& comp, Entity entityID)
 {
 	for(int i = 0; i < comp.group->members.size(); i++)
@@ -43,7 +48,7 @@ void SwarmBT::registerEntityComponents(Entity entityId)
 
 BTStatus SwarmBT::hasFriends(Entity entityID)
 {
-
+	std::cout << "has frieds" << std::endl;
 	BTStatus ret = BTStatus::Success;
 
 	SwarmGroup* groupPtr =
@@ -54,9 +59,10 @@ BTStatus SwarmBT::hasFriends(Entity entityID)
 	}
 	return ret;
 }
+
 BTStatus SwarmBT::jumpInCircle(Entity entityID)
 {
-
+  std::cout << "jumpInCircle" << std::endl;
 	BTStatus ret = BTStatus::Running;
 	//TODO: Make blob jump in circle!
 
@@ -74,8 +80,10 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 	}
 	return ret;
 }
+
 BTStatus SwarmBT::lookingForGroup(Entity entityID)
 {
+	std::cout << "Looking for group" << std::endl;
 
 	BTStatus ret = BTStatus::Running;
 	//TODO: Make blob jump around and look for friends!
@@ -86,9 +94,10 @@ BTStatus SwarmBT::lookingForGroup(Entity entityID)
 	}
 	return ret;
 }
+
 BTStatus SwarmBT::JoinGroup(Entity entityID)
 {
-
+  std::cout << "JoinGroup" << std::endl;
 	BTStatus ret = BTStatus::Running;
 	//TODO: Make blob jump in circle!
 
@@ -118,6 +127,7 @@ BTStatus SwarmBT::JoinGroup(Entity entityID)
 
 BTStatus SwarmBT::seesNewFriends(Entity entityID)
 {
+  std::cout << "see new friends" << std::endl;
 	BTStatus ret = BTStatus::Failure;
 
 	SwarmComponent& thisSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
@@ -143,8 +153,11 @@ BTStatus SwarmBT::seesNewFriends(Entity entityID)
 
 	return ret;
 }
+
 BTStatus SwarmBT::escapeToFriends(Entity entityID)
 {
+
+	std::cout << "escape" << std::endl;
 	BTStatus ret = BTStatus::Running;
 	
 	SwarmComponent& thisSwarmComp =
@@ -187,8 +200,10 @@ BTStatus SwarmBT::escapeToFriends(Entity entityID)
 
 	return ret;
 }
+
 BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 {
+  std::cout << "escape" << std::endl;
 	BTStatus ret = BTStatus::Running;
 	//TODO: change to real player ID
 	int player = getPlayerID(sceneHandler);
@@ -198,7 +213,7 @@ BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 	SwarmComponent& thisSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	Transform playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(player);
 	SwarmComponent& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
-	//Rigidbody& rigidbody = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);//TODO : restate this
+	Rigidbody& rigidbody = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
 
 	if (glm::length((thisTransform.position - playerTransform.position)) > thisSwarmComp.sightRadius)
 	{
@@ -231,6 +246,7 @@ BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 
 BTStatus SwarmBT::informFriends(Entity entityID)
 {
+  std::cout << "inform" << std::endl;
 	BTStatus ret = BTStatus::Success;
 
 	SwarmComponent& thisSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
@@ -249,21 +265,22 @@ BTStatus SwarmBT::informFriends(Entity entityID)
 
 	return ret;
 }
+
 BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 {
+	std::cout << "jump to player" << std::endl;
+
 	BTStatus ret = BTStatus::Running;
 
-	
-
 	Collider& entityCollider = BehaviorTree::sceneHandler->getScene()->getComponent<Collider>(entityID);
-	Collider& playerCollider = BehaviorTree::sceneHandler->getScene()->getComponent<Collider>(getPlayerID(sceneHandler));
+	//Collider& playerCollider = BehaviorTree::sceneHandler->getScene()->getComponent<Collider>(getPlayerID(sceneHandler));
 	Transform& entityTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Transform& playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(getPlayerID(sceneHandler));
 	SwarmComponent& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
-	//Rigidbody& rigidbody = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);//TODO : restate this
+	Rigidbody& rigidbody = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
     
-    //auto d = entityCollider.radius;//TODO : restate this
-    //auto e = playerCollider.radius;//TODO : restate this
+    auto d = entityCollider.radius;
+    //auto e = playerCollider.radius;
     //TODO: FORTSÄTT HÄR...
     //playerTransform.position;
 
@@ -276,13 +293,12 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
     glm::vec3 dirEntityTargetPosToPlayer = glm::normalize(playerTransform.position- entityTargetPos);
 
     bool canSeePlayer = false; 
-    /* //TODO : restate this
     while(!canSeePlayer) 
     {
         distEntityTargetPosToPlayer = glm::length(playerTransform.position- entityTargetPos) ;
         dirEntityTargetPosToPlayer = glm::normalize(playerTransform.position- entityTargetPos);
-        Ray rayToPlayer{entityTargetPos, dirEntityTargetPosToPlayer}; //TODO : restate this   
-        RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, distEntityTargetPosToPlayer+10.f); //TODO : restate this
+        Ray rayToPlayer{entityTargetPos, dirEntityTargetPosToPlayer};
+        RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, distEntityTargetPosToPlayer+10.f);
 
         if (rp.hit)
         {        
@@ -310,7 +326,7 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
     float tempYvel =  rigidbody.velocity.y;
     rigidbody.velocity = dirEntityToPlayer * swarmComp.speed;
     rigidbody.velocity.y = tempYvel;
-    */
+    
 
     
 
@@ -322,8 +338,10 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 
 	return ret;
 }
+
 BTStatus SwarmBT::closeEnoughToPlayer(Entity entityID)
 {
+  std::cout << "close enough" << std::endl;
 	BTStatus ret = BTStatus::Failure;
 
 	SwarmComponent& thisSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
@@ -341,6 +359,7 @@ BTStatus SwarmBT::closeEnoughToPlayer(Entity entityID)
 
 BTStatus SwarmBT::attack(Entity entityID)
 {    
+	std::cout << "ATTACK!" << std::endl;
 	BTStatus ret = BTStatus::Running;
 
 	//SwarmComponent& thisSwarmComp = BehaviorTree::scene->getComponent<SwarmComponent>(entityID);
@@ -348,7 +367,7 @@ BTStatus SwarmBT::attack(Entity entityID)
 	Transform& playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(getPlayerID(sceneHandler));
 	SwarmComponent& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	AiCombat& combat = BehaviorTree::sceneHandler->getScene()->getComponent<AiCombat>(entityID);
-	//Rigidbody& rigidbody = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);//TODO : restate this
+	Rigidbody& rigidbody = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
 
 	glm::vec3 dir = playerTransform.position - thisTransform.position;
 	dir.y += swarmComp.jumpY;
@@ -368,11 +387,13 @@ BTStatus SwarmBT::attack(Entity entityID)
 	 {
 		 //JUMP!
 		thisTransform.scale.y = 1.0f;
-		//rigidbody.velocity = dir * swarmComp.jumpForce;//TODO : restate this
+		rigidbody.velocity = dir * swarmComp.jumpForce;
         swarmComp.inAttack = true; 
 
-		Combat& playerCombat = BehaviorTree::sceneHandler->getScene()->getComponent<Combat>(getPlayerID(sceneHandler));
+		//TODO : send this as an event
+		//Combat& playerCombat = BehaviorTree::sceneHandler->getScene()->getComponent<Combat>(getPlayerID(sceneHandler));
 		//playerCombat.health -= combat.lightHit;
+
 		combat.timer = combat.lightAttackTime;
 		std::cout<<"ATTACK!!!!\n";
         
@@ -380,18 +401,17 @@ BTStatus SwarmBT::attack(Entity entityID)
 	 
 	 }else
      {
-        //TODO : restate this
-        //Ray downRay{
-        //    thisTransform.position,
-        //    glm::vec3(0.f,-1.f,0.1f)
-        //};
-        //
-        //float heightOfSwarmBlob = 10;//TODO: get height of swarmblob
-        //RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(downRay,heightOfSwarmBlob);        
-        //if(rp.hit)
-        //{
-        //    swarmComp.inAttack = false; 
-        //}
+        Ray downRay{
+            thisTransform.position,
+            glm::vec3(0.f,-1.f,0.1f)
+        };
+        
+        float heightOfSwarmBlob = 10;//TODO: get height of swarmblob
+        RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(downRay, heightOfSwarmBlob);        
+        if(rp.hit)
+        {
+            swarmComp.inAttack = false; 
+        }
      }
 
 
@@ -415,6 +435,7 @@ BTStatus SwarmBT::playDeathAnim(Entity entityID)
 
 	return ret;
 }
+
 BTStatus SwarmBT::die(Entity entityID)
 {
 	BTStatus ret = BTStatus::Success;
@@ -434,16 +455,18 @@ BTStatus SwarmBT::die(Entity entityID)
 
 BTStatus SwarmBT::alerted(Entity entityID)
 {
+	std::cout << "alerted" << std::endl;
 	BTStatus ret = BTStatus::Running;
 	SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	Transform& playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(getPlayerID(sceneHandler));
 	Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
-	//Collider& swarmCol = sceneHandler->getScene()->getComponent<Collider>(entityID);//TODO : restate this
-	//float toMove = (swarmCol.radius*2) * (1.0f - swarmComp.alertScale);//TODO : restate this
+
+	Collider& swarmCol = sceneHandler->getScene()->getComponent<Collider>(entityID);
+	float toMove = (swarmCol.radius*2) * (1.0f - swarmComp.alertScale);
 	
 	swarmTrans.rotation.y = lookAtY(swarmTrans, playerTransform);
 	swarmTrans.updateMatrix();
-    /*//TODO : restate this
+    
 	if(!swarmComp.alertAtTop)
 	{
 		
@@ -482,7 +505,7 @@ BTStatus SwarmBT::alerted(Entity entityID)
 			}
 		}
 	}
-    */
+    
 	return ret;
 }
 

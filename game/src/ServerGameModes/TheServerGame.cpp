@@ -40,6 +40,9 @@ void TheServerGame::update(float dt)
   //        dt * 50 * (i + 1);
   //  }
   aiHandler->update();
+  Transform& t = this->getComponent<Transform>(this->enemyIDs[0]);
+
+  std::cout << t.position.x << ", " << t.position.y << ", " << t.position.z << std::endl;
 }
 
 void TheServerGame::aiExample()
@@ -208,7 +211,7 @@ void TheServerGame::aiExample()
               this->enemyIDs.back(), Collider::createSphere(4.0f)
           );
           this->getComponent<Transform>(this->enemyIDs.back()).position =
-              glm::vec3(0, 4, 0);
+              glm::vec3(0, 2, 0);
           this->setComponent<Rigidbody>(this->enemyIDs.back());
           Rigidbody& rb = this->getComponent<Rigidbody>(this->enemyIDs.back());
           rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -216,14 +219,14 @@ void TheServerGame::aiExample()
           rb.friction = 1.5f;
           this->aiHandler->createAIEntity(this->enemyIDs.back(), "swarmFSM");
           this->swarmGroups.back()->members.push_back(this->enemyIDs.back());
-          this->setInactive(this->enemyIDs.back());
+          //this->setInactive(this->enemyIDs.back());
           this->getSceneHandler()
               ->getScene()
               ->getComponent<SwarmComponent>(this->enemyIDs.back())
               .group = this->swarmGroups.back();
           SwarmComponent& swarmComp =
               this->getComponent<SwarmComponent>(this->enemyIDs.back());
-          swarmComp.life = 1.0f;
+          swarmComp.life = 100.0f;
         }
     }
 }

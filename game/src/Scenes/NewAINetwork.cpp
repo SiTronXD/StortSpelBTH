@@ -12,14 +12,6 @@ NewAINetwork::~NewAINetwork() {}
 void NewAINetwork::init()
 {
 
-    this->player = this->createEntity();
-    this->setComponent<Combat>(this->player);
-    Transform& transform = this->getComponent<Transform>(this->player);
-    transform.position = glm::vec3(0.66f, 0.f, 7.9f);
-    transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
-    transform.scale = glm::vec3(5.0f);
-
-
     //ground
     int ground = this->createEntity();
     int groundMesh =
@@ -30,13 +22,13 @@ void NewAINetwork::init()
     transform2.position = glm::vec3(0.0f, -10.0f, 0.0f);
     transform2.scale = glm::vec3(100.f, 0.1f, 100.f);
 
-    int puzzleCreator = this->createEntity();
-    this->setScriptComponent(puzzleCreator, "src/Scripts/PuzzleCreatorLua.lua");
 }
 
 void NewAINetwork::start()
 {
-    
+  std::string playerIDStr = "playerID";
+  this->getScriptHandler()->getGlobal(this->player, playerIDStr);
+
     this->getNetworkHandler()->createServer(new TheServerGame());
     this->getNetworkHandler()->createClient();
     if (this->getNetworkHandler()->connectClientToThis())
@@ -81,4 +73,11 @@ void NewAINetwork::update()
         }
         this->getNetworkHandler()->connectClient(ip);
     }
+    Transform& t =  this->getComponent<Transform>(player);
+
+    // std::cout << t.position.x << ", " << t.position.x << ", " << t.position.z << std::endl;
+    this->getNetworkHandler()->sendUDPDataToClient(
+        this->getComponent<Transform>(player).position,
+        this->getComponent<Transform>(player).rotation
+    );
 }
