@@ -35,6 +35,9 @@ struct SwarmComponent
 	float groundTimerOrig	= 0.5f;
 
 	glm::vec3 idleMoveTo = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 lonelyDir = glm::vec3(0.0f, 0.0f, 0.0f);
+	float lonelyTime = 3.0f;
+	float lonelyTimer = 0.0f;
 
 
 	SwarmGroup* group;
@@ -58,6 +61,19 @@ struct SwarmComponent
 		}
 		return ret;
 	};
+	float getNumAliveInGroup(Scene* scene)
+	{
+		int ret = 0;
+		for(auto p: group->members)
+		{
+			if(scene->getComponent<SwarmComponent>(p).life > 0)
+			{
+				ret++;
+			}
+			
+		}
+		return ret;
+	}
 };
 
 

@@ -3,6 +3,7 @@
 #include "../../../Components/Combat.h"
 #include "../../../Components/AiCombat.h"
 #include "../../../Components/Perks.h"
+#include <limits>
 
 int SwarmGroup::getNewId = 0;
 int SwarmBT::perkMeshes[] = { 0, 0, 0 };
@@ -81,30 +82,52 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 	Rigidbody& swarmRB = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
 	Collider& swarmCol = BehaviorTree::sceneHandler->getScene()->getComponent<Collider>(entityID);
 
+	if( swarmComp.group->aliveMembers.size() != 1)
+	{
+		float len = glm::length(swarmComp.idleMoveTo - swarmTransform.position);
+		glm::vec3 dir = glm::normalize(swarmComp.idleMoveTo - swarmTransform.position);
+ 		swarmRB.velocity = dir * swarmComp.idleSpeed;
 
-	float len = glm::length(swarmComp.idleMoveTo - swarmTransform.position);
-	glm::vec3 dir = glm::normalize(swarmComp.idleMoveTo - swarmTransform.position);
-	swarmRB.velocity = dir * swarmComp.idleSpeed;
+		if(swarmComp.touchedFriend)
+		{
+			swarmComp.touchedFriend = false;
+
+			//Set move to
+			swarmComp.idleMoveTo = swarmComp.group->idleMidBos;
+			glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
+			swarmComp.idleMoveTo = swarmComp.group->idleMidBos + dir * swarmComp.group->idleRadius;
+		}
+		else if(swarmCol.radius*2 > len)
+		{
+			//Set move to
+			swarmComp.idleMoveTo = swarmComp.group->idleMidBos;
+			glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
+			swarmComp.idleMoveTo = swarmComp.group->idleMidBos + dir * swarmComp.group->idleRadius;
+		}
+	}
+	else
+	{
+		// If 
+		if(swarmComp.lonelyTimer > swarmComp.lonelyTime)
+		{	
+			swarmComp.lonelyTimer = 0.f;
+			swarmComp.lonelyDir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));	
+			float a = 4.1f;
+			swarmComp.idleMoveTo = swarmTransform.position + swarmComp.lonelyDir * std::numeric_limits<float>().max(); 
+		}
+		else
+		{
+			swarmComp.lonelyTimer += Time::getDT();
+		}
+		swarmRB.velocity = swarmComp.lonelyDir * swarmComp.idleSpeed;
+
+	}
+
 	swarmTransform.rotation.y = lookAtY(swarmTransform.position, swarmComp.idleMoveTo);
 	swarmTransform.updateMatrix();
 
 
-	if(swarmComp.touchedFriend)
-	{
-		swarmComp.touchedFriend = false;
-
-		//Set move to
-		swarmComp.idleMoveTo = swarmComp.group->idleMidBos;
-		glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
-		swarmComp.idleMoveTo = swarmComp.group->idleMidBos + dir * swarmComp.group->idleRadius;
-	}
-	else if(swarmCol.radius*2 > len)
-	{
-		//Set move to
-		swarmComp.idleMoveTo = swarmComp.group->idleMidBos;
-		glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
-		swarmComp.idleMoveTo = swarmComp.group->idleMidBos + dir * swarmComp.group->idleRadius;
-	}
+	
 
 
 
@@ -369,7 +392,7 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 		else
 		{
 
-			if(++safetyBreak>100)
+			if(++safetyBreak>25)
 			{
 				Log::warning("Swarm ray check running too many times,this is bad");
 				break;
@@ -535,7 +558,12 @@ BTStatus SwarmBT::die(Entity entityID)
 	//TODO: Sometgin goes wrong when we remove from group.
 	//SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 
+	SwarmGroup* swarmGroup = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID).group;
+	swarmGroup->aliveMembers.pop();
+
 	sceneHandler->getScene()->setInactive(entityID);
+
+
 
 	return ret;
 }

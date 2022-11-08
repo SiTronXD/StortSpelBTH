@@ -421,41 +421,49 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 					transform.scale.y = 1.0f;
 					swarmComp.life = swarmComp.FULL_HEALTH;
 					swarmComp.group->inCombat = false;
-
-					//Set idle mid pos
-					swarmComp.group->idleMidBos = glm::vec3(0.0f, 0.0f, 0.0f);
-					int numAlive = 0;
-					for(auto b: swarmComp.group->members)
-					{
-						if(isActive(b))
-						{
-							swarmComp.group->idleMidBos += this->getComponent<Transform>(b).position;
-							numAlive++;
-						}
-					}
-					swarmComp.group->idleMidBos /= numAlive;
-					//Set ilde radius
-					for(auto b: swarmComp.group->members)
-					{
-						if(isActive(b))
-						{
-							float len = glm::length(swarmComp.group->idleMidBos - this->getComponent<Transform>(b).position);
-							if(len > swarmComp.group->idleRadius)
-							{
-								swarmComp.group->idleRadius = len;
-							}
-						}
-					}
-
-					//Set move to
-					swarmComp.idleMoveTo = swarmComp.group->idleMidBos;
-					glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
-					swarmComp.idleMoveTo = swarmComp.group->idleMidBos + dir * swarmComp.group->idleRadius;
+					
+					swarmComp.group->aliveMembers.push(0); // TODO: This should be done somewhere else... Like in SwarmFSM/BT
 
 					idx++;
 					counter++;
 				
 				}
+			}
+			for(SwarmGroup* group: this->swarmGroups)
+			{
+					//Set idle mid pos
+					group->idleMidBos = glm::vec3(0.0f, 0.0f, 0.0f);
+					int numAlive = 0;
+					for(auto b: group->members)
+					{
+						if(isActive(b) && this->getComponent<SwarmComponent>(b).life > 0)
+						{
+							group->idleMidBos += this->getComponent<Transform>(b).position;
+							numAlive++;
+						}
+					}
+					group->idleMidBos /= numAlive;
+					//Set ilde radius
+					for(auto b: group->members)
+					{
+						if(isActive(b) && this->getComponent<SwarmComponent>(b).life > 0)
+						{
+							float len = glm::length(group->idleMidBos - this->getComponent<Transform>(b).position);
+							if(len > group->idleRadius)
+							{
+								group->idleRadius = len;
+							}
+						}
+					}
+					//Set move to
+					for(auto b: group->members)
+					{
+						SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(b);
+						swarmComp.idleMoveTo = group->idleMidBos;
+						glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
+						swarmComp.idleMoveTo = swarmComp.group->idleMidBos + dir * swarmComp.group->idleRadius;
+					}
+					
 			}
 		}        
 
