@@ -26,9 +26,14 @@ function script:init()
     self.maxStamina = 100.0
     self.currentStamina = 100.0
     self.staminaRegen = 0.5
-    self.staminaRegenCd = 3.0
+    self.staminaRegenCd = 2.0
     self.staminaTimer = 0.0
     self.useStamina = true
+
+    self.dodgeSpeed = 300
+    self.dodgeTimer = 0.0
+    self.dodgeTime = 0.2
+    self.currentMoveDir = 0
 
     self.animTimer = -1
     self.onGround = false
@@ -89,6 +94,21 @@ function script:update(dt)
         end
     else
         self.currentSpeed = self.moveDir:normalize() * self.maxSpeed
+    end
+    if (self.dodgeTimer > 0.0)
+    then
+        self.dodgeTimer = self.dodgeTimer - dt
+    end
+    if (input.isKeyPressed(Keys.CTRL) and self.currentStamina > 20.0)
+    then
+        self.currentStamina = self.currentStamina - 20.0
+        self.staminaTimer = self.staminaRegenCd
+        self.currentMoveDir = self.moveDir:normalize()
+        self.currentSpeed = self.currentMoveDir * self.dodgeSpeed
+        self.dodgeTimer = self.dodgeTime
+    elseif (self.dodgeTimer > 0.0)
+    then
+        self.currentSpeed = self.currentMoveDir * self.dodgeSpeed
     end
     -- Final vector in 3D using cameras directional vectors
     self.currentSpeed = forward:normalize() * self.currentSpeed.y + right:normalize() * self.currentSpeed.x
