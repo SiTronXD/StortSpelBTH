@@ -5,6 +5,7 @@
 #include <chrono>
 #include "glm/glm.hpp"
 #include "../Components/Perks.h"
+#include "../Components/Abilities.h"
 
 enum ActiveAttack { noActive, lightActive, heavyActive, comboActive, knockbackActive };
 
@@ -40,10 +41,13 @@ struct Combat
 	float comboClearDelay = 2.f;
 
 	// Perks and their default multipliers.
-	Perks perks[3];
+	Perks perks[4];
 	float hpMultiplier = 1.f;
 	float dmgMultiplier = 1.f;
 	float attackSpeedMultiplier = 1.f;
+
+	// Abilities
+	Abilities ability;
 
 	// Knockback values for each attack
 	float lightKnockback = 50.f;

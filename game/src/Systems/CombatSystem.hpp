@@ -31,10 +31,11 @@ public:
             swordSpin =
                 Collider::createCapsule(10.f, 0.1f, glm::vec3(0, 0, 0), true);
 			
-			for (size_t i = 0; i < 3; i++)
+			combat.ability.abilityType = emptyAbility;
+			for (size_t i = 0; i < 4; i++)
 			{
 				combat.perks[i].multiplier = 0;
-				combat.perks[i].perkType = empty;
+				combat.perks[i].perkType = emptyPerk;
 			}
 		}
 	}
@@ -45,6 +46,7 @@ public:
 		auto foo = [&](Combat& combat)
 		{
 			checkPerkCollision(combat);
+			checkAbilityCollision(combat);
 			decreaseTimers(combat, deltaTime);
 
 			// Check if player is trying to attack
@@ -56,7 +58,7 @@ public:
 			{
 				heavyAttack(combat);
 			}
-			else if (Input::isKeyPressed(Keys::F))
+			else if (Input::isKeyPressed(Keys::F) && combat.ability.abilityType == knockbackAbility)
 			{
 				knockbackAttack(combat);
 			}
@@ -73,13 +75,17 @@ public:
 			{
 				removePerk(combat, combat.perks[2]);
 			}
+			if (Input::isKeyPressed(Keys::FOUR))
+			{
+				removePerk(combat, combat.perks[3]);
+			}
 		};
 		view.each(foo);
 
 		return false;
 	}
 
-	int& getHealth(Combat& combat)
+	int getHealth(Combat& combat)
 	{
 		return combat.health;
 	};
@@ -206,7 +212,6 @@ public:
 				return true;
 			}
 		}
-
 		return false;
 	};
 
@@ -216,6 +221,7 @@ public:
 		{
 			combat.knockbackTimer = combat.knockbackCd;
 			combat.activeAttack = knockbackActive;
+			combat.ability.abilityType = emptyAbility;
 
 			if (checkCombo(combat)) { return true; }
 			else
@@ -393,58 +399,86 @@ public:
 
 	void removePerk(Combat& combat, Perks& perk)
 	{
-		if (perk.perkType != empty)
+		if (perk.perkType != emptyPerk)
 		{
 			switch (perk.perkType)
 			{
-			case hpUp:
+			case hpUpPerk:
 				setDefaultHp(combat);
 				combat.hpMultiplier -= perk.multiplier;
 				updateHealth(combat, perk, false);
 				break;
-			case dmgUp:
+			case dmgUpPerk:
 				setDefaultDmg(combat);
 				combat.dmgMultiplier -= perk.multiplier;
 				updateDmg(combat, perk, false);
 				break;
-			case attackSpeedUp:
+			case attackSpeedUpPerk:
 				setDefaultAtttackSpeed(combat);
 				combat.attackSpeedMultiplier += perk.multiplier;
 				updateAttackSpeed(combat, perk, false);
 			}
 			perk.multiplier = 0;
-			perk.perkType = empty;
+			perk.perkType = emptyPerk;
 		}
 	}
 
 	void checkPerkCollision(Combat& combat)
 	{
-		Collider& playerColl = scene->getComponent<Collider>(playerID);
-		Transform& playerTrans = scene->getComponent<Transform>(playerID);
-		std::vector<int> hitID = physics->testContact(playerColl, playerTrans.position, playerTrans.rotation);
+		Collider& playerColl = this->scene->getComponent<Collider>(this->playerID);
+		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
+		std::vector<int> hitID = this->physics->testContact(playerColl, playerTrans.position, playerTrans.rotation);
 		for (size_t i = 0; i < hitID.size(); i++)
 		{
 			if (scene->hasComponents<Perks>(hitID[i]))
 			{
-				Perks& perk = scene->getComponent<Perks>(hitID[i]);
-				for (size_t j = 0; j < 3; j++)
+				Perks& perk = this->scene->getComponent<Perks>(hitID[i]);
+				for (size_t j = 0; j < 4; j++)
 				{
-					if (combat.perks[j].perkType == empty)
+					if (combat.perks[j].perkType == emptyPerk)
 					{
 						combat.perks[j] = perk;
 						switch (combat.perks[j].perkType)
 						{
-						case hpUp:
+						case hpUpPerk:
 							updateHealth(combat, combat.perks[j]);
 							break;
-						case dmgUp:
+						case dmgUpPerk:
 							updateDmg(combat, combat.perks[j]);
 							break;
-						case attackSpeedUp:
+						case attackSpeedUpPerk:
 							updateAttackSpeed(combat, combat.perks[j]);
 							break;
 						}
 						j = 3;
+					}
+				}
+				scene->removeEntity(hitID[i]);
+			}
+		}
+	}
+
+	void checkAbilityCollision(Combat& combat)
+	{
+		Collider& playerColl = this->scene->getComponent<Collider>(this->playerID);
+		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
+		std::vector<int> hitID = this->physics->testContact(playerColl, playerTrans.position, playerTrans.rotation);
+		for (size_t i = 0; i < hitID.size(); i++)
+		{
+			if (scene->hasComponents<Abilities>(hitID[i]))
+			{
+				Abilities& ability = this->scene->getComponent<Abilities>(hitID[i]);
+				if (combat.ability.abilityType == emptyAbility)
+				{
+					combat.ability = ability;
+					switch (combat.ability.abilityType)
+					{
+					case knockbackAbility:
+						// Set knockback
+						break;
+					case healAbility:
+						// Set heal
+						break;
 					}
 				}
 				scene->removeEntity(hitID[i]);

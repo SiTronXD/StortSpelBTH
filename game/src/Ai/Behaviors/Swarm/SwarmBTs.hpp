@@ -27,6 +27,7 @@ class SwarmBT : public BehaviorTree
 {
    protected:
 	static int perkMeshes[3];
+	static int abilityMeshes[2];
 	virtual void start() = 0;
     void registerEntityComponents(Entity entityId) override;
 

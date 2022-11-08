@@ -39,6 +39,7 @@
     <ClInclude Include="src\Ai\Behaviors\Swarm\SwarmBTs.hpp" />
     <ClInclude Include="src\Ai\Behaviors\Swarm\SwarmFSM.hpp" />
     <ClInclude Include="src\Components\Perks.h" />
+    <ClInclude Include="src\Components\Abilities.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
