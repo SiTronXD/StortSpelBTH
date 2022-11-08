@@ -14,6 +14,8 @@ function script:init()
 	self.moveDir = vector()
 	self.currentSpeed = vector()
 	self.maxSpeed = 50
+    self.sprintSpeed = 100
+    self.sprintDrain = 0.5
 	self.speedIncrease = 200
 	self.turnSpeed = 200
 	self.timer = 0
@@ -21,8 +23,12 @@ function script:init()
     self.transform.position = vector(0, 12, 0)
     self.transform.rotation = vector(0, 0, 0)
 
-    self.maxHP = 100.0
-    self.currentHP = self.maxHP
+    self.maxStamina = 100.0
+    self.currentStamina = 100.0
+    self.staminaRegen = 0.5
+    self.staminaRegenCd = 3.0
+    self.staminaTimer = 0.0
+    self.useStamina = true
 
     self.animTimer = -1
     self.onGround = false
@@ -55,8 +61,35 @@ function script:update(dt)
 
     -- Input vector
     self.moveDir = vector(core.btoi(input.isKeyDown(Keys.A)) - core.btoi(input.isKeyDown(Keys.D)), core.btoi(input.isKeyDown(Keys.W)) - core.btoi(input.isKeyDown(Keys.S)), 0)
-    -- Local vector with speed applied
-    self.currentSpeed = self.moveDir:normalize() * self.maxSpeed * math.max(1.0, self.perkProperties.speedPerkActive * self.perkProperties.speedPerkValue)
+    -- Local vector with speed applied with or without sprint (using stamina)
+    if (self.staminaTimer > 0)
+    then
+        self.staminaTimer = self.staminaTimer - dt
+    else
+        if (self.currentStamina ~= 100)
+        then
+            self.currentStamina = self.currentStamina + self.staminaRegen
+            if (self.currentStamina < 10)
+            then
+                self.useStamina = false
+            else
+                self.useStamina = true
+            end
+        end
+    end
+    if (input.isKeyDown(Keys.SHIFT))
+    then
+        if (self.currentStamina > 0 and self.useStamina == true)
+        then
+            self.currentSpeed = self.moveDir:normalize() * self.sprintSpeed
+            self.currentStamina = self.currentStamina - self.sprintDrain
+            self.staminaTimer = self.staminaRegenCd
+        else
+            self.currentSpeed = self.moveDir:normalize() * self.maxSpeed
+        end
+    else
+        self.currentSpeed = self.moveDir:normalize() * self.maxSpeed
+    end
     -- Final vector in 3D using cameras directional vectors
     self.currentSpeed = forward:normalize() * self.currentSpeed.y + right:normalize() * self.currentSpeed.x
 

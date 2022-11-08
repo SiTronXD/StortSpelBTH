@@ -37,10 +37,10 @@ scene.getComponent(uiID, CompType.Script).playerScript = scene.getComponent(play
 local pixelArtSettings = {}
 pixelArtSettings.samplerSettings = {}
 pixelArtSettings.samplerSettings.filterMode = Filters.Nearest
-scene.getComponent(uiID, CompType.Script).hpBarBackgroundTextureID =
-	resources.addTexture("assets/textures/UI/hpBarBackground.png")
-scene.getComponent(uiID, CompType.Script).hpBarTextureID = 
-	resources.addTexture("assets/textures/UI/hpBar.png")
+scene.getComponent(uiID, CompType.Script).staminaBarBackgroundTxtID =
+	resources.addTexture("assets/textures/UI/staminaBarBackground.png")
+scene.getComponent(uiID, CompType.Script).staminaBarTxtID = 
+	resources.addTexture("assets/textures/UI/staminaBar.png")
 scene.getComponent(uiID, CompType.Script).perkSlotTextureID = 
 	resources.addTexture("assets/textures/UI/perkSlot.png", pixelArtSettings)
 scene.getComponent(uiID, CompType.Script).crosshairTextureID = 
