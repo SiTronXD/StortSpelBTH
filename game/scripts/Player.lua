@@ -23,14 +23,12 @@ function script:init()
     self.transform.position = vector(0, 12, 0)
     self.transform.rotation = vector(0, 0, 0)
 
-    self.maxHP = 100.0
-    self.currentHP = self.maxHP
     self.maxStamina = 100.0
-
     self.currentStamina = 100.0
     self.staminaRegen = 0.5
     self.staminaRegenCd = 3.0
     self.staminaTimer = 0.0
+    self.useStamina = true
 
     self.animTimer = -1
     self.onGround = false
@@ -73,11 +71,17 @@ function script:update(dt)
         if (self.currentStamina ~= 100)
         then
             self.currentStamina = self.currentStamina + self.staminaRegen
+            if (self.currentStamina < 10)
+            then
+                self.useStamina = false
+            else
+                self.useStamina = true
+            end
         end
     end
     if (input.isKeyDown(Keys.SHIFT))
     then
-        if (self.currentStamina > 10)
+        if (self.currentStamina > 0 and self.useStamina == true)
         then
             self.currentSpeed = self.moveDir:normalize() * self.sprintSpeed
             self.currentStamina = self.currentStamina - self.sprintDrain
