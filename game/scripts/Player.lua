@@ -159,20 +159,14 @@ function script:update(dt)
     if (input.isKeyDown(Keys.CTRL) and self.isDodging)
     then
         local anim = scene.getComponent(self.ID, CompType.Animation)
-        local curSpdSqrd = self.currentSpeed * self.currentSpeed
-        local curSpdSum = curSpdSqrd.x + curSpdSqrd.y + curSpdSqrd.z
         anim.timeScale = 3.0
-
         scene.setComponent(self.ID, CompType.Animation, anim)
     end
     
     if (input.isKeyDown(Keys.SHIFT) and self.isSprinting)
     then
         local anim = scene.getComponent(self.ID, CompType.Animation)
-        local curSpdSqrd = self.currentSpeed * self.currentSpeed
-        local curSpdSum = curSpdSqrd.x + curSpdSqrd.y + curSpdSqrd.z
         anim.timeScale = 2.0
-
         scene.setComponent(self.ID, CompType.Animation, anim)
     end
     
