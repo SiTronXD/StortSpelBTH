@@ -120,7 +120,7 @@ void GameScene::start()
     // Ai management 
     this->aiHandler = this->getAIHandler();
 	this->aiHandler->init(this->getSceneHandler());
-    
+
 	aiExample();
 }
 
