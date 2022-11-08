@@ -61,9 +61,7 @@ function script:update(dt)
 
     -- Input vector
     self.moveDir = vector(core.btoi(input.isKeyDown(Keys.A)) - core.btoi(input.isKeyDown(Keys.D)), core.btoi(input.isKeyDown(Keys.W)) - core.btoi(input.isKeyDown(Keys.S)), 0)
-    -- Local vector with speed applied
-    print(self.staminaTimer)
-    print(self.currentStamina)
+    -- Local vector with speed applied with or without sprint (using stamina)
     if (self.staminaTimer > 0)
     then
         self.staminaTimer = self.staminaTimer - dt
@@ -92,7 +90,6 @@ function script:update(dt)
     else
         self.currentSpeed = self.moveDir:normalize() * self.maxSpeed
     end
-
     -- Final vector in 3D using cameras directional vectors
     self.currentSpeed = forward:normalize() * self.currentSpeed.y + right:normalize() * self.currentSpeed.x
 
