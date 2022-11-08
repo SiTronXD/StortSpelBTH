@@ -158,10 +158,6 @@ function script:update(dt)
     
     if (input.isKeyDown(Keys.CTRL) and self.isDodging)
     then
-        local meshChange = scene.getComponent(self.ID, CompType.Mesh)
-        meshChange = self.playerMesh
-        scene.setComponent(self.ID, CompType.Mesh, meshChange)
-
         local anim = scene.getComponent(self.ID, CompType.Animation)
         local curSpdSqrd = self.currentSpeed * self.currentSpeed
         local curSpdSum = curSpdSqrd.x + curSpdSqrd.y + curSpdSqrd.z
@@ -172,10 +168,6 @@ function script:update(dt)
     
     if (input.isKeyDown(Keys.SHIFT) and self.isSprinting)
     then
-        local meshChange = scene.getComponent(self.ID, CompType.Mesh)
-        meshChange = self.playerMesh
-        scene.setComponent(self.ID, CompType.Mesh, meshChange)
-
         local anim = scene.getComponent(self.ID, CompType.Animation)
         local curSpdSqrd = self.currentSpeed * self.currentSpeed
         local curSpdSum = curSpdSqrd.x + curSpdSqrd.y + curSpdSqrd.z
@@ -186,10 +178,6 @@ function script:update(dt)
     
     if (not self.isSprinting and not self.isDodging)
     then
-        local meshChange = scene.getComponent(self.ID, CompType.Mesh)
-        meshChange = self.playerMesh
-        scene.setComponent(self.ID, CompType.Mesh, meshChange)
-
         local anim = scene.getComponent(self.ID, CompType.Animation)
         local curSpdSqrd = self.currentSpeed * self.currentSpeed
         local curSpdSum = curSpdSqrd.x + curSpdSqrd.y + curSpdSqrd.z
