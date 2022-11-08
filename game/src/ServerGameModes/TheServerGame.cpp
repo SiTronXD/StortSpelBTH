@@ -41,7 +41,6 @@ void TheServerGame::update(float dt)
   //  }
   aiHandler->update();
   //Transform& t = this->getComponent<Transform>(this->enemyIDs[0]);
-  Transform& pt = this->getComponent<Transform>(this->getPlayer(0));
   //glm::vec3 enemyToPlayer = pt.position - t.position;
   //Ray rayToPlayer{t.position, enemyToPlayer};
   //RayPayload rp = this->getSceneHandler()->getPhysicsEngine()->raycast(
