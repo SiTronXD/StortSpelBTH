@@ -20,16 +20,6 @@ Entity getPlayerID(SceneHandler* sceneHandler)
 	return playerID; 
 }
 
-float lookAtY(const Transform& from, const Transform& to)
-{
-    float posX = from.position.x - to.position.x;
-    float posZ = from.position.z - to.position.z;
-    float angle = atan2(posX, posZ);
-    angle = glm::degrees(angle);
-  
-    return angle; 
-}
-
 void removeFromGroup(SwarmComponent& comp, Entity entityID)
 {
 	for(int i = 0; i < comp.group->members.size(); i++)
