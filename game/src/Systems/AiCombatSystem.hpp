@@ -39,7 +39,7 @@ public:
 	void attack(AiCombat& combat, AiMovement& movement)
 	{
 		Combat& playerCombat = scene->getComponent<Combat>(playerID);
-		playerCombat.health -= combat.lightHit;
+		playerCombat.health -= (int)combat.lightHit;
 		combat.timer = combat.lightAttackTime;
 	}
 };

@@ -203,9 +203,9 @@ void GameScene::update()
 	float ySize = 64.f * 0.35f;
 
 	this->getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
-	this->getUIRenderer()->renderTexture(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos, (xSize * maxHpPercent) + 10, ySize + 10);
+	this->getUIRenderer()->renderTexture(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos + 20.f, (xSize * maxHpPercent) + 10, ySize + 10);
 	this->getUIRenderer()->setTexture(this->hpBarTextureID);
-	this->getUIRenderer()->renderTexture(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos, xSize * hpPercent, ySize);
+	this->getUIRenderer()->renderTexture(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos + 20.f, xSize * hpPercent, ySize);
 	
 #ifdef _CONSOLE
 
@@ -370,7 +370,7 @@ void GameScene::aiExample()
             this->setInactive(this->enemyIDs.back());
             this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->enemyIDs.back()).group = this->swarmGroups.back();
             SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs.back());
-            swarmComp.life = 0.0f;
+            swarmComp.life = 0;
         }
     }
 }
@@ -501,7 +501,7 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
                 swarmComp.inAttack = false; 
                 swarmComp.touchedPlayer = true; 
 				//aiCombat.timer = aiCombat.lightAttackTime;
-                this->getComponent<Combat>(player).health -= aiCombat.lightHit;
+                this->getComponent<Combat>(player).health -= (int)aiCombat.lightHit;
                 std::cout << "WAS HIT\n";
                 
             }            

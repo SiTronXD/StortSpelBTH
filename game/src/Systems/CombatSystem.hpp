@@ -45,15 +45,9 @@ public:
 		auto foo = [&](Combat& combat)
 		{
 			checkPerkCollision(combat);
+			decreaseTimers(combat, deltaTime);
 
-			if (combat.attackTimer > -1.f)
-			{
-				combat.attackTimer -= deltaTime;
-			}
-			if (combat.comboClearTimer > -1.f)
-			{
-				combat.comboClearTimer -= deltaTime;
-			}
+			// Check if player is trying to attack
 			if (Input::isMouseButtonPressed(Mouse::LEFT))
 			{
 				lightAttack(combat);
@@ -62,6 +56,11 @@ public:
 			{
 				heavyAttack(combat);
 			}
+			else if (Input::isKeyPressed(Keys::F))
+			{
+				knockbackAttack(combat);
+			}
+			// Check if player wants to drop a perk
 			if (Input::isKeyPressed(Keys::ONE))
 			{
 				removePerk(combat, combat.perks[0]);
@@ -80,15 +79,17 @@ public:
 		return false;
 	}
 
-	float& getHealth(Combat& combat)
+	int& getHealth(Combat& combat)
 	{
 		return combat.health;
 	};
 
-	void checkActiveAttack(Combat& combat)
+	ActiveAttack checkActiveAttack(Combat& combat)
 	{
 		switch (combat.activeAttack)
 		{
+		case noActive:
+			return combat.activeAttack;
 		case lightActive:
 			// If it takes too long between attacks, resets combo.
 			if (combat.comboClearTimer <= 0.f)
@@ -100,7 +101,7 @@ public:
 			{
 				combat.activeAttack = noActive;
 			}
-			break;
+			return combat.activeAttack;
 		case heavyActive:
 			// If it takes too long between attacks, resets combo.
 			if (combat.comboClearTimer <= 0.f)
@@ -112,22 +113,27 @@ public:
 			{
 				combat.activeAttack = noActive;
 			}
-			break;
+			return combat.activeAttack;
 		case comboActive:
-			if (combat.attackTimer < 1.f)
+			if (combat.attackTimer < 0.f)
 			{
 				combat.activeAttack = noActive;
 			}
+			return combat.activeAttack;
+		case knockbackActive:
+			if (combat.knockbackTimer < 0.f)
+			{
+				combat.activeAttack = noActive;
+			}
+			return combat.activeAttack;
 		}
 	};
 
 	bool lightAttack(Combat& combat)
 	{
-		checkActiveAttack(combat);
-
-		if (combat.activeAttack == noActive)
+		if (checkActiveAttack(combat) == noActive)
 		{
-			combat.attackTimer = combat.lightAttackTime;
+			combat.attackTimer = combat.lightAttackCd;
 			combat.comboClearTimer = combat.comboClearDelay;
 			combat.comboOrder.append("Light ");
 
@@ -145,18 +151,22 @@ public:
 			}
 			else
 			{
-				Transform& playerTrans = scene->getComponent<Transform>(playerID);
+				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
 				playerTrans.updateMatrix();
-				std::vector<int> hitID = physics->testContact(sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
+				std::vector<int> hitID = physics->testContact(this->sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
 				for (size_t i = 0; i < hitID.size(); i++)
 				{
 					if (scene->hasComponents<SwarmComponent>(hitID[i]))
 					{
-						SwarmComponent& enemy = scene->getComponent<SwarmComponent>(hitID[i]);
+						SwarmComponent& enemy = this->scene->getComponent<SwarmComponent>(hitID[i]);
 						enemy.life -= (int)combat.lightHit;
-						return true;
+						Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(hitID[i]);
+						Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
+						glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+						enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * combat.lightKnockback;
 					}
 				}
+				return true;
 			}
 		}
 		return false;
@@ -164,11 +174,9 @@ public:
 
 	bool heavyAttack(Combat& combat)
 	{
-		checkActiveAttack(combat);
-
-		if (combat.activeAttack == noActive)
+		if (checkActiveAttack(combat) == noActive)
 		{
-			combat.attackTimer = combat.heavyAttackTime;
+			combat.attackTimer = combat.heavyAttackCd;
 			combat.comboClearTimer = combat.comboClearDelay;
 			combat.comboOrder.append("Heavy ");
 
@@ -180,39 +188,79 @@ public:
 			if (checkCombo(combat)) { return true; }
 			else
 			{
-				Transform& playerTrans = scene->getComponent<Transform>(playerID);
+				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
 				playerTrans.updateMatrix();
-				std::vector<int> hitID = physics->testContact(sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
+				std::vector<int> hitID = physics->testContact(this->sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
 				for (size_t i = 0; i < hitID.size(); i++)
 				{
 					if (scene->hasComponents<SwarmComponent>(hitID[i]))
 					{
-						SwarmComponent& enemy = scene->getComponent<SwarmComponent>(hitID[i]);
+						SwarmComponent& enemy = this->scene->getComponent<SwarmComponent>(hitID[i]);
 						enemy.life -= (int)combat.heavyHit;
-						return true;
+						Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(hitID[i]);
+						Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
+						glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+						enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * combat.heavyKnockback;
 					}
 				}
+				return true;
 			}
 		}
 
 		return false;
 	};
 
+	bool knockbackAttack(Combat& combat)
+	{
+		if (checkActiveAttack(combat) == noActive)
+		{
+			combat.knockbackTimer = combat.knockbackCd;
+			combat.activeAttack = knockbackActive;
+
+			if (checkCombo(combat)) { return true; }
+			else
+			{
+				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
+				playerTrans.updateMatrix();
+				std::vector<int> hitID = physics->testContact(this->swordSpin, playerTrans.position, glm::vec3(0.f));
+				for (size_t i = 0; i < hitID.size(); i++)
+				{
+					if (scene->hasComponents<SwarmComponent>(hitID[i]))
+					{
+						SwarmComponent& enemy = this->scene->getComponent<SwarmComponent>(hitID[i]);
+						enemy.life -= (int)combat.knockbackHit;
+						Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(hitID[i]);
+						Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
+						glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+						enemyRB.velocity = glm::vec3(-newDir.x, 0.2f, -newDir.z) * combat.specialKnockback;
+					}
+				}
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	// Executes combo attack.
 	void comboAttack(Combat& combat, int idx)
 	{
 		if (idx == 0)
 		{
-			combat.attackTimer = combat.comboLightTime;
-			Transform& playerTrans = scene->getComponent<Transform>(playerID);
+			combat.attackTimer = combat.comboLightCd;
+			Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
 			playerTrans.updateMatrix();
-			std::vector<int> hitID = physics->testContact(swordSpin, playerTrans.position, glm::vec3(0.f, 0.f, 0.f));
+			std::vector<int> hitID = physics->testContact(this->swordSpin, playerTrans.position, glm::vec3(0.f));
 			for (size_t i = 0; i < hitID.size(); i++)
 			{
 				if (scene->hasComponents<SwarmComponent>(hitID[i]))
 				{
-					SwarmComponent& enemy = scene->getComponent<SwarmComponent>(hitID[i]);
+					SwarmComponent& enemy = this->scene->getComponent<SwarmComponent>(hitID[i]);
 					enemy.life -= (int)combat.comboLightHit;
+					Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(hitID[i]);
+					Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
+					glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+					enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * combat.comboKnockback;
 				}
 			}
 			combat.comboOrder.clear();
@@ -220,16 +268,20 @@ public:
 		}
 		else if (idx == 1)
 		{
-			combat.attackTimer = combat.comboMixTime;
-			Transform& playerTrans = scene->getComponent<Transform>(playerID);
+			combat.attackTimer = combat.comboMixCd;
+			Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
 			playerTrans.updateMatrix();
-			std::vector<int> hitID = physics->testContact(sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
+			std::vector<int> hitID = physics->testContact(this->sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
 			for (size_t i = 0; i < hitID.size(); i++)
 			{
 				if (scene->hasComponents<SwarmComponent>(hitID[i]))
 				{
-					SwarmComponent& enemy = scene->getComponent<SwarmComponent>(hitID[i]);
-					enemy.life -= (int)combat.comboMixHit;
+					SwarmComponent& enemy = this->scene->getComponent<SwarmComponent>(hitID[i]);
+					enemy.life -= (int)combat.comboHeavyHit;
+					Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(hitID[i]);
+					Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
+					glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+					enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * combat.comboKnockback;
 				}
 			}
 			combat.comboOrder.clear();
@@ -237,16 +289,20 @@ public:
 		}
 		else if (idx == 2)
 		{
-			combat.attackTimer = combat.comboHeavyTime;
-			Transform& playerTrans = scene->getComponent<Transform>(playerID);
+			combat.attackTimer = combat.comboHeavyCd;
+			Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
 			playerTrans.updateMatrix();
 			std::vector<int> hitID = physics->testContact(sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
 			for (size_t i = 0; i < hitID.size(); i++)
 			{
 				if (scene->hasComponents<SwarmComponent>(hitID[i]))
 				{
-					SwarmComponent& enemy = scene->getComponent<SwarmComponent>(hitID[i]);
+					SwarmComponent& enemy = this->scene->getComponent<SwarmComponent>(hitID[i]);
 					enemy.life -= (int)combat.comboMixHit;
+					Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(hitID[i]);
+					Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
+					glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+					enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * combat.comboKnockback;
 				}
 			}
 			combat.comboOrder.clear();
@@ -268,17 +324,24 @@ public:
 		return false;
 	};
 
-	void upgradeHealth(Combat& combat, Perks& perk)
+	void updateHealth(Combat& combat, Perks& perk, bool doUpgrade = true)
 	{
-		setDefaultHp(combat);
-		combat.hpMultiplier += perk.multiplier;
-		combat.maxHealth *= combat.hpMultiplier;
+		if (doUpgrade)
+		{
+			setDefaultHp(combat);
+			combat.hpMultiplier += perk.multiplier;
+		}
+		float tempHp = (float)combat.maxHealth * combat.hpMultiplier;
+		combat.maxHealth = (int)tempHp;
 	}
 
-	void upgradeDmg(Combat& combat, Perks& perk)
+	void updateDmg(Combat& combat, Perks& perk, bool doUpgrade = true)
 	{
-		setDefaultDmg(combat);
-		combat.dmgMultiplier += perk.multiplier;
+		if (doUpgrade)
+		{
+			setDefaultDmg(combat);
+			combat.dmgMultiplier += perk.multiplier;
+		}
 		combat.lightHit *= combat.dmgMultiplier;
 		combat.heavyHit *= combat.dmgMultiplier;
 		combat.comboLightHit *= combat.dmgMultiplier;
@@ -286,20 +349,26 @@ public:
 		combat.comboMixHit *= combat.dmgMultiplier;
 	}
 
-	void upgradeAttackSpeed(Combat& combat, Perks& perk)
+	void updateAttackSpeed(Combat& combat, Perks& perk, bool doUpgrade = true)
 	{
-		setDefaultAtttackSpeed(combat);
-		combat.attackSpeedMultiplier -= perk.multiplier;
-		combat.lightAttackTime *= combat.attackSpeedMultiplier;
-		combat.heavyAttackTime *= combat.attackSpeedMultiplier;
-		combat.comboLightTime *= combat.attackSpeedMultiplier;
-		combat.comboHeavyTime *= combat.attackSpeedMultiplier;
-		combat.comboMixTime *= combat.attackSpeedMultiplier;
+		if (doUpgrade)
+		{
+			setDefaultAtttackSpeed(combat);
+			combat.attackSpeedMultiplier -= perk.multiplier;
+		}
+		combat.lightAttackCd *= combat.attackSpeedMultiplier;
+		combat.heavyAttackCd *= combat.attackSpeedMultiplier;
+		combat.comboLightCd *= combat.attackSpeedMultiplier;
+		combat.comboHeavyCd *= combat.attackSpeedMultiplier;
+		combat.comboMixCd *= combat.attackSpeedMultiplier;
+		combat.knockbackCd *= combat.attackSpeedMultiplier;
 	}
 
 	void setDefaultHp(Combat& combat)
 	{
-		combat.maxHealth /= combat.hpMultiplier;
+		float tempHp = (float)combat.maxHealth / combat.hpMultiplier;
+		combat.maxHealth = (int)tempHp;
+		combat.health = std::min(combat.health, combat.maxHealth);
 	}
 
 	void setDefaultDmg(Combat& combat)
@@ -309,15 +378,17 @@ public:
 		combat.comboLightHit /= combat.dmgMultiplier;
 		combat.comboHeavyHit /= combat.dmgMultiplier;
 		combat.comboMixHit /= combat.dmgMultiplier;
+		combat.knockbackHit /= combat.dmgMultiplier;
 	}
 
 	void setDefaultAtttackSpeed(Combat& combat)
 	{
-		combat.lightAttackTime /= combat.attackSpeedMultiplier;
-		combat.heavyAttackTime /= combat.attackSpeedMultiplier;
-		combat.comboLightTime /= combat.attackSpeedMultiplier;
-		combat.comboHeavyTime /= combat.attackSpeedMultiplier;
-		combat.comboMixTime /= combat.attackSpeedMultiplier;
+		combat.lightAttackCd /= combat.attackSpeedMultiplier;
+		combat.heavyAttackCd /= combat.attackSpeedMultiplier;
+		combat.comboLightCd /= combat.attackSpeedMultiplier;
+		combat.comboHeavyCd /= combat.attackSpeedMultiplier;
+		combat.comboMixCd /= combat.attackSpeedMultiplier;
+		combat.knockbackCd /= combat.attackSpeedMultiplier;
 	}
 
 	void removePerk(Combat& combat, Perks& perk)
@@ -328,12 +399,18 @@ public:
 			{
 			case hpUp:
 				setDefaultHp(combat);
+				combat.hpMultiplier -= perk.multiplier;
+				updateHealth(combat, perk, false);
 				break;
 			case dmgUp:
 				setDefaultDmg(combat);
+				combat.dmgMultiplier -= perk.multiplier;
+				updateDmg(combat, perk, false);
 				break;
 			case attackSpeedUp:
 				setDefaultAtttackSpeed(combat);
+				combat.attackSpeedMultiplier += perk.multiplier;
+				updateAttackSpeed(combat, perk, false);
 			}
 			perk.multiplier = 0;
 			perk.perkType = empty;
@@ -358,13 +435,13 @@ public:
 						switch (combat.perks[j].perkType)
 						{
 						case hpUp:
-							upgradeHealth(combat, combat.perks[j]);
+							updateHealth(combat, combat.perks[j]);
 							break;
 						case dmgUp:
-							upgradeDmg(combat, combat.perks[j]);
+							updateDmg(combat, combat.perks[j]);
 							break;
 						case attackSpeedUp:
-							upgradeAttackSpeed(combat, combat.perks[j]);
+							updateAttackSpeed(combat, combat.perks[j]);
 							break;
 						}
 						j = 3;
@@ -372,6 +449,22 @@ public:
 				}
 				scene->removeEntity(hitID[i]);
 			}
+		}
+	}
+
+	void decreaseTimers(Combat& combat, float deltaTime) 
+	{
+		if (combat.attackTimer > -1.f)
+		{
+			combat.attackTimer -= deltaTime;
+		}
+		if (combat.knockbackTimer > -1.f)
+		{
+			combat.knockbackTimer -= deltaTime;
+		}
+		if (combat.comboClearTimer > -1.f)
+		{
+			combat.comboClearTimer -= deltaTime;
 		}
 	}
 };
