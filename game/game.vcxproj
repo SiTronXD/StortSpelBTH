@@ -288,6 +288,7 @@ SET ERRORLEVEL=0</Command>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
     <ClInclude Include="Components\Movement.h" />
+    <ClInclude Include="src\Components\Abilities.h" />
     <ClInclude Include="src\Ai\Behaviors\HelperFuncs.hpp" />
     <ClInclude Include="src\Components\Perks.h" />
     <ClInclude Include="src\Scenes\GameOverScene.h" />

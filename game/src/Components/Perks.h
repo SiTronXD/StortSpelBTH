@@ -2,10 +2,10 @@
 
 enum PerkType : int
 {
-	hpUp = 0,
-	dmgUp = 1,
-	attackSpeedUp = 2,
-	empty = 3
+	hpUpPerk = 0,
+	dmgUpPerk = 1,
+	attackSpeedUpPerk = 2,
+	emptyPerk = 3
 };
 
 struct Perks

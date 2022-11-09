@@ -3,10 +3,12 @@
 #include "../../../Components/Combat.h"
 #include "../../../Components/AiCombat.h"
 #include "../../../Components/Perks.h"
+#include "../../../Components/Abilities.h"
 #include <limits>
 
 int SwarmGroup::getNewId = 0;
 int SwarmBT::perkMeshes[] = { 0, 0, 0 };
+int SwarmBT::abilityMeshes[] = { 0, 0 };
 
 Entity getPlayerID(SceneHandler* sceneHandler) 
 {
@@ -484,11 +486,11 @@ BTStatus SwarmBT::die(Entity entityID)
 	Combat& playerCombat = sceneHandler->getScene()->getComponent<Combat>(getPlayerID(sceneHandler));
 	if (playerCombat.health <= (playerCombat.maxHealth - 10))
 	{
-		playerCombat.health += 10.f;
+		playerCombat.health += 10;
 	}
 
-	int spawnPerk = rand() % 11;
-	if (spawnPerk < 4)
+	int spawnLoot = rand() % 10;
+	if (spawnLoot < 2)
 	{
 		// Spawn Perk
 		PerkType perkType = (PerkType)(rand() % 3);
@@ -499,12 +501,31 @@ BTStatus SwarmBT::die(Entity entityID)
 		Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 		perkTrans.position = swarmTrans.position;
 		perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
-		sceneHandler->getScene()->setComponent<Collider>(perkEnt, Collider::createSphere(2.f));
+		sceneHandler->getScene()->setComponent<Collider>(perkEnt, Collider::createSphere(2.f, glm::vec3(0.f, 0.f, 0.f), true));
 		sceneHandler->getScene()->setComponent<Rigidbody>(perkEnt);
 		Rigidbody& perkRb = sceneHandler->getScene()->getComponent<Rigidbody>(perkEnt);
-		glm::vec3 dir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
-		perkRb.velocity = glm::normalize(dir) * 15.f;
+		glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
+		perkRb.gravityMult = 6.f;
+		perkRb.velocity = glm::normalize(spawnDir) * 20.f;
 		sceneHandler->getScene()->setComponent<Perks>(perkEnt, perk);
+	}
+	else if (spawnLoot == 2)
+	{
+		AbilityType abilityType = knockbackAbility; //(AbilityType)(rand() % 2);
+		Abilities ability{ .abilityType = abilityType };
+		Entity abilityEnt = sceneHandler->getScene()->createEntity();
+		sceneHandler->getScene()->setComponent<MeshComponent>(abilityEnt, SwarmBT::abilityMeshes[abilityType]);
+		Transform& abilityTrans = sceneHandler->getScene()->getComponent<Transform>(abilityEnt);
+		Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+		abilityTrans.position = swarmTrans.position;
+		abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
+		sceneHandler->getScene()->setComponent<Collider>(abilityEnt, Collider::createSphere(4.f, glm::vec3(0.f, 0.f, 0.f), true));
+		sceneHandler->getScene()->setComponent<Rigidbody>(abilityEnt);
+		Rigidbody& abilityRb = sceneHandler->getScene()->getComponent<Rigidbody>(abilityEnt);
+		glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
+		abilityRb.gravityMult = 6.f;
+		abilityRb.velocity = glm::normalize(spawnDir) * 20.f;
+		sceneHandler->getScene()->setComponent<Abilities>(abilityEnt, ability);
 	}
 
 	//TODO: Sometgin goes wrong when we remove from group.
@@ -665,9 +686,12 @@ void Swarm_escape::start()
 
 void Swarm_dead::start()
 {
-	this->perkMeshes[0] = sceneHandler->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
-	this->perkMeshes[1] = sceneHandler->getResourceManager()->addMesh("assets/models/Perk_Dmg.obj");
-	this->perkMeshes[2] = sceneHandler->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");
+	ResourceManager* resourceMng = sceneHandler->getResourceManager();
+	this->perkMeshes[0] = resourceMng->addMesh("assets/models/Perk_Hp.obj");
+	this->perkMeshes[1] = resourceMng->addMesh("assets/models/Perk_Dmg.obj");
+	this->perkMeshes[2] = resourceMng->addMesh("assets/models/Perk_AtkSpeed.obj");
+	this->abilityMeshes[0] = resourceMng->addMesh("assets/models/KnockbackAbility.obj");
+	this->abilityMeshes[1] = resourceMng->addMesh("assets/models/KnockbackAbility.obj");
 
 	Sequence* root = c.c.sequence();
 

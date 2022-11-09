@@ -73,7 +73,7 @@ function script:update(dt)
     then
         self.staminaTimer = self.staminaTimer - dt
     else
-        if (self.currentStamina ~= 100)
+        if (self.currentStamina < 100)
         then
             self.currentStamina = self.currentStamina + self.staminaRegen * dt
             if (self.currentStamina < 10)
@@ -86,7 +86,7 @@ function script:update(dt)
     end
     if (input.isKeyDown(Keys.SHIFT))
     then
-        if (self.currentStamina > 0 and self.useStamina == true)
+        if (self.currentStamina > 0 and self.useStamina == true and self.moveDir ~= vector(0))
         then
             self.isSprinting = true
             self.currentSpeed = self.moveDir:normalize() * self.sprintSpeed
@@ -104,14 +104,17 @@ function script:update(dt)
     then
         self.dodgeTimer = self.dodgeTimer - dt
     end
-    if (input.isKeyPressed(Keys.CTRL) and self.currentStamina > 20.0)
+    if (input.isKeyPressed(Keys.CTRL))
     then
-        self.isDodging = true
-        self.currentStamina = self.currentStamina - 20.0
-        self.staminaTimer = self.staminaRegenCd
         self.currentMoveDir = self.moveDir:normalize()
-        self.currentSpeed = self.currentMoveDir * self.dodgeSpeed
-        self.dodgeTimer = self.dodgeTime
+        if (self.currentStamina > 20.0 and self.currentMoveDir ~= vector(0))
+        then
+            self.isDodging = true
+            self.currentStamina = self.currentStamina - 20.0
+            self.staminaTimer = self.staminaRegenCd
+            self.currentSpeed = self.currentMoveDir * self.dodgeSpeed
+            self.dodgeTimer = self.dodgeTime
+        end
     elseif (self.dodgeTimer > 0.0)
     then
         self.currentSpeed = self.currentMoveDir * self.dodgeSpeed
@@ -156,18 +159,24 @@ function script:update(dt)
         self.animTimer = self.animTimer - dt
     end
     
-    if (input.isKeyDown(Keys.CTRL) and self.isDodging)
+    if (input.isKeyDown(Keys.CTRL))
     then
-        local anim = scene.getComponent(self.ID, CompType.Animation)
-        anim.timeScale = 3.0
-        scene.setComponent(self.ID, CompType.Animation, anim)
+        if (self.isDodging and self.moveDir ~= vector(0))
+        then
+            local anim = scene.getComponent(self.ID, CompType.Animation)
+            anim.timeScale = 3.0
+            scene.setComponent(self.ID, CompType.Animation, anim)
+        end
     end
     
-    if (input.isKeyDown(Keys.SHIFT) and self.isSprinting)
+    if (input.isKeyDown(Keys.SHIFT))
     then
-        local anim = scene.getComponent(self.ID, CompType.Animation)
-        anim.timeScale = 2.0
-        scene.setComponent(self.ID, CompType.Animation, anim)
+        if (self.isSprinting and self.moveDir ~= vector(0))
+        then
+            local anim = scene.getComponent(self.ID, CompType.Animation)
+            anim.timeScale = 2.0
+            scene.setComponent(self.ID, CompType.Animation, anim)
+        end
     end
     
     if (not self.isSprinting and not self.isDodging)
