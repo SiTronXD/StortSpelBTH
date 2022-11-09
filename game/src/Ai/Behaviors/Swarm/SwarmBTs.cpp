@@ -90,7 +90,7 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 
 		if(swarmComp.touchedFriend)
 		{
-			swarmComp.touchedFriend = false;
+			//swarmComp.touchedFriend = false;
 
 			//Set move to
 			swarmComp.idleMoveTo = swarmComp.group->idleMidBos;

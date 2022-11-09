@@ -507,6 +507,12 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
             }            
         }
     }
+
+	if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<SwarmComponent>(e2))
+	{
+		this->getComponent<SwarmComponent>(e1).touchedFriend = true;
+		this->getComponent<SwarmComponent>(e2).touchedFriend = true;
+	}
 }
 
 void GameScene::onCollisionExit(Entity e1, Entity e2)
