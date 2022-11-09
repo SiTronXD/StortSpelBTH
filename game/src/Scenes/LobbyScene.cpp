@@ -1,5 +1,6 @@
 #include "LobbyScene.h"
 #include "vengine/network/ServerGameModes/NetworkLobbyScene.h"
+#include "GameScene.h"
 
 LobbyScene::LobbyScene() {}
 LobbyScene::~LobbyScene() {}
@@ -46,7 +47,7 @@ void LobbyScene::init()
   this->disconnectButton = this->createEntity();
 
   UIArea area{};
-  area.position = glm::vec2(0, 0);
+  area.position = glm::vec2(800.f, 0.f);
   area.dimension = glm::vec2(20 * 10, 20);
   this->setComponent<UIArea>(this->startButton, area);
 
@@ -98,20 +99,37 @@ void LobbyScene::update()
   //start game
   if (getNetworkHandler()->hasServer())
     {
+      this->getUIRenderer()->setTexture(this->fontTextureId);
+      this->getUIRenderer()->renderString(
+          "start match", 800.f, 0.f, 20.f, 20.f
+      );
       if (this->getComponent<UIArea>(this->startButton).isClicking())
         {
           //send two
           std::cout << "pressed start" << std::endl;
           this->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent{GameEvents::START});
           this->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent{GameEvents::START});
+          this->getSceneHandler()->setScene(new GameScene(), "scripts/gamescene.lua");
         }
-      this->getUIRenderer()->setTexture(this->fontTextureId);
-      this->getUIRenderer()->renderString("start match", 800.f, 0.f, 20.f, 20.f);
+      
     }
+  else
+    {
+      if (this->getNetworkHandler()->getClient() != nullptr &&
+          this->getNetworkHandler()->getClient()->hasStarted())
+        {
+          this->getSceneHandler()->setScene(
+              new GameScene(), "scripts/gamescene.lua"
+          );
+      }
+  }
   if (this->getNetworkHandler()->getClient() != nullptr && this->getNetworkHandler()->getClient()->isConnected())
   {
       this->getUIRenderer()->setTexture(this->fontTextureId);
       this->getUIRenderer()->renderString("disconnect", -800.f, -60.f, 20.f, 20.f);
+      if (this->getComponent<UIArea>(disconnectButton).isClicking()) {
+          this->getNetworkHandler()->disconnectClient();
+      }
   }
   else
   {

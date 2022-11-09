@@ -26,18 +26,6 @@ void NetworkAI::init()
 }
 void NetworkAI::start()
 {
-  this->getNetworkHandler()->createServer(new TheServerGame());
-  this->getNetworkHandler()->createClient();
-  if (this->getNetworkHandler()->connectClientToThis())
-    {
-      std::cout << "connect" << std::endl;
-    }
-  else
-    {
-      std::cout << "no Connect" << std::endl;
-    }
-  //no visulation that we connected
-
   int cube = this->createEntity();
   int a = this->getResourceManager()->addMesh("vengine_assets/models/cube.obj");
 
