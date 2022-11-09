@@ -162,8 +162,6 @@ void LobbyScene::update()
       this->getUIRenderer()->renderString("create server", -800.f, -120.f, 20.f, 20.f);
       if (this->getComponent<UIArea>(this->createServerButton).isClicking())
       {
-          //TODO: change this to desired game mode
-          //this->getNetworkHandler()->createServer();
           std::cout << "create server" << std::endl;
           this->getNetworkHandler()->createServer(new NetworkLobbyScene());
           this->getNetworkHandler()->createClient("hosty");

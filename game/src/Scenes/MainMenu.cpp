@@ -27,7 +27,44 @@ void MainMenu::init()
 
 void MainMenu::start()
 {
+  this->playButton = this->createEntity();
+  this->joinGameButton = this->createEntity();
+  this->settingsButton = this->createEntity();
+  this->quitButton = this->createEntity();
+  this->backButton = this->createEntity();
+  this->fullscreenButton = this->createEntity();
 
+  UIArea area{};
+  area.position = glm::vec2(0.f, 200.f);
+  area.dimension = glm::vec2(50 * 5, 50);
+  this->setComponent<UIArea>(this->playButton, area);
+
+  area.position = glm::vec2(0.f, 100.f);
+  area.dimension = glm::vec2(50 * 10, 50);
+  this->setComponent<UIArea>(this->joinGameButton, area);
+
+  area.position = glm::vec2(0.f, 0.f);
+  area.dimension = glm::vec2(50 * 10, 50);
+  this->setComponent<UIArea>(this->settingsButton, area);
+
+    area.position = glm::vec2(0.f, -100.f);
+  area.dimension = glm::vec2(50 * 10, 50);
+  this->setComponent<UIArea>(this->howToPlayButton, area);
+
+  area.position = glm::vec2(0.f, -200.f);
+  area.dimension = glm::vec2(50 * 10, 50);
+  this->setComponent<UIArea>(this->quitButton, area);
+
+  area.position = glm::vec2(-(1920 / 2) + 200, (1080 / 2) - 100);
+  area.dimension = glm::vec2(50 * 10, 50);
+  this->setComponent<UIArea>(this->backButton, area);
+
+  area.position = glm::vec2(0.f, 200.f);
+  area.dimension = glm::vec2(50 * 10, 50);
+  this->setComponent<UIArea>(this->fullscreenButton, area);
+
+
+  Input::setHideCursor(false);
 }
 
 void MainMenu::update()
@@ -48,15 +85,32 @@ void MainMenu::update()
 	case Menu:
 
 		this->getUIRenderer()->setTexture(this->fontTextureId);
-		this->getUIRenderer()->renderString("play: 1", 0.f, 200.f, 50.f, 50.f);
-		this->getUIRenderer()->renderString("settings: 2", 0.f, 100.f, 50.f, 50.f);
-		this->getUIRenderer()->renderString("how to play: 3", 0.f, 0.f, 50.f, 50.f);
-		this->getUIRenderer()->renderString("quit: 4", 0.f, -100.f, 50.f, 50.f);
-
-		if (Input::isKeyReleased(Keys::ONE)) { this->state = State::Play; }
-		else if (Input::isKeyReleased(Keys::TWO)) { this->state = State::Settings; }
-		else if (Input::isKeyReleased(Keys::THREE)) { this->state = State::HowToPlay; }
-		else if (Input::isKeyReleased(Keys::FOUR)) { this->state = State::Quit; }
+		this->getUIRenderer()->renderString("play", 0.f, 200.f, 50.f, 50.f);
+		this->getUIRenderer()->renderString("join game", 0.f, 100.f, 50.f, 50.f);
+		this->getUIRenderer()->renderString("settings", 0.f, 0.f, 50.f, 50.f);
+        this->getUIRenderer()->renderString("how to play", 0.f, -100.f, 50.f, 50.f);
+		this->getUIRenderer()->renderString("quit", 0.f, -200.f, 50.f, 50.f);
+		
+		if (this->getComponent<UIArea>(playButton).isClicking())
+        {
+            //go to write name
+		}
+        if (this->getComponent<UIArea>(joinGameButton).isClicking())
+        {
+            //go to write name and ip
+        }
+        if (this->getComponent<UIArea>(settingsButton).isClicking())
+        {
+            this->state = State::Settings;
+        }
+        if (this->getComponent<UIArea>(howToPlayButton).isClicking())
+        {
+            this->state = State::HowToPlay;
+        }
+        if (this->getComponent<UIArea>(quitButton).isClicking())
+        {
+            this->state = State::Quit;
+        }
 
 		break;
 
@@ -82,24 +136,24 @@ void MainMenu::update()
 void MainMenu::settings()
 {
 	static bool fullscreen = false;
-	if (Input::isKeyReleased(Keys::ONE))
-	{
-		this->state = State::Menu;
+    if (this->getComponent<UIArea>(backButton).isClicking())
+    {
+        this->state = State::Menu;  
 	}
-	else if (Input::isKeyReleased(Keys::TWO))
-	{
-		fullscreen = fullscreen ? false : true;
-		this->getSceneHandler()->getWindow()->setFullscreen(fullscreen);
-	}
+    if (this->getComponent<UIArea>(fullscreenButton).isClicking())
+    {
+        fullscreen = fullscreen ? false : true;
+        this->getSceneHandler()->getWindow()->setFullscreen(fullscreen);
+    }
 
 	UIRenderer* uiRenderer = this->getUIRenderer();
 
 	uiRenderer->setTexture(this->fontTextureId);
-	uiRenderer->renderString("back: 1", -(1920 / 2) + 200, (1080 / 2) - 100, 50.f, 50.f);
+	uiRenderer->renderString("back", -(1920 / 2) + 200, (1080 / 2) - 100, 50.f, 50.f);
 
 	uiRenderer->renderString("-- settings --", 0.f, 300.f, 50.f, 50.f);
 
-	uiRenderer->renderString("temp switch key: 2", 0.f, 240.f, 15.f, 15.f);
+	//uiRenderer->renderString("temp switch key: 2", 0.f, 240.f, 15.f, 15.f);
 	uiRenderer->renderString(fullscreen ? "fullscreen: on" : "fullscreen: off", 0.f, 200.f, 50.f, 50.f);
 
 	uiRenderer->renderString("volume change disable until sound is happy happy", 0.f, 140.f, 15.f, 15.f);
@@ -108,7 +162,10 @@ void MainMenu::settings()
 
 void MainMenu::howToPlay()
 {
-	if (Input::isKeyReleased(Keys::ONE)) { this->state = State::Menu; }
+	if (this->getComponent<UIArea>(backButton).isClicking())
+    {
+      this->state = State::Menu;
+    }
 
 	UIRenderer* uiRenderer = this->getUIRenderer();
 
