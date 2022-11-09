@@ -358,10 +358,8 @@ void GameScene::aiExample()
         {
             this->enemyIDs.push_back(this->createEntity());
             this->setComponent<MeshComponent>(this->enemyIDs.back(), swarm);
-            //this->setComponent<AiMovement>(this->enemyIDs.back());
             this->setComponent<AiCombat>(this->enemyIDs.back());
             this->setComponent<Collider>(this->enemyIDs.back(), Collider::createSphere(4.0f));
-            //this->setComponent<Collider>(this->enemyIDs.back(), Collider::createBox(glm::vec3(5.0f, 3.5f, 5.0f)));
             this->setComponent<Rigidbody>(this->enemyIDs.back());
 			Rigidbody& rb = this->getComponent<Rigidbody>(this->enemyIDs.back());
             rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -423,11 +421,49 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 					transform.scale.y = 1.0f;
 					swarmComp.life = swarmComp.FULL_HEALTH;
 					swarmComp.group->inCombat = false;
+					
+					swarmComp.group->aliveMembers.push(0); // TODO: This should be done somewhere else... Like in SwarmFSM/BT
 
 					idx++;
 					counter++;
 				
 				}
+			}
+			for(SwarmGroup* group: this->swarmGroups)
+			{
+					//Set idle mid pos
+					group->idleMidBos = glm::vec3(0.0f, 0.0f, 0.0f);
+					int numAlive = 0;
+					for(auto b: group->members)
+					{
+						if(isActive(b) && this->getComponent<SwarmComponent>(b).life > 0)
+						{
+							group->idleMidBos += this->getComponent<Transform>(b).position;
+							numAlive++;
+						}
+					}
+					group->idleMidBos /= numAlive;
+					//Set ilde radius
+					for(auto b: group->members)
+					{
+						if(isActive(b) && this->getComponent<SwarmComponent>(b).life > 0)
+						{
+							float len = glm::length(group->idleMidBos - this->getComponent<Transform>(b).position);
+							if(len > group->idleRadius)
+							{
+								group->idleRadius = len;
+							}
+						}
+					}
+					//Set move to
+					for(auto b: group->members)
+					{
+						SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(b);
+						swarmComp.idleMoveTo = group->idleMidBos;
+						glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
+						swarmComp.idleMoveTo = swarmComp.group->idleMidBos + dir * swarmComp.group->idleRadius;
+					}
+					
 			}
 		}        
 
@@ -436,6 +472,17 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 			this->switchScene(new GameScene(), "scripts/gamescene.lua");
 		}
 	}
+}
+
+void GameScene::onCollisionEnter(Entity e1, Entity e2)
+{
+   
+	if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<SwarmComponent>(e2))
+	{
+		this->getComponent<SwarmComponent>(e1).touchedFriend = true;
+		this->getComponent<SwarmComponent>(e2).touchedFriend = true;
+	}
+
 }
 
 void GameScene::onCollisionStay(Entity e1, Entity e2)
@@ -452,12 +499,31 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
             {
                 auto& aiCombat = this->getComponent<AiCombat>(other);
                 swarmComp.inAttack = false; 
+                swarmComp.touchedPlayer = true; 
+				//aiCombat.timer = aiCombat.lightAttackTime;
                 this->getComponent<Combat>(player).health -= (int)aiCombat.lightHit;
                 std::cout << "WAS HIT\n";
                 
             }            
         }
     }
+
+	if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<SwarmComponent>(e2))
+	{
+		this->getComponent<SwarmComponent>(e1).touchedFriend = true;
+		this->getComponent<SwarmComponent>(e2).touchedFriend = true;
+	}
+}
+
+void GameScene::onCollisionExit(Entity e1, Entity e2)
+{
+   
+	if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<SwarmComponent>(e2))
+	{
+		this->getComponent<SwarmComponent>(e1).touchedFriend = false;
+		this->getComponent<SwarmComponent>(e2).touchedFriend = false;
+	}
+
 }
 
 void GameScene::createPortal()
