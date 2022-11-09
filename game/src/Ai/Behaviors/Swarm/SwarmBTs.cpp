@@ -76,39 +76,37 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 		{
 			if(!BehaviorTree::sceneHandler->getScene()->hasComponents<SwarmComponent>(rp.entity))
 			{
-				swarmComp.idleMoveTo = swarmComp.group->idleMidBos;
+				swarmComp.idleMoveTo = swarmComp.group->idleMidPos;
 				dir = -swarmTransform.forward();
-				swarmComp.idleMoveTo = swarmComp.group->idleMidBos + dir * swarmComp.group->idleRadius;
+				swarmComp.idleMoveTo = swarmComp.group->idleMidPos + dir * swarmComp.group->idleRadius;
 			}
 		}
 		else if(swarmComp.touchedFriend)
 		{
 			//Set move to
 			swarmComp.touchedFriend = false;
-			swarmComp.idleMoveTo = swarmComp.group->idleMidBos;
+			swarmComp.idleMoveTo = swarmComp.group->idleMidPos;
 			dir = glm::normalize(swarmTransform.position - swarmComp.friendTouched);
-			swarmComp.idleMoveTo = swarmComp.group->idleMidBos + dir * swarmComp.group->idleRadius;
+			swarmComp.idleMoveTo = swarmComp.group->idleMidPos + dir * swarmComp.group->idleRadius;
 		}
 		else if(swarmCol.radius*2 > len)
 		{
 			//Set move to
-			swarmComp.idleMoveTo = swarmComp.group->idleMidBos;
+			swarmComp.idleMoveTo = swarmComp.group->idleMidPos;
 			glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
-			swarmComp.idleMoveTo = swarmComp.group->idleMidBos + dir * swarmComp.group->idleRadius;
+			swarmComp.idleMoveTo = swarmComp.group->idleMidPos + dir * swarmComp.group->idleRadius;
 		}
 	}
 	else
 	{
+		swarmComp.idleMoveTo = swarmTransform.position + swarmComp.lonelyDir * std::numeric_limits<float>().max(); 
 		Ray rayToPlayer{swarmTransform.position, swarmComp.lonelyDir};    
 		RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, 10.0f);
 		if(rp.hit)
 		{
-			if(!BehaviorTree::sceneHandler->getScene()->hasComponents<SwarmComponent>(rp.entity))
-			{
-				swarmComp.idleMoveTo = swarmComp.group->idleMidBos;
-				swarmComp.lonelyDir = -swarmComp.lonelyDir;
-				swarmComp.idleMoveTo = swarmTransform.position + swarmComp.lonelyDir * std::numeric_limits<float>().max(); 
-			}
+			swarmComp.idleMoveTo = swarmComp.group->idleMidPos;
+			swarmComp.lonelyDir = -swarmComp.lonelyDir;
+			swarmComp.idleMoveTo = swarmTransform.position + swarmComp.lonelyDir * std::numeric_limits<float>().max(); 
 		}
 		else if(swarmComp.lonelyTimer > swarmComp.lonelyTime)
 		{	

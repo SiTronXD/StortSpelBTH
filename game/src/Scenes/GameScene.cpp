@@ -432,23 +432,23 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 			for(SwarmGroup* group: this->swarmGroups)
 			{
 					//Set idle mid pos
-					group->idleMidBos = glm::vec3(0.0f, 0.0f, 0.0f);
+					group->idleMidPos = glm::vec3(0.0f, 0.0f, 0.0f);
 					int numAlive = 0;
 					for(auto b: group->members)
 					{
 						if(isActive(b) && this->getComponent<SwarmComponent>(b).life > 0)
 						{
-							group->idleMidBos += this->getComponent<Transform>(b).position;
+							group->idleMidPos += this->getComponent<Transform>(b).position;
 							numAlive++;
 						}
 					}
-					group->idleMidBos /= numAlive;
+					group->idleMidPos /= numAlive;
 					//Set ilde radius
 					for(auto b: group->members)
 					{
 						if(isActive(b) && this->getComponent<SwarmComponent>(b).life > 0)
 						{
-							float len = glm::length(group->idleMidBos - this->getComponent<Transform>(b).position);
+							float len = glm::length(group->idleMidPos - this->getComponent<Transform>(b).position);
 							if(len > group->idleRadius)
 							{
 								group->idleRadius = len;
@@ -459,9 +459,9 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 					for(auto b: group->members)
 					{
 						SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(b);
-						swarmComp.idleMoveTo = group->idleMidBos;
+						swarmComp.idleMoveTo = group->idleMidPos;
 						glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
-						swarmComp.idleMoveTo = swarmComp.group->idleMidBos + dir * swarmComp.group->idleRadius;
+						swarmComp.idleMoveTo = swarmComp.group->idleMidPos + dir * swarmComp.group->idleRadius;
 					}
 					
 			}
