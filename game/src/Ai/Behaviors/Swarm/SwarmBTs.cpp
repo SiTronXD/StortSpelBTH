@@ -1,7 +1,7 @@
 #include "SwarmBTs.hpp"
 #include "SwarmFSM.hpp"
 #include "../../../Components/Combat.h"
-#include "../../../Components/AiCombat.h"
+#include "../../../Components/AiCombatSwarm.h"
 #include "../../../Components/Perks.h"
 #include <limits>
 
@@ -418,7 +418,7 @@ BTStatus SwarmBT::attack(Entity entityID)
 	Transform& thisTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Transform& playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(getPlayerID(sceneHandler));
 	SwarmComponent& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
-	AiCombat& combat = BehaviorTree::sceneHandler->getScene()->getComponent<AiCombat>(entityID);
+	AiCombatSwarm& combat = BehaviorTree::sceneHandler->getScene()->getComponent<AiCombatSwarm>(entityID);
 	Rigidbody& rigidbody = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
 	Collider& sawrmCollider = BehaviorTree::sceneHandler->getScene()->getComponent<Collider>(entityID);
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "vengine.h"
 #include "SwarmBTs.hpp"
-#include "../../../Components/AiCombat.h"
+#include "../../../Components/AiCombatSwarm.h"
 
 
 struct SwarmComponent
@@ -121,7 +121,7 @@ protected:
 	virtual void registerEntityComponents(Entity entityId) override
 	{
 		addRequiredComponent<SwarmComponent>(entityId);
-		addRequiredComponent<AiCombat>(entityId);
+		addRequiredComponent<AiCombatSwarm>(entityId);
 	}
 
 	virtual void real_init() override

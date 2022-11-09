@@ -190,7 +190,7 @@ bool SwarmFSM::combat_idle(Entity entityID)
 		FSM::sceneHandler->getScene()->getComponent<Rigidbody>(entityID).friction = 1.0f;
 
 		//Reset Combat timer
-		AiCombat& combat = FSM::sceneHandler->getScene()->getComponent<AiCombat>(entityID);
+		AiCombatSwarm& combat = FSM::sceneHandler->getScene()->getComponent<AiCombatSwarm>(entityID);
 		combat.timer = combat.lightAttackTime;
 		//Reset scale
 		FSM::sceneHandler->getScene()->getComponent<Transform>(entityID).scale.y = 1.0f;
@@ -225,7 +225,7 @@ bool SwarmFSM::combat_escape(Entity entityID)
 	if(ret == true)
 	{
 		//Reset Combat timer
-		AiCombat& combat = FSM::sceneHandler->getScene()->getComponent<AiCombat>(entityID);
+		AiCombatSwarm& combat = FSM::sceneHandler->getScene()->getComponent<AiCombatSwarm>(entityID);
 		combat.timer = combat.lightAttackTime;
 
 		//Reset scale
@@ -356,7 +356,7 @@ bool SwarmFSM::dead(Entity entityID)
 	{
 		swarmComp.alertDone = false;
 		//Reset Combat timer
-		AiCombat& combat = FSM::sceneHandler->getScene()->getComponent<AiCombat>(entityID);
+		AiCombatSwarm& combat = FSM::sceneHandler->getScene()->getComponent<AiCombatSwarm>(entityID);
 		combat.timer = combat.lightAttackTime;
 	}
 
