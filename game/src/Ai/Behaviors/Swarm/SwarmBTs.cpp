@@ -104,12 +104,9 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 		RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, 10.0f);
 		if(rp.hit)
 		{
-			if(!BehaviorTree::sceneHandler->getScene()->hasComponents<SwarmComponent>(rp.entity))
-			{
-				swarmComp.idleMoveTo = swarmComp.group->idleMidPos;
-				swarmComp.lonelyDir = -swarmComp.lonelyDir;
-				swarmComp.idleMoveTo = swarmTransform.position + swarmComp.lonelyDir * std::numeric_limits<float>().max(); 
-			}
+			swarmComp.idleMoveTo = swarmComp.group->idleMidPos;
+			swarmComp.lonelyDir = -swarmComp.lonelyDir;
+			swarmComp.idleMoveTo = swarmTransform.position + swarmComp.lonelyDir * std::numeric_limits<float>().max(); 
 		}
 		else if(swarmComp.lonelyTimer > swarmComp.lonelyTime)
 		{	
