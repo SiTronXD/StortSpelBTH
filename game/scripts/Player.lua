@@ -16,7 +16,6 @@ function script:init()
 	self.maxSpeed = 50
     self.sprintSpeed = 100
     self.isSprinting = false
-    self.sprintDrain = 0.5
 	self.speedIncrease = 200
 	self.turnSpeed = 200
 	self.timer = 0
@@ -26,7 +25,8 @@ function script:init()
 
     self.maxStamina = 100.0
     self.currentStamina = 100.0
-    self.staminaRegen = 0.5
+    self.sprintStamDrain = 20.0
+    self.staminaRegen = 20.0
     self.staminaRegenCd = 2.0
     self.staminaTimer = 0.0
     self.useStamina = true
@@ -75,7 +75,7 @@ function script:update(dt)
     else
         if (self.currentStamina ~= 100)
         then
-            self.currentStamina = self.currentStamina + self.staminaRegen
+            self.currentStamina = self.currentStamina + self.staminaRegen * dt
             if (self.currentStamina < 10)
             then
                 self.useStamina = false
@@ -90,7 +90,7 @@ function script:update(dt)
         then
             self.isSprinting = true
             self.currentSpeed = self.moveDir:normalize() * self.sprintSpeed
-            self.currentStamina = self.currentStamina - self.sprintDrain
+            self.currentStamina = self.currentStamina - (self.sprintStamDrain * dt)
             self.staminaTimer = self.staminaRegenCd
         else
             self.currentSpeed = self.moveDir:normalize() * self.maxSpeed
