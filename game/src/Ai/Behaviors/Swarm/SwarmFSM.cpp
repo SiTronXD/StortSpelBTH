@@ -165,19 +165,19 @@ bool SwarmFSM::combat_idle(Entity entityID)
 		}
 		enemySwarmComp.group->idleMidBos /= numAlive;
 
-		//Set ilde radius
-		enemySwarmComp.group->idleRadius = 0.0f;
-		for(auto b: enemySwarmComp.group->members)
-		{
-			if(FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(b).life > 0)
-			{
-				float len = glm::length(enemySwarmComp.group->idleMidBos - FSM::sceneHandler->getScene()->getComponent<Transform>(b).position);
-				if(len > enemySwarmComp.group->idleRadius)
-				{
-					enemySwarmComp.group->idleRadius = len;
-				}
-			}
-		}
+		////Set ilde radius
+		//enemySwarmComp.group->idleRadius = 0.0f;
+		//for(auto b: enemySwarmComp.group->members)
+		//{
+		//	if(FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(b).life > 0)
+		//	{
+		//		float len = glm::length(enemySwarmComp.group->idleMidBos - FSM::sceneHandler->getScene()->getComponent<Transform>(b).position);
+		//		if(len > enemySwarmComp.group->idleRadius)
+		//		{
+		//			enemySwarmComp.group->idleRadius = len;
+		//		}
+		//	}
+		//}
 
 		//Set move to
 		enemySwarmComp.idleMoveTo = enemySwarmComp.group->idleMidBos;
@@ -275,19 +275,19 @@ bool SwarmFSM::escape_idle(Entity entityID)
 		}
 		enemySwarmComp.group->idleMidBos /= numAlive;
 
-		//Set ilde radius
-		enemySwarmComp.group->idleRadius = 0.0f;
-		for(auto b: enemySwarmComp.group->members)
-		{
-			if(FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(b).life > 0)
-			{
-				float len = glm::length(enemySwarmComp.group->idleMidBos -FSM::sceneHandler->getScene()->getComponent<Transform>(b).position);
-				if(len > enemySwarmComp.group->idleRadius)
-				{
-					enemySwarmComp.group->idleRadius = len;
-				}
-			}
-		}
+		////Set ilde radius
+		//enemySwarmComp.group->idleRadius = 0.0f;
+		//for(auto b: enemySwarmComp.group->members)
+		//{
+		//	if(FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(b).life > 0)
+		//	{
+		//		float len = glm::length(enemySwarmComp.group->idleMidBos -FSM::sceneHandler->getScene()->getComponent<Transform>(b).position);
+		//		if(len > enemySwarmComp.group->idleRadius)
+		//		{
+		//			enemySwarmComp.group->idleRadius = len;
+		//		}
+		//	}
+		//}
 
 		//Set move to
 		enemySwarmComp.idleMoveTo = enemySwarmComp.group->idleMidBos;
