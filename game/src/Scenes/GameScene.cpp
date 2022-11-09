@@ -90,9 +90,7 @@ void GameScene::start()
 	abilityTrans.position = glm::vec3(50.f, 10.f, 0.f);
 	abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
 	this->setComponent<Collider>(this->ability, Collider::createSphere(4.f, glm::vec3(0), true));
-	this->setComponent<Abilities>(this->ability);
-	Abilities& abilitySetting = this->getComponent<Abilities>(this->ability);
-	abilitySetting.abilityType = knockbackAbility;
+	this->setComponent<Abilities>(this->ability, healAbility);
 
 	this->perk = this->createEntity();
 	int perkHp = this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");

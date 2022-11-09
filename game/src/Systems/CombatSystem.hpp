@@ -19,6 +19,8 @@ private:
 
 	int perkMeshes[3];
 	int abilityMeshes[1];
+	int healingMesh;
+	Entity heal = -1;
 
 public:
 
@@ -45,6 +47,7 @@ public:
 			perkMeshes[1] = this->resourceMng->addMesh("assets/models/Perk_Dmg.obj");
 			perkMeshes[2] = this->resourceMng->addMesh("assets/models/Perk_AtkSpeed.obj");
 			abilityMeshes[0] = this->resourceMng->addMesh("assets/models/KnockbackAbility.obj");
+			healingMesh = this->resourceMng->addMesh("assets/models/HealingAbility.obj");
 		}
 	}
 
@@ -57,6 +60,21 @@ public:
 			checkAbilityCollision(combat);
 			decreaseTimers(combat, deltaTime);
 
+			if (combat.isHealing)
+			{
+				Transform& healTrans = this->scene->getComponent<Transform>(this->heal);
+				Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
+				if (combat.health < combat.maxHealth)
+				{
+					float dist = glm::length(healTrans.position - playerTrans.position);
+					if (dist < combat.healRadius)
+					{
+						float newHealth = combat.hpRegen * deltaTime;
+						combat.health += (int)newHealth;
+					}
+				}
+			}
+
 			// Check if player is trying to attack
 			if (Input::isMouseButtonPressed(Mouse::LEFT))
 			{
@@ -66,9 +84,9 @@ public:
 			{
 				heavyAttack(combat);
 			}
-			else if (Input::isKeyPressed(Keys::F) && combat.ability.abilityType == knockbackAbility)
+			else if (Input::isKeyPressed(Keys::F))
 			{
-				knockbackAttack(combat);
+				useAbility(combat);
 			}
 			// Check if player wants to drop a perk
 			if (Input::isKeyPressed(Keys::ONE))
@@ -227,7 +245,22 @@ public:
 		return false;
 	};
 
-	bool knockbackAttack(Combat& combat)
+	bool useAbility(Combat& combat)
+	{
+		if (combat.ability.abilityType == knockbackAbility)
+		{
+			useKnockbackAbility(combat);
+			return true;
+		}
+		else if (combat.ability.abilityType == healAbility)
+		{
+			useHealingAbility(combat);
+			return true;
+		}
+		return false;
+	}
+
+	bool useKnockbackAbility(Combat& combat)
 	{
 		if (combat.ability.abilityType == knockbackAbility)
 		{
@@ -259,7 +292,28 @@ public:
 				}
 			}
 		}
+		return false;
+	}
 
+	bool useHealingAbility(Combat& combat)
+	{
+		if (combat.ability.abilityType == healAbility)
+		{
+			if (checkActiveAttack(combat) == noActive)
+			{
+				combat.healTimer = combat.healCd;
+				combat.isHealing = true;
+				combat.ability.abilityType = emptyAbility;
+
+				this->heal = this->scene->createEntity();
+				this->scene->setComponent<MeshComponent>(this->heal, this->healingMesh);
+				Transform& healTrans = this->scene->getComponent<Transform>(this->heal);
+				Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
+				healTrans.position = glm::vec3(playerTrans.position.x, 0.f, playerTrans.position.z);
+
+				return true;
+			}
+		}
 		return false;
 	}
 
@@ -622,6 +676,15 @@ public:
 		if (combat.comboClearTimer > -1.f)
 		{
 			combat.comboClearTimer -= deltaTime;
+		}
+		if (combat.healTimer > 0.f)
+		{
+			combat.healTimer -= deltaTime;
+		}
+		else
+		{
+			combat.isHealing = false;
+			this->scene->removeEntity(this->heal);
 		}
 	}
 };
