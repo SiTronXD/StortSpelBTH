@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 #include "vengine.h"
 #include "../World Handling/Room Handler.h"
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
@@ -42,7 +44,9 @@ public:
     virtual void update() override;
     virtual void onTriggerStay(Entity e1, Entity e2) override;
     virtual void onTriggerEnter(Entity e1, Entity e2) override;
+    virtual void onCollisionEnter(Entity e1, Entity e2) override;
     virtual void onCollisionStay(Entity e1, Entity e2) override;
+    virtual void onCollisionExit(Entity e1, Entity e2) override;
 
 private:
     void aiExample();

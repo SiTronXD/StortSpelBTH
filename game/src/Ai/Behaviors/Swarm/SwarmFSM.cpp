@@ -151,6 +151,44 @@ bool SwarmFSM::combat_idle(Entity entityID)
 	{
 		enemySwarmComp.forcedToAttack = false;
 		enemySwarmComp.group->inCombat = false;	
+
+		//Set idle mid pos
+		enemySwarmComp.group->idleMidBos = glm::vec3(0.0f, 0.0f, 0.0f);
+		int numAlive = 0;
+		for(auto b: enemySwarmComp.group->members)
+		{
+			if(FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(b).life > 0)
+			{
+				enemySwarmComp.group->idleMidBos += FSM::sceneHandler->getScene()->getComponent<Transform>(b).position;
+				numAlive++;
+			}
+		}
+		enemySwarmComp.group->idleMidBos /= numAlive;
+
+		//Set ilde radius
+		enemySwarmComp.group->idleRadius = 0.0f;
+		for(auto b: enemySwarmComp.group->members)
+		{
+			if(FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(b).life > 0)
+			{
+				float len = glm::length(enemySwarmComp.group->idleMidBos - FSM::sceneHandler->getScene()->getComponent<Transform>(b).position);
+				if(len > enemySwarmComp.group->idleRadius)
+				{
+					enemySwarmComp.group->idleRadius = len;
+				}
+			}
+		}
+
+		//Set move to
+		enemySwarmComp.idleMoveTo = enemySwarmComp.group->idleMidBos;
+		glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
+		enemySwarmComp.idleMoveTo = enemySwarmComp.idleMoveTo + dir * enemySwarmComp.group->idleRadius;
+		
+
+
+		//Reset friction
+		FSM::sceneHandler->getScene()->getComponent<Rigidbody>(entityID).friction = 1.0f;
+
 		//Reset Combat timer
 		AiCombat& combat = FSM::sceneHandler->getScene()->getComponent<AiCombat>(entityID);
 		combat.timer = combat.lightAttackTime;
@@ -224,6 +262,42 @@ bool SwarmFSM::escape_idle(Entity entityID)
 
 	if(ret == true)
 	{
+		//Set idle mid pos
+		enemySwarmComp.group->idleMidBos = glm::vec3(0.0f, 0.0f, 0.0f);
+		int numAlive = 0;
+		for(auto b: enemySwarmComp.group->members)
+		{
+			if(FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(b).life > 0)
+			{
+				enemySwarmComp.group->idleMidBos += FSM::sceneHandler->getScene()->getComponent<Transform>(b).position;
+				numAlive++;
+			}
+		}
+		enemySwarmComp.group->idleMidBos /= numAlive;
+
+		//Set ilde radius
+		enemySwarmComp.group->idleRadius = 0.0f;
+		for(auto b: enemySwarmComp.group->members)
+		{
+			if(FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(b).life > 0)
+			{
+				float len = glm::length(enemySwarmComp.group->idleMidBos -FSM::sceneHandler->getScene()->getComponent<Transform>(b).position);
+				if(len > enemySwarmComp.group->idleRadius)
+				{
+					enemySwarmComp.group->idleRadius = len;
+				}
+			}
+		}
+
+		//Set move to
+		enemySwarmComp.idleMoveTo = enemySwarmComp.group->idleMidBos;
+		glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
+		enemySwarmComp.idleMoveTo = enemySwarmComp.idleMoveTo + dir * enemySwarmComp.group->idleRadius;
+
+		//Reset friction
+		FSM::sceneHandler->getScene()->getComponent<Rigidbody>(entityID).friction = 1.0f;
+
+		//set scale
 		FSM::sceneHandler->getScene()->getComponent<Transform>(entityID).scale.x = 1.0f;
 	}
 
