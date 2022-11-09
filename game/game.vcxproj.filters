@@ -2,7 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="src\Scenes\CreateAPuzzle.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
     <ClCompile Include="src\World Handling\Room Generator.cpp" />
     <ClCompile Include="src\World Handling\Room Handler.cpp" />
@@ -13,6 +12,7 @@
     <ClCompile Include="src\Scenes\GameOverScene.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmBTs.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmFSM.cpp" />
+    <ClCompile Include="src\Scenes\LobbyScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -22,7 +22,6 @@
     <ClInclude Include="src\Components\CameraMovement.h" />
     <ClInclude Include="src\Components\Combat.h" />
     <ClInclude Include="src\Components\Movement.h" />
-    <ClInclude Include="src\Scenes\CreateAPuzzle.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
     <ClInclude Include="src\Systems\AiCombatSystem.hpp" />
     <ClInclude Include="src\Systems\AiMovementSystem.hpp" />
@@ -39,6 +38,7 @@
     <ClInclude Include="src\Ai\Behaviors\Swarm\SwarmBTs.hpp" />
     <ClInclude Include="src\Ai\Behaviors\Swarm\SwarmFSM.hpp" />
     <ClInclude Include="src\Components\Perks.h" />
+    <ClInclude Include="src\Scenes\LobbyScene.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
