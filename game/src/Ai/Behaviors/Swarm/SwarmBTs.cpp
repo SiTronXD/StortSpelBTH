@@ -62,17 +62,31 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 	Rigidbody& swarmRB = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
 	Collider& swarmCol = BehaviorTree::sceneHandler->getScene()->getComponent<Collider>(entityID);
 
+	
+
 	if( swarmComp.group->aliveMembers.size() != 1)
 	{
 		float len = glm::length(swarmComp.idleMoveTo - swarmTransform.position);
 		glm::vec3 dir = glm::normalize(swarmComp.idleMoveTo - swarmTransform.position);
  		swarmRB.velocity = dir * swarmComp.idleSpeed;
 
-		if(swarmComp.touchedFriend)
+		Ray rayToPlayer{swarmTransform.position, swarmTransform.forward()};    
+		RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, 4.0f);
+		if(rp.hit)
+		{
+			if(!BehaviorTree::sceneHandler->getScene()->hasComponents<SwarmComponent>(rp.entity))
+			{
+				swarmComp.idleMoveTo = swarmComp.group->idleMidBos;
+				dir = -swarmTransform.forward();
+				swarmComp.idleMoveTo = swarmComp.group->idleMidBos + dir * swarmComp.group->idleRadius;
+			}
+		}
+		else if(swarmComp.touchedFriend)
 		{
 			//Set move to
+			swarmComp.touchedFriend = false;
 			swarmComp.idleMoveTo = swarmComp.group->idleMidBos;
-			glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
+			dir = glm::normalize(swarmTransform.position - swarmComp.friendTouched);
 			swarmComp.idleMoveTo = swarmComp.group->idleMidBos + dir * swarmComp.group->idleRadius;
 		}
 		else if(swarmCol.radius*2 > len)
@@ -85,8 +99,18 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 	}
 	else
 	{
-		// If 
-		if(swarmComp.lonelyTimer > swarmComp.lonelyTime)
+		Ray rayToPlayer{swarmTransform.position, swarmComp.lonelyDir};    
+		RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, 10.0f);
+		if(rp.hit)
+		{
+			if(!BehaviorTree::sceneHandler->getScene()->hasComponents<SwarmComponent>(rp.entity))
+			{
+				swarmComp.idleMoveTo = swarmComp.group->idleMidBos;
+				swarmComp.lonelyDir = -swarmComp.lonelyDir;
+				swarmComp.idleMoveTo = swarmTransform.position + swarmComp.lonelyDir * std::numeric_limits<float>().max(); 
+			}
+		}
+		else if(swarmComp.lonelyTimer > swarmComp.lonelyTime)
 		{	
 			swarmComp.lonelyTimer = 0.f;
 			swarmComp.lonelyDir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));	

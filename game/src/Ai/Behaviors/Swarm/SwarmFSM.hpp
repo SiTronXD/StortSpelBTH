@@ -34,8 +34,10 @@ struct SwarmComponent
 	float groundTimer	= 0.0f;
 	float groundTimerOrig	= 0.5f;
 
+
+	glm::vec3 friendTouched = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 idleMoveTo = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 lonelyDir = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 lonelyDir = glm::vec3(0.0f, 0.0f, 1.0f);
 	float lonelyTime = 3.0f;
 	float lonelyTimer = 0.0f;
 

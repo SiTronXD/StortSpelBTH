@@ -479,8 +479,12 @@ void GameScene::onCollisionEnter(Entity e1, Entity e2)
    
 	if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<SwarmComponent>(e2))
 	{
-		this->getComponent<SwarmComponent>(e1).touchedFriend = true;
-		this->getComponent<SwarmComponent>(e2).touchedFriend = true;
+		SwarmComponent& s1 = this->getComponent<SwarmComponent>(e1);
+		SwarmComponent& s2 = this->getComponent<SwarmComponent>(e2);
+		s1.touchedFriend = true;
+		s1.friendTouched = this->getComponent<Transform>(e2).position;
+		s2.touchedFriend = true;
+		s2.friendTouched = this->getComponent<Transform>(e1).position;
 	}
 
 }
@@ -507,12 +511,6 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
             }            
         }
     }
-
-	if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<SwarmComponent>(e2))
-	{
-		this->getComponent<SwarmComponent>(e1).touchedFriend = true;
-		this->getComponent<SwarmComponent>(e2).touchedFriend = true;
-	}
 }
 
 void GameScene::onCollisionExit(Entity e1, Entity e2)
