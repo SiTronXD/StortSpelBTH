@@ -3,6 +3,8 @@
 #include <glm/glm.hpp>
 #include <stack>
 #include "vengine.h"
+
+#include "../HelperFuncs.hpp"
 //#include "ai/PathFinding.h"
 Entity getPlayerID(SceneHandler*sceneHandler);
 

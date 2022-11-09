@@ -18,26 +18,6 @@ Entity getPlayerID(SceneHandler* sceneHandler)
 	return playerID; 
 }
 
-
-float lookAtY(const Transform& from, const Transform& to)
-{
-    float posX = from.position.x - to.position.x;
-    float posZ = from.position.z - to.position.z;
-    float angle = atan2(posX, posZ);
-    angle = glm::degrees(angle);
-  
-    return angle; 
-}
-float lookAtY(const glm::vec3& from, const glm::vec3& to)
-{
-    float posX = from.x - to.x;
-    float posZ = from.z - to.z;
-    float angle = atan2(posX, posZ);
-    angle = glm::degrees(angle);
-  
-    return angle; 
-}
-
 void removeFromGroup(SwarmComponent& comp, Entity entityID)
 {
 	for(int i = 0; i < comp.group->members.size(); i++)
@@ -90,8 +70,6 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 
 		if(swarmComp.touchedFriend)
 		{
-			//swarmComp.touchedFriend = false;
-
 			//Set move to
 			swarmComp.idleMoveTo = swarmComp.group->idleMidBos;
 			glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
@@ -125,21 +103,6 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 
 	swarmTransform.rotation.y = lookAtY(swarmTransform.position, swarmComp.idleMoveTo);
 	swarmTransform.updateMatrix();
-
-
-	
-
-
-
-	//float  len = glm::length(swarmTransform.position - swarmComp.group->idleMidBos);
-	//if(len > swarmComp.group->idleRadius)
-	//{
-	//	//Change dir
-
-	//	//swarmComp.idleDir
-	//
-	//}
-
 
 	return ret;
 }
@@ -335,17 +298,7 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 
     entityTransform.rotation.y = lookAtY(entityTransform, playerTransform);
 	entityTransform.updateMatrix();    
-	//TODO: the player transform origin can change to the bottom instead of the middle, this needs to change then.
-	//TODO: change this stuff good //Lowe
-	// + 3.5f is temporary to match collider and transform
-	/*
-	//Use this if player transform is at the bottom
-	glm::vec3 newPlayerPos = playerTransform.position;
-	float swarmLen = entityCollider.radius;
-	newPlayerPos = newPlayerPos + playerTransform.up() * swarmLen;
-	*/
-	//If player transform is at the bottom use the code above instead.
-	//Temp code start----------------------------------------
+
 	glm::vec3 newPlayerPos = playerTransform.position;
 	newPlayerPos.y+=3.5f;
 	glm::vec3 playerDown = -playerTransform.up();
@@ -438,7 +391,6 @@ BTStatus SwarmBT::attack(Entity entityID)
 {    
 	BTStatus ret = BTStatus::Running;
 
-	//SwarmComponent& thisSwarmComp = BehaviorTree::scene->getComponent<SwarmComponent>(entityID);
 	Transform& thisTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Transform& playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(getPlayerID(sceneHandler));
 	SwarmComponent& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
@@ -456,7 +408,7 @@ BTStatus SwarmBT::attack(Entity entityID)
 	static float initialFriction = rigidbody.friction;
 
 
-    Ray downRay{
+    static Ray downRay{
         thisTransform.position,
         glm::vec3(0.0f,-1.0f,0.0f)
     };
