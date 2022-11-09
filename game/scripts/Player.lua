@@ -73,7 +73,7 @@ function script:update(dt)
     then
         self.staminaTimer = self.staminaTimer - dt
     else
-        if (self.currentStamina ~= 100)
+        if (self.currentStamina < 100)
         then
             self.currentStamina = self.currentStamina + self.staminaRegen * dt
             if (self.currentStamina < 10)

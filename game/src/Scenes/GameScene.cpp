@@ -81,15 +81,15 @@ void GameScene::start()
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 	
 	this->setComponent<Combat>(playerID);
-	this->createSystem<CombatSystem>(this, this->playerID, this->getPhysicsEngine(), this->getDebugRenderer());
+	this->createSystem<CombatSystem>(this, this->getResourceManager(), this->playerID, this->getPhysicsEngine(), this->getDebugRenderer());
 
 	this->ability = this->createEntity();
 	int knockback = this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
 	this->setComponent<MeshComponent>(this->ability, knockback);
 	Transform& abilityTrans = this->getComponent<Transform>(this->ability);
 	abilityTrans.position = glm::vec3(50.f, 10.f, 0.f);
-	abilityTrans.scale = glm::vec3(5.f, 5.f, 5.f);
-	this->setComponent<Collider>(this->ability, Collider::createSphere(5.f, glm::vec3(0), true));
+	abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
+	this->setComponent<Collider>(this->ability, Collider::createSphere(4.f, glm::vec3(0), true));
 	this->setComponent<Abilities>(this->ability);
 	Abilities& abilitySetting = this->getComponent<Abilities>(this->ability);
 	abilitySetting.abilityType = knockbackAbility;
@@ -466,6 +466,29 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 		if (other == portal && numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
 		{
 			this->switchScene(new GameScene(), "scripts/gamescene.lua");
+		}
+	}
+}
+
+void GameScene::onTriggerEnter(Entity e1, Entity e2)
+{
+	Entity ground = e1 == this->roomHandler.getFloor() ? e1 : e2 == this->roomHandler.getFloor() ? e2 : -1;
+	Entity perk = this->hasComponents<Perks>(e1) ? e1 : this->hasComponents<Perks>(e2) ? e2 : -1;
+	Entity ability = this->hasComponents<Abilities>(e1) ? e1 : this->hasComponents<Abilities>(e2) ? e2 : -1;
+	
+	if (this->entityValid(ground))
+	{
+		if (this->entityValid(perk))
+		{
+			this->removeComponent<Rigidbody>(perk);
+			Transform& perkTrans = this->getComponent<Transform>(perk);
+			perkTrans.position.y = 2.f;
+		}
+		else if (this->entityValid(ability))
+		{
+			this->removeComponent<Rigidbody>(ability);
+			Transform& abilityTrans = this->getComponent<Transform>(ability);
+			abilityTrans.position.y = 4.f;
 		}
 	}
 }

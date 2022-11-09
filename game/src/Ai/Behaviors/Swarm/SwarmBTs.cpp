@@ -455,28 +455,30 @@ BTStatus SwarmBT::die(Entity entityID)
 		Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 		perkTrans.position = swarmTrans.position;
 		perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
-		sceneHandler->getScene()->setComponent<Collider>(perkEnt, Collider::createSphere(2.f));
+		sceneHandler->getScene()->setComponent<Collider>(perkEnt, Collider::createSphere(2.f, glm::vec3(0.f, 0.f, 0.f), true));
 		sceneHandler->getScene()->setComponent<Rigidbody>(perkEnt);
 		Rigidbody& perkRb = sceneHandler->getScene()->getComponent<Rigidbody>(perkEnt);
-		glm::vec3 dir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
-		perkRb.velocity = glm::normalize(dir) * 15.f;
+		glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
+		perkRb.gravityMult = 6.f;
+		perkRb.velocity = glm::normalize(spawnDir) * 20.f;
 		sceneHandler->getScene()->setComponent<Perks>(perkEnt, perk);
 	}
 	else if (spawnLoot == 2)
 	{
-		AbilityType abilityType = (AbilityType)(rand() % 2);
+		AbilityType abilityType = knockbackAbility; //(AbilityType)(rand() % 2);
 		Abilities ability{ .abilityType = abilityType };
 		Entity abilityEnt = sceneHandler->getScene()->createEntity();
 		sceneHandler->getScene()->setComponent<MeshComponent>(abilityEnt, SwarmBT::abilityMeshes[abilityType]);
 		Transform& abilityTrans = sceneHandler->getScene()->getComponent<Transform>(abilityEnt);
 		Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 		abilityTrans.position = swarmTrans.position;
-		abilityTrans.scale = glm::vec3(2.f, 2.f, 2.f);
-		sceneHandler->getScene()->setComponent<Collider>(abilityEnt, Collider::createSphere(5.f));
+		abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
+		sceneHandler->getScene()->setComponent<Collider>(abilityEnt, Collider::createSphere(4.f, glm::vec3(0.f, 0.f, 0.f), true));
 		sceneHandler->getScene()->setComponent<Rigidbody>(abilityEnt);
 		Rigidbody& abilityRb = sceneHandler->getScene()->getComponent<Rigidbody>(abilityEnt);
-		glm::vec3 dir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
-		abilityRb.velocity = glm::normalize(dir) * 15.f;
+		glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
+		abilityRb.gravityMult = 6.f;
+		abilityRb.velocity = glm::normalize(spawnDir) * 20.f;
 		sceneHandler->getScene()->setComponent<Abilities>(abilityEnt, ability);
 	}
 

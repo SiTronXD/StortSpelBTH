@@ -208,6 +208,11 @@ int RoomHandler::getNumRooms() const
 	return (int)this->rooms.size();
 }
 
+Entity RoomHandler::getFloor() const
+{
+	return this->floor;
+}
+
 void RoomHandler::createDoors(int roomIndex)
 {
 	const RoomData& curRoom = this->roomLayout.getRoom(roomIndex);

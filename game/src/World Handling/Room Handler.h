@@ -125,4 +125,6 @@ public:
 	const RoomData::Type& getActiveRoomType() const;
 	const Room& getExitRoom() const;
 	int getNumRooms() const;
+
+	Entity getFloor() const;
 };
