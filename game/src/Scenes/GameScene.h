@@ -5,6 +5,7 @@
 #include "vengine.h"
 #include "../World Handling/Room Handler.h"
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
+#include "../Ai/Behaviors/Tank/TankFSM.hpp"
 
 class GameScene: public Scene
 {
@@ -24,6 +25,7 @@ private:
 
     std::vector<int> enemyIDs;
     std::vector<SwarmGroup*> swarmGroups;
+    Entity tankEnemy;
 
     uint32_t perkTextures[4];
     uint32_t fontTextureIndex;

@@ -10,81 +10,97 @@ void TankBT::registerEntityComponents(Entity entityId)
 
 BTStatus TankBT::HasFreindsInSight(Entity entityID)
 {
+	BTStatus ret = BTStatus::Failure;
 	return BTStatus();
 }
 
 BTStatus TankBT::AreFriendsAlive(Entity entityID)
 {
+	BTStatus ret = BTStatus::Failure;
 	return BTStatus();
 }
 
 BTStatus TankBT::PickNewFreinds(Entity entityID)
 {
+	BTStatus ret = BTStatus::Failure;
 	return BTStatus();
 }
 
 BTStatus TankBT::PickNewRandomTarget(Entity entityID)
 {
+	BTStatus ret = BTStatus::Failure;
 	return BTStatus();
 }
 
 BTStatus TankBT::MoveAround(Entity entityID)
 {
+	BTStatus ret = BTStatus::Failure;
 	return BTStatus();
 }
 
 BTStatus TankBT::playerInPersonalSpace(Entity entityID)
 {
+	BTStatus ret = BTStatus::Failure;
 	return BTStatus();
 }
 
 BTStatus TankBT::GroundHump(Entity entityID)
 {
+	BTStatus ret = BTStatus::Failure;
 	return BTStatus();
 }
 
 BTStatus TankBT::playerOutsidePersonalSpace(Entity entityID)
 {
+	BTStatus ret = BTStatus::Failure;
 	return BTStatus();
 }
 
 BTStatus TankBT::ChargeAndRun(Entity entityID)
 {
+	BTStatus ret = BTStatus::Failure;
 	return BTStatus();
 }
 
 BTStatus TankBT::getNearestGroupToPlayer(Entity entityID)
 {
+	BTStatus ret = BTStatus::Failure;
 	return BTStatus();
 }
 
 BTStatus TankBT::groupInPersonalSpece(Entity entityID)
 {
+	BTStatus ret = BTStatus::Failure;
 	return BTStatus();
 }
 
 BTStatus TankBT::moveTowardsGroup(Entity entityID)
 {
+	BTStatus ret = BTStatus::Failure;
 	return BTStatus();
 }
 
 BTStatus TankBT::HoldShield(Entity entityID)
 {
+	BTStatus ret = BTStatus::Failure;
 	return BTStatus();
 }
 
 BTStatus TankBT::playAlertAnim(Entity entityID)
 {
+	BTStatus ret = BTStatus::Failure;
 	return BTStatus();
 }
 
 BTStatus TankBT::playDeathAnim(Entity entityID)
 {
+	BTStatus ret = BTStatus::Failure;
 	return BTStatus();
 }
 
 BTStatus TankBT::die(Entity entityID)
 {
+	BTStatus ret = BTStatus::Failure;
 	return BTStatus();
 }
 
@@ -187,4 +203,6 @@ void Tank_dead::start()
 	// new row
 	Task*		deathAnim				= c.l.task("playing death anim", TankBT::playDeathAnim);
 	Task*		death					= c.l.task("Dead, oof!", TankBT::die);
+
+	this->setRoot(root);
 }
