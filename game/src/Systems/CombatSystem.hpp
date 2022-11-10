@@ -612,34 +612,45 @@ public:
 
 					this->uiRenderer->renderString(
 						PERK_NAMES[perk.perkType] + " boost of " + std::to_string((int)((perk.multiplier + 1) * 100.0f)) + "%",
-						pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f));
-					this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f));
+						pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f), 1.0f);
+					this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f), 1.0f);
 
 					if (Input::isKeyPressed(Keys::E))
 					{
-						for (size_t j = 0; j < 4; j++)
+						glm::vec3 pos = this->scene->getComponent<Transform>(hitID[i]).position;
+						Perks& perk = this->scene->getComponent<Perks>(hitID[i]);
+
+						this->uiRenderer->renderString(
+							PERK_NAMES[perk.perkType] + " boost of " + std::to_string((int)((perk.multiplier + 1) * 100.0f)) + "%",
+							pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f));
+						this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f));
+
+						if (Input::isKeyPressed(Keys::E))
 						{
-							if (combat.perks[j].perkType == emptyPerk)
+							for (size_t j = 0; j < 4; j++)
 							{
-								combat.perks[j] = perk;
-								switch (combat.perks[j].perkType)
+								if (combat.perks[j].perkType == emptyPerk)
 								{
-								case hpUpPerk:
-									updateHealth(combat, combat.perks[j]);
-									break;
-								case dmgUpPerk:
-									updateDmg(combat, combat.perks[j]);
-									break;
-								case attackSpeedUpPerk:
-									updateAttackSpeed(combat, combat.perks[j]);
-									break;
+									combat.perks[j] = perk;
+									switch (combat.perks[j].perkType)
+									{
+									case hpUpPerk:
+										updateHealth(combat, combat.perks[j]);
+										break;
+									case dmgUpPerk:
+										updateDmg(combat, combat.perks[j]);
+										break;
+									case attackSpeedUpPerk:
+										updateAttackSpeed(combat, combat.perks[j]);
+										break;
+									}
+									j = 3;
 								}
-								j = 3;
 							}
-						}
-						if (this->scene->entityValid(hitID[i]))
-						{
-							this->scene->removeEntity(hitID[i]);
+							if (this->scene->entityValid(hitID[i]))
+							{
+								this->scene->removeEntity(hitID[i]);
+							}
 						}
 					}
 				}
@@ -663,27 +674,38 @@ public:
 
 					this->uiRenderer->renderString(
 						ABILITY_NAMES[ability.abilityType] + " ability",
-						pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f));
-					this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f));
+						pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f), 1.0f);
+					this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f), 1.0f);
 
 					if (Input::isKeyPressed(Keys::E))
 					{
-						if (combat.ability.abilityType == emptyAbility)
+						glm::vec3 pos = this->scene->getComponent<Transform>(hitID[i]).position;
+						Abilities& ability = this->scene->getComponent<Abilities>(hitID[i]);
+
+						this->uiRenderer->renderString(
+							ABILITY_NAMES[ability.abilityType] + " ability",
+							pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f));
+						this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f));
+
+						if (Input::isKeyPressed(Keys::E))
 						{
-							combat.ability = ability;
-							switch (combat.ability.abilityType)
+							if (combat.ability.abilityType == emptyAbility)
 							{
-							case knockbackAbility:
-								combat.ability.abilityType = knockbackAbility;
-								break;
-							case healAbility:
-								combat.ability.abilityType = healAbility;
-								break;
+								combat.ability = ability;
+								switch (combat.ability.abilityType)
+								{
+								case knockbackAbility:
+									combat.ability.abilityType = knockbackAbility;
+									break;
+								case healAbility:
+									combat.ability.abilityType = healAbility;
+									break;
+								}
 							}
-						}
-						if (this->scene->entityValid(hitID[i]))
-						{
-							this->scene->removeEntity(hitID[i]);
+							if (this->scene->entityValid(hitID[i]))
+							{
+								this->scene->removeEntity(hitID[i]);
+							}
 						}
 					}
 				}

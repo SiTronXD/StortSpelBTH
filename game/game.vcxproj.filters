@@ -42,6 +42,7 @@
     <ClInclude Include="src\Components\Perks.h" />
     <ClInclude Include="src\Components\Abilities.h" />
     <ClInclude Include="src\Ai\Behaviors\HelperFuncs.hpp" />
+    <ClInclude Include="src\Systems\HealthBarSystem.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
