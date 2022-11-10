@@ -15,6 +15,7 @@ private:
 	Collider sword;
 	Collider swordSpin;
 	PhysicsEngine* physics;
+	UIRenderer* uiRenderer;
 	DebugRenderer* debug;
 
 	int perkMeshes[3];
@@ -24,8 +25,8 @@ private:
 
 public:
 
-	CombatSystem(Scene* scene, ResourceManager* resourceMng, Entity playerID, PhysicsEngine* physics, DebugRenderer* debug)
-		: scene(scene), resourceMng(resourceMng), playerID(playerID), physics(physics), debug(debug)
+	CombatSystem(Scene* scene, ResourceManager* resourceMng, Entity playerID, PhysicsEngine* physics, UIRenderer* uiRenderer, DebugRenderer* debug)
+		: scene(scene), resourceMng(resourceMng), playerID(playerID), physics(physics), uiRenderer(uiRenderer), debug(debug)
 	{
 		if (scene->hasComponents<Combat>(playerID))
 		{
@@ -603,9 +604,16 @@ public:
 		{
 			if (scene->hasComponents<Perks>(hitID[i]))
 			{
+				glm::vec3 pos = this->scene->getComponent<Transform>(hitID[i]).position;
+				Perks& perk = this->scene->getComponent<Perks>(hitID[i]);
+
+				this->uiRenderer->renderString(
+					PERK_NAMES[perk.perkType] + " boost of " + std::to_string((int)((perk.multiplier + 1) * 100.0f)) + "%",
+					pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f));
+				this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f));
+
 				if (Input::isKeyPressed(Keys::E))
 				{
-					Perks& perk = this->scene->getComponent<Perks>(hitID[i]);
 					for (size_t j = 0; j < 4; j++)
 					{
 						if (combat.perks[j].perkType == emptyPerk)
@@ -641,6 +649,14 @@ public:
 		{
 			if (scene->hasComponents<Abilities>(hitID[i]))
 			{
+				glm::vec3 pos = this->scene->getComponent<Transform>(hitID[i]).position;
+				Abilities& ability = this->scene->getComponent<Abilities>(hitID[i]);
+
+				this->uiRenderer->renderString(
+					ABILITY_NAMES[ability.abilityType] + " ability",
+					pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f));
+				this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f));
+
 				if (Input::isKeyPressed(Keys::E))
 				{
 					Abilities& ability = this->scene->getComponent<Abilities>(hitID[i]);

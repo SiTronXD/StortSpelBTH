@@ -55,8 +55,16 @@ void GameScene::init()
 	this->hpBarTextureID = 
 		resourceMng->addTexture("assets/textures/UI/hpBar.png");
 
+	// Temporary light
+	Entity directionalLightEntity = this->createEntity();
+	this->setComponent<DirectionalLight>(
+		directionalLightEntity, 
+		glm::vec3(-1.0f, -1.0f, -1.0f),
+		glm::vec3(1.0f)
+	);
+
     // Add textures for ui renderer
-	TextureSamplerSettings samplerSettings{};
+	/*TextureSamplerSettings samplerSettings{};
 	samplerSettings.filterMode = vk::Filter::eNearest;	
 	samplerSettings.unnormalizedCoordinates = VK_TRUE;
     this->fontTextureIndex = Scene::getResourceManager()->addTexture("assets/textures/testBitmapFont.png", { samplerSettings, true });
@@ -68,20 +76,27 @@ void GameScene::init()
 			"uvwxyz+-.'",
 			"0123456789",
 			"!?,<>:()#^",
-			"@         "
+			"@%        "
 		},
 		fontTextureIndex,
-		16, 16
-	);
+		glm::uvec2(16, 16)
+	);*/
+
+	Entity sun = this->createEntity();
+	this->setComponent<DirectionalLight>(sun);
+	DirectionalLight& light = this->getComponent<DirectionalLight>(sun);
+	light.color = glm::vec3(1.f, 0.8f, 0.5f);
+	light.direction = glm::normalize(glm::vec3(-1.f));
 }
 
 void GameScene::start()
 {
+	
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 	
 	this->setComponent<Combat>(playerID);
-	this->createSystem<CombatSystem>(this, this->getResourceManager(), this->playerID, this->getPhysicsEngine(), this->getDebugRenderer());
+	this->createSystem<CombatSystem>(this, this->getResourceManager(), this->playerID, this->getPhysicsEngine(), this->getUIRenderer(), this->getDebugRenderer());
 
 	this->ability = this->createEntity();
 	int knockback = this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
@@ -175,31 +190,30 @@ void GameScene::update()
 	}
 
 	Combat& playerCombat = this->getComponent<Combat>(this->playerID);
-	switch (playerCombat.ability.abilityType)
+	/*switch (playerCombat.ability.abilityType)
 	{
 	case knockbackAbility:
 		this->getUIRenderer()->setTexture(abilityTextures[knockbackAbility]);
-		this->getUIRenderer()->renderTexture(890.f, -390.f, 100.f, 100.f);
 		break;
 	case healAbility:
 		this->getUIRenderer()->setTexture(abilityTextures[healAbility]);
-		this->getUIRenderer()->renderTexture(890.f, -390.f, 100.f, 100.f);
 		break;
 	case emptyAbility:
 		this->getUIRenderer()->setTexture(abilityTextures[emptyAbility]);
-		this->getUIRenderer()->renderTexture(890.f, -390.f, 100.f, 100.f);
 		break;
-	}
+	}*/
+	this->getUIRenderer()->setTexture(abilityTextures[playerCombat.ability.abilityType]);
+	this->getUIRenderer()->renderTexture(glm::vec2(890.f, -390.f), glm::vec2(100.0f));
 
 	float perkXPos = -720.f;
 	float perkYPos = -500.f;
 	for (size_t i = 0; i < 4; i++)
 	{
-		switch (playerCombat.perks[i].perkType)
+		/*switch (playerCombat.perks[i].perkType)
 		{
 		case hpUpPerk:
 			this->getUIRenderer()->setTexture(perkTextures[hpUpPerk]);
-			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
+			this->getUIRenderer()->renderTexture(glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f), glm::vec2(70.0f));
 			break;
 		case dmgUpPerk:
 			this->getUIRenderer()->setTexture(perkTextures[dmgUpPerk]);
@@ -213,7 +227,9 @@ void GameScene::update()
 			this->getUIRenderer()->setTexture(perkTextures[emptyPerk]);
 			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
 			break;
-		}
+		}*/
+		this->getUIRenderer()->setTexture(perkTextures[playerCombat.perks[i].perkType]);
+		this->getUIRenderer()->renderTexture(glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f), glm::vec2(70.0f));
 	}
 
 	// Render HP bar UI
@@ -233,9 +249,9 @@ void GameScene::update()
 	float ySize = 64.f * 0.35f;
 
 	this->getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
-	this->getUIRenderer()->renderTexture(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos + 20.f, (xSize * maxHpPercent) + 10, ySize + 10);
+	this->getUIRenderer()->renderTexture(glm::vec2(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos + 20.f), glm::vec2((xSize * maxHpPercent) + 10, ySize + 10));
 	this->getUIRenderer()->setTexture(this->hpBarTextureID);
-	this->getUIRenderer()->renderTexture(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos + 20.f, xSize * hpPercent, ySize);
+	this->getUIRenderer()->renderTexture(glm::vec2(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos + 20.f), glm::vec2(xSize * hpPercent, ySize));
 	
 #ifdef _CONSOLE
 
@@ -312,8 +328,8 @@ void GameScene::aiExample()
             realScreenPos.y = (screenPos.y / screenPos.w) * 1080/2;
             realScreenPos.z = screenPos.z / screenPos.w;
 
-            Scene::getUIRenderer()->setTexture(this->fontTextureIndex);
-            Scene::getUIRenderer()->renderString(std::to_string(entityId), realScreenPos.x, realScreenPos.y, 20, 20); 
+            //Scene::getUIRenderer()->setTexture(this->fontTextureIndex);
+            Scene::getUIRenderer()->renderString(std::to_string(entityId), glm::vec2(realScreenPos.x, realScreenPos.y), glm::vec2(20));
         }    
 
         if(ImGui::Button("SWITCHsCENE")){
