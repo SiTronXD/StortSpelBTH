@@ -54,7 +54,7 @@ struct Combat
 	// Healing Values
 	bool isHealing = false;
 	float healRadius = 28.f;
-	float hpRegen = 40.f;
+	float hpRegen = 20.f;
 
 	// Knockback values for each attack
 	float lightKnockback = 50.f;

@@ -72,7 +72,7 @@ public:
 					if (distSqrd < combat.healRadius * combat.healRadius)
 					{
 						float newHealth = combat.hpRegen * deltaTime;
-						combat.health += (int)newHealth;
+						combat.health += (int)(newHealth + 0.5f);
 					}
 				}
 			}
