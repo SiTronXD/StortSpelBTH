@@ -307,6 +307,7 @@ SET ERRORLEVEL=0</Command>
     <ClInclude Include="src\ServerGameModes\TheServerGame.h" />
     <ClInclude Include="src\Systems\CameraMovementSystem.hpp" />
     <ClInclude Include="src\Systems\CombatSystem.hpp" />
+    <ClInclude Include="src\Systems\HealthBarSystem.hpp" />
     <ClInclude Include="src\Systems\MovementSystem.hpp" />
     <ClInclude Include="src\World Handling\Room Generator.h" />
     <ClInclude Include="src\World Handling\Room Handler.h" />

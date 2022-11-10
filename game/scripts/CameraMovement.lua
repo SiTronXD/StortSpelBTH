@@ -9,7 +9,7 @@ function script:init()
     self.maxZoom       = 25
 
     self.camDist       = 30
-    self.camHeight     = 6
+    self.camHeight     = 15
     self.sens          = 25
     self.distAcc       = 0
     self.distMargin    = 1

@@ -5,6 +5,7 @@
 #include "../Systems/CameraMovementSystem.hpp"
 #include "../Systems/AiMovementSystem.hpp"
 #include "../Systems/AiCombatSystem.hpp"
+#include "../Systems/HealthBarSystem.hpp"
 #include "GameOverScene.h"
 
 #ifdef _CONSOLE
@@ -63,30 +64,13 @@ void GameScene::init()
 		glm::vec3(1.0f)
 	);
 
-    // Add textures for ui renderer
-	/*TextureSamplerSettings samplerSettings{};
-	samplerSettings.filterMode = vk::Filter::eNearest;	
-	samplerSettings.unnormalizedCoordinates = VK_TRUE;
-    this->fontTextureIndex = Scene::getResourceManager()->addTexture("assets/textures/testBitmapFont.png", { samplerSettings, true });
-
-	Scene::getUIRenderer()->setBitmapFont(
-		{
-			"abcdefghij",
-			"klmnopqrst",
-			"uvwxyz+-.'",
-			"0123456789",
-			"!?,<>:()#^",
-			"@%        "
-		},
-		fontTextureIndex,
-		glm::uvec2(16, 16)
-	);*/
-
 	Entity sun = this->createEntity();
 	this->setComponent<DirectionalLight>(sun);
 	DirectionalLight& light = this->getComponent<DirectionalLight>(sun);
 	light.color = glm::vec3(1.f, 0.8f, 0.5f);
 	light.direction = glm::normalize(glm::vec3(-1.f));
+
+	this->createSystem<HealthBarSystem>(this->hpBarBackgroundTextureID, this->hpBarTextureID, this, this->getUIRenderer());
 }
 
 void GameScene::start()

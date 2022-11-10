@@ -555,8 +555,8 @@ public:
 
 				this->uiRenderer->renderString(
 					PERK_NAMES[perk.perkType] + " boost of " + std::to_string((int)((perk.multiplier + 1) * 100.0f)) + "%",
-					pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f));
-				this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f));
+					pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f), 1.0f);
+				this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f), 1.0f);
 
 				if (Input::isKeyPressed(Keys::E))
 				{
@@ -600,8 +600,8 @@ public:
 
 				this->uiRenderer->renderString(
 					ABILITY_NAMES[ability.abilityType] + " ability",
-					pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f));
-				this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f));
+					pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f), 1.0f);
+				this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f), 1.0f);
 
 				if (Input::isKeyPressed(Keys::E))
 				{
