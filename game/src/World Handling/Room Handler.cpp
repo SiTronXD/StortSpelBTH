@@ -182,17 +182,36 @@ void RoomHandler::generate()
 
 void RoomHandler::genTilesOnly()
 {
-	// Generate room (no borders)
-	this->roomGenerator.generateRoom();
+	this->roomGen.generate();
 
 	this->rooms.resize(1);
-	this->rooms[0].tiles.reserve(size_t(this->roomGenerator.getNrTiles()));
-	for (int j = 0; j < this->roomGenerator.getNrTiles(); j++) 
+	this->rooms[0].tiles.reserve(size_t(this->roomGen.getNrTiles()));
+	for (int j = 0; j < this->roomGen.getNrTiles(); j++) 
 	{
-		Entity entity = this->createTileEntity(j, TileUsage::Default);
+		int meshId = -1;
 
-		this->scene->getComponent<Transform>(entity).position *= TILE_WIDTH;
-		this->scene->getComponent<Transform>(entity).scale *= TILE_WIDTH;
+		Tile2 tile = this->roomGen.getTile(j);
+		if (rand() % 3 < 2) 
+		{
+			meshId = (int)this->oneXOneMeshIds[0]; 
+		}
+		else
+		{ 
+			meshId = (int)this->oneXOneMeshIds[rand() % ((int)NUM_ONE_X_ONE - 1) + 1]; 
+		}
+
+
+		Entity entity = this->scene->createEntity();
+		this->scene->setComponent<MeshComponent>(entity);
+		this->scene->getComponent<MeshComponent>(entity).meshID = meshId;
+
+		Transform& transform = this->scene->getComponent<Transform>(entity);
+		transform.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE);
+		transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
+		transform.rotation.y = (rand() % 4) * 90.f;
+
+		transform.position *= TILE_WIDTH;
+		transform.scale *= TILE_WIDTH;
 
 		this->rooms[0].tiles.emplace_back(entity);
 		
