@@ -20,10 +20,11 @@ void MainMenu::init()
 			"uvwxyz+-.'",
 			"0123456789",
 			"!?,<>:()#^",
-			"@         "
+			"@%        "
 		},
-		this->fontTextureId,
-		glm::uvec2(16, 16));
+		fontTextureId,
+		glm::uvec2(16, 16)
+	);
 }
 
 void MainMenu::start()

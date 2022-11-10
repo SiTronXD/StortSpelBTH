@@ -64,7 +64,7 @@ void GameScene::init()
 	);
 
     // Add textures for ui renderer
-	TextureSamplerSettings samplerSettings{};
+	/*TextureSamplerSettings samplerSettings{};
 	samplerSettings.filterMode = vk::Filter::eNearest;	
 	samplerSettings.unnormalizedCoordinates = VK_TRUE;
     this->fontTextureIndex = Scene::getResourceManager()->addTexture("assets/textures/testBitmapFont.png", { samplerSettings, true });
@@ -76,11 +76,11 @@ void GameScene::init()
 			"uvwxyz+-.'",
 			"0123456789",
 			"!?,<>:()#^",
-			"@         "
+			"@%        "
 		},
 		fontTextureIndex,
 		glm::uvec2(16, 16)
-	);
+	);*/
 }
 
 void GameScene::start()
@@ -89,7 +89,7 @@ void GameScene::start()
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 	
 	this->setComponent<Combat>(playerID);
-	this->createSystem<CombatSystem>(this, this->getResourceManager(), this->playerID, this->getPhysicsEngine(), this->getDebugRenderer());
+	this->createSystem<CombatSystem>(this, this->getResourceManager(), this->playerID, this->getPhysicsEngine(), this->getUIRenderer(), this->getDebugRenderer());
 
 	this->ability = this->createEntity();
 	int knockback = this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
