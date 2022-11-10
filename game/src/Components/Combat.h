@@ -29,6 +29,7 @@ struct Combat
 	float comboHeavyCd = 2.f;
 	float comboMixCd = 2.f;
 	float knockbackCd = 5.f;
+	float healCd = 10.f;
 
 	// Different types of combos aviable
 	std::string comboOrder;
@@ -37,6 +38,7 @@ struct Combat
 	// Timers to clear combo. Too long time between attacks = Combo cleared
 	float attackTimer = 0.f;
 	float knockbackTimer = 0.f;
+	float healTimer = 0.f;
 	float comboClearTimer = 0.f;
 	float comboClearDelay = 2.f;
 
@@ -48,6 +50,11 @@ struct Combat
 
 	// Abilities
 	Abilities ability;
+
+	// Healing Values
+	bool isHealing = false;
+	float healRadius = 28.f;
+	float hpRegen = 20.f;
 
 	// Knockback values for each attack
 	float lightKnockback = 50.f;

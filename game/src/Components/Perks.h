@@ -8,6 +8,21 @@ enum PerkType : int
 	emptyPerk = 3
 };
 
+const static std::vector<std::string> PERK_NAMES
+{
+	"health",
+	"damage",
+	"attack speed",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+}; // Just in case of future perks (no runtime errors during development)
+
 struct Perks
 {
 	float multiplier;

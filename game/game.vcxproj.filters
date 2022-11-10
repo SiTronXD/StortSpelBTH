@@ -46,6 +46,7 @@
     <ClInclude Include="src\Ai\Behaviors\HelperFuncs.hpp" />
     <ClInclude Include="src\World Handling\Room Generator2.h" />
     <ClInclude Include="src\Scenes\RoomTesting.h" />
+    <ClInclude Include="src\Systems\HealthBarSystem.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

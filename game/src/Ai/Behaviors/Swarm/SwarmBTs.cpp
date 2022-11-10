@@ -523,8 +523,8 @@ BTStatus SwarmBT::die(Entity entityID)
 		sceneHandler->getScene()->setComponent<Rigidbody>(abilityEnt);
 		Rigidbody& abilityRb = sceneHandler->getScene()->getComponent<Rigidbody>(abilityEnt);
 		glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
-		abilityRb.gravityMult = 6.f;
-		abilityRb.velocity = glm::normalize(spawnDir) * 20.f;
+		abilityRb.gravityMult = 4.f;
+		abilityRb.velocity = glm::normalize(spawnDir) * 40.f;
 		sceneHandler->getScene()->setComponent<Abilities>(abilityEnt, ability);
 	}
 

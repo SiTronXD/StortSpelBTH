@@ -9,7 +9,7 @@ function script:init()
     self.maxZoom       = 25
 
     self.camDist       = 30
-    self.camHeight     = 6
+    self.camHeight     = 15
     self.sens          = 25
     self.distAcc       = 0
     self.distMargin    = 1
@@ -83,7 +83,7 @@ function script:update(dt)
     local actualDist = self.camDist + self.distMargin
     local payload = physics.raycast(targetPos, -forward, actualDist)
     if (payload) then
-        if(scene.getComponent(payload.entity, CompType.Collider).isTrigger == false and
+        if (scene.getComponent(payload.entity, CompType.Collider).isTrigger == false and
            payload.entity ~= self.playerID) then
             actualDist = vector.length(payload.hitPoint - targetPos)
         end
