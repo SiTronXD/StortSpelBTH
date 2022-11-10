@@ -11,6 +11,106 @@ void LichBT::registerEntityComponents(Entity entityId)
     this->addRequiredComponent<LichComponent>(entityId);
 }
 
+BTStatus LichBT::plunder(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::goToGrave(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::goToAlter(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::dropOffBones(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::carryingBones(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::creepyLook(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::huntingPlayer(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::playerInNoNoZone(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::hasMana(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::regenerateMana(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::pickBestStrategy(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::pickRandomStrategy(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::selfHeal(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::playerNotVisible(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::runAwayFromPlayer(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::attack(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::playDeathAnim(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::die(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
+BTStatus LichBT::alerted(Entity entityID)
+{
+    return BTStatus::Success;
+}
+
 void Lich_idle::start()
 {
     Sequence* keepOnPlunder = c.c.sequence();
