@@ -10,7 +10,8 @@ struct LichComponent
 
     int LOW_HEALTH = 30;
     int FULL_HEALTH = 100;  
-    int life = FULL_HEALTH;
+    int ESCAPE_HEALTH = 100 / 4;
+    int life = FULL_HEALTH;    
     bool isDead(){return life<=0;}
 
     float sightRadius           = 100; // I'll just look at you

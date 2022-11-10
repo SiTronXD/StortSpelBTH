@@ -73,35 +73,85 @@ bool LichFSM::huntToIdle(Entity entityID)
 bool LichFSM::huntToCombat(Entity entityID)
 {
     falseIfDead();
+
+    int playerID = -1;
+    auto playerCombat = getPlayerCombat(playerID);
+    if(playerCombat.health > 0){return true;}
+
     return false;
 }
 
 bool LichFSM::escapeToCombat(Entity entityID)
 {
     falseIfDead();
+
+    int playerID = -1;
+    auto playerCombat = getPlayerCombat(playerID);
+    auto lichComp = getLichComponent();
+    auto playerTrans = getPlayerTrans(playerID);
+    auto lichTrans = getLichTrans();
+
+    
+    if( playerCombat.health >= lichComp.life &&
+        lichComp.life > lichComp.ESCAPE_HEALTH &&  
+        glm::length(playerTrans.position - lichTrans.position) <= lichComp.sightRadius)
+    {return true;}
+
     return false;
 }
 
 bool LichFSM::escapeToIdle(Entity entityID)
 {
     falseIfDead();
+
+    int playerID = -1;
+    auto lichComp       = getLichComponent();
+    auto playerTrans    = getPlayerTrans(playerID);
+    auto lichTrans      = getLichTrans();
+    
+    if( lichComp.life == lichComp.FULL_HEALTH &&
+        glm::length(playerTrans.position - lichTrans.position) > lichComp.sightRadius)
+    {return true;}
+
     return false;
 }
 
 bool LichFSM::combatToIdle(Entity entityID)
 {
     falseIfDead();
+
+    int playerID = -1;
+    auto playerCombat   = getPlayerCombat(playerID);    
+    
+    if( playerCombat.health <= 0)
+    {return true;}
+    
     return false;
 }
 
 bool LichFSM::combatToHunt(Entity entityID)
 {
     falseIfDead();
+
+    int playerID = -1;
+    auto playerCombat   = getPlayerCombat(playerID);
+    auto lichComp       = getLichComponent();
+    auto playerTrans    = getPlayerTrans(playerID);
+    auto lichTrans      = getLichTrans();
+
+    if( glm::length(playerTrans.position - lichTrans.position) <= lichComp.sightRadius)
+    {return true;}
+
     return false;
 }
 
 bool LichFSM::toDead(Entity entityID)
 {
     falseIfDead();
+
+    auto lichComp       = getLichComponent();
+    if(lichComp.isDead())
+    {return true;}
+
     return false;
 }
