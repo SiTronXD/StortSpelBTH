@@ -67,8 +67,9 @@ public:
 				Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
 				if (combat.health < combat.maxHealth)
 				{
-					float dist = glm::length(healTrans.position - playerTrans.position);
-					if (dist < combat.healRadius)
+					glm::vec3 playerToHeal = healTrans.position - playerTrans.position;
+					float distSqrd = glm::dot(playerToHeal, playerToHeal);
+					if (distSqrd < combat.healRadius * combat.healRadius)
 					{
 						float newHealth = combat.hpRegen * deltaTime;
 						combat.health += (int)newHealth;
