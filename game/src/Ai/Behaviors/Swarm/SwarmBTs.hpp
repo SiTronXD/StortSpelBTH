@@ -1,8 +1,10 @@
 #pragma once
 
 #include <glm/glm.hpp>
-
+#include <stack>
 #include "vengine.h"
+
+#include "../HelperFuncs.hpp"
 //#include "ai/PathFinding.h"
 Entity getPlayerID(SceneHandler*sceneHandler);
 
@@ -18,8 +20,10 @@ struct SwarmGroup
 	float huntTimer;
 	float huntTimerOrig = 2.0f;
 	glm::vec3 idleMidBos = glm::vec3(0.0f, 0.0f, 0.0f);
+	float idleRadius = 0.0f;
 	glm::vec3 lastKnownPlayerPos = glm::vec3(0.0f, 0.0f, 0.0f);
 	std::vector<uint32_t> members;
+	std::stack<uint32_t> aliveMembers;
 };
 
 
@@ -27,6 +31,7 @@ class SwarmBT : public BehaviorTree
 {
    protected:
 	static int perkMeshes[3];
+	static int abilityMeshes[2];
 	virtual void start() = 0;
     void registerEntityComponents(Entity entityId) override;
 

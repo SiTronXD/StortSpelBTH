@@ -10,16 +10,23 @@ class CombatSystem : public System
 private:
 
 	Scene* scene;
+	ResourceManager* resourceMng;
 	Entity playerID;
 	Collider sword;
 	Collider swordSpin;
 	PhysicsEngine* physics;
+	UIRenderer* uiRenderer;
 	DebugRenderer* debug;
+
+	int perkMeshes[3];
+	int abilityMeshes[1];
+	int healingMesh;
+	Entity heal = -1;
 
 public:
 
-	CombatSystem(Scene* scene, Entity playerID, PhysicsEngine* physics, DebugRenderer* debug)
-		: scene(scene), playerID(playerID), physics(physics), debug(debug)
+	CombatSystem(Scene* scene, ResourceManager* resourceMng, Entity playerID, PhysicsEngine* physics, UIRenderer* uiRenderer, DebugRenderer* debug)
+		: scene(scene), resourceMng(resourceMng), playerID(playerID), physics(physics), uiRenderer(uiRenderer), debug(debug)
 	{
 		if (scene->hasComponents<Combat>(playerID))
 		{
@@ -31,11 +38,17 @@ public:
             swordSpin =
                 Collider::createCapsule(10.f, 0.1f, glm::vec3(0, 0, 0), true);
 			
-			for (size_t i = 0; i < 3; i++)
+			combat.ability.abilityType = emptyAbility;
+			for (size_t i = 0; i < 4; i++)
 			{
 				combat.perks[i].multiplier = 0;
-				combat.perks[i].perkType = empty;
+				combat.perks[i].perkType = emptyPerk;
 			}
+			perkMeshes[0] = this->resourceMng->addMesh("assets/models/Perk_Hp.obj");
+			perkMeshes[1] = this->resourceMng->addMesh("assets/models/Perk_Dmg.obj");
+			perkMeshes[2] = this->resourceMng->addMesh("assets/models/Perk_AtkSpeed.obj");
+			abilityMeshes[0] = this->resourceMng->addMesh("assets/models/KnockbackAbility.obj");
+			healingMesh = this->resourceMng->addMesh("assets/models/HealingAbility.obj");
 		}
 	}
 
@@ -45,7 +58,24 @@ public:
 		auto foo = [&](Combat& combat)
 		{
 			checkPerkCollision(combat);
+			checkAbilityCollision(combat);
 			decreaseTimers(combat, deltaTime);
+
+			if (combat.isHealing)
+			{
+				Transform& healTrans = this->scene->getComponent<Transform>(this->heal);
+				Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
+				if (combat.health < combat.maxHealth)
+				{
+					glm::vec3 playerToHeal = healTrans.position - playerTrans.position;
+					float distSqrd = glm::dot(playerToHeal, playerToHeal);
+					if (distSqrd < combat.healRadius * combat.healRadius)
+					{
+						float newHealth = combat.hpRegen * deltaTime;
+						combat.health += (int)(newHealth + 0.5f);
+					}
+				}
+			}
 
 			// Check if player is trying to attack
 			if (Input::isMouseButtonPressed(Mouse::LEFT))
@@ -58,7 +88,7 @@ public:
 			}
 			else if (Input::isKeyPressed(Keys::F))
 			{
-				knockbackAttack(combat);
+				useAbility(combat);
 			}
 			// Check if player wants to drop a perk
 			if (Input::isKeyPressed(Keys::ONE))
@@ -73,13 +103,21 @@ public:
 			{
 				removePerk(combat, combat.perks[2]);
 			}
+			if (Input::isKeyPressed(Keys::FOUR))
+			{
+				removePerk(combat, combat.perks[3]);
+			}
+			if (Input::isKeyPressed(Keys::FIVE))
+			{
+				removeAbility(combat, combat.ability);
+			}
 		};
 		view.each(foo);
 
 		return false;
 	}
 
-	int& getHealth(Combat& combat)
+	int getHealth(Combat& combat)
 	{
 		return combat.health;
 	};
@@ -206,39 +244,78 @@ public:
 				return true;
 			}
 		}
-
 		return false;
 	};
 
-	bool knockbackAttack(Combat& combat)
+	bool useAbility(Combat& combat)
 	{
-		if (checkActiveAttack(combat) == noActive)
+		if (combat.ability.abilityType == knockbackAbility)
 		{
-			combat.knockbackTimer = combat.knockbackCd;
-			combat.activeAttack = knockbackActive;
+			useKnockbackAbility(combat);
+			return true;
+		}
+		else if (combat.ability.abilityType == healAbility)
+		{
+			useHealingAbility(combat);
+			return true;
+		}
+		return false;
+	}
 
-			if (checkCombo(combat)) { return true; }
-			else
+	bool useKnockbackAbility(Combat& combat)
+	{
+		if (combat.ability.abilityType == knockbackAbility)
+		{
+			if (checkActiveAttack(combat) == noActive)
 			{
-				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
-				playerTrans.updateMatrix();
-				std::vector<int> hitID = physics->testContact(this->swordSpin, playerTrans.position, glm::vec3(0.f));
-				for (size_t i = 0; i < hitID.size(); i++)
+				combat.knockbackTimer = combat.knockbackCd;
+				combat.activeAttack = knockbackActive;
+				combat.ability.abilityType = emptyAbility;
+
+				if (checkCombo(combat)) { return true; }
+				else
 				{
-					if (scene->hasComponents<SwarmComponent>(hitID[i]))
+					Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
+					playerTrans.updateMatrix();
+					std::vector<int> hitID = physics->testContact(this->swordSpin, playerTrans.position, glm::vec3(0.f));
+					for (size_t i = 0; i < hitID.size(); i++)
 					{
-						SwarmComponent& enemy = this->scene->getComponent<SwarmComponent>(hitID[i]);
-						enemy.life -= (int)combat.knockbackHit;
-						Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(hitID[i]);
-						Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
-						glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
-						enemyRB.velocity = glm::vec3(-newDir.x, 0.2f, -newDir.z) * combat.specialKnockback;
+						if (scene->hasComponents<SwarmComponent>(hitID[i]))
+						{
+							SwarmComponent& enemy = this->scene->getComponent<SwarmComponent>(hitID[i]);
+							enemy.life -= (int)combat.knockbackHit;
+							Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(hitID[i]);
+							Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
+							glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+							enemyRB.velocity = glm::vec3(-newDir.x, 0.2f, -newDir.z) * combat.specialKnockback;
+						}
 					}
+					return true;
 				}
+			}
+		}
+		return false;
+	}
+
+	bool useHealingAbility(Combat& combat)
+	{
+		if (combat.ability.abilityType == healAbility)
+		{
+			if (checkActiveAttack(combat) == noActive)
+			{
+				combat.healTimer = combat.healCd;
+				combat.isHealing = true;
+				combat.ability.abilityType = emptyAbility;
+
+				this->heal = this->scene->createEntity();
+				this->scene->setComponent<MeshComponent>(this->heal, this->healingMesh);
+				Transform& healTrans = this->scene->getComponent<Transform>(this->heal);
+				Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
+				healTrans.position = glm::vec3(playerTrans.position.x, 0.f, playerTrans.position.z);
+
 				return true;
 			}
 		}
-
 		return false;
 	}
 
@@ -333,6 +410,7 @@ public:
 		}
 		float tempHp = (float)combat.maxHealth * combat.hpMultiplier;
 		combat.maxHealth = (int)tempHp;
+		combat.health = std::min(combat.health, combat.maxHealth);
 	}
 
 	void updateDmg(Combat& combat, Perks& perk, bool doUpgrade = true)
@@ -367,8 +445,7 @@ public:
 	void setDefaultHp(Combat& combat)
 	{
 		float tempHp = (float)combat.maxHealth / combat.hpMultiplier;
-		combat.maxHealth = (int)tempHp;
-		combat.health = std::min(combat.health, combat.maxHealth);
+		combat.maxHealth = (int)(tempHp + 0.5f);
 	}
 
 	void setDefaultDmg(Combat& combat)
@@ -391,63 +468,247 @@ public:
 		combat.knockbackCd /= combat.attackSpeedMultiplier;
 	}
 
+	void setupPerkSpawn(Entity& entity, Perks& perk)
+	{
+		this->scene->setComponent<Collider>(entity, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
+		this->scene->setComponent<Rigidbody>(entity);
+		this->scene->setComponent<Perks>(entity, perk);
+		Transform& perkTrans = this->scene->getComponent<Transform>(entity);
+		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
+		Rigidbody& perkRb = this->scene->getComponent<Rigidbody>(entity);
+		perkTrans.position = playerTrans.position;
+		perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
+		playerTrans.updateMatrix();
+		glm::vec3 throwDir = glm::normalize(playerTrans.forward());
+		perkRb.gravityMult = 6.f;
+		perkRb.velocity = glm::vec3(throwDir.x * 20.f, 30.f, throwDir.z * 20.f);
+	}
+
+	void spawnPerk(Perks& perk)
+	{
+		switch (perk.perkType)
+		{
+		case hpUpPerk:
+		{
+			Entity newPerk = this->scene->createEntity();
+			this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[hpUpPerk]);
+			setupPerkSpawn(newPerk, perk);
+		}
+			break;
+		case dmgUpPerk:
+		{
+			Entity newPerk = this->scene->createEntity();
+			this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[dmgUpPerk]);
+			setupPerkSpawn(newPerk, perk);
+		}
+			break;
+		case attackSpeedUpPerk:
+		{
+			Entity newPerk = this->scene->createEntity();
+			this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[attackSpeedUpPerk]);
+			setupPerkSpawn(newPerk, perk);
+		}
+			break;
+		}
+	}
+
 	void removePerk(Combat& combat, Perks& perk)
 	{
-		if (perk.perkType != empty)
+		if (perk.perkType != emptyPerk)
 		{
 			switch (perk.perkType)
 			{
-			case hpUp:
+			case hpUpPerk:
 				setDefaultHp(combat);
 				combat.hpMultiplier -= perk.multiplier;
 				updateHealth(combat, perk, false);
+				spawnPerk(perk);
 				break;
-			case dmgUp:
+			case dmgUpPerk:
 				setDefaultDmg(combat);
 				combat.dmgMultiplier -= perk.multiplier;
 				updateDmg(combat, perk, false);
+				spawnPerk(perk);
 				break;
-			case attackSpeedUp:
+			case attackSpeedUpPerk:
 				setDefaultAtttackSpeed(combat);
 				combat.attackSpeedMultiplier += perk.multiplier;
 				updateAttackSpeed(combat, perk, false);
+				spawnPerk(perk);
 			}
 			perk.multiplier = 0;
-			perk.perkType = empty;
+			perk.perkType = emptyPerk;
+		}
+	}
+
+	void setupAbilitySpawn(Entity& entity, Abilities& ability)
+	{
+		this->scene->setComponent<Collider>(entity, Collider::createSphere(4.f, glm::vec3(0, 0, 0), true));
+		this->scene->setComponent<Rigidbody>(entity);
+		this->scene->setComponent<Abilities>(entity, ability);
+		Transform& perkTrans = this->scene->getComponent<Transform>(entity);
+		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
+		Rigidbody& perkRb = this->scene->getComponent<Rigidbody>(entity);
+		perkTrans.position = playerTrans.position;
+		perkTrans.scale = glm::vec3(4.f, 4.f, 4.f);
+		playerTrans.updateMatrix();
+		glm::vec3 throwDir = glm::normalize(playerTrans.forward());
+		perkRb.gravityMult = 6.f;
+		perkRb.velocity = glm::vec3(throwDir.x * 20.f, 30.f, throwDir.z * 20.f);
+	}
+
+	void spawnAbility(Abilities& ability)
+	{
+		switch (ability.abilityType)
+		{
+		case knockbackAbility:
+		{
+			Entity newAbility = this->scene->createEntity();
+			this->scene->setComponent<MeshComponent>(newAbility, this->abilityMeshes[knockbackAbility]);
+			setupAbilitySpawn(newAbility, ability);
+		}
+		break;
+		case healAbility:
+		{
+			Entity newAbility = this->scene->createEntity();
+			this->scene->setComponent<MeshComponent>(newAbility, this->abilityMeshes[knockbackAbility]);
+			setupAbilitySpawn(newAbility, ability);
+		}
+		break;
+		}
+	}
+
+	void removeAbility(Combat& combat, Abilities& ability)
+	{
+		if (ability.abilityType != emptyAbility)
+		{
+			switch (ability.abilityType)
+			{
+			case knockbackAbility:
+				spawnAbility(ability);
+				combat.ability.abilityType = emptyAbility;
+				break;
+			case healAbility:
+				spawnAbility(ability);
+				combat.ability.abilityType = emptyAbility;
+				break;
+			}
 		}
 	}
 
 	void checkPerkCollision(Combat& combat)
 	{
-		Collider& playerColl = scene->getComponent<Collider>(playerID);
-		Transform& playerTrans = scene->getComponent<Transform>(playerID);
-		std::vector<int> hitID = physics->testContact(playerColl, playerTrans.position, playerTrans.rotation);
+		Collider& playerColl = this->scene->getComponent<Collider>(this->playerID);
+		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
+		std::vector<int> hitID = this->physics->testContact(playerColl, playerTrans.position, playerTrans.rotation);
 		for (size_t i = 0; i < hitID.size(); i++)
 		{
-			if (scene->hasComponents<Perks>(hitID[i]))
+			if (this->scene->hasComponents<Perks>(hitID[i]))
 			{
-				Perks& perk = scene->getComponent<Perks>(hitID[i]);
-				for (size_t j = 0; j < 3; j++)
+				if (this->scene->entityValid(hitID[i]))
 				{
-					if (combat.perks[j].perkType == empty)
+					glm::vec3 pos = this->scene->getComponent<Transform>(hitID[i]).position;
+					Perks& perk = this->scene->getComponent<Perks>(hitID[i]);
+
+					this->uiRenderer->renderString(
+						PERK_NAMES[perk.perkType] + " boost of " + std::to_string((int)((perk.multiplier + 1) * 100.0f)) + "%",
+						pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f), 1.0f);
+					this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f), 1.0f);
+
+					if (Input::isKeyPressed(Keys::E))
 					{
-						combat.perks[j] = perk;
-						switch (combat.perks[j].perkType)
+						glm::vec3 pos = this->scene->getComponent<Transform>(hitID[i]).position;
+						Perks& perk = this->scene->getComponent<Perks>(hitID[i]);
+
+						this->uiRenderer->renderString(
+							PERK_NAMES[perk.perkType] + " boost of " + std::to_string((int)((perk.multiplier + 1) * 100.0f)) + "%",
+							pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f));
+						this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f));
+
+						if (Input::isKeyPressed(Keys::E))
 						{
-						case hpUp:
-							updateHealth(combat, combat.perks[j]);
-							break;
-						case dmgUp:
-							updateDmg(combat, combat.perks[j]);
-							break;
-						case attackSpeedUp:
-							updateAttackSpeed(combat, combat.perks[j]);
-							break;
+							for (size_t j = 0; j < 4; j++)
+							{
+								if (combat.perks[j].perkType == emptyPerk)
+								{
+									combat.perks[j] = perk;
+									switch (combat.perks[j].perkType)
+									{
+									case hpUpPerk:
+										updateHealth(combat, combat.perks[j]);
+										break;
+									case dmgUpPerk:
+										updateDmg(combat, combat.perks[j]);
+										break;
+									case attackSpeedUpPerk:
+										updateAttackSpeed(combat, combat.perks[j]);
+										break;
+									}
+									j = 3;
+								}
+							}
+							if (this->scene->entityValid(hitID[i]))
+							{
+								this->scene->removeEntity(hitID[i]);
+							}
 						}
-						j = 3;
 					}
 				}
-				scene->removeEntity(hitID[i]);
+			}
+		}
+	}
+
+	void checkAbilityCollision(Combat& combat)
+	{
+		Collider& playerColl = this->scene->getComponent<Collider>(this->playerID);
+		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
+		std::vector<int> hitID = this->physics->testContact(playerColl, playerTrans.position, playerTrans.rotation);
+		for (size_t i = 0; i < hitID.size(); i++)
+		{
+			if (this->scene->hasComponents<Abilities>(hitID[i]))
+			{
+				if (this->scene->entityValid(hitID[i]))
+				{
+					glm::vec3 pos = this->scene->getComponent<Transform>(hitID[i]).position;
+					Abilities& ability = this->scene->getComponent<Abilities>(hitID[i]);
+
+					this->uiRenderer->renderString(
+						ABILITY_NAMES[ability.abilityType] + " ability",
+						pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f), 1.0f);
+					this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f), 1.0f);
+
+					if (Input::isKeyPressed(Keys::E))
+					{
+						glm::vec3 pos = this->scene->getComponent<Transform>(hitID[i]).position;
+						Abilities& ability = this->scene->getComponent<Abilities>(hitID[i]);
+
+						this->uiRenderer->renderString(
+							ABILITY_NAMES[ability.abilityType] + " ability",
+							pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f));
+						this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f));
+
+						if (Input::isKeyPressed(Keys::E))
+						{
+							if (combat.ability.abilityType == emptyAbility)
+							{
+								combat.ability = ability;
+								switch (combat.ability.abilityType)
+								{
+								case knockbackAbility:
+									combat.ability.abilityType = knockbackAbility;
+									break;
+								case healAbility:
+									combat.ability.abilityType = healAbility;
+									break;
+								}
+							}
+							if (this->scene->entityValid(hitID[i]))
+							{
+								this->scene->removeEntity(hitID[i]);
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -465,6 +726,15 @@ public:
 		if (combat.comboClearTimer > -1.f)
 		{
 			combat.comboClearTimer -= deltaTime;
+		}
+		if (combat.healTimer > 0.f)
+		{
+			combat.healTimer -= deltaTime;
+		}
+		else
+		{
+			combat.isHealing = false;
+			this->scene->removeEntity(this->heal);
 		}
 	}
 };

@@ -271,6 +271,7 @@ SET ERRORLEVEL=0</Command>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Ai\Behaviors\HelperFuncs.cpp" />
     <ClCompile Include="src\Scenes\GameOverScene.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmBTs.cpp" />
@@ -288,6 +289,8 @@ SET ERRORLEVEL=0</Command>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
     <ClInclude Include="Components\Movement.h" />
+    <ClInclude Include="src\Components\Abilities.h" />
+    <ClInclude Include="src\Ai\Behaviors\HelperFuncs.hpp" />
     <ClInclude Include="src\Components\Perks.h" />
     <ClInclude Include="src\Scenes\GameOverScene.h" />
     <ClInclude Include="src\Ai\Behaviors\Swarm\SwarmBTs.hpp" />
@@ -306,6 +309,7 @@ SET ERRORLEVEL=0</Command>
     <ClInclude Include="src\ServerGameModes\TheServerGame.h" />
     <ClInclude Include="src\Systems\CameraMovementSystem.hpp" />
     <ClInclude Include="src\Systems\CombatSystem.hpp" />
+    <ClInclude Include="src\Systems\HealthBarSystem.hpp" />
     <ClInclude Include="src\Systems\MovementSystem.hpp" />
     <ClInclude Include="src\World Handling\Room Generator.h" />
     <ClInclude Include="src\World Handling\Room Handler.h" />

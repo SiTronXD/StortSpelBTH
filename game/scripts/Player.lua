@@ -14,6 +14,8 @@ function script:init()
 	self.moveDir = vector()
 	self.currentSpeed = vector()
 	self.maxSpeed = 50
+    self.sprintSpeed = 100
+    self.isSprinting = false
 	self.speedIncrease = 200
 	self.turnSpeed = 200
 	self.timer = 0
@@ -21,8 +23,19 @@ function script:init()
     self.transform.position = vector(0, 12, 0)
     self.transform.rotation = vector(0, 0, 0)
 
-    self.maxHP = 100.0
-    self.currentHP = self.maxHP
+    self.maxStamina = 100.0
+    self.currentStamina = 100.0
+    self.sprintStamDrain = 20.0
+    self.staminaRegen = 20.0
+    self.staminaRegenCd = 2.0
+    self.staminaTimer = 0.0
+    self.useStamina = true
+
+    self.dodgeSpeed = 300
+    self.dodgeTimer = 0.0
+    self.dodgeTime = 0.2
+    self.currentMoveDir = 0
+    self.isDodging = false
 
     self.animTimer = -1
     self.onGround = false
@@ -55,8 +68,59 @@ function script:update(dt)
 
     -- Input vector
     self.moveDir = vector(core.btoi(input.isKeyDown(Keys.A)) - core.btoi(input.isKeyDown(Keys.D)), core.btoi(input.isKeyDown(Keys.W)) - core.btoi(input.isKeyDown(Keys.S)), 0)
-    -- Local vector with speed applied
-    self.currentSpeed = self.moveDir:normalize() * self.maxSpeed * math.max(1.0, self.perkProperties.speedPerkActive * self.perkProperties.speedPerkValue)
+    -- Local vector with speed applied with or without sprint (using stamina)
+    if (self.staminaTimer > 0)
+    then
+        self.staminaTimer = self.staminaTimer - dt
+    else
+        if (self.currentStamina < 100)
+        then
+            self.currentStamina = self.currentStamina + self.staminaRegen * dt
+            if (self.currentStamina < 10)
+            then
+                self.useStamina = false
+            else
+                self.useStamina = true
+            end
+        end
+    end
+    if (input.isKeyDown(Keys.SHIFT))
+    then
+        if (self.currentStamina > 0 and self.useStamina == true and self.moveDir ~= vector(0))
+        then
+            self.isSprinting = true
+            self.currentSpeed = self.moveDir:normalize() * self.sprintSpeed
+            self.currentStamina = self.currentStamina - (self.sprintStamDrain * dt)
+            self.staminaTimer = self.staminaRegenCd
+        else
+            self.currentSpeed = self.moveDir:normalize() * self.maxSpeed
+            self.isSprinting = false
+        end
+    else
+        self.currentSpeed = self.moveDir:normalize() * self.maxSpeed
+        self.isSprinting = false
+    end
+    if (self.dodgeTimer > 0.0)
+    then
+        self.dodgeTimer = self.dodgeTimer - dt
+    end
+    if (input.isKeyPressed(Keys.CTRL))
+    then
+        self.currentMoveDir = self.moveDir:normalize()
+        if (self.currentStamina > 20.0 and self.currentMoveDir ~= vector(0))
+        then
+            self.isDodging = true
+            self.currentStamina = self.currentStamina - 20.0
+            self.staminaTimer = self.staminaRegenCd
+            self.currentSpeed = self.currentMoveDir * self.dodgeSpeed
+            self.dodgeTimer = self.dodgeTime
+        end
+    elseif (self.dodgeTimer > 0.0)
+    then
+        self.currentSpeed = self.currentMoveDir * self.dodgeSpeed
+    else
+        self.isDodging = false
+    end
     -- Final vector in 3D using cameras directional vectors
     self.currentSpeed = forward:normalize() * self.currentSpeed.y + right:normalize() * self.currentSpeed.x
 
@@ -90,31 +154,33 @@ function script:update(dt)
     local curMoveSqrd = self.moveDir * self.moveDir
     local curMoveSum = curMoveSqrd.x + curMoveSqrd.y + curMoveSqrd.z
 
-    if (self.animTimer > -2)
+    if (self.animTimer > 0)
     then
         self.animTimer = self.animTimer - dt
     end
     
-    --[[
-    if (input.isMouseButtonPressed(Mouse.LEFT) and self.animTimer < -1)
+    if (input.isKeyDown(Keys.CTRL))
     then
-        local meshChange = scene.getComponent(self.ID, CompType.Mesh)
-        meshChange = self.playerAttackMesh
-        scene.setComponent(self.ID, CompType.Mesh, meshChange)
-
-        local anim = scene.getComponent(self.ID, CompType.Animation)
-        anim.timeScale = 1.0
-
-        scene.setComponent(self.ID, CompType.Animation, anim)
-        self.animTimer = 2
-    ]]
+        if (self.isDodging and self.moveDir ~= vector(0))
+        then
+            local anim = scene.getComponent(self.ID, CompType.Animation)
+            anim.timeScale = 3.0
+            scene.setComponent(self.ID, CompType.Animation, anim)
+        end
+    end
     
-    if (self.animTimer < 0)
+    if (input.isKeyDown(Keys.SHIFT))
     then
-        local meshChange = scene.getComponent(self.ID, CompType.Mesh)
-        meshChange = self.playerMesh
-        scene.setComponent(self.ID, CompType.Mesh, meshChange)
-
+        if (self.isSprinting and self.moveDir ~= vector(0))
+        then
+            local anim = scene.getComponent(self.ID, CompType.Animation)
+            anim.timeScale = 2.0
+            scene.setComponent(self.ID, CompType.Animation, anim)
+        end
+    end
+    
+    if (not self.isSprinting and not self.isDodging)
+    then
         local anim = scene.getComponent(self.ID, CompType.Animation)
         local curSpdSqrd = self.currentSpeed * self.currentSpeed
         local curSpdSum = curSpdSqrd.x + curSpdSqrd.y + curSpdSqrd.z

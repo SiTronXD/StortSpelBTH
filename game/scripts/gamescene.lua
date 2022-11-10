@@ -1,5 +1,5 @@
 --local playerMesh = resources.addMesh("assets/models/Amogus/source/1.fbx")
-local playerMesh = resources.addAnimations({ "assets/models/Standard_Run.fbx" }, "assets/textures/playerMesh")
+local playerMesh = resources.addAnimations({ "assets/models/Character/CharRun.fbx" }, "assets/textures/playerMesh")
 --local playerAttackMesh = resources.addMesh("assets/models/Hurricane Kick.fbx", "assets/textures/playerMesh")
 print(playerMesh)
 
@@ -17,7 +17,7 @@ local playerAnim =
 }
 scene.setComponent(playerID, CompType.Animation, playerAnim)
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
-scene.setComponent(playerID, CompType.Collider, { type = ColliderType.Capsule, radius = 2, height = 11 })
+scene.setComponent(playerID, CompType.Collider, { type = ColliderType.Capsule, radius = 2, height = 11, offset = vector.new(0, 7.3, 0) })
 scene.setComponent(playerID, CompType.Rigidbody, { mass = 1, gravityMult = 5, rotFactor = vector.fill(0), friction = 0.1 })
 scene.getComponent(cam, CompType.Script).playerID = playerID
 
@@ -37,10 +37,10 @@ scene.getComponent(uiID, CompType.Script).playerScript = scene.getComponent(play
 local pixelArtSettings = {}
 pixelArtSettings.samplerSettings = {}
 pixelArtSettings.samplerSettings.filterMode = Filters.Nearest
-scene.getComponent(uiID, CompType.Script).hpBarBackgroundTextureID =
-	resources.addTexture("assets/textures/UI/hpBarBackground.png")
-scene.getComponent(uiID, CompType.Script).hpBarTextureID = 
-	resources.addTexture("assets/textures/UI/hpBar.png")
+scene.getComponent(uiID, CompType.Script).staminaBarBackgroundTxtID =
+	resources.addTexture("assets/textures/UI/staminaBarBackground.png")
+scene.getComponent(uiID, CompType.Script).staminaBarTxtID = 
+	resources.addTexture("assets/textures/UI/staminaBar.png")
 scene.getComponent(uiID, CompType.Script).perkSlotTextureID = 
 	resources.addTexture("assets/textures/UI/perkSlot.png", pixelArtSettings)
 scene.getComponent(uiID, CompType.Script).crosshairTextureID = 

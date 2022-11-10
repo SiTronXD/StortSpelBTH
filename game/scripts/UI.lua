@@ -16,16 +16,16 @@ function script:update(dt)
 	local ySize = 64 * 0.35
 
 	-- Clamped percentage for HP
-	local hpPercent = self.playerScript.currentHP * 0.01
-	hpPercent = math.min(math.max(hpPercent, 0.0), 1.0)
+	local staminaPercent = self.playerScript.currentStamina * 0.01
+	staminaPercent = math.min(math.max(staminaPercent, 0.0), 1.0)
+	local staminaMaxPercent = self.playerScript.currentStamina * 0.01
+	staminaMaxPercent = self.playerScript.maxStamina * 0.01
 
-	-- Black HP background
-    -- uiRenderer.setTexture(self.hpBarBackgroundTextureID)
-	-- uiRenderer.renderTexture(xPos, yPos, xSize + 10, ySize + 10)
+    uiRenderer.setTexture(self.staminaBarBackgroundTxtID)
+	uiRenderer.renderTexture(vector(xPos - (1.0 - staminaMaxPercent) * xSize, yPos - 15), vector((xSize * staminaMaxPercent) + 10, ySize + 10))
 
-	-- Red HP bar
-    -- uiRenderer.setTexture(self.hpBarTextureID)
-	-- uiRenderer.renderTexture(xPos - (1.0 - hpPercent) * xSize * 0.5, yPos, xSize * hpPercent, ySize)
+    uiRenderer.setTexture(self.staminaBarTxtID)
+	uiRenderer.renderTexture(vector(xPos - (1.0 - staminaPercent) * xSize * 0.5, yPos - 15), vector(xSize * staminaPercent, ySize))
 
 	-- Perk slots
 	--uiRenderer.setTexture(self.perkSlotTextureID)
@@ -36,7 +36,7 @@ function script:update(dt)
 
 	-- Crosshair
 	uiRenderer.setTexture(self.crosshairTextureID)
-	uiRenderer.renderTexture(0, 0, 30, 30)
+	uiRenderer.renderTexture(vector(0, 0), vector.fill(30))
 end
 
 return script

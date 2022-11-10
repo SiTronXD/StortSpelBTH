@@ -5,6 +5,7 @@
 #include <chrono>
 #include "glm/glm.hpp"
 #include "../Components/Perks.h"
+#include "../Components/Abilities.h"
 
 enum ActiveAttack { noActive, lightActive, heavyActive, comboActive, knockbackActive };
 
@@ -28,6 +29,7 @@ struct Combat
 	float comboHeavyCd = 2.f;
 	float comboMixCd = 2.f;
 	float knockbackCd = 5.f;
+	float healCd = 10.f;
 
 	// Different types of combos aviable
 	std::string comboOrder;
@@ -36,14 +38,23 @@ struct Combat
 	// Timers to clear combo. Too long time between attacks = Combo cleared
 	float attackTimer = 0.f;
 	float knockbackTimer = 0.f;
+	float healTimer = 0.f;
 	float comboClearTimer = 0.f;
 	float comboClearDelay = 2.f;
 
 	// Perks and their default multipliers.
-	Perks perks[3];
+	Perks perks[4];
 	float hpMultiplier = 1.f;
 	float dmgMultiplier = 1.f;
 	float attackSpeedMultiplier = 1.f;
+
+	// Abilities
+	Abilities ability;
+
+	// Healing Values
+	bool isHealing = false;
+	float healRadius = 28.f;
+	float hpRegen = 20.f;
 
 	// Knockback values for each attack
 	float lightKnockback = 50.f;

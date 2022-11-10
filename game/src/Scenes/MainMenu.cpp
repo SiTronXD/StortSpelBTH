@@ -15,16 +15,18 @@ void MainMenu::init()
 	this->backgroundId = this->getResourceManager()->addTexture("assets/textures/UI/background.png");
 
 	this->fontTextureId = Scene::getResourceManager()->addTexture("assets/textures/UI/testBitmapFont.png", { samplerSettings, true });
-    Scene::getUIRenderer()->setBitmapFont(
-        {"abcdefghij",
-         "klmnopqrst",
-         "uvwxyz+-.'",
-         "0123456789",
-         "!?,<>:()#^",
-         "@         "},
-        this->fontTextureId,
-        glm::uvec2(16, 16)
-    );
+	Scene::getUIRenderer()->setBitmapFont(
+		{
+			"abcdefghij",
+			"klmnopqrst",
+			"uvwxyz+-.'",
+			"0123456789",
+			"!?,<>:()#^",
+			"@%        "
+		},
+		fontTextureId,
+		glm::uvec2(16, 16)
+	);
 }
 
 void MainMenu::start()
@@ -74,7 +76,7 @@ void MainMenu::update()
 	// Switches next frame to render loading texture
 
 	this->getUIRenderer()->setTexture(this->backgroundId);
-    this->getUIRenderer()->renderTexture(glm::vec2(0.f, 0.f), glm::vec2(1920.f, 1080.f));
+	this->getUIRenderer()->renderTexture(glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f));
 
 	switch (this->state)
 	{
