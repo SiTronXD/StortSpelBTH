@@ -2,6 +2,8 @@
 
 #include <glm/glm.hpp>
 #include <stack>
+#include <algorithm>
+#include <vector>
 #include "vengine.h"
 
 #include "../HelperFuncs.hpp"
@@ -24,6 +26,8 @@ struct SwarmGroup
 	glm::vec3 lastKnownPlayerPos = glm::vec3(0.0f, 0.0f, 0.0f);
 	std::vector<uint32_t> members;
 	std::stack<uint32_t> aliveMembers;
+
+	bool isInGroup(Entity entityID){if(std::find(members.begin(), members.end(), entityID) != members.end()){return true;}return false;}
 };
 
 
