@@ -39,8 +39,6 @@ class SwarmBT : public BehaviorTree
     void registerEntityComponents(Entity entityId) override;
 
   public:
-	virtual void initEntityData(Entity entityID) = 0;
-	virtual void update(Entity entityID) = 0;
 
    protected:
 	static BTStatus hasFriends(Entity entityID);
@@ -69,8 +67,7 @@ class Swarm_idle : public SwarmBT
    protected:
 	void start();
   public:
-	void initEntityData(Entity entityID){};
-	void update(Entity entityID){};
+
 };
 
 class Swarm_alerted : public SwarmBT
@@ -78,8 +75,7 @@ class Swarm_alerted : public SwarmBT
    protected:
 	void start();
   public:
-	void initEntityData(Entity entityID){};
-	void update(Entity entityID){};
+
 };
 
 class Swarm_combat : public SwarmBT
@@ -88,8 +84,7 @@ class Swarm_combat : public SwarmBT
 	void start();
 
   public:
-	void initEntityData(Entity entityID){};
-	void update(Entity entityID){};
+
 };
 
 class Swarm_escape : public SwarmBT
@@ -97,8 +92,7 @@ class Swarm_escape : public SwarmBT
    protected:
 	void start();
   public:
-	void initEntityData(Entity entityID){};
-	void update(Entity entityID){};
+
 };
 
 class Swarm_dead: public SwarmBT
@@ -106,6 +100,4 @@ class Swarm_dead: public SwarmBT
 protected:
 	void start();
 public:
-	void initEntityData(Entity entityID){};
-	void update(Entity entityID){};
 };

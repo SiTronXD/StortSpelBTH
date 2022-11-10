@@ -19,7 +19,29 @@ class LichBT : public BehaviorTree
 
    protected:
 
-	static BTStatus attack(Entity entityID);
+    static BTStatus plunder(Entity entityID);
+    static BTStatus goToGrave(Entity entityID);
+    static BTStatus goToAlter(Entity entityID);
+    static BTStatus dropOffBones(Entity entityID);
+    static BTStatus carryingBones(Entity entityID);
+
+	static BTStatus creepyLook(Entity entityID);
+
+	static BTStatus huntingPlayer(Entity entityID);    
+
+	static BTStatus playerInNoNoZone(Entity entityID);    
+	static BTStatus moveAwayFromPlayer(Entity entityID);    
+	static BTStatus hasMana(Entity entityID);    
+	static BTStatus regenerateMana(Entity entityID);    
+	static BTStatus pickBestStrategy(Entity entityID);    
+	static BTStatus pickRandomStrategy(Entity entityID);    
+    
+
+	static BTStatus selfHeal(Entity entityID);    
+	static BTStatus playerNotVisible(Entity entityID);    
+	static BTStatus runAwayFromPlayer(Entity entityID);    
+
+	static BTStatus attack(Entity entityID);    
 
 	static BTStatus playDeathAnim(Entity entityID);
 	static BTStatus die(Entity entityID);
@@ -41,6 +63,21 @@ class Lich_alerted : public LichBT
   public:
 
 };
+
+class Lich_creep: public LichBT
+{
+protected:
+	void start();
+public:	
+};
+
+class Lich_hunt: public LichBT
+{
+protected:
+	void start();
+public:	
+};
+
 
 class Lich_combat : public LichBT
 {
@@ -64,17 +101,3 @@ protected:
 public:	
 };
 
-class Lich_hunt: public LichBT
-{
-protected:
-	void start();
-public:	
-};
-
-
-class Lich_creep: public LichBT
-{
-protected:
-	void start();
-public:	
-};
