@@ -141,7 +141,7 @@ void RoomHandler::generate()
 #ifdef _CONSOLE
 	if (this->showAllRooms) 
 	{ 
-		for (int i = 0; i < (int)this->rooms.size(); i++)
+		for (int i = 0; i < numRooms; i++)
 		{
 			this->activateRoom(i);
 		}
@@ -149,7 +149,7 @@ void RoomHandler::generate()
 	}
 	else
 	{
-		for (int i = 0; i < (int)this->rooms.size(); i++)
+		for (int i = 0; i < numRooms; i++)
 		{
 			if (i != this->activeIndex) 
 			{ 
@@ -159,7 +159,7 @@ void RoomHandler::generate()
 		this->showPaths(true);
 	}
 #else
-	for (int i = 0; i < (int)this->rooms.size(); i++)
+	for (int i = 0; i < numRooms; i++)
 	{
 		if (i != this->activeIndex)
 		{
@@ -177,6 +177,25 @@ void RoomHandler::generate()
 		{
 			this->scene->setScriptComponent(this->rooms[this->activeIndex].doors[i], "scripts/opendoor.lua");
 		}
+	}
+}
+
+void RoomHandler::genTilesOnly()
+{
+	// Generate room (no borders)
+	this->roomGenerator.generateRoom();
+
+	this->rooms.resize(1);
+	this->rooms[0].tiles.reserve(size_t(this->roomGenerator.getNrTiles()));
+	for (int j = 0; j < this->roomGenerator.getNrTiles(); j++) 
+	{
+		Entity entity = this->createTileEntity(j, TileUsage::Default);
+
+		this->scene->getComponent<Transform>(entity).position *= TILE_WIDTH;
+		this->scene->getComponent<Transform>(entity).scale *= TILE_WIDTH;
+
+		this->rooms[0].tiles.emplace_back(entity);
+		
 	}
 }
 
@@ -548,11 +567,11 @@ void RoomHandler::createColliders()
 	{
 		const glm::vec3& pos = this->roomLayout.getRoom(i).position;
 
-		if		(pos.x < minX) { minX = pos.x; }
-		else if (pos.x > maxX) { maxX = pos.x; }
+		if (pos.x < minX) { minX = pos.x; }
+		if (pos.x > maxX) { maxX = pos.x; }
 		
-		if		(pos.z < minZ) { minZ = pos.z; }
-		else if (pos.z > maxZ) { maxZ = pos.z; }
+		if (pos.z < minZ) { minZ = pos.z; }
+		if (pos.z > maxZ) { maxZ = pos.z; }
 	}
 
 	const float HalfRoom = (float)this->roomGenerator.getRoomSize() * TILE_WIDTH * 0.5f + TILE_WIDTH * 0.5f;

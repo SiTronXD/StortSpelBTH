@@ -14,6 +14,8 @@
     <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmBTs.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmFSM.cpp" />
     <ClCompile Include="src\Ai\Behaviors\HelperFuncs.cpp" />
+    <ClCompile Include="src\World Handling\Room Generator2.cpp" />
+    <ClCompile Include="src\Scenes\RoomTesting.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -42,6 +44,8 @@
     <ClInclude Include="src\Components\Perks.h" />
     <ClInclude Include="src\Components\Abilities.h" />
     <ClInclude Include="src\Ai\Behaviors\HelperFuncs.hpp" />
+    <ClInclude Include="src\World Handling\Room Generator2.h" />
+    <ClInclude Include="src\Scenes\RoomTesting.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

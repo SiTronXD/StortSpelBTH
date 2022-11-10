@@ -1,6 +1,7 @@
 #pragma once
 #include "Room Generator.h"
 #include "Room Layout.h"
+#include "Room Generator2.h"
 
 class Scene;
 class ResourceManager;
@@ -64,6 +65,9 @@ private:
 	void setExitPoints(int roomIndex);
 	void roomToWorldSpace(int roomIndex);
 
+	// Room generation 2
+	RoomGen roomGen;
+
 	// Create Entities
 	Entity createTileEntity(int tileIndex, TileUsage usage);
 	Entity createDoorEntity(float yRotation);
@@ -113,6 +117,7 @@ public:
 
 	void init(Scene* scene, ResourceManager* resourceMan, int roomSize, int tileTypes);
 	void generate();
+	void genTilesOnly();
 
 #ifdef  _CONSOLE
 	void imgui();

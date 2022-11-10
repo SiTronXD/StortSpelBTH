@@ -14,6 +14,8 @@
 
 #include <fstream>
 
+#include "src/Scenes/RoomTesting.h"
+
 int main(int argc, char* argv[])
 {
     // Set flags for tracking CPU memory leaks
@@ -24,7 +26,8 @@ int main(int argc, char* argv[])
     srand((unsigned int)time(0));
     {
         Engine engine;
-        engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
+        engine.run("Presumed Dead", "", new RoomTesting());
+        //engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
         //engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
     }
 
