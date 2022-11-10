@@ -55,6 +55,14 @@ void GameScene::init()
 	this->hpBarTextureID = 
 		resourceMng->addTexture("assets/textures/UI/hpBar.png");
 
+	// Temporary light
+	Entity directionalLightEntity = this->createEntity();
+	this->setComponent<DirectionalLight>(
+		directionalLightEntity, 
+		glm::vec3(-1.0f, -1.0f, -1.0f),
+		glm::vec3(1.0f)
+	);
+
     // Add textures for ui renderer
 	TextureSamplerSettings samplerSettings{};
 	samplerSettings.filterMode = vk::Filter::eNearest;	
