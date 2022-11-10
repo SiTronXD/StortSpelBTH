@@ -73,10 +73,17 @@ void GameScene::init()
 		fontTextureIndex,
 		glm::uvec2(16, 16)
 	);
+
+	Entity sun = this->createEntity();
+	this->setComponent<DirectionalLight>(sun);
+	DirectionalLight& light = this->getComponent<DirectionalLight>(sun);
+	light.color = glm::vec3(1.f, 0.8f, 0.5f);
+	light.direction = glm::normalize(glm::vec3(-1.f));
 }
 
 void GameScene::start()
 {
+	
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 	
