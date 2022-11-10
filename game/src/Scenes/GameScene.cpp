@@ -106,7 +106,7 @@ void GameScene::start()
 	perkSetting.perkType = hpUpPerk;
 
 	this->perk1 = this->createEntity();
-	int perkDmg = this->getResourceManager()->addMesh("assets/models/Perk_Dmg.obj");
+	int perkDmg = this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
 	this->setComponent<MeshComponent>(this->perk1, perkDmg);
 	Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
 	perkTrans1.position = glm::vec3(30.f, 5.f, -20.f);
@@ -115,8 +115,8 @@ void GameScene::start()
         this->perk1, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
 	this->setComponent<Perks>(this->perk1);
 	Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
-	perkSetting1.multiplier = 1.f;
-	perkSetting1.perkType = dmgUpPerk;
+	perkSetting1.multiplier = 0.2f;
+	perkSetting1.perkType = hpUpPerk;
 
 	this->perk2 = this->createEntity();
 	int perkAtkSpeed = this->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");

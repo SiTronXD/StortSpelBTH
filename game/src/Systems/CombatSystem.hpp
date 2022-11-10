@@ -408,6 +408,7 @@ public:
 		}
 		float tempHp = (float)combat.maxHealth * combat.hpMultiplier;
 		combat.maxHealth = (int)tempHp;
+		combat.health = std::min(combat.health, combat.maxHealth);
 	}
 
 	void updateDmg(Combat& combat, Perks& perk, bool doUpgrade = true)
@@ -442,8 +443,7 @@ public:
 	void setDefaultHp(Combat& combat)
 	{
 		float tempHp = (float)combat.maxHealth / combat.hpMultiplier;
-		combat.maxHealth = (int)tempHp;
-		combat.health = std::min(combat.health, combat.maxHealth);
+		combat.maxHealth = (int)(tempHp + 0.5f);
 	}
 
 	void setDefaultDmg(Combat& combat)
