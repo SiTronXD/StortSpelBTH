@@ -1,12 +1,15 @@
 #include "LobbyScene.h"
 #include "vengine/network/ServerGameModes/NetworkLobbyScene.h"
 #include "GameScene.h"
+#include "MainMenu.h"
 
 LobbyScene::LobbyScene() {}
 LobbyScene::~LobbyScene() {}
 
 void LobbyScene::init()
 {
+
+
   TextureSamplerSettings samplerSettings{};
   samplerSettings.filterMode = vk::Filter::eNearest;
   samplerSettings.unnormalizedCoordinates = VK_TRUE;
@@ -26,8 +29,7 @@ void LobbyScene::init()
        "!?,<>:()#^",
        "@         "},
       this->fontTextureId,
-      16,
-      16
+      glm::vec2(16,16)
   );
 
   int camEntity = this->createEntity();
@@ -42,8 +44,6 @@ void LobbyScene::init()
   playerPositions.push_back(glm::vec3(-5, -10, 21));
 
   this->startButton = this->createEntity();
-  this->joinButton = this->createEntity();
-  this->createServerButton = this->createEntity();
   this->disconnectButton = this->createEntity();
 
   UIArea area{};
@@ -52,16 +52,32 @@ void LobbyScene::init()
   this->setComponent<UIArea>(this->startButton, area);
 
   area.position = glm::vec2(-800.f, -60.f);
-  area.dimension = glm::vec2(20 * 4, 20);
-  this->setComponent<UIArea>(this->joinButton, area);
-
-  area.position = glm::vec2(-800.f, -120.f);
-  area.dimension = glm::vec2(13 * 20, 20);
-  this->setComponent<UIArea>(this->createServerButton, area);
-
-  area.position = glm::vec2(-800.f, -60.f);
   area.dimension = glm::vec2(20 * 10, 20);
   this->setComponent<UIArea>(this->disconnectButton, area);
+
+  int mainPlayer = this->createEntity();
+  this->setComponent<MeshComponent>(mainPlayer);
+  this->getComponent<Transform>(mainPlayer).position = playerPositions[0];
+}
+
+void LobbyScene::start() {
+  if (!this->getNetworkHandler()->hasServer())
+  {
+      this->getNetworkHandler()->sendTCPDataToClient(
+          TCPPacketEvent({GameEvents::GetPlayerNames})
+      );  
+  }  
+
+  int background = this->createEntity();
+  this->setComponent<MeshComponent>(background, 0);
+  this->getComponent<Transform>(background).position.z = 100;
+  this->getComponent<Transform>(background).scale.x = 200;
+  this->getComponent<Transform>(background).scale.y = 100;
+
+  int light = this->createEntity();
+  this->setComponent<PointLight>(light);
+  this->getComponent<PointLight>(light).color = glm::vec3(255, 200, 200);
+  this->getComponent<Transform>(light).position = glm::vec3(0, 0, 0);
 }
 
 void LobbyScene::update()
@@ -75,7 +91,7 @@ void LobbyScene::update()
         {
           int e = this->getNetworkHandler()->getPlayers()[i].first;
           this->players.push_back(e);
-          this->getComponent<Transform>(e).position = playerPositions[i];
+          this->getComponent<Transform>(e).position = playerPositions[i + 1];
           this->playersNames.push_back(
               this->getNetworkHandler()->getPlayers()[i].second
           );
@@ -84,30 +100,37 @@ void LobbyScene::update()
 
   //write player names in lobby
   Scene::getUIRenderer()->setTexture(this->fontTextureId);
+  this->getUIRenderer()->renderString(
+      this->getNetworkHandler()->getClientName(),
+      glm::vec2(1920 / 2 - 500, 1080.f / 2 - 140 - (70 * 0)),
+      glm::vec2(40.f, 40.f),
+      0,
+      StringAlignment::LEFT
+  );
   for (int i = 0; i < this->playersNames.size(); i++)
     {
       this->getUIRenderer()->renderString(
           playersNames[i],
-          1920 / 2 - 500,
-          1080.f / 2 - 140 - (70 * i),
-          40.f,
-          40.f,
+          glm::vec2(1920 / 2 - 500,
+          1080.f / 2 - 140 - (70 * (i + 1))),
+          glm::vec2(40.f,
+          40.f),
           0,
           StringAlignment::LEFT
       );
     }
+
   //start game
   if (getNetworkHandler()->hasServer())
     {
       this->getUIRenderer()->setTexture(this->fontTextureId);
       this->getUIRenderer()->renderString(
-          "start match", 800.f, 0.f, 20.f, 20.f
+          "start match", glm::vec2(800.f, 0.f), glm::vec2(20.f, 20.f)
       );
       if (this->getComponent<UIArea>(this->startButton).isClicking())
         {
           //send two
           std::cout << "pressed start" << std::endl;
-          this->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent{GameEvents::START});
           this->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent{GameEvents::START});
           this->getSceneHandler()->setScene(new GameScene(), "scripts/gamescene.lua");
         }
@@ -123,50 +146,22 @@ void LobbyScene::update()
           );
       }
   }
+
   if (this->getNetworkHandler()->getClient() != nullptr && this->getNetworkHandler()->getClient()->isConnected())
   {
       this->getUIRenderer()->setTexture(this->fontTextureId);
-      this->getUIRenderer()->renderString("disconnect", -800.f, -60.f, 20.f, 20.f);
+      this->getUIRenderer()->renderString("disconnect", glm::vec2(-800.f, -60.f), glm::vec2(20.f, 20.f));
       if (this->getComponent<UIArea>(disconnectButton).isClicking()) {
           this->getNetworkHandler()->disconnectClient();
+          this->getNetworkHandler()->deleteServer();
+          this->getSceneHandler()->setScene(new MainMenu, "scripts/MainMenu.lua");
       }
   }
   else
   {
-      this->getUIRenderer()->setTexture(this->fontTextureId);
-      this->getUIRenderer()->renderString("join", -800.f, -60.f, 20.f, 20.f);
-      if (this->getComponent<UIArea>(this->joinButton).isClicking())
-        {
-          //TODO : change this to make it more graphical
-          std::string ipaddres, name;
-          std::cout << "name please" << std::endl;
-          std::cin >> name;
-          std::cout << "ip address please" << std::endl;
-          std::cin >> ipaddres;
-
-          std::cout << "joining server" << std::endl;
-          this->getNetworkHandler()->createClient(name);
-          if (this->getNetworkHandler()->connectClient(ipaddres))
-            {
-              std::cout << "pls server get name" << std::endl;
-              this->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent({GameEvents::GetPlayerNames}));
-          }
-          else
-            {
-              std::cout << "connect client return false" << std::endl;  
-          }
-          
-        }
-
-      this->getUIRenderer()->setTexture(this->fontTextureId);
-      this->getUIRenderer()->renderString("create server", -800.f, -120.f, 20.f, 20.f);
-      if (this->getComponent<UIArea>(this->createServerButton).isClicking())
-      {
-          std::cout << "create server" << std::endl;
-          this->getNetworkHandler()->createServer(new NetworkLobbyScene());
-          this->getNetworkHandler()->createClient("hosty");
-          this->getNetworkHandler()->connectClientToThis();
-      }
+      this->getNetworkHandler()->deleteServer();
+      this->getSceneHandler()->setScene(new MainMenu, "scripts/MainMenu.lua");
   }
+
   
 }

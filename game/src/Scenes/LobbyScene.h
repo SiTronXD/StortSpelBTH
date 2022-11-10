@@ -15,9 +15,8 @@ private:
   std::vector<glm::vec3> playerPositions;
 
   int startButton;
-  int joinButton;
-  int createServerButton;
   int disconnectButton;
+  int light;
 
 public:
   LobbyScene();
@@ -25,7 +24,7 @@ public:
 
   // Inherited via Scene
   virtual void init() override;
-  //virtual void start() override;
+  virtual void start() override;
   virtual void update() override;
   //virtual void onTriggerStay(Entity e1, Entity e2) override;
   //virtual void onCollisionStay(Entity e1, Entity e2) override;

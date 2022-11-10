@@ -63,12 +63,13 @@ void GameScene::init()
 			"@         "
 		},
 		fontTextureIndex,
-		16, 16
+		glm::vec2(16,16)
 	);
 }
 
 void GameScene::start()
 {
+	this->getNetworkHandler()->createPlayers();
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 	
@@ -169,19 +170,19 @@ void GameScene::update()
 		{
 		case hpUp:
 			this->getUIRenderer()->setTexture(perkTextures[hpUp]);
-			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
+            this->getUIRenderer()->renderTexture(glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f), glm::vec2(70.f, 70.f));
 			break;
 		case dmgUp:
 			this->getUIRenderer()->setTexture(perkTextures[dmgUp]);
-			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
+            this->getUIRenderer()->renderTexture(glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f), glm::vec2(70.f, 70.f));
 			break;
 		case attackSpeedUp:
 			this->getUIRenderer()->setTexture(perkTextures[attackSpeedUp]);
-			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
+            this->getUIRenderer()->renderTexture(glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f), glm::vec2(70.f, 70.f));
 			break;
 		case empty:
 			this->getUIRenderer()->setTexture(perkTextures[empty]);
-			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
+            this->getUIRenderer()->renderTexture(glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f), glm::vec2(70.f, 70.f));
 			break;
 		}
 	}
@@ -203,9 +204,9 @@ void GameScene::update()
 	float ySize = 64.f * 0.35f;
 
 	this->getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
-	this->getUIRenderer()->renderTexture(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos, (xSize * maxHpPercent) + 10, ySize + 10);
+    this->getUIRenderer()->renderTexture(glm::vec2(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos), glm::vec2((xSize * maxHpPercent) + 10, ySize + 10));
 	this->getUIRenderer()->setTexture(this->hpBarTextureID);
-	this->getUIRenderer()->renderTexture(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos, xSize * hpPercent, ySize);
+    this->getUIRenderer()->renderTexture(glm::vec2(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos), glm::vec2(xSize * hpPercent, ySize));
 	
 #ifdef _CONSOLE
 
@@ -283,7 +284,7 @@ void GameScene::aiExample()
             realScreenPos.z = screenPos.z / screenPos.w;
 
             Scene::getUIRenderer()->setTexture(this->fontTextureIndex);
-            Scene::getUIRenderer()->renderString(std::to_string(entityId), realScreenPos.x, realScreenPos.y, 20, 20); 
+            Scene::getUIRenderer()->renderString(std::to_string(entityId), glm::vec2(realScreenPos.x, realScreenPos.y), glm::vec2(20, 20)); 
         }    
 
         if(ImGui::Button("SWITCHsCENE")){

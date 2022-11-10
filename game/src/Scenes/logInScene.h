@@ -6,9 +6,20 @@ class logInScene : public Scene
 private:
   uint32_t fontTextureId;
   uint32_t backgroundId;
+  std::string name;
+  std::string ipAddress;
+  std::string* nameOrIp;
+
+  int nameButton;
+  int ipButton;
 
   int joinStartButton;
   int backButton;
+
+  int test;
+  int testMesh;
+
+  void write();
 
 public:
   logInScene();

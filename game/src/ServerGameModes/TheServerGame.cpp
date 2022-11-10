@@ -125,7 +125,7 @@ void TheServerGame::aiExample()
 
         Scene::getUIRenderer()->setTexture(this->fontTextureIndex);
         Scene::getUIRenderer()->renderString(
-            std::to_string(entityId), realScreenPos.x, realScreenPos.y, 20, 20
+            std::to_string(entityId), glm::vec2(realScreenPos.x, realScreenPos.y), glm::vec2(20, 20)
         );
       }
 
