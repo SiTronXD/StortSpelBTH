@@ -78,6 +78,7 @@ private:
 	// IDs
 	std::vector<Room> rooms;
 	std::vector<Entity> pathIds;
+	std::vector<Entity> pathBordersIds;
 	Entity floor;
 
 	// Room Updating

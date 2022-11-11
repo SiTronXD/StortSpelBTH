@@ -416,15 +416,25 @@ void RoomHandler::generatePathways()
 						if (glm::dot(mPosToOffset, mPosToOffset) < (TILE_WIDTH * TILE_WIDTH))
 						{
 							canPlace = false;
-							m = this->pathIds.size();
 						}
+					}
+				}
+
+				for (size_t k = 0; k < this->pathBordersIds.size() && canPlace; k++)
+				{
+					glm::vec3 mPosToOffset = offsetPos - this->scene->getComponent<Transform>(this->pathBordersIds[k]).position;
+					mPosToOffset.y = 0.f;
+
+					if (glm::dot(mPosToOffset, mPosToOffset) < (TILE_WIDTH * TILE_WIDTH))
+					{
+						canPlace = false;
 					}
 				}
 
 				if (canPlace)
 				{
 					entity = createPathBorderEntity(offsetPos);
-					this->pathIds.emplace_back(entity);
+					this->pathBordersIds.emplace_back(entity);
 				}
 			}
 		}
@@ -525,17 +535,9 @@ void RoomHandler::createColliders()
 		}
 	}
 
-	for (Entity entity : this->pathIds)
+	for (Entity entity : this->pathBordersIds)
 	{
-		const int meshID = this->scene->getComponent<MeshComponent>(entity).meshID;
-		for (int i = 0; i < (int)borderMeshIds.size(); i++)
-		{
-			if (meshID == (int)borderMeshIds[i])
-			{
-				this->scene->setComponent<Collider>(entity, Collider::createBox(borderColDims));
-				i = (int)borderMeshIds.size();
-			}
-		}
+		this->scene->setComponent<Collider>(entity, Collider::createBox(borderColDims));
 	}
 
 	float minX = 10000000.f;
@@ -588,7 +590,7 @@ Entity RoomHandler::createTileEntity(int tileIndex, TileUsage usage)
 
 	default:
 		break;
-	}
+	}		
 
 	Entity pieceID = this->scene->createEntity();
 	this->scene->setComponent<MeshComponent>(pieceID);
@@ -769,12 +771,18 @@ void RoomHandler::reset()
 		room.finished = false;
 	}																				  
 
-	for (int& id : this->pathIds)
+	for (Entity& id : this->pathIds)
 	{
 		this->scene->removeEntity(id);
 		id = -1;
 	}
 	this->pathIds.clear();
+	for (Entity& id : this->pathBordersIds)
+	{
+		this->scene->removeEntity(id);
+		id = -1;
+	}
+	this->pathBordersIds.clear();
 	
 	this->scene->removeEntity(this->floor);
 	this->floor = -1;
