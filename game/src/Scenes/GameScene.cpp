@@ -4,6 +4,7 @@
 #include "../Systems/AiMovementSystem.hpp"
 #include "../Systems/CameraMovementSystem.hpp"
 #include "../Systems/CombatSystem.hpp"
+#include "../Systems/HealthBarSystem.hpp"
 #include "../Systems/MovementSystem.hpp"
 #include "GameOverScene.h"
 
@@ -14,7 +15,8 @@ double heavyFunction(double value);
 #endif
 
 GameScene::GameScene() :
-    playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1)
+    playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
+    perk1(-1), perk2(-1), ability(-1)
 {
 }
 
@@ -28,107 +30,127 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
-	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
-	
-	roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
-	roomHandler.generate();
-	createPortal();
-	// simon
-	ResourceManager* resourceMng = this->getResourceManager();
-	abilityTextures[0] =
-		resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
-	abilityTextures[1] =
-		resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
-	abilityTextures[2] =
-		resourceMng->addTexture("assets/textures/UI/empty.png");
-	perkTextures[0] = 
-		resourceMng->addTexture("assets/textures/UI/hpUp.png");
-	perkTextures[1] = 
-		resourceMng->addTexture("assets/textures/UI/dmgUp.png");
-	perkTextures[2] = 
-		resourceMng->addTexture("assets/textures/UI/atkSpeedUp.png");
-	perkTextures[3] = 
-		resourceMng->addTexture("assets/textures/UI/empty.png");
-	this->hpBarBackgroundTextureID =
-		resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
-	this->hpBarTextureID = 
-		resourceMng->addTexture("assets/textures/UI/hpBar.png");
+  int swarm =
+      this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 
-	// Temporary light
-	Entity directionalLightEntity = this->createEntity();
-	this->setComponent<DirectionalLight>(
-		directionalLightEntity, 
-		glm::vec3(-1.0f, -1.0f, -1.0f),
-		glm::vec3(0.6f)
-	);
+  roomHandler.init(
+      this,
+      this->getResourceManager(),
+      this->getConfigValue<int>("room_size"),
+      this->getConfigValue<int>("tile_types")
+  );
+  roomHandler.generate();
+  createPortal();
+  // simon
+  ResourceManager* resourceMng = this->getResourceManager();
+  abilityTextures[0] =
+      resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
+  abilityTextures[1] =
+      resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
+  abilityTextures[2] = resourceMng->addTexture("assets/textures/UI/empty.png");
+  perkTextures[0] = resourceMng->addTexture("assets/textures/UI/hpUp.png");
+  perkTextures[1] = resourceMng->addTexture("assets/textures/UI/dmgUp.png");
+  perkTextures[2] =
+      resourceMng->addTexture("assets/textures/UI/atkSpeedUp.png");
+  perkTextures[3] = resourceMng->addTexture("assets/textures/UI/empty.png");
+  this->hpBarBackgroundTextureID =
+      resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
+  this->hpBarTextureID =
+      resourceMng->addTexture("assets/textures/UI/hpBar.png");
 
-	this->createSystem<HealthBarSystem>(this->hpBarBackgroundTextureID, this->hpBarTextureID, this, this->getUIRenderer());
+  // Temporary light
+  Entity directionalLightEntity = this->createEntity();
+  this->setComponent<DirectionalLight>(
+      directionalLightEntity, glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.6f)
+  );
+
+  this->createSystem<HealthBarSystem>(
+      this->hpBarBackgroundTextureID,
+      this->hpBarTextureID,
+      this,
+      this->getUIRenderer()
+  );
 }
 
 void GameScene::start()
 {
-	std::string playerName = "playerID";
-	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+  std::string playerName = "playerID";
+  this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 
-	this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
-	this->getAudioHandler()->setMasterVolume(0.5f);
-	this->getAudioHandler()->setMusicVolume(1.f);
-	this->getAudioHandler()->playMusic();
-	
-	this->setComponent<Combat>(playerID);
-	this->createSystem<CombatSystem>(this, this->getResourceManager(), this->playerID, this->getPhysicsEngine(), this->getUIRenderer(), this->getDebugRenderer());
+  this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
+  this->getAudioHandler()->setMasterVolume(0.5f);
+  this->getAudioHandler()->setMusicVolume(1.f);
+  this->getAudioHandler()->playMusic();
 
-	this->ability = this->createEntity();
-	int knockback = this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
-	this->setComponent<MeshComponent>(this->ability, knockback);
-	Transform& abilityTrans = this->getComponent<Transform>(this->ability);
-	abilityTrans.position = glm::vec3(50.f, 10.f, 0.f);
-	abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
-	this->setComponent<Collider>(this->ability, Collider::createSphere(4.f, glm::vec3(0), true));
-	this->setComponent<Abilities>(this->ability, healAbility);
-	this->setComponent<PointLight>(this->ability, glm::vec3(7.f, 9.f, 5.f));
+  this->setComponent<Combat>(playerID);
+  this->createSystem<CombatSystem>(
+      this,
+      this->getResourceManager(),
+      this->playerID,
+      this->getPhysicsEngine(),
+      this->getUIRenderer(),
+      this->getDebugRenderer()
+  );
 
-	this->perk = this->createEntity();
-	int perkHp = this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
-	this->setComponent<MeshComponent>(this->perk, perkHp);
-	Transform& perkTrans = this->getComponent<Transform>(this->perk);
-	perkTrans.position = glm::vec3(30.f, 5.f, 20.f);
-	perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
-    this->setComponent<Collider>(
-        this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-	this->setComponent<PointLight>(this->perk, glm::vec3(5.f, 7.f, 9.f));
-	this->setComponent<Perks>(this->perk);
-	Perks& perkSetting = this->getComponent<Perks>(this->perk);
-	perkSetting.multiplier = 1.f;
-	perkSetting.perkType = hpUpPerk;
+  this->ability = this->createEntity();
+  int knockback =
+      this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
+  this->setComponent<MeshComponent>(this->ability, knockback);
+  Transform& abilityTrans = this->getComponent<Transform>(this->ability);
+  abilityTrans.position = glm::vec3(50.f, 10.f, 0.f);
+  abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
+  this->setComponent<Collider>(
+      this->ability, Collider::createSphere(4.f, glm::vec3(0), true)
+  );
+  this->setComponent<Abilities>(this->ability, healAbility);
+  this->setComponent<PointLight>(this->ability, glm::vec3(7.f, 9.f, 5.f));
 
-	this->perk1 = this->createEntity();
-	int perkDmg = this->getResourceManager()->addMesh("assets/models/Perk_Dmg.obj");
-	this->setComponent<MeshComponent>(this->perk1, perkDmg);
-	Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
-	perkTrans1.position = glm::vec3(30.f, 5.f, -20.f);
-	perkTrans1.scale = glm::vec3(2.f, 2.f, 2.f);
-    this->setComponent<Collider>(
-        this->perk1, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-	this->setComponent<PointLight>(this->perk1, glm::vec3(5.f, 7.f, 9.f));
-	this->setComponent<Perks>(this->perk1);
-	Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
-	perkSetting1.multiplier = 0.2f;
-	perkSetting1.perkType = dmgUpPerk;
+  this->perk = this->createEntity();
+  int perkHp = this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
+  this->setComponent<MeshComponent>(this->perk, perkHp);
+  Transform& perkTrans = this->getComponent<Transform>(this->perk);
+  perkTrans.position = glm::vec3(30.f, 5.f, 20.f);
+  perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
+  this->setComponent<Collider>(
+      this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true)
+  );
+  this->setComponent<PointLight>(this->perk, glm::vec3(5.f, 7.f, 9.f));
+  this->setComponent<Perks>(this->perk);
+  Perks& perkSetting = this->getComponent<Perks>(this->perk);
+  perkSetting.multiplier = 1.f;
+  perkSetting.perkType = hpUpPerk;
 
-	this->perk2 = this->createEntity();
-	int perkAtkSpeed = this->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");
-	this->setComponent<MeshComponent>(this->perk2, perkAtkSpeed);
-	Transform& perkTrans2 = this->getComponent<Transform>(this->perk2);
-	perkTrans2.position = glm::vec3(30.f, 5.f, 0.f);
-	perkTrans2.scale = glm::vec3(2.f, 2.f, 2.f);
-    this->setComponent<Collider>(
-        this->perk2, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-	this->setComponent<PointLight>(this->perk2, glm::vec3(5.f, 7.f, 9.f));
-	this->setComponent<Perks>(this->perk2);
-	Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
-	perkSetting2.multiplier = 1.f;
-	perkSetting2.perkType = attackSpeedUpPerk;
+  this->perk1 = this->createEntity();
+  int perkDmg =
+      this->getResourceManager()->addMesh("assets/models/Perk_Dmg.obj");
+  this->setComponent<MeshComponent>(this->perk1, perkDmg);
+  Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
+  perkTrans1.position = glm::vec3(30.f, 5.f, -20.f);
+  perkTrans1.scale = glm::vec3(2.f, 2.f, 2.f);
+  this->setComponent<Collider>(
+      this->perk1, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true)
+  );
+  this->setComponent<PointLight>(this->perk1, glm::vec3(5.f, 7.f, 9.f));
+  this->setComponent<Perks>(this->perk1);
+  Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
+  perkSetting1.multiplier = 0.2f;
+  perkSetting1.perkType = dmgUpPerk;
+
+  this->perk2 = this->createEntity();
+  int perkAtkSpeed =
+      this->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");
+  this->setComponent<MeshComponent>(this->perk2, perkAtkSpeed);
+  Transform& perkTrans2 = this->getComponent<Transform>(this->perk2);
+  perkTrans2.position = glm::vec3(30.f, 5.f, 0.f);
+  perkTrans2.scale = glm::vec3(2.f, 2.f, 2.f);
+  this->setComponent<Collider>(
+      this->perk2, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true)
+  );
+  this->setComponent<PointLight>(this->perk2, glm::vec3(5.f, 7.f, 9.f));
+  this->setComponent<Perks>(this->perk2);
+  Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
+  perkSetting2.multiplier = 1.f;
+  perkSetting2.perkType = attackSpeedUpPerk;
 
   // Ai management
   this->aiHandler = this->getAIHandler();
@@ -172,54 +194,49 @@ void GameScene::update()
     }
 
   Combat& playerCombat = this->getComponent<Combat>(this->playerID);
+  this->getUIRenderer()->setTexture(
+      abilityTextures[playerCombat.ability.abilityType]
+  );
+  this->getUIRenderer()->renderTexture(
+      glm::vec2(890.f, -390.f), glm::vec2(100.0f)
+  );
+
   float perkXPos = -720.f;
   float perkYPos = -500.f;
   for (size_t i = 0; i < 4; i++)
     {
-      switch (playerCombat.perks[i].perkType)
-        {
-          case hpUp:
-            this->getUIRenderer()->setTexture(perkTextures[hpUp]);
-            this->getUIRenderer()->renderTexture(
-                glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f),
-                glm::vec2(70.f, 70.f)
-            );
-            break;
-          case dmgUp:
-            this->getUIRenderer()->setTexture(perkTextures[dmgUp]);
-            this->getUIRenderer()->renderTexture(
-                glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f),
-                glm::vec2(70.f, 70.f)
-            );
-            break;
-          case attackSpeedUp:
-            this->getUIRenderer()->setTexture(perkTextures[attackSpeedUp]);
-            this->getUIRenderer()->renderTexture(
-                glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f),
-                glm::vec2(70.f, 70.f)
-            );
-            break;
-          case empty:
-            this->getUIRenderer()->setTexture(perkTextures[empty]);
-            this->getUIRenderer()->renderTexture(
-                glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f),
-                glm::vec2(70.f, 70.f)
-            );
-            break;
-        }
+      this->getUIRenderer()->setTexture(
+          perkTextures[playerCombat.perks[i].perkType]
+      );
+      this->getUIRenderer()->renderTexture(
+          glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f),
+          glm::vec2(70.0f)
+      );
     }
 
-	Combat& playerCombat = this->getComponent<Combat>(this->playerID);
-	this->getUIRenderer()->setTexture(abilityTextures[playerCombat.ability.abilityType]);
-	this->getUIRenderer()->renderTexture(glm::vec2(890.f, -390.f), glm::vec2(100.0f));
+  // Render HP bar UI
+  float hpPercent = 1.0f;
+  float maxHpPercent = 1.0f;
+  if (this->hasComponents<Combat>(this->playerID))
+    {
+      hpPercent = playerCombat.health * 0.01f;
+      maxHpPercent = playerCombat.maxHealth * 0.01f;
+    }
+  float xPos = -720.f;
+  float yPos = -500.f;
+  float xSize = 1024.f * 0.35f;
+  float ySize = 64.f * 0.35f;
 
-	float perkXPos = -720.f;
-	float perkYPos = -500.f;
-	for (size_t i = 0; i < 4; i++)
-	{
-		this->getUIRenderer()->setTexture(perkTextures[playerCombat.perks[i].perkType]);
-		this->getUIRenderer()->renderTexture(glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f), glm::vec2(70.0f));
-	}
+  this->getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
+  this->getUIRenderer()->renderTexture(
+      glm::vec2(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos + 20.f),
+      glm::vec2((xSize * maxHpPercent) + 10, ySize + 10)
+  );
+  this->getUIRenderer()->setTexture(this->hpBarTextureID);
+  this->getUIRenderer()->renderTexture(
+      glm::vec2(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos + 20.f),
+      glm::vec2(xSize * hpPercent, ySize)
+  );
 
 #ifdef _CONSOLE
 
@@ -316,11 +333,11 @@ void GameScene::aiExample()
         realScreenPos.y = (screenPos.y / screenPos.w) * 1080 / 2;
         realScreenPos.z = screenPos.z / screenPos.w;
 
-        Scene::getUIRenderer()->setTexture(this->fontTextureIndex);
+        //Scene::getUIRenderer()->setTexture(this->fontTextureIndex);
         Scene::getUIRenderer()->renderString(
             std::to_string(entityId),
             glm::vec2(realScreenPos.x, realScreenPos.y),
-            glm::vec2(20, 20)
+            glm::vec2(20)
         );
       }
 
@@ -417,12 +434,10 @@ void GameScene::aiExample()
         {
           this->enemyIDs.push_back(this->createEntity());
           this->setComponent<MeshComponent>(this->enemyIDs.back(), swarm);
-          //this->setComponent<AiMovement>(this->enemyIDs.back());
           this->setComponent<AiCombat>(this->enemyIDs.back());
           this->setComponent<Collider>(
               this->enemyIDs.back(), Collider::createSphere(4.0f)
           );
-          //this->setComponent<Collider>(this->enemyIDs.back(), Collider::createBox(glm::vec3(5.0f, 3.5f, 5.0f)));
           this->setComponent<Rigidbody>(this->enemyIDs.back());
           Rigidbody& rb = this->getComponent<Rigidbody>(this->enemyIDs.back());
           rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -492,8 +507,58 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
                   swarmComp.life = swarmComp.FULL_HEALTH;
                   swarmComp.group->inCombat = false;
 
+                  swarmComp.group->aliveMembers.push(0
+                  );  // TODO: This should be done somewhere else... Like in SwarmFSM/BT
+
                   idx++;
                   counter++;
+                }
+            }
+          for (SwarmGroup* group : this->swarmGroups)
+            {
+              //Set idle mid pos
+              group->idleMidBos = glm::vec3(0.0f, 0.0f, 0.0f);
+              int numAlive = 0;
+              for (auto b : group->members)
+                {
+                  if (isActive(b) &&
+                      this->getComponent<SwarmComponent>(b).life > 0)
+                    {
+                      group->idleMidBos +=
+                          this->getComponent<Transform>(b).position;
+                      numAlive++;
+                    }
+                }
+              group->idleMidBos /= numAlive;
+              //Set ilde radius
+              for (auto b : group->members)
+                {
+                  if (isActive(b) &&
+                      this->getComponent<SwarmComponent>(b).life > 0)
+                    {
+                      float len = glm::length(
+                          group->idleMidBos -
+                          this->getComponent<Transform>(b).position
+                      );
+                      if (len > group->idleRadius)
+                        {
+                          group->idleRadius = len;
+                        }
+                    }
+                }
+              //Set move to
+              for (auto b : group->members)
+                {
+                  SwarmComponent& swarmComp =
+                      this->getComponent<SwarmComponent>(b);
+                  swarmComp.idleMoveTo = group->idleMidBos;
+                  glm::vec3 dir = glm::normalize(glm::vec3(
+                      rand() * (rand() % 2 == 0 ? -1 : 1),
+                      0.0f,
+                      rand() * (rand() % 2 == 0 ? -1 : 1)
+                  ));
+                  swarmComp.idleMoveTo = swarmComp.group->idleMidBos +
+                                         dir * swarmComp.group->idleRadius;
                 }
             }
         }
@@ -504,6 +569,45 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
         {
           this->switchScene(new GameScene(), "scripts/gamescene.lua");
         }
+    }
+}
+
+void GameScene::onTriggerEnter(Entity e1, Entity e2)
+{
+  Entity ground = e1 == this->roomHandler.getFloor()   ? e1
+                  : e2 == this->roomHandler.getFloor() ? e2
+                                                       : -1;
+  Entity perk = this->hasComponents<Perks>(e1)   ? e1
+                : this->hasComponents<Perks>(e2) ? e2
+                                                 : -1;
+  Entity ability = this->hasComponents<Abilities>(e1)   ? e1
+                   : this->hasComponents<Abilities>(e2) ? e2
+                                                        : -1;
+
+  if (this->entityValid(ground))
+    {
+      if (this->entityValid(perk))
+        {
+          this->removeComponent<Rigidbody>(perk);
+          Transform& perkTrans = this->getComponent<Transform>(perk);
+          perkTrans.position.y = 2.f;
+        }
+      else if (this->entityValid(ability))
+        {
+          this->removeComponent<Rigidbody>(ability);
+          Transform& abilityTrans = this->getComponent<Transform>(ability);
+          abilityTrans.position.y = 4.f;
+        }
+    }
+}
+
+void GameScene::onCollisionEnter(Entity e1, Entity e2)
+{
+  if (this->hasComponents<SwarmComponent>(e1) &&
+      this->hasComponents<SwarmComponent>(e2))
+    {
+      this->getComponent<SwarmComponent>(e1).touchedFriend = true;
+      this->getComponent<SwarmComponent>(e2).touchedFriend = true;
     }
 }
 
@@ -521,11 +625,31 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
             {
               auto& aiCombat = this->getComponent<AiCombat>(other);
               swarmComp.inAttack = false;
+              swarmComp.touchedPlayer = true;
+              //aiCombat.timer = aiCombat.lightAttackTime;
               this->getComponent<Combat>(player).health -=
                   (int)aiCombat.lightHit;
               std::cout << "WAS HIT\n";
             }
         }
+    }
+
+  if (this->hasComponents<SwarmComponent>(e1) &&
+      this->hasComponents<SwarmComponent>(e2))
+    {
+      this->getComponent<SwarmComponent>(e1).touchedFriend = true;
+      this->getComponent<SwarmComponent>(e2).touchedFriend = true;
+    }
+}
+
+void GameScene::onCollisionExit(Entity e1, Entity e2)
+{
+
+  if (this->hasComponents<SwarmComponent>(e1) &&
+      this->hasComponents<SwarmComponent>(e2))
+    {
+      this->getComponent<SwarmComponent>(e1).touchedFriend = false;
+      this->getComponent<SwarmComponent>(e2).touchedFriend = false;
     }
 }
 
