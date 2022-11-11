@@ -1,7 +1,7 @@
 #include "MainMenu.h"
 #include "GameScene.h"
 #include "logInScene.h"
-#include "vengine/network/ServerGameModes/NetworkLobbyScene.h"
+#include "../ServerGameModes/NetworkLobbyScene.h"
 
 void MainMenu::init()
 {

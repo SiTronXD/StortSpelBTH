@@ -9,9 +9,8 @@ const uint32_t RoomHandler::NUM_ONE_X_TWO = 0;
 const uint32_t RoomHandler::NUM_TWO_X_TWO = 0;
 
 RoomHandler::RoomHandler()
-	:scene(nullptr), hasDoor{false, false, false, false},
-	activeIndex(0), nextIndex(-1), floor(-1),
-	doorMeshID(0)
+	:scene(nullptr), hasDoor{false, false, false, false}, activeIndex(0),
+    nextIndex(-1), floor(-1), doorMeshID(0), generateMeshes(true)
 {
 }
 
@@ -44,6 +43,19 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize,
 	// TwoXTwo
 
 	this->doorMeshID = resourceMan->addMesh("assets/models/door.obj");
+}
+
+void RoomHandler::serverInit(Scene* scene, int roomSize, int tileTypes)
+{
+  roomSize = 15;
+  generateMeshes = false;
+
+  this->scene = scene;
+
+  this->roomGenerator.init(roomSize, tileTypes);
+  this->roomLayout.setRoomDistance(
+      TILE_WIDTH * roomSize + TILE_WIDTH * TILES_BETWEEN_ROOMS
+  );
 }
 
 void RoomHandler::roomCompleted()
@@ -524,7 +536,7 @@ void RoomHandler::createColliders()
 			}
 		}
 	}
-
+	//TODO : HOW DO I DO THIS WITH NO MESHCOMPONENT
 	for (Entity entity : this->pathIds)
 	{
 		const int meshID = this->scene->getComponent<MeshComponent>(entity).meshID;
@@ -568,6 +580,7 @@ void RoomHandler::createColliders()
 
 Entity RoomHandler::createTileEntity(int tileIndex, TileUsage usage)
 {
+	//TODO : DON'T MAKE BORDERMESHIDS OR oneXOneMeshIds TAKE MESH ID
 	Tile tile{};
 	int meshId = -1;
 	switch (usage)
@@ -591,8 +604,11 @@ Entity RoomHandler::createTileEntity(int tileIndex, TileUsage usage)
 	}
 
 	Entity pieceID = this->scene->createEntity();
-	this->scene->setComponent<MeshComponent>(pieceID);
-	this->scene->getComponent<MeshComponent>(pieceID).meshID = meshId;
+    if (generateMeshes)
+      {
+        this->scene->setComponent<MeshComponent>(pieceID);
+        this->scene->getComponent<MeshComponent>(pieceID).meshID = meshId;
+      }
 
 	Transform& transform = this->scene->getComponent<Transform>(pieceID);
 	transform.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE);
@@ -605,9 +621,11 @@ Entity RoomHandler::createTileEntity(int tileIndex, TileUsage usage)
 Entity RoomHandler::createDoorEntity(float yRotation)
 {
 	Entity entity = scene->createEntity();
-
-	this->scene->setComponent<MeshComponent>(entity);
-	this->scene->getComponent<MeshComponent>(entity).meshID = this->doorMeshID;
+  if (generateMeshes)
+  {
+      this->scene->setComponent<MeshComponent>(entity);
+      this->scene->getComponent<MeshComponent>(entity).meshID =this->doorMeshID;
+  }
 
 	Transform& transform = this->scene->getComponent<Transform>(entity);
 	transform.rotation.y = yRotation;
@@ -617,6 +635,7 @@ Entity RoomHandler::createDoorEntity(float yRotation)
 
 Entity RoomHandler::createPathEntity()
 {
+	//TODO : HOW TO DO THIS WITHOUTMESH? just not?
 	Entity entity = this->scene->createEntity();
 	this->scene->setComponent<MeshComponent>(entity);
 
@@ -636,8 +655,11 @@ Entity RoomHandler::createPathEntity()
 Entity RoomHandler::createPathBorderEntity(const glm::vec3& position)
 {
 	Entity entity = this->scene->createEntity();
-	this->scene->setComponent<MeshComponent>(entity);
-	this->scene->getComponent<MeshComponent>(entity).meshID = (int)this->borderMeshIds[rand() % NUM_BORDER];
+  if (generateMeshes)
+    {
+      this->scene->setComponent<MeshComponent>(entity);
+      this->scene->getComponent<MeshComponent>(entity).meshID = (int)this->borderMeshIds[rand() % NUM_BORDER];
+    }
 
 	Transform& transform = this->scene->getComponent<Transform>(entity);
 	transform.position = position;
