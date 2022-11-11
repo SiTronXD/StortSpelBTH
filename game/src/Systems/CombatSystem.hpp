@@ -75,7 +75,7 @@ public:
 						if (combat.hpRegenConverter > 1.f)
 						{
 							combat.health += (int)(combat.hpRegenConverter);
-							combat.hpRegenConverter = 0.f;
+							combat.hpRegenConverter -= 1.f;
 						}
 					}
 				}
@@ -482,7 +482,7 @@ public:
 		this->scene->setComponent<Collider>(entity, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
 		this->scene->setComponent<Rigidbody>(entity);
 		this->scene->setComponent<Perks>(entity, perk);
-		this->scene->setComponent<PointLight>(entity, glm::vec3(5.f, 7.f, 9.f));
+		this->scene->setComponent<PointLight>(entity, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
 		Transform& perkTrans = this->scene->getComponent<Transform>(entity);
 		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
 		Rigidbody& perkRb = this->scene->getComponent<Rigidbody>(entity);
@@ -556,7 +556,7 @@ public:
 		this->scene->setComponent<Collider>(entity, Collider::createSphere(4.f, glm::vec3(0, 0, 0), true));
 		this->scene->setComponent<Rigidbody>(entity);
 		this->scene->setComponent<Abilities>(entity, ability);
-		this->scene->setComponent<PointLight>(entity, glm::vec3(7.f, 9.f, 5.f));
+		this->scene->setComponent<PointLight>(entity, { glm::vec3(0.f), glm::vec3(7.f, 9.f, 5.f) });
 		Transform& abilityTrans = this->scene->getComponent<Transform>(entity);
 		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
 		Rigidbody& abilityRb = this->scene->getComponent<Rigidbody>(entity);

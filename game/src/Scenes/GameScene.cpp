@@ -74,10 +74,10 @@ void GameScene::init()
   this->hpBarTextureID =
       resourceMng->addTexture("assets/textures/UI/hpBar.png");
 
-  //// Temporary light
-  //Entity directionalLightEntity = this->createEntity();
-  //this->setComponent<DirectionalLight>(
-  //    directionalLightEntity, glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.6f));
+  // Temporary light
+  Entity directionalLightEntity = this->createEntity();
+  this->setComponent<DirectionalLight>(
+      directionalLightEntity, glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.6f));
 
   this->createSystem<HealthBarSystem>(
       this->hpBarBackgroundTextureID,
@@ -116,7 +116,7 @@ void GameScene::start()
     this->setComponent<Collider>(
         this->ability, Collider::createSphere(4.f, glm::vec3(0), true));
     this->setComponent<Abilities>(this->ability, healAbility);
-    this->setComponent<PointLight>(this->ability, glm::vec3(7.f, 9.f, 5.f));
+    this->setComponent<PointLight>(this->ability, { glm::vec3(0.f), glm::vec3(7.f, 9.f, 5.f) });
 
     this->perk = this->createEntity();
     int perkHp = this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
@@ -126,7 +126,7 @@ void GameScene::start()
     perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
        this->setComponent<Collider>(
            this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-    this->setComponent<PointLight>(this->perk, glm::vec3(5.f, 7.f, 9.f));
+       this->setComponent<PointLight>(this->perk, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
     this->setComponent<Perks>(this->perk);
     Perks& perkSetting = this->getComponent<Perks>(this->perk);
     perkSetting.multiplier = 0.5f;
@@ -141,7 +141,7 @@ void GameScene::start()
     perkTrans1.scale = glm::vec3(2.f, 2.f, 2.f);
     this->setComponent<Collider>(
         this->perk1, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-    this->setComponent<PointLight>(this->perk1, glm::vec3(5.f, 7.f, 9.f));
+    this->setComponent<PointLight>(this->perk1, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
     this->setComponent<Perks>(this->perk1);
     Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
     perkSetting1.multiplier = 0.5f;
@@ -156,7 +156,7 @@ void GameScene::start()
     perkTrans2.scale = glm::vec3(2.f, 2.f, 2.f);
     this->setComponent<Collider>(
         this->perk2, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-    this->setComponent<PointLight>(this->perk2, glm::vec3(5.f, 7.f, 9.f));
+    this->setComponent<PointLight>(this->perk2, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
     this->setComponent<Perks>(this->perk2);
     Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
     perkSetting2.multiplier = 0.5f;
