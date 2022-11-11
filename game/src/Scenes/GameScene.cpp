@@ -40,95 +40,81 @@ void GameScene::init()
   roomHandler.generate();
   createPortal();
 
-  perkTextures[0] =
-      this->getResourceManager()->addTexture("assets/textures/UI/hpUp.png");
-  perkTextures[1] =
-      this->getResourceManager()->addTexture("assets/textures/UI/dmgUp.png");
-  perkTextures[2] =
-      this->getResourceManager()->addTexture("assets/textures/UI/atkSpeedUp.png"
-      );
-  perkTextures[3] =
-      this->getResourceManager()->addTexture("assets/textures/UI/empty.png");
-  this->hpBarBackgroundTextureID = this->getResourceManager()->addTexture(
-      "assets/textures/UI/hpBarBackground.png"
-  );
-  this->hpBarTextureID =
-      this->getResourceManager()->addTexture("assets/textures/UI/hpBar.png");
+	// Temporary light
+	Entity directionalLightEntity = this->createEntity();
+	this->setComponent<DirectionalLight>(
+		directionalLightEntity, 
+		glm::vec3(-1.0f, -1.0f, -1.0f),
+		glm::vec3(0.6f)
+	);
 
-  // Add textures for ui renderer
-  TextureSamplerSettings samplerSettings{};
-  samplerSettings.filterMode = vk::Filter::eNearest;
-  samplerSettings.unnormalizedCoordinates = VK_TRUE;
-  this->fontTextureIndex = Scene::getResourceManager()->addTexture(
-      "assets/textures/testBitmapFont.png", {samplerSettings, true}
-  );
-
-  Scene::getUIRenderer()->setBitmapFont(
-      {"abcdefghij",
-       "klmnopqrst",
-       "uvwxyz+-.'",
-       "0123456789",
-       "!?,<>:()#^",
-       "@         "},
-      fontTextureIndex,
-      glm::vec2(16, 16)
-  );
+	this->createSystem<HealthBarSystem>(this->hpBarBackgroundTextureID, this->hpBarTextureID, this, this->getUIRenderer());
 }
 
 void GameScene::start()
 {
-  this->getNetworkHandler()->createPlayers();
-  std::string playerName = "playerID";
-  this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+	std::string playerName = "playerID";
+	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 
-  this->setComponent<Combat>(playerID);
-  this->createSystem<CombatSystem>(
-      this, this->playerID, this->getPhysicsEngine(), this->getDebugRenderer()
-  );
+	this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
+	this->getAudioHandler()->setMasterVolume(0.5f);
+	this->getAudioHandler()->setMusicVolume(1.f);
+	this->getAudioHandler()->playMusic();
+	
+	this->setComponent<Combat>(playerID);
+	this->createSystem<CombatSystem>(this, this->getResourceManager(), this->playerID, this->getPhysicsEngine(), this->getUIRenderer(), this->getDebugRenderer());
 
-  this->perk = this->createEntity();
-  int perkHp = this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
-  this->setComponent<MeshComponent>(this->perk, perkHp);
-  Transform& perkTrans = this->getComponent<Transform>(this->perk);
-  perkTrans.position = glm::vec3(30.f, 5.f, 20.f);
-  perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
-  this->setComponent<Collider>(
-      this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true)
-  );
-  this->setComponent<Perks>(this->perk);
-  Perks& perkSetting = this->getComponent<Perks>(this->perk);
-  perkSetting.multiplier = 1.f;
-  perkSetting.perkType = hpUp;
+	this->ability = this->createEntity();
+	int knockback = this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
+	this->setComponent<MeshComponent>(this->ability, knockback);
+	Transform& abilityTrans = this->getComponent<Transform>(this->ability);
+	abilityTrans.position = glm::vec3(50.f, 10.f, 0.f);
+	abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
+	this->setComponent<Collider>(this->ability, Collider::createSphere(4.f, glm::vec3(0), true));
+	this->setComponent<Abilities>(this->ability, healAbility);
+	this->setComponent<PointLight>(this->ability, glm::vec3(7.f, 9.f, 5.f));
 
-  this->perk1 = this->createEntity();
-  int perkDmg =
-      this->getResourceManager()->addMesh("assets/models/Perk_Dmg.obj");
-  this->setComponent<MeshComponent>(this->perk1, perkDmg);
-  Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
-  perkTrans1.position = glm::vec3(30.f, 5.f, -20.f);
-  perkTrans1.scale = glm::vec3(2.f, 2.f, 2.f);
-  this->setComponent<Collider>(
-      this->perk1, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true)
-  );
-  this->setComponent<Perks>(this->perk1);
-  Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
-  perkSetting1.multiplier = 1.f;
-  perkSetting1.perkType = dmgUp;
+	this->perk = this->createEntity();
+	int perkHp = this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
+	this->setComponent<MeshComponent>(this->perk, perkHp);
+	Transform& perkTrans = this->getComponent<Transform>(this->perk);
+	perkTrans.position = glm::vec3(30.f, 5.f, 20.f);
+	perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
+    this->setComponent<Collider>(
+        this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
+	this->setComponent<PointLight>(this->perk, glm::vec3(5.f, 7.f, 9.f));
+	this->setComponent<Perks>(this->perk);
+	Perks& perkSetting = this->getComponent<Perks>(this->perk);
+	perkSetting.multiplier = 1.f;
+	perkSetting.perkType = hpUpPerk;
 
-  this->perk2 = this->createEntity();
-  int perkAtkSpeed =
-      this->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");
-  this->setComponent<MeshComponent>(this->perk2, perkAtkSpeed);
-  Transform& perkTrans2 = this->getComponent<Transform>(this->perk2);
-  perkTrans2.position = glm::vec3(30.f, 5.f, 0.f);
-  perkTrans2.scale = glm::vec3(2.f, 2.f, 2.f);
-  this->setComponent<Collider>(
-      this->perk2, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true)
-  );
-  this->setComponent<Perks>(this->perk2);
-  Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
-  perkSetting2.multiplier = 1.f;
-  perkSetting2.perkType = attackSpeedUp;
+	this->perk1 = this->createEntity();
+	int perkDmg = this->getResourceManager()->addMesh("assets/models/Perk_Dmg.obj");
+	this->setComponent<MeshComponent>(this->perk1, perkDmg);
+	Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
+	perkTrans1.position = glm::vec3(30.f, 5.f, -20.f);
+	perkTrans1.scale = glm::vec3(2.f, 2.f, 2.f);
+    this->setComponent<Collider>(
+        this->perk1, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
+	this->setComponent<PointLight>(this->perk1, glm::vec3(5.f, 7.f, 9.f));
+	this->setComponent<Perks>(this->perk1);
+	Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
+	perkSetting1.multiplier = 0.2f;
+	perkSetting1.perkType = dmgUpPerk;
+
+	this->perk2 = this->createEntity();
+	int perkAtkSpeed = this->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");
+	this->setComponent<MeshComponent>(this->perk2, perkAtkSpeed);
+	Transform& perkTrans2 = this->getComponent<Transform>(this->perk2);
+	perkTrans2.position = glm::vec3(30.f, 5.f, 0.f);
+	perkTrans2.scale = glm::vec3(2.f, 2.f, 2.f);
+    this->setComponent<Collider>(
+        this->perk2, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
+	this->setComponent<PointLight>(this->perk2, glm::vec3(5.f, 7.f, 9.f));
+	this->setComponent<Perks>(this->perk2);
+	Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
+	perkSetting2.multiplier = 1.f;
+	perkSetting2.perkType = attackSpeedUpPerk;
 
   // Ai management
   this->aiHandler = this->getAIHandler();
@@ -209,29 +195,17 @@ void GameScene::update()
         }
     }
 
-  // Render HP bar UI
-  float hpPercent = 1.0f;
-  float maxHpPercent = 1.0f;
-  if (this->hasComponents<Combat>(this->playerID))
-    {
-      hpPercent = playerCombat.health * 0.01f;
-      maxHpPercent = playerCombat.maxHealth * 0.01f;
-    }
-  float xPos = -720.f;
-  float yPos = -500.f;
-  float xSize = 1024.f * 0.35f;
-  float ySize = 64.f * 0.35f;
+	Combat& playerCombat = this->getComponent<Combat>(this->playerID);
+	this->getUIRenderer()->setTexture(abilityTextures[playerCombat.ability.abilityType]);
+	this->getUIRenderer()->renderTexture(glm::vec2(890.f, -390.f), glm::vec2(100.0f));
 
-  this->getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
-  this->getUIRenderer()->renderTexture(
-      glm::vec2(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos),
-      glm::vec2((xSize * maxHpPercent) + 10, ySize + 10)
-  );
-  this->getUIRenderer()->setTexture(this->hpBarTextureID);
-  this->getUIRenderer()->renderTexture(
-      glm::vec2(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos),
-      glm::vec2(xSize * hpPercent, ySize)
-  );
+	float perkXPos = -720.f;
+	float perkYPos = -500.f;
+	for (size_t i = 0; i < 4; i++)
+	{
+		this->getUIRenderer()->setTexture(perkTextures[playerCombat.perks[i].perkType]);
+		this->getUIRenderer()->renderTexture(glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f), glm::vec2(70.0f));
+	}
 
 #ifdef _CONSOLE
 

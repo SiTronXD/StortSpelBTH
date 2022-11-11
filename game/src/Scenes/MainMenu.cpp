@@ -31,6 +31,10 @@ void MainMenu::init()
 
 void MainMenu::start()
 {
+	this->getAudioHandler()->setMusic("assets/Sounds/BackgroundMusic.ogg");
+	this->getAudioHandler()->setMasterVolume(0.5f);
+	this->getAudioHandler()->setMusicVolume(1.f);
+	this->getAudioHandler()->playMusic();
   this->playButton = this->createEntity();
   this->joinGameButton = this->createEntity();
   this->settingsButton = this->createEntity();

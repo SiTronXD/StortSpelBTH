@@ -516,6 +516,7 @@ BTStatus SwarmBT::die(Entity entityID)
 		perkRb.gravityMult = 6.f;
 		perkRb.velocity = glm::normalize(spawnDir) * 20.f;
 		sceneHandler->getScene()->setComponent<Perks>(perkEnt, perk);
+		sceneHandler->getScene()->setComponent<PointLight>(perkEnt, glm::vec3(5.f, 7.f, 9.f));
 	}
 	else if (spawnLoot == 2)
 	{
@@ -534,6 +535,7 @@ BTStatus SwarmBT::die(Entity entityID)
 		abilityRb.gravityMult = 4.f;
 		abilityRb.velocity = glm::normalize(spawnDir) * 40.f;
 		sceneHandler->getScene()->setComponent<Abilities>(abilityEnt, ability);
+		sceneHandler->getScene()->setComponent<PointLight>(abilityEnt, glm::vec3(7.f, 9.f, 5.f));
 	}
 
 	//TODO: Sometgin goes wrong when we remove from group.
