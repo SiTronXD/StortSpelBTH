@@ -29,7 +29,10 @@ void MainMenu::init()
 
 void MainMenu::start()
 {
-
+	this->getAudioHandler()->setMusic("assets/Sounds/BackgroundMusic.ogg");
+	this->getAudioHandler()->setMasterVolume(0.5f);
+	this->getAudioHandler()->setMusicVolume(1.f);
+	this->getAudioHandler()->playMusic();
 }
 
 void MainMenu::update()

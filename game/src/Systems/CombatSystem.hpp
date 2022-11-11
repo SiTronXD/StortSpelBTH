@@ -309,6 +309,7 @@ public:
 
 				this->heal = this->scene->createEntity();
 				this->scene->setComponent<MeshComponent>(this->heal, this->healingMesh);
+				this->scene->setComponent<PointLight>(this->heal, glm::vec3(9.f, 7.f, 9.f));
 				Transform& healTrans = this->scene->getComponent<Transform>(this->heal);
 				Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
 				healTrans.position = glm::vec3(playerTrans.position.x, 0.f, playerTrans.position.z);
@@ -473,10 +474,11 @@ public:
 		this->scene->setComponent<Collider>(entity, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
 		this->scene->setComponent<Rigidbody>(entity);
 		this->scene->setComponent<Perks>(entity, perk);
+		this->scene->setComponent<PointLight>(entity, glm::vec3(5.f, 7.f, 9.f));
 		Transform& perkTrans = this->scene->getComponent<Transform>(entity);
 		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
 		Rigidbody& perkRb = this->scene->getComponent<Rigidbody>(entity);
-		perkTrans.position = playerTrans.position;
+		perkTrans.position = glm::vec3(playerTrans.position.x, playerTrans.position.y + 8.f, playerTrans.position.z);
 		perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
 		playerTrans.updateMatrix();
 		glm::vec3 throwDir = glm::normalize(playerTrans.forward());
@@ -546,10 +548,11 @@ public:
 		this->scene->setComponent<Collider>(entity, Collider::createSphere(4.f, glm::vec3(0, 0, 0), true));
 		this->scene->setComponent<Rigidbody>(entity);
 		this->scene->setComponent<Abilities>(entity, ability);
+		this->scene->setComponent<PointLight>(entity, glm::vec3(7.f, 9.f, 5.f));
 		Transform& perkTrans = this->scene->getComponent<Transform>(entity);
 		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
 		Rigidbody& perkRb = this->scene->getComponent<Rigidbody>(entity);
-		perkTrans.position = playerTrans.position;
+		perkTrans.position = glm::vec3(playerTrans.position.x, playerTrans.position.y + 8.f, playerTrans.position.z);
 		perkTrans.scale = glm::vec3(4.f, 4.f, 4.f);
 		playerTrans.updateMatrix();
 		glm::vec3 throwDir = glm::normalize(playerTrans.forward());
