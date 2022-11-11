@@ -374,10 +374,10 @@ void GameScene::aiExample()
     }
 
 	//TANK
+	static TankFSM tankFSM;
+	this->aiHandler->addFSM(&tankFSM, "tankFSM");
 	for(int i = 0; i < 1; i++)
 	{
-		/*static TankFSM tankFSM;
-		this->aiHandler->addFSM(&tankFSM, "tankFSM");
 		int tank = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 		this->tankIDs.push_back(this->createEntity());
 		this->setComponent<MeshComponent>(this->tankIDs.back(), tank);
@@ -392,13 +392,13 @@ void GameScene::aiExample()
 		transform.scale = glm::vec3(3.0f, 3.0f, 3.0f);
 		this->setComponent<Collider>(this->tankIDs.back(), Collider::createSphere(4.0f*transform.scale.x));
 		this->aiHandler->createAIEntity(this->tankIDs.back(), "tankFSM");
-		this->setInactive(this->tankIDs.back());*/
+		this->setInactive(this->tankIDs.back());
 	}
 	//stnky LICH
+	static LichFSM lichFSM;
+	this->aiHandler->addFSM(&lichFSM, "lichFSM");
 	for(int i = 0; i < 1; i++)
 	{
-		static LichFSM lichFSM;
-		this->aiHandler->addFSM(&lichFSM, "lichFSM");
 		int lich = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 		this->lichIDs.push_back(this->createEntity());
 		this->setComponent<MeshComponent>(this->lichIDs.back(), lich);
@@ -429,6 +429,30 @@ bool GameScene::allDead()
 			break;
 		}
 	}
+	if(ret)
+	{
+		for(auto p: tankIDs)
+		{
+			if(this->isActive(p))
+			{
+				ret = false;
+				break;
+			}
+		}
+		if(ret)
+		{
+			for(auto p: lichIDs)
+			{
+				if(this->isActive(p))
+				{
+					ret = false;
+					break;
+				}
+			}
+		}
+		
+	}
+	
 	return ret;
 }
 
@@ -443,36 +467,6 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 		{
 			this->newRoomFrame = true;
 
-			/*int idx = 0;
-			int randNumEnemies = rand() % 8 + 3;
-			int counter = 0;
-			const std::vector<Entity>& entites = roomHandler.getFreeTiles();
-			for (Entity entity : entites)
-			{
-				if (idx != 10 && randNumEnemies - counter != 0)
-				{
-					this->setActive(this->enemyIDs[idx]);
-					Transform& transform = this->getComponent<Transform>(this->enemyIDs[idx]);
-					Transform& tileTrans = this->getComponent<Transform>(entity);
-					float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
-					transform.position = tileTrans.position;
-					transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
-                
-
-					//Temporary enemie reset
-					SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs[idx]);
-					transform.scale.y = 1.0f;
-					swarmComp.life = swarmComp.FULL_HEALTH;
-					swarmComp.group->inCombat = false;
-					
-					swarmComp.group->aliveMembers.push(0); // TODO: This should be done somewhere else... Like in SwarmFSM/BT
-
-					idx++;
-					counter++;
-				
-				}
-			}*/
-
 			int swarmIdx = 0;
 			int lichIdx = 0;
 			int tankIdx = 0;
@@ -484,18 +478,18 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 				if (randNumEnemies - counter != 0)
 				{
 					
-					if(tankIdx < 0)
+					if(tankIdx < 1)
 					{
-						/*this->setActive(this->tankIDs[tankIdx]);
+						this->setActive(this->tankIDs[tankIdx]);
 						Transform& transform = this->getComponent<Transform>(this->tankIDs[tankIdx]);
 						Transform& tileTrans = this->getComponent<Transform>(tile);
 						float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
 						transform.position = tileTrans.position;
 						transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
 
-						tankIdx++;*/
+						tankIdx++;
 					}
-					else if(lichIdx < 1)
+					else if(lichIdx < 0)
 					{
 						this->setActive(this->lichIDs[lichIdx]);
 						Transform& transform = this->getComponent<Transform>(this->lichIDs[lichIdx]);
@@ -506,7 +500,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 
 						lichIdx++;
 					}
-					else if(swarmIdx < (randNumEnemies-tankIdx-lichIdx))
+					else if(swarmIdx < 0)
 					{
 						this->setActive(this->swarmIDs[swarmIdx]);
 						Transform& transform = this->getComponent<Transform>(this->swarmIDs[swarmIdx]);

@@ -3,6 +3,9 @@
 #include "TankBTs.hpp"
 #include "../../../Components/AICombatTank.hpp"
 #include "../Swarm/SwarmFSM.hpp"
+#include "../Lich/LichFSM.hpp"
+
+#include <vector>
 
 struct TankComponent
 {
@@ -16,6 +19,7 @@ struct TankComponent
     float peronalSpaceRadius    = 90 ; // This is my personal space, get away!
 
 	Entity firendTarget;
+	std::vector<int> friendsInSight;
 
 
 };
@@ -33,6 +37,8 @@ private:
 	static bool shieldToIdle(Entity entityID);
 
     static bool toDead(Entity entityID);
+
+	static void updateFriendsInSight(Entity entityID, Scene* scene);
 
 	EntityEvent idle_to_alert{		"idle to alert",	idleToAler};
 	EntityEvent alert_to_combat{	"alert to combat",	alertToCombat};
