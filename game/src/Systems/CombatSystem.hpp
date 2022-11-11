@@ -313,7 +313,7 @@ public:
 
 				this->heal = this->scene->createEntity();
 				this->scene->setComponent<MeshComponent>(this->heal, this->healingMesh);
-				this->scene->setComponent<PointLight>(this->heal, glm::vec3(9.f, 7.f, 9.f));
+				this->scene->setComponent<PointLight>(this->heal, { glm::vec3(0.f, 10.f, 0.f), glm::vec3(9.f, 7.f, 9.f) });
 				Transform& healTrans = this->scene->getComponent<Transform>(this->heal);
 				Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
 				healTrans.position = glm::vec3(playerTrans.position.x, 0.f, playerTrans.position.z);
