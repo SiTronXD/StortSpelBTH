@@ -1,4 +1,4 @@
-#include "GameScene.h"
+#include "GameSceneNetwork.h"
 
 #include "../Systems/AiCombatSystem.hpp"
 #include "../Systems/AiMovementSystem.hpp"
@@ -14,13 +14,13 @@ void decreaseFps();
 double heavyFunction(double value);
 #endif
 
-GameScene::GameScene() :
+GameSceneNetwork::GameSceneNetwork() :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
     perk1(-1), perk2(-1), ability(-1)
 {
 }
 
-GameScene::~GameScene()
+GameSceneNetwork::~GameSceneNetwork()
 {
   for (auto& p : swarmGroups)
     {
@@ -28,27 +28,8 @@ GameScene::~GameScene()
     }
 }
 
-void GameScene::init()
+void GameSceneNetwork::init()
 {
-
-  TextureSamplerSettings samplerSettings{};
-  samplerSettings.filterMode = vk::Filter::eNearest;
-  samplerSettings.unnormalizedCoordinates = VK_TRUE;
-
-  int fontTextureId = Scene::getResourceManager()->addTexture(
-      "assets/textures/UI/testBitmapFont.png", {samplerSettings, true}
-  );
-  Scene::getUIRenderer()->setBitmapFont(
-      {"abcdefghij",
-       "klmnopqrst",
-       "uvwxyz+-.'",
-       "0123456789",
-       "!?,<>:()#^",
-       "@%        "},
-      fontTextureId,
-      glm::uvec2(16, 16)
-  );
-
   int swarm =
       this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 
@@ -60,7 +41,7 @@ void GameScene::init()
   );
   roomHandler.generate();
   createPortal();
-  // simon
+
   ResourceManager* resourceMng = this->getResourceManager();
   abilityTextures[0] =
       resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
@@ -80,8 +61,14 @@ void GameScene::init()
   // Temporary light
   Entity directionalLightEntity = this->createEntity();
   this->setComponent<DirectionalLight>(
-      directionalLightEntity, glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.6f)
+      directionalLightEntity, glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(1.0f)
   );
+
+  Entity sun = this->createEntity();
+  this->setComponent<DirectionalLight>(sun);
+  DirectionalLight& light = this->getComponent<DirectionalLight>(sun);
+  light.color = glm::vec3(1.f, 0.8f, 0.5f);
+  light.direction = glm::normalize(glm::vec3(-1.f));
 
   this->createSystem<HealthBarSystem>(
       this->hpBarBackgroundTextureID,
@@ -91,15 +78,23 @@ void GameScene::init()
   );
 }
 
-void GameScene::start()
+void GameSceneNetwork::start()
 {
+  int swarm =
+      this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+  int playerModel = this->getResourceManager()->addAnimations(
+      std::vector<std::string>({"assets/models/Character/CharRun.fbx"}),
+      "assets/textures/playerMesh"
+  );
+
+  this->getNetworkHandler()->setMeshes("blob", swarm);
+  this->getNetworkHandler()->setMeshes("range", swarm);
+  this->getNetworkHandler()->setMeshes("tank", swarm);
+  this->getNetworkHandler()->setMeshes("PlayerMesh", playerModel);
+
+  this->getNetworkHandler()->createPlayers();
   std::string playerName = "playerID";
   this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
-
-  this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
-  this->getAudioHandler()->setMasterVolume(0.5f);
-  this->getAudioHandler()->setMusicVolume(1.f);
-  this->getAudioHandler()->playMusic();
 
   this->setComponent<Combat>(playerID);
   this->createSystem<CombatSystem>(
@@ -110,20 +105,6 @@ void GameScene::start()
       this->getUIRenderer(),
       this->getDebugRenderer()
   );
-
-	this->perk = this->createEntity();
-	int perkHp = this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
-	this->setComponent<MeshComponent>(this->perk, perkHp);
-	Transform& perkTrans = this->getComponent<Transform>(this->perk);
-	perkTrans.position = glm::vec3(30.f, 5.f, 20.f);
-	perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
-    this->setComponent<Collider>(
-        this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-	this->setComponent<PointLight>(this->perk, glm::vec3(5.f, 7.f, 9.f));
-	this->setComponent<Perks>(this->perk);
-	Perks& perkSetting = this->getComponent<Perks>(this->perk);
-	perkSetting.multiplier = 0.2f;
-	perkSetting.perkType = hpUpPerk;
 
   this->ability = this->createEntity();
   int knockback =
@@ -136,7 +117,6 @@ void GameScene::start()
       this->ability, Collider::createSphere(4.f, glm::vec3(0), true)
   );
   this->setComponent<Abilities>(this->ability, healAbility);
-  this->setComponent<PointLight>(this->ability, glm::vec3(7.f, 9.f, 5.f));
 
   this->perk = this->createEntity();
   int perkHp = this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
@@ -147,29 +127,14 @@ void GameScene::start()
   this->setComponent<Collider>(
       this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true)
   );
-  this->setComponent<PointLight>(this->perk, glm::vec3(5.f, 7.f, 9.f));
   this->setComponent<Perks>(this->perk);
   Perks& perkSetting = this->getComponent<Perks>(this->perk);
   perkSetting.multiplier = 1.f;
   perkSetting.perkType = hpUpPerk;
 
-	this->perk2 = this->createEntity();
-	int perkAtkSpeed = this->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");
-	this->setComponent<MeshComponent>(this->perk2, perkAtkSpeed);
-	Transform& perkTrans2 = this->getComponent<Transform>(this->perk2);
-	perkTrans2.position = glm::vec3(30.f, 5.f, 0.f);
-	perkTrans2.scale = glm::vec3(2.f, 2.f, 2.f);
-    this->setComponent<Collider>(
-        this->perk2, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-	this->setComponent<PointLight>(this->perk2, glm::vec3(5.f, 7.f, 9.f));
-	this->setComponent<Perks>(this->perk2);
-	Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
-	perkSetting2.multiplier = 0.5f;
-	perkSetting2.perkType = attackSpeedUpPerk;
-
   this->perk1 = this->createEntity();
   int perkDmg =
-      this->getResourceManager()->addMesh("assets/models/Perk_Dmg.obj");
+      this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
   this->setComponent<MeshComponent>(this->perk1, perkDmg);
   Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
   perkTrans1.position = glm::vec3(30.f, 5.f, -20.f);
@@ -177,11 +142,10 @@ void GameScene::start()
   this->setComponent<Collider>(
       this->perk1, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true)
   );
-  this->setComponent<PointLight>(this->perk1, glm::vec3(5.f, 7.f, 9.f));
   this->setComponent<Perks>(this->perk1);
   Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
   perkSetting1.multiplier = 0.2f;
-  perkSetting1.perkType = dmgUpPerk;
+  perkSetting1.perkType = hpUpPerk;
 
   this->perk2 = this->createEntity();
   int perkAtkSpeed =
@@ -193,7 +157,6 @@ void GameScene::start()
   this->setComponent<Collider>(
       this->perk2, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true)
   );
-  this->setComponent<PointLight>(this->perk2, glm::vec3(5.f, 7.f, 9.f));
   this->setComponent<Perks>(this->perk2);
   Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
   perkSetting2.multiplier = 1.f;
@@ -206,7 +169,7 @@ void GameScene::start()
   aiExample();
 }
 
-void GameScene::update()
+void GameSceneNetwork::update()
 {
   if (allDead() && this->newRoomFrame)
     {
@@ -241,6 +204,18 @@ void GameScene::update()
     }
 
   Combat& playerCombat = this->getComponent<Combat>(this->playerID);
+  /*switch (playerCombat.ability.abilityType)
+	{
+	case knockbackAbility:
+		this->getUIRenderer()->setTexture(abilityTextures[knockbackAbility]);
+		break;
+	case healAbility:
+		this->getUIRenderer()->setTexture(abilityTextures[healAbility]);
+		break;
+	case emptyAbility:
+		this->getUIRenderer()->setTexture(abilityTextures[emptyAbility]);
+		break;
+	}*/
   this->getUIRenderer()->setTexture(
       abilityTextures[playerCombat.ability.abilityType]
   );
@@ -252,6 +227,25 @@ void GameScene::update()
   float perkYPos = -500.f;
   for (size_t i = 0; i < 4; i++)
     {
+      /*switch (playerCombat.perks[i].perkType)
+		{
+		case hpUpPerk:
+			this->getUIRenderer()->setTexture(perkTextures[hpUpPerk]);
+			this->getUIRenderer()->renderTexture(glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f), glm::vec2(70.0f));
+			break;
+		case dmgUpPerk:
+			this->getUIRenderer()->setTexture(perkTextures[dmgUpPerk]);
+			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
+			break;
+		case attackSpeedUpPerk:
+			this->getUIRenderer()->setTexture(perkTextures[attackSpeedUpPerk]);
+			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
+			break;
+		case emptyPerk:
+			this->getUIRenderer()->setTexture(perkTextures[emptyPerk]);
+			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
+			break;
+		}*/
       this->getUIRenderer()->setTexture(
           perkTextures[playerCombat.perks[i].perkType]
       );
@@ -276,12 +270,12 @@ void GameScene::update()
 
   this->getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
   this->getUIRenderer()->renderTexture(
-      glm::vec2(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos + 20.f),
+      glm::vec2(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos),
       glm::vec2((xSize * maxHpPercent) + 10, ySize + 10)
   );
   this->getUIRenderer()->setTexture(this->hpBarTextureID);
   this->getUIRenderer()->renderTexture(
-      glm::vec2(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos + 20.f),
+      glm::vec2(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos),
       glm::vec2(xSize * hpPercent, ySize)
   );
 
@@ -312,7 +306,7 @@ void GameScene::update()
 #endif
 }
 
-void GameScene::aiExample()
+void GameSceneNetwork::aiExample()
 {
 
   auto a = [&](FSM* fsm, uint32_t entityId) -> void
@@ -380,17 +374,17 @@ void GameScene::aiExample()
         realScreenPos.y = (screenPos.y / screenPos.w) * 1080 / 2;
         realScreenPos.z = screenPos.z / screenPos.w;
 
-        //Scene::getUIRenderer()->setTexture(this->fontTextureIndex);
+        Scene::getUIRenderer()->setTexture(this->fontTextureIndex);
         Scene::getUIRenderer()->renderString(
             std::to_string(entityId),
             glm::vec2(realScreenPos.x, realScreenPos.y),
-            glm::vec2(20)
+            glm::vec2(20, 20)
         );
       }
 
     if (ImGui::Button("SWITCHsCENE"))
       {
-        this->switchScene(new GameScene(), "scripts/gamescene.lua");
+        this->switchScene(new GameSceneNetwork(), "scripts/gamescene.lua");
       }
     std::string playerString = "playerID";
     int playerID;
@@ -504,7 +498,7 @@ void GameScene::aiExample()
     }
 }
 
-bool GameScene::allDead()
+bool GameSceneNetwork::allDead()
 {
   bool ret = true;
   for (auto p : enemyIDs)
@@ -518,7 +512,7 @@ bool GameScene::allDead()
   return ret;
 }
 
-void GameScene::onTriggerStay(Entity e1, Entity e2)
+void GameSceneNetwork::onTriggerStay(Entity e1, Entity e2)
 {
   Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
 
@@ -614,12 +608,12 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
           numRoomsCleared >= this->roomHandler.getNumRooms() -
                                  1)  // -1 not counting start room
         {
-          this->switchScene(new GameScene(), "scripts/gamescene.lua");
+          this->switchScene(new GameSceneNetwork(), "scripts/gamescene.lua");
         }
     }
 }
 
-void GameScene::onTriggerEnter(Entity e1, Entity e2)
+void GameSceneNetwork::onTriggerEnter(Entity e1, Entity e2)
 {
   Entity ground = e1 == this->roomHandler.getFloor()   ? e1
                   : e2 == this->roomHandler.getFloor() ? e2
@@ -648,7 +642,7 @@ void GameScene::onTriggerEnter(Entity e1, Entity e2)
     }
 }
 
-void GameScene::onCollisionEnter(Entity e1, Entity e2)
+void GameSceneNetwork::onCollisionEnter(Entity e1, Entity e2)
 {
   if (this->hasComponents<SwarmComponent>(e1) &&
       this->hasComponents<SwarmComponent>(e2))
@@ -658,7 +652,7 @@ void GameScene::onCollisionEnter(Entity e1, Entity e2)
     }
 }
 
-void GameScene::onCollisionStay(Entity e1, Entity e2)
+void GameSceneNetwork::onCollisionStay(Entity e1, Entity e2)
 {
   Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
 
@@ -689,7 +683,7 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
     }
 }
 
-void GameScene::onCollisionExit(Entity e1, Entity e2)
+void GameSceneNetwork::onCollisionExit(Entity e1, Entity e2)
 {
 
   if (this->hasComponents<SwarmComponent>(e1) &&
@@ -700,7 +694,7 @@ void GameScene::onCollisionExit(Entity e1, Entity e2)
     }
 }
 
-void GameScene::createPortal()
+void GameSceneNetwork::createPortal()
 {
   glm::vec3 portalTriggerDims(6.f, 18.f, 1.f);
   glm::vec3 portalBlockDims(3.f, 18.f, 3.f);
@@ -734,42 +728,3 @@ void GameScene::createPortal()
   this->getComponent<Transform>(collider2).position.y += 9.f;
   this->setComponent<Collider>(collider2, Collider::createBox(portalBlockDims));
 }
-
-#ifdef _CONSOLE
-void decreaseFps()
-{
-  static double result = 1234567890.0;
-
-  static int num = 0;
-  if (ImGui::Begin("Debug"))
-    {
-      ImGui::Text("Fps %f", 1.f / Time::getDT());
-      ImGui::InputInt("Loops", &num);
-    }
-  ImGui::End();
-
-  for (int i = 0; i < num; i++)
-    {
-      result /= std::sqrt(heavyFunction(result));
-      result /= std::sqrt(heavyFunction(result));
-      result /= std::sqrt(heavyFunction(result));
-      result /= std::sqrt(heavyFunction(result));
-      result /= std::sqrt(heavyFunction(result));
-    }
-}
-
-double heavyFunction(double value)
-{
-  double result = 1234567890.0;
-  for (size_t i = 0; i < 3000; i++)
-    {
-      result /= std::sqrt(std::sqrt(std::sqrt(std::sqrt(value * 0.892375892))));
-      result /= std::sqrt(std::sqrt(std::sqrt(std::sqrt(value * 1.476352734))));
-      result /= std::sqrt(std::sqrt(std::sqrt(std::sqrt(value * 2.248923885))));
-      result /= std::sqrt(std::sqrt(std::sqrt(std::sqrt(value * 3.691284908))));
-      result /= std::sqrt(std::sqrt(std::sqrt(std::sqrt(value * 3.376598278))));
-    }
-
-  return result;
-}
-#endif

@@ -26,7 +26,7 @@ player.camID = cam
 player.playerMesh = playerMesh
 player.playerAttackMesh = playerAttackMesh
 
-network.sendPlayer(player)
+network.sendPlayer(playerID)
 
 -- UI
 local uiID = scene.createEntity()

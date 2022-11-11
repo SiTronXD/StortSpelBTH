@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 
 #include <cmath>
 
@@ -6,7 +7,7 @@
 #include "../World Handling/Room Handler.h"
 #include "vengine.h"
 
-class GameScene : public Scene
+class GameSceneNetwork : public Scene
 {
 private:
   RoomHandler roomHandler;
@@ -35,8 +36,8 @@ private:
   uint32_t portalOnMesh;
 
 public:
-  GameScene();
-  virtual ~GameScene();
+  GameSceneNetwork();
+  virtual ~GameSceneNetwork();
 
   // Inherited via Scene
   virtual void init() override;
