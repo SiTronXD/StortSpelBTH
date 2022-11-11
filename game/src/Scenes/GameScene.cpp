@@ -35,7 +35,7 @@ void GameScene::init()
 	roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
 	roomHandler.generate();
 	createPortal();
-
+	// simon
 	ResourceManager* resourceMng = this->getResourceManager();
 	abilityTextures[0] =
 		resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
