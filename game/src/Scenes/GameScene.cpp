@@ -337,18 +337,17 @@ void GameScene::aiExample()
         }       
         
 	};
+	
+
+	//SWARM
 	static SwarmFSM swarmFSM;
-
 	this->aiHandler->addFSM(&swarmFSM, "swarmFSM");
-
-
 //TODO: Cause crash on second run, therefore disabled in distribution... 
 #ifdef _CONSOLE 
     this->aiHandler->addImguiToFSM("swarmFSM", a);
 #endif 
 
 	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
-	
     int numOfGroups = 4;
 	int group_size = 3;
     for(size_t j = 0; j < numOfGroups; j++)
@@ -356,29 +355,73 @@ void GameScene::aiExample()
         this->swarmGroups.push_back(new SwarmGroup);
         for (size_t i = 0; i < group_size; i++)
         {
-            this->enemyIDs.push_back(this->createEntity());
-            this->setComponent<MeshComponent>(this->enemyIDs.back(), swarm);
-            this->setComponent<AiCombatSwarm>(this->enemyIDs.back());
-            this->setComponent<Collider>(this->enemyIDs.back(), Collider::createSphere(4.0f));
-            this->setComponent<Rigidbody>(this->enemyIDs.back());
-			Rigidbody& rb = this->getComponent<Rigidbody>(this->enemyIDs.back());
+            this->swarmIDs.push_back(this->createEntity());
+            this->setComponent<MeshComponent>(this->swarmIDs.back(), swarm);
+            this->setComponent<AiCombatSwarm>(this->swarmIDs.back());
+            this->setComponent<Collider>(this->swarmIDs.back(), Collider::createSphere(4.0f));
+            this->setComponent<Rigidbody>(this->swarmIDs.back());
+			Rigidbody& rb = this->getComponent<Rigidbody>(this->swarmIDs.back());
             rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
 			rb.gravityMult = 5.0f;
 			rb.friction = 1.5f;
-            this->aiHandler->createAIEntity(this->enemyIDs.back(), "swarmFSM");
-            this->swarmGroups.back()->members.push_back(this->enemyIDs.back());
-            this->setInactive(this->enemyIDs.back());
-            this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->enemyIDs.back()).group = this->swarmGroups.back();
-            SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs.back());
+            this->aiHandler->createAIEntity(this->swarmIDs.back(), "swarmFSM");
+            this->swarmGroups.back()->members.push_back(this->swarmIDs.back());
+            this->setInactive(this->swarmIDs.back());
+            this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(this->swarmIDs.back()).group = this->swarmGroups.back();
+            SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->swarmIDs.back());
             swarmComp.life = 0;
         }
     }
+
+	//TANK
+	for(int i = 0; i < 1; i++)
+	{
+		/*static TankFSM tankFSM;
+		this->aiHandler->addFSM(&tankFSM, "tankFSM");
+		int tank = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+		this->tankIDs.push_back(this->createEntity());
+		this->setComponent<MeshComponent>(this->tankIDs.back(), tank);
+		this->setComponent<AiCombatTank>(this->tankIDs.back());
+		this->setComponent<Rigidbody>(this->tankIDs.back());
+		Rigidbody& rb = this->getComponent<Rigidbody>(this->tankIDs.back());
+		rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+		rb.gravityMult = 5.0f;
+		rb.friction = 3.0f;
+		rb.mass = 10.0f;
+		Transform& transform = this->getComponent<Transform>(this->tankIDs.back());
+		transform.scale = glm::vec3(3.0f, 3.0f, 3.0f);
+		this->setComponent<Collider>(this->tankIDs.back(), Collider::createSphere(4.0f*transform.scale.x));
+		this->aiHandler->createAIEntity(this->tankIDs.back(), "tankFSM");
+		this->setInactive(this->tankIDs.back());*/
+	}
+	//stnky LICH
+	for(int i = 0; i < 1; i++)
+	{
+		static LichFSM lichFSM;
+		this->aiHandler->addFSM(&lichFSM, "lichFSM");
+		int lich = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+		this->lichIDs.push_back(this->createEntity());
+		this->setComponent<MeshComponent>(this->lichIDs.back(), lich);
+		this->setComponent<AiCombatLich>(this->lichIDs.back());
+		this->setComponent<Rigidbody>(this->lichIDs.back());
+		Rigidbody& rb = this->getComponent<Rigidbody>(this->lichIDs.back());
+		rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+		rb.gravityMult = 5.0f;
+		rb.friction = 3.0f;
+		rb.mass = 10.0f;
+		Transform& transform = this->getComponent<Transform>(this->lichIDs.back());
+		transform.scale = glm::vec3(1.0f, 3.0f, 1.0f);
+		this->setComponent<Collider>(this->lichIDs.back(), Collider::createCapsule(4.0f, 4.0f*transform.scale.y));
+		this->aiHandler->createAIEntity(this->lichIDs.back(), "lichFSM");
+		this->setInactive(this->lichIDs.back());
+	}
+	
 }
 
 bool GameScene::allDead()
 {
 	bool ret = true;
-	for(auto p: enemyIDs)
+	for(auto p: swarmIDs)
 	{
 		if(this->isActive(p))
 		{
@@ -400,7 +443,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 		{
 			this->newRoomFrame = true;
 
-			int idx = 0;
+			/*int idx = 0;
 			int randNumEnemies = rand() % 8 + 3;
 			int counter = 0;
 			const std::vector<Entity>& entites = roomHandler.getFreeTiles();
@@ -428,7 +471,66 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 					counter++;
 				
 				}
+			}*/
+
+			int swarmIdx = 0;
+			int lichIdx = 0;
+			int tankIdx = 0;
+			int randNumEnemies = 10;
+			int counter = 0;
+			const std::vector<Entity>& tiles = roomHandler.getFreeTiles();
+			for (Entity tile : tiles)
+			{
+				if (randNumEnemies - counter != 0)
+				{
+					
+					if(tankIdx < 0)
+					{
+						/*this->setActive(this->tankIDs[tankIdx]);
+						Transform& transform = this->getComponent<Transform>(this->tankIDs[tankIdx]);
+						Transform& tileTrans = this->getComponent<Transform>(tile);
+						float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
+						transform.position = tileTrans.position;
+						transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
+
+						tankIdx++;*/
+					}
+					else if(lichIdx < 1)
+					{
+						this->setActive(this->lichIDs[lichIdx]);
+						Transform& transform = this->getComponent<Transform>(this->lichIDs[lichIdx]);
+						Transform& tileTrans = this->getComponent<Transform>(tile);
+						float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
+						transform.position = tileTrans.position;
+						transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
+
+						lichIdx++;
+					}
+					else if(swarmIdx < (randNumEnemies-tankIdx-lichIdx))
+					{
+						this->setActive(this->swarmIDs[swarmIdx]);
+						Transform& transform = this->getComponent<Transform>(this->swarmIDs[swarmIdx]);
+						Transform& tileTrans = this->getComponent<Transform>(tile);
+						float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
+						transform.position = tileTrans.position;
+						transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
+
+						//Temporary enemie reset
+						SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->swarmIDs[swarmIdx]);
+						transform.scale.y = 1.0f;
+						swarmComp.life = swarmComp.FULL_HEALTH;
+						swarmComp.group->inCombat = false;
+					
+						swarmComp.group->aliveMembers.push(0); 
+
+						swarmIdx++;
+					}
+					
+					counter++;
+				
+				}
 			}
+
 			for(SwarmGroup* group: this->swarmGroups)
 			{
 					//Set idle mid pos
