@@ -75,6 +75,18 @@ void GameScene::init()
 
 void GameScene::start()
 {
+  int swarm =
+      this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+  int playerModel = this->getResourceManager()->addAnimations(
+      std::vector<std::string>({"assets/models/Character/CharRun.fbx"}),
+      "assets/textures/playerMesh"
+  );
+
+  this->getNetworkHandler()->setMeshes("blob", swarm);
+  this->getNetworkHandler()->setMeshes("range", swarm);
+  this->getNetworkHandler()->setMeshes("tank", swarm);
+  this->getNetworkHandler()->setMeshes("PlayerMesh", playerModel);
+
 	this->getNetworkHandler()->createPlayers();
 	std::string playerName = "playerID";
 	this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);

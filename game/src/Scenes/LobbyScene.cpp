@@ -1,6 +1,6 @@
 #include "LobbyScene.h"
 #include "vengine/network/ServerGameModes/NetworkLobbyScene.h"
-#include "GameScene.h"
+#include "GameSceneNetwork.h"
 #include "MainMenu.h"
 
 LobbyScene::LobbyScene() {}
@@ -8,7 +8,13 @@ LobbyScene::~LobbyScene() {}
 
 void LobbyScene::init()
 {
-
+    //TODO : FIX THIS!
+  
+  int playerModel = this->getResourceManager()->addAnimations(
+      std::vector<std::string>({"assets/models/Character/CharRun.fbx"}), 
+      "assets/textures/playerMesh"
+  );
+  this->getNetworkHandler()->setMeshes("PlayerMesh", playerModel);
 
   TextureSamplerSettings samplerSettings{};
   samplerSettings.filterMode = vk::Filter::eNearest;
@@ -56,7 +62,7 @@ void LobbyScene::init()
   this->setComponent<UIArea>(this->disconnectButton, area);
 
   int mainPlayer = this->createEntity();
-  this->setComponent<MeshComponent>(mainPlayer);
+  this->setComponent<MeshComponent>(mainPlayer, playerModel);  //TODO : change to player model
   this->getComponent<Transform>(mainPlayer).position = playerPositions[0];
 }
 
@@ -132,7 +138,9 @@ void LobbyScene::update()
           //send two
           std::cout << "pressed start" << std::endl;
           this->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent{GameEvents::START});
-          this->getSceneHandler()->setScene(new GameScene(), "scripts/gamescene.lua");
+          this->getSceneHandler()->setScene(
+              new GameSceneNetwork(), "scripts/gamescene.lua"
+          );
         }
       
     }
@@ -142,7 +150,7 @@ void LobbyScene::update()
           this->getNetworkHandler()->getClient()->hasStarted())
         {
           this->getSceneHandler()->setScene(
-              new GameScene(), "scripts/gamescene.lua"
+              new GameSceneNetwork(), "scripts/gamescene.lua"
           );
       }
   }
