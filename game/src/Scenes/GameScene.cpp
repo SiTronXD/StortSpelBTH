@@ -30,6 +30,25 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
+
+  TextureSamplerSettings samplerSettings{};
+  samplerSettings.filterMode = vk::Filter::eNearest;
+  samplerSettings.unnormalizedCoordinates = VK_TRUE;
+
+  int fontTextureId = Scene::getResourceManager()->addTexture(
+      "assets/textures/UI/testBitmapFont.png", {samplerSettings, true}
+  );
+  Scene::getUIRenderer()->setBitmapFont(
+      {"abcdefghij",
+       "klmnopqrst",
+       "uvwxyz+-.'",
+       "0123456789",
+       "!?,<>:()#^",
+       "@%        "},
+      fontTextureId,
+      glm::uvec2(16, 16)
+  );
+
   int swarm =
       this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 
