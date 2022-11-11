@@ -28,17 +28,31 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
-  int swarm =
-      this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
-
-  roomHandler.init(
-      this,
-      this->getResourceManager(),
-      this->getConfigValue<int>("room_size"),
-      this->getConfigValue<int>("tile_types")
-  );
-  roomHandler.generate();
-  createPortal();
+	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+	
+	roomHandler.init(this, this->getResourceManager(), this->getConfigValue<int>("room_size"), this->getConfigValue<int>("tile_types"));
+	roomHandler.generate();
+	createPortal();
+	// simon
+	ResourceManager* resourceMng = this->getResourceManager();
+	abilityTextures[0] =
+		resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
+	abilityTextures[1] =
+		resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
+	abilityTextures[2] =
+		resourceMng->addTexture("assets/textures/UI/empty.png");
+	perkTextures[0] = 
+		resourceMng->addTexture("assets/textures/UI/hpUp.png");
+	perkTextures[1] = 
+		resourceMng->addTexture("assets/textures/UI/dmgUp.png");
+	perkTextures[2] = 
+		resourceMng->addTexture("assets/textures/UI/atkSpeedUp.png");
+	perkTextures[3] = 
+		resourceMng->addTexture("assets/textures/UI/empty.png");
+	this->hpBarBackgroundTextureID =
+		resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
+	this->hpBarTextureID = 
+		resourceMng->addTexture("assets/textures/UI/hpBar.png");
 
 	// Temporary light
 	Entity directionalLightEntity = this->createEntity();
