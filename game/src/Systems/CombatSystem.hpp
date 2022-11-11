@@ -694,22 +694,19 @@ public:
 							pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f));
 						this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f));
 
-						if (Input::isKeyPressed(Keys::E))
+						if (combat.ability.abilityType == emptyAbility)
 						{
-							if (combat.ability.abilityType == emptyAbility)
+							combat.ability = ability;
+							switch (combat.ability.abilityType)
 							{
-								combat.ability = ability;
-								switch (combat.ability.abilityType)
-								{
-								case knockbackAbility:
-									combat.ability.abilityType = knockbackAbility;
-									this->scene->removeEntity(hitID[i]);
-									break;
-								case healAbility:
-									combat.ability.abilityType = healAbility;
-									this->scene->removeEntity(hitID[i]);
-									break;
-								}
+							case knockbackAbility:
+								combat.ability.abilityType = knockbackAbility;
+								this->scene->removeEntity(hitID[i]);
+								break;
+							case healAbility:
+								combat.ability.abilityType = healAbility;
+								this->scene->removeEntity(hitID[i]);
+								break;
 							}
 						}
 					}
