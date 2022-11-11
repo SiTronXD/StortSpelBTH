@@ -101,7 +101,7 @@ void GameScene::start()
 	this->setComponent<PointLight>(this->perk, glm::vec3(5.f, 7.f, 9.f));
 	this->setComponent<Perks>(this->perk);
 	Perks& perkSetting = this->getComponent<Perks>(this->perk);
-	perkSetting.multiplier = 1.f;
+	perkSetting.multiplier = 0.2f;
 	perkSetting.perkType = hpUpPerk;
 
 	this->perk1 = this->createEntity();
@@ -129,7 +129,7 @@ void GameScene::start()
 	this->setComponent<PointLight>(this->perk2, glm::vec3(5.f, 7.f, 9.f));
 	this->setComponent<Perks>(this->perk2);
 	Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
-	perkSetting2.multiplier = 1.f;
+	perkSetting2.multiplier = 0.5f;
 	perkSetting2.perkType = attackSpeedUpPerk;
 
     // Ai management 

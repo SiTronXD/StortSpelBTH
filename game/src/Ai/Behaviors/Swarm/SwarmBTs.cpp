@@ -512,7 +512,7 @@ BTStatus SwarmBT::die(Entity entityID)
 	}
 	else if (spawnLoot == 2)
 	{
-		AbilityType abilityType = knockbackAbility; //(AbilityType)(rand() % 2);
+		AbilityType abilityType = (AbilityType)(rand() % 2);
 		Abilities ability{ .abilityType = abilityType };
 		Entity abilityEnt = sceneHandler->getScene()->createEntity();
 		sceneHandler->getScene()->setComponent<MeshComponent>(abilityEnt, SwarmBT::abilityMeshes[abilityType]);

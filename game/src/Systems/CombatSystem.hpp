@@ -71,8 +71,12 @@ public:
 					float distSqrd = glm::dot(playerToHeal, playerToHeal);
 					if (distSqrd < combat.healRadius * combat.healRadius)
 					{
-						float newHealth = combat.hpRegen * deltaTime;
-						combat.health += (int)(newHealth + 0.5f);
+						combat.hpRegenConverter += combat.hpRegen * deltaTime;
+						if (combat.hpRegenConverter > 1.f)
+						{
+							combat.health += (int)(combat.hpRegenConverter);
+							combat.hpRegenConverter = 0.f;
+						}
 					}
 				}
 			}
@@ -434,6 +438,10 @@ public:
 		{
 			setDefaultAtttackSpeed(combat);
 			combat.attackSpeedMultiplier -= perk.multiplier;
+			if (combat.attackSpeedMultiplier < 0.3f)
+			{
+				combat.attackSpeedMultiplier = 0.3f;
+			}
 		}
 		combat.lightAttackCd *= combat.attackSpeedMultiplier;
 		combat.heavyAttackCd *= combat.attackSpeedMultiplier;
@@ -549,15 +557,15 @@ public:
 		this->scene->setComponent<Rigidbody>(entity);
 		this->scene->setComponent<Abilities>(entity, ability);
 		this->scene->setComponent<PointLight>(entity, glm::vec3(7.f, 9.f, 5.f));
-		Transform& perkTrans = this->scene->getComponent<Transform>(entity);
+		Transform& abilityTrans = this->scene->getComponent<Transform>(entity);
 		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
-		Rigidbody& perkRb = this->scene->getComponent<Rigidbody>(entity);
-		perkTrans.position = glm::vec3(playerTrans.position.x, playerTrans.position.y + 8.f, playerTrans.position.z);
-		perkTrans.scale = glm::vec3(4.f, 4.f, 4.f);
+		Rigidbody& abilityRb = this->scene->getComponent<Rigidbody>(entity);
+		abilityTrans.position = glm::vec3(playerTrans.position.x, playerTrans.position.y + 8.f, playerTrans.position.z);
+		abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
 		playerTrans.updateMatrix();
 		glm::vec3 throwDir = glm::normalize(playerTrans.forward());
-		perkRb.gravityMult = 6.f;
-		perkRb.velocity = glm::vec3(throwDir.x * 20.f, 30.f, throwDir.z * 20.f);
+		abilityRb.gravityMult = 6.f;
+		abilityRb.velocity = glm::vec3(throwDir.x * 20.f, 30.f, throwDir.z * 20.f);
 	}
 
 	void spawnAbility(Abilities& ability)
@@ -614,7 +622,7 @@ public:
 					Perks& perk = this->scene->getComponent<Perks>(hitID[i]);
 
 					this->uiRenderer->renderString(
-						PERK_NAMES[perk.perkType] + " boost of " + std::to_string((int)((perk.multiplier + 1) * 100.0f)) + "%",
+						PERK_NAMES[perk.perkType] + " boost of " + std::to_string((int)((perk.multiplier) * 100.0f)) + "%",
 						pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f), 1.0f);
 					this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f), 1.0f);
 
@@ -628,31 +636,27 @@ public:
 							pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f));
 						this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f));
 
-						if (Input::isKeyPressed(Keys::E))
+						for (size_t j = 0; j < 4; j++)
 						{
-							for (size_t j = 0; j < 4; j++)
+							if (combat.perks[j].perkType == emptyPerk)
 							{
-								if (combat.perks[j].perkType == emptyPerk)
+								combat.perks[j] = perk;
+								switch (combat.perks[j].perkType)
 								{
-									combat.perks[j] = perk;
-									switch (combat.perks[j].perkType)
-									{
-									case hpUpPerk:
-										updateHealth(combat, combat.perks[j]);
-										break;
-									case dmgUpPerk:
-										updateDmg(combat, combat.perks[j]);
-										break;
-									case attackSpeedUpPerk:
-										updateAttackSpeed(combat, combat.perks[j]);
-										break;
-									}
-									j = 3;
+								case hpUpPerk:
+									updateHealth(combat, combat.perks[j]);
+									this->scene->removeEntity(hitID[i]);
+									break;
+								case dmgUpPerk:
+									updateDmg(combat, combat.perks[j]);
+									this->scene->removeEntity(hitID[i]);
+									break;
+								case attackSpeedUpPerk:
+									updateAttackSpeed(combat, combat.perks[j]);
+									this->scene->removeEntity(hitID[i]);
+									break;
 								}
-							}
-							if (this->scene->entityValid(hitID[i]))
-							{
-								this->scene->removeEntity(hitID[i]);
+								j = 4;
 							}
 						}
 					}
@@ -699,15 +703,13 @@ public:
 								{
 								case knockbackAbility:
 									combat.ability.abilityType = knockbackAbility;
+									this->scene->removeEntity(hitID[i]);
 									break;
 								case healAbility:
 									combat.ability.abilityType = healAbility;
+									this->scene->removeEntity(hitID[i]);
 									break;
 								}
-							}
-							if (this->scene->entityValid(hitID[i]))
-							{
-								this->scene->removeEntity(hitID[i]);
 							}
 						}
 					}
