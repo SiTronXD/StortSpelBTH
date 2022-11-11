@@ -15,8 +15,13 @@ struct Tile2
         TwoXTwo = 3
     };
 
+    Tile2(Type type, glm::ivec2 pos)
+        :type(type), position(pos)
+    {
+    }
+
     Type type = Type::Border;
-    glm::vec2 position;
+    glm::ivec2 position;
 };
 
 class RoomGen

@@ -67,6 +67,7 @@ private:
 
 	// Room generation 2
 	RoomGen roomGen;
+	int tileFloorMesh;
 
 	// Create Entities
 	Entity createTileEntity(int tileIndex, TileUsage usage);
