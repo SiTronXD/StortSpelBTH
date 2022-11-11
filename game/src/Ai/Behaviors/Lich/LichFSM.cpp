@@ -75,6 +75,7 @@ bool LichFSM::huntToCombat(Entity entityID)
     falseIfDead();
 
     int playerID = -1;
+    getPlayerID(playerID); 
     auto playerCombat = getPlayerCombat(playerID);
     if(playerCombat.health > 0){return true;}
 
@@ -86,6 +87,7 @@ bool LichFSM::escapeToCombat(Entity entityID)
     falseIfDead();
 
     int playerID = -1;
+    getPlayerID(playerID); 
     auto playerCombat = getPlayerCombat(playerID);
     auto lichComp = getLichComponent();
     auto playerTrans = getPlayerTrans(playerID);
@@ -105,6 +107,7 @@ bool LichFSM::escapeToIdle(Entity entityID)
     falseIfDead();
 
     int playerID = -1;
+    getPlayerID(playerID); 
     auto lichComp       = getLichComponent();
     auto playerTrans    = getPlayerTrans(playerID);
     auto lichTrans      = getLichTrans();
@@ -121,6 +124,7 @@ bool LichFSM::combatToIdle(Entity entityID)
     falseIfDead();
 
     int playerID = -1;
+    getPlayerID(playerID); 
     auto playerCombat   = getPlayerCombat(playerID);    
     
     if( playerCombat.health <= 0)
@@ -134,6 +138,7 @@ bool LichFSM::combatToHunt(Entity entityID)
     falseIfDead();
 
     int playerID = -1;
+    getPlayerID(playerID); 
     auto playerCombat   = getPlayerCombat(playerID);
     auto lichComp       = getLichComponent();
     auto playerTrans    = getPlayerTrans(playerID);

@@ -9,106 +9,107 @@
 void LichBT::registerEntityComponents(Entity entityId)
 {
     this->addRequiredComponent<LichComponent>(entityId);
+    addRequiredComponent<AiCombatLich>(entityId);
 }
 
 BTStatus LichBT::plunder(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::goToGrave(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::goToAlter(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::dropOffBones(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::carryingBones(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::creepyLook(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::huntingPlayer(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::playerInNoNoZone(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::hasMana(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::regenerateMana(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::pickBestStrategy(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::pickRandomStrategy(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::selfHeal(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::playerNotVisible(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::runAwayFromPlayer(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::attack(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::playDeathAnim(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::die(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 BTStatus LichBT::alerted(Entity entityID)
 {
-    return BTStatus::Success;
+    return BTStatus::Failure;
 }
 
 void Lich_idle::start()
@@ -213,5 +214,8 @@ void Lich_dead::start()
     Sequence*   animateThenDie  = c.c.sequence();
     Task*   die  = c.l.task("dies", LichBT::die);
     Task*   deathAnim  = c.l.task("dies", LichBT::playDeathAnim);
+
+    animateThenDie->addLeafs({deathAnim, die});
+
     this->setRoot(animateThenDie);
 }

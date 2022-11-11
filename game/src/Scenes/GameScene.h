@@ -6,6 +6,7 @@
 #include "../World Handling/Room Handler.h"
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
+#include "../Ai/Behaviors/Lich/LichFSM.hpp"
 
 class GameScene: public Scene
 {
@@ -23,9 +24,10 @@ private:
     int numRoomsCleared;
     bool newRoomFrame;
 
-    std::vector<int> enemyIDs;
+    std::vector<int> swarmIDs;
+    std::vector<int> lichIDs;
+    std::vector<int> tankIDs;
     std::vector<SwarmGroup*> swarmGroups;
-    Entity tankEnemy;
 
     uint32_t perkTextures[4];
     uint32_t fontTextureIndex;

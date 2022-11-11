@@ -204,5 +204,7 @@ void Tank_dead::start()
 	Task*		deathAnim				= c.l.task("playing death anim", TankBT::playDeathAnim);
 	Task*		death					= c.l.task("Dead, oof!", TankBT::die);
 
+	root->addLeafs({deathAnim, death});
+
 	this->setRoot(root);
 }
