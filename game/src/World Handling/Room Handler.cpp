@@ -196,17 +196,12 @@ void RoomHandler::genTilesOnly()
 		this->scene->getComponent<MeshComponent>(entity).meshID = tileFloorMesh;
 
 		Transform& transform = this->scene->getComponent<Transform>(entity);
-		//transform.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE);
 		transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
-		transform.rotation.y = (rand() % 4) * 90.f;
-		printf("pos: (%d,  %d)\n", tile.position.x, tile.position.y);
-		transform.position *= TILE_WIDTH * 0.1f;
-		//transform.scale *= TILE_WIDTH;
+		transform.position *= TILE_WIDTH;
+		transform.scale *= TILE_WIDTH;
 
 		this->rooms[0].tiles.emplace_back(entity);
-		
 	}
-	printf("Num: %d\n", this->roomGen.getNrTiles());
 }
 
 const std::vector<Entity>& RoomHandler::getFreeTiles()

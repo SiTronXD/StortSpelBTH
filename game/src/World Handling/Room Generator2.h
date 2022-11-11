@@ -1,7 +1,8 @@
 #pragma once
 #include "vengine.h"
 
-#define POS_IDX(x, y) WIDTH_NUM * y + x
+#define POS_TO_IDX(x, y) WIDTH_NUM * y + x
+#define IDX_TO_POS(idx) glm::ivec2(idx - WIDTH_NUM * (idx / WIDTH_NUM), idx / WIDTH_NUM)
 
 struct Tile2
 {
@@ -28,9 +29,10 @@ class RoomGen
 {
 public:
     static const uint32_t WIDTH_NUM = 15u;
-    static const uint32_t CIRCLE_RADIUS = 3u;
-    static const uint32_t NUM_BRANCHES = 3u;
-    static const uint32_t BRANCH_LENGTH = 2u;
+    static const uint32_t CIRCLE_RADIUS = 2u;
+    static const uint32_t NUM_BRANCH_MAIN = 4u;
+    static const uint32_t NUM_BRANCH_ITER = 2u;
+    static const uint32_t BRANCH_LENGTH = 3u;
 private:
     Tile2::Type* tiles2D;
     std::vector<Tile2> tiles;
