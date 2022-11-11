@@ -16,6 +16,8 @@
     <ClCompile Include="src\Scenes\LobbyScene.cpp" />
     <ClCompile Include="src\Scenes\logInScene.cpp" />
     <ClCompile Include="src\Scenes\GameSceneNetwork.cpp" />
+    <ClCompile Include="src\ServerGameModes\NetworkLobbyScene.cpp" />
+    <ClCompile Include="src\ServerGameModes\NetworkGameScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -47,6 +49,8 @@
     <ClInclude Include="src\Scenes\LobbyScene.h" />
     <ClInclude Include="src\Scenes\logInScene.h" />
     <ClInclude Include="src\Scenes\GameSceneNetwork.h" />
+    <ClInclude Include="src\ServerGameModes\NetworkLobbyScene.h" />
+    <ClInclude Include="src\ServerGameModes\NetworkGameScene.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
