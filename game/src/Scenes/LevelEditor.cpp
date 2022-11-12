@@ -22,6 +22,12 @@ void LevelEditor::init()
   this->getComponent<Transform>(floor).scale = glm::vec3(100.0f, 1.0f, 100.0f);
   this->getComponent<Transform>(floor).position = glm::vec3(0.0f, -1.0f, 0.0f);
   this->setComponent<Collider>(floor, Collider::createBox((glm::vec3(100.0f, 1.0f, 100.0f))));
+
+  Entity sun = this->createEntity();
+  this->setComponent<DirectionalLight>(sun);
+  DirectionalLight& light = this->getComponent<DirectionalLight>(sun);
+  light.color = glm::vec3(1.f, 0.8f, 0.5f);
+  light.direction = glm::normalize(glm::vec3(-1.f));
 }
 
 void LevelEditor::start()

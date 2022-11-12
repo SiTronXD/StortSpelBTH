@@ -28,6 +28,7 @@ private:
     int playButton;
     int joinGameButton;
     int settingsButton;
+    int levelEditButton;
     int quitButton;
     int howToPlayButton;
 
