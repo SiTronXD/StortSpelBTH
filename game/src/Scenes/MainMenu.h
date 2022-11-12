@@ -23,6 +23,20 @@ private:
     void howToPlay();
     void settings();
 
+    //buttons
+    //menu buttons
+    int playButton;
+    int joinGameButton;
+    int settingsButton;
+    int quitButton;
+    int howToPlayButton;
+
+    //settings button
+    int fullscreenButton;
+
+    //general button
+    int backButton;
+
 public:
     // Inherited via Scene
     virtual void init() override;

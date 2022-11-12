@@ -66,6 +66,7 @@ set(VENGINE_USE_PROFILING true)
 add_subdirectory(deps/vengine/src)
 
 target_include_directories(3D_VEngine_GameDemo PUBLIC  deps/vengine/src/vengine)           # Needed for vengine.h
+target_include_directories(3D_VEngine_GameDemo PUBLIC  deps/vengine/src/vengine/pch)       # Needed for vengine.h
 target_include_directories(3D_VEngine_GameDemo PUBLIC  deps/vengine/src/vengine/vengine)
 target_include_directories(3D_VEngine_GameDemo PUBLIC  deps/vengine/src/vengine/vengine/test) # Get testscene...? 
 target_link_libraries(3D_VEngine_GameDemo PUBLIC vengine::vengine) 

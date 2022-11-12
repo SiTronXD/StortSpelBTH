@@ -1,76 +1,67 @@
 #include "NetworkAI.h"
 
+#include "../ServerGameModes/TheServerGame.h"
 #include "../Systems/CameraMovementSystem.hpp"
 #include "../Systems/CombatSystem.hpp"
 #include "../Systems/MovementSystem.hpp"
 
-NetworkAI::NetworkAI(): camEntity(-1), player(-1) {}
+NetworkAI::NetworkAI() : camEntity(-1), player(-1) {}
 
 NetworkAI::~NetworkAI() {}
 
 void NetworkAI::init()
 {
-    //this->camEntity = this->createEntity();
-    //this->setComponent<Camera>(this->camEntity, 1.0f);
-    //this->setMainCamera(this->camEntity);
-    //Transform& camTransform = this->getComponent<Transform>(this->camEntity);
-    //camTransform.position   = glm::vec3(1.0f);
+  int groundMesh =
+      this->getResourceManager()->addMesh("vengine_assets/models/cube.obj");
 
-    this->player = this->createEntity();
-    //this->setComponent<MeshComponent>(this->player);
-    //this->setComponent<Movement>(this->player);
-    this->setComponent<Combat>(this->player);
-    Transform& transform = this->getComponent<Transform>(this->player);
-    transform.position = glm::vec3(0.66f, 0.f, 7.9f);
-    transform.rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
-    transform.scale = glm::vec3(5.0f);
-    //this->createSystem<CombatSystem>(this, player);
-    //this->createSystem<MovementSystem>(this, this->player);
+  //ground
+  int ground = this->createEntity();
+  this->setComponent<Collider>(
+      ground, Collider::createBox(glm::vec3(100, 1, 100))
+  );
+  this->setComponent<MeshComponent>(ground, groundMesh);
+  Transform& transform2 = this->getComponent<Transform>(ground);
+  transform2.position = glm::vec3(0.0f, -10.0f, 0.0f);
+  transform2.scale = glm::vec3(100.f, 0.1f, 100.f);
+}
+void NetworkAI::start()
+{
+  int cube = this->createEntity();
+  int a = this->getResourceManager()->addMesh("vengine_assets/models/cube.obj");
 
-    //this->createSystem<CameraMovementSystem>(this, this->player);
+  this->setComponent<MeshComponent>(cube, a);
+  this->setComponent<Collider>(cube, Collider::createBox(glm::vec3(8, 16, 1)));
+  auto& c = this->getComponent<Transform>(cube);
+  c.scale.x *= 8;
+  c.scale.y *= 16;
 
-    //ground
-    int ground = this->createEntity();
-    int groundMesh =
-        this->getResourceManager()->addMesh("vengine_assets/models/Cube.fbx");
+  c.position.z += 10.f;
 
-    this->setComponent<Transform>(ground);
-    this->setComponent<MeshComponent>(ground, groundMesh);
-    Transform& transform2 = this->getComponent<Transform>(ground);
-    transform2.position = glm::vec3(0.0f, -10.0f, 0.0f);
-    transform2.scale = glm::vec3(100.f, 0.1f, 100.f);
-
-    int puzzleCreator = this->createEntity();
-    this->setScriptComponent(puzzleCreator, "src/Scripts/PuzzleCreatorLua.lua");
+  this->getNetworkHandler()->sendAIPolygons({
+      glm::vec2{c.position.x + 4, c.position.z + 1.f},
+      glm::vec2{c.position.x - 4, c.position.z - 1.f},
+      glm::vec2{c.position.x + 4, c.position.z - 1.f},
+      glm::vec2{c.position.x - 4, c.position.z + 1.f},
+  });
 }
 
-#include "../ServerGameModes/TheServerGame.h"
 void NetworkAI::update()
 {
-    if (Input::isKeyPressed(Keys::B)) {
-        this->getNetworkHandler()->createServer(new TheServerGame());
-        this->getNetworkHandler()->createClient();
-        if (this->getNetworkHandler()->connectClientToThis())
-          {
-            std::cout << "connect" << std::endl;
-          }
-        else
-          {
-            std::cout << "no Connect" << std::endl;
-        }
-        //no visulation that we connected
+  if (Input::isKeyPressed(Keys::N))
+    {
+      this->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent{
+          GameEvents::START});
     }
-    if (Input::isKeyPressed(Keys::N)) {
-        this->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent { GameEvents::START });
-    }
-    if (Input::isKeyPressed(Keys::M)) {
-        this->getNetworkHandler()->createClient("Cli");
-        std::cout << "ip : ";
-        std::string ip;
-        std::cin >> ip;
-        if (ip == "a") {
-            ip = "192.168.1.104";
+  if (Input::isKeyPressed(Keys::M))
+    {
+      this->getNetworkHandler()->createClient("Cli");
+      std::cout << "ip : ";
+      std::string ip;
+      std::cin >> ip;
+      if (ip == "a")
+        {
+          ip = "192.168.1.104";
         }
-        this->getNetworkHandler()->connectClient(ip);
+      this->getNetworkHandler()->connectClient(ip);
     }
 }

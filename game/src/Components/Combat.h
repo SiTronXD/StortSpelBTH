@@ -5,41 +5,63 @@
 #include <chrono>
 #include "glm/glm.hpp"
 #include "../Components/Perks.h"
+#include "../Components/Abilities.h"
 
-enum ActiveAttack { noActive, spinActive, lightActive, heavyActive, comboActive };
+enum ActiveAttack { noActive, lightActive, heavyActive, comboActive, knockbackActive };
 
 struct Combat
 {
-	float maxHealth = 100.f;
-	float health = 100.f;
+	int maxHealth = 100;
+	int health = 100;
 	
+	// Damage for each kind of hit
 	float lightHit = 50.f;
 	float heavyHit = 75.f;
-
-	float comboLightHit = 100.f;
+	float comboLightHit = 50.f;
 	float comboMixHit = 125.f;
 	float comboHeavyHit = 150.f;
+	float knockbackHit = 25.f;
 
-	float lightAttackTime = 0.5f;
-	float heavyAttackTime = 1.f;
+	// Amount of time each attack takes
+	float lightAttackCd = 1.f;
+	float heavyAttackCd = 1.5f;
+	float comboLightCd = 2.f;
+	float comboHeavyCd = 2.f;
+	float comboMixCd = 2.f;
+	float knockbackCd = 10.f;
+	float healCd = 10.f;
 
-	// Probably make more combo timers
-	// Depends on if the combos should take different amount of time.
-	float comboLightTime = 1.5f;
-	float comboHeavyTime = 2.f;
-	float comboMixTime = 2.f;
-
+	// Different types of combos aviable
 	std::string comboOrder;
 	std::vector<std::string> combos;
 
+	// Timers to clear combo. Too long time between attacks = Combo cleared
 	float attackTimer = 0.f;
+	float knockbackTimer = 0.f;
+	float healTimer = 0.f;
 	float comboClearTimer = 0.f;
 	float comboClearDelay = 2.f;
 
-	Perks perks[3];
+	// Perks and their default multipliers.
+	Perks perks[4];
 	float hpMultiplier = 1.f;
 	float dmgMultiplier = 1.f;
 	float attackSpeedMultiplier = 1.f;
+
+	// Abilities
+	Abilities ability;
+
+	// Healing Values
+	bool isHealing = false;
+	float healRadius = 28.f;
+	float hpRegen = 10.f;
+	float hpRegenConverter = 0.f;
+
+	// Knockback values for each attack
+	float lightKnockback = 50.f;
+	float heavyKnockback = 80.f;
+	float comboKnockback = 120.f;
+	float specialKnockback = 100.f;
 
 	ActiveAttack activeAttack = noActive;
 };

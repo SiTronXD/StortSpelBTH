@@ -2,11 +2,26 @@
 
 enum PerkType : int
 {
-	hpUp = 0,
-	dmgUp = 1,
-	attackSpeedUp = 2,
-	empty = 3
+	hpUpPerk = 0,
+	dmgUpPerk = 1,
+	attackSpeedUpPerk = 2,
+	emptyPerk = 3
 };
+
+const static std::vector<std::string> PERK_NAMES
+{
+	"health",
+	"damage",
+	"attack speed",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+	"empty",
+}; // Just in case of future perks (no runtime errors during development)
 
 struct Perks
 {
