@@ -184,9 +184,11 @@ void RoomHandler::generate()
 
 void RoomHandler::genTilesOnly()
 {
-	this->roomGen.generate();
+	reset();
+
+	this->roomGen.generate(widthNum, circleRadius, numBranches, branchLength);
 	this->rooms.resize(1);
-	this->rooms[0].tiles.reserve(size_t(this->roomGen.getNrTiles()));
+	this->rooms[0].tiles.resize(size_t(this->roomGen.getNrTiles()));
 	for (int j = 0; j < this->roomGen.getNrTiles(); j++) 
 	{
 		const Tile2& tile = this->roomGen.getTile(j);
@@ -200,7 +202,7 @@ void RoomHandler::genTilesOnly()
 		transform.position *= TILE_WIDTH;
 		transform.scale *= TILE_WIDTH;
 
-		this->rooms[0].tiles.emplace_back(entity);
+		this->rooms[0].tiles[j] = entity;
 	}
 }
 
@@ -917,6 +919,7 @@ void RoomHandler::deactivateRoom(int index)
 #ifdef _CONSOLE
 void RoomHandler::imgui()
 {
+#if 0
 	if (ImGui::Begin("Debug"))
 	{
 		ImGui::PushItemWidth(-100.f);
@@ -961,6 +964,30 @@ void RoomHandler::imgui()
 		ImGui::PopItemWidth();
 	}
 	ImGui::End();
+#else
+	if (ImGui::Begin("Rooms"))
+	{
+		ImGui::PushItemWidth(-100.f);
+		
+		ImGui::InputInt("width", &widthNum, 1, 1);
+		ImGui::InputInt("radius", &circleRadius, 1, 1);
+		ImGui::InputInt("num branch", &numBranches, 1, 1);
+		ImGui::InputInt("branch length", &branchLength, 1, 1);
+
+		if (widthNum < 1)		widthNum = 1;
+		if (circleRadius < 1)	circleRadius = 1;
+		if (numBranches < 1)	numBranches = 1;
+		if (branchLength < 1)	branchLength = 1;
+
+		if (ImGui::Button("Reload"))
+		{
+			genTilesOnly();
+		}
+
+		ImGui::PopItemWidth();
+	}
+	ImGui::End();
+#endif
 }
 
 #endif // _CONSOLE

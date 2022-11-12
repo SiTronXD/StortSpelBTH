@@ -67,7 +67,12 @@ private:
 
 	// Room generation 2
 	RoomGen roomGen;
+	int widthNum = 15;
+	int circleRadius = 3;
+	int numBranches = 4;
+	int branchLength = 3;
 	int tileFloorMesh;
+
 
 	// Create Entities
 	Entity createTileEntity(int tileIndex, TileUsage usage);
