@@ -44,7 +44,7 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize,
 	// TwoXTwo
 
 	this->doorMeshID = resourceMan->addMesh("assets/models/door.obj");
-	this->tileFloorMesh = resourceMan->addMesh("assets/models/Tiles/Floor.obj");
+	this->tileFlorMeshId = resourceMan->addMesh("assets/models/Tiles/Floor.obj");
 
 }
 
@@ -186,16 +186,20 @@ void RoomHandler::genTilesOnly()
 {
 	reset();
 
-	this->roomGen.generate(widthNum, circleRadius, numBranches, branchLength);
 	this->rooms.resize(1);
-	this->rooms[0].tiles.resize(size_t(this->roomGen.getNrTiles()));
-	for (int j = 0; j < this->roomGen.getNrTiles(); j++) 
+
+	this->roomGen.set(roomGenDesc);
+	this->roomGen.generate();
+
+	this->rooms[0].tiles.resize(size_t(this->roomGen.getNumTiles()));
+
+	for (int j = 0; j < this->roomGen.getNumTiles(); j++)
 	{
 		const Tile2& tile = this->roomGen.getTile(j);
 
 		Entity entity = this->scene->createEntity();
 		this->scene->setComponent<MeshComponent>(entity);
-		this->scene->getComponent<MeshComponent>(entity).meshID = tileFloorMesh;
+		this->scene->getComponent<MeshComponent>(entity).meshID = tileFlorMeshId;
 
 		Transform& transform = this->scene->getComponent<Transform>(entity);
 		transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
@@ -204,6 +208,24 @@ void RoomHandler::genTilesOnly()
 
 		this->rooms[0].tiles[j] = entity;
 	}
+
+	this->rooms[0].borders.resize(size_t(this->roomGen.getNumBorders()));
+	for (int j = 0; j < this->roomGen.getNumBorders(); j++)
+	{
+		const Tile2& tile = this->roomGen.getBorder(j);
+
+		Entity entity = this->scene->createEntity();
+		this->scene->setComponent<MeshComponent>(entity);
+		this->scene->getComponent<MeshComponent>(entity).meshID = oneXOneMeshIds[1];
+
+		Transform& transform = this->scene->getComponent<Transform>(entity);
+		transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
+		transform.position *= TILE_WIDTH;
+
+		this->rooms[0].borders[j] = entity;
+	}
+
+	this->roomGen.clear();
 }
 
 const std::vector<Entity>& RoomHandler::getFreeTiles()
@@ -968,16 +990,37 @@ void RoomHandler::imgui()
 	if (ImGui::Begin("Rooms"))
 	{
 		ImGui::PushItemWidth(-100.f);
-		
-		ImGui::InputInt("width", &widthNum, 1, 1);
-		ImGui::InputInt("radius", &circleRadius, 1, 1);
+
+		int widthHeight = roomGenDesc.widthHeight;
+		int borderSize = roomGenDesc.borderSize;
+		int radius = roomGenDesc.radius;
+		int numBranches = roomGenDesc.numBranches;
+		int branchLength = roomGenDesc.branchLength;
+		int angle = roomGenDesc.maxAngle;
+		int branchDist = roomGenDesc.branchDist;
+
+		ImGui::InputInt("width", &widthHeight, 1, 1);
+		ImGui::InputInt("border", &borderSize, 1, 1);
+		ImGui::InputInt("radius", &radius, 1, 1);
 		ImGui::InputInt("num branch", &numBranches, 1, 1);
 		ImGui::InputInt("branch length", &branchLength, 1, 1);
+		ImGui::InputInt("branch dist", &branchDist, 1, 1);
+		ImGui::InputInt("angle", &angle, 1, 10);
 
-		if (widthNum < 1)		widthNum = 1;
-		if (circleRadius < 1)	circleRadius = 1;
+		if (widthHeight < 1)	widthHeight = 1;
+		if (radius < 1)			radius = 1;
 		if (numBranches < 1)	numBranches = 1;
 		if (branchLength < 1)	branchLength = 1;
+		if (angle < 0)			angle = 0;
+		if (branchDist < 1)		branchDist = 1;
+
+		roomGenDesc.widthHeight = widthHeight;
+		roomGenDesc.borderSize = borderSize;
+		roomGenDesc.radius = radius;
+		roomGenDesc.numBranches = numBranches;
+		roomGenDesc.branchLength = branchLength;
+		roomGenDesc.maxAngle = angle;
+		roomGenDesc.branchDist = branchDist;
 
 		if (ImGui::Button("Reload"))
 		{

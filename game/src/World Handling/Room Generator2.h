@@ -1,7 +1,7 @@
 #pragma once
 #include "vengine.h"
 
-#define VALID(vec) (vec.x >= 0 && vec.x < WIDTH_NUM && vec.y >= 0 && vec.y < WIDTH_NUM)
+#define VALID(vec, xySize) (vec.x >= 0 && vec.x < xySize && vec.y >= 0 && vec.y < xySize)
 
 struct Tile2
 {
@@ -28,12 +28,20 @@ struct Tile2
 class RoomGen
 {
 public:
-    uint32_t WIDTH_NUM = 15u;
-    uint32_t CIRCLE_RADIUS = 3u;
-    uint32_t NUM_BRANCHES = 4u;
-    uint32_t BRANCH_LENGTH = 3u;
+    struct RoomGenDescription
+    {
+        uint32_t widthHeight = 20u;
+        uint32_t borderSize = 3u;
+        uint32_t radius = 4u;
+        uint32_t numBranches = 4u;
+        uint32_t branchLength = 3u;
+        uint32_t branchDist = 3u;
+        uint32_t maxAngle = 90u;
+    };
 
 private:
+    RoomGenDescription desc;
+
     Tile2::Type** tiles2D;
     std::vector<Tile2> tiles;
     std::vector<Tile2> borders;
@@ -42,18 +50,23 @@ private:
     glm::vec2 exitTilesPos[4];
 
     void genCircle(const glm::ivec2& center);
+    void setBorders();
+    void finalize();
 
 public:
     RoomGen();
     ~RoomGen();
 
-    void generate(uint32_t width_num, uint32_t radius, uint32_t numBranches, uint32_t branchLength);
+    void set(const RoomGenDescription& desc);
+    void clear();
 
-    int getNrTiles() const;
-    int getNrBorders() const;
-    int getNrExitTiles() const;
+    void generate();
 
-    const Tile2& getTile(int index) const;
-    const Tile2& getBorder(int index) const;
-    const Tile2& getExitTiles(int index) const;
+    uint32_t getNumTiles() const;
+    uint32_t getNumBorders() const;
+    uint32_t getNumExitTiles() const;
+
+    const Tile2& getTile(uint32_t index) const;
+    const Tile2& getBorder(uint32_t index) const;
+    const Tile2& getExitTiles(uint32_t index) const;
 };

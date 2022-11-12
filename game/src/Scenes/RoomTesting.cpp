@@ -28,6 +28,10 @@ void RoomTesting::init()
 	this->setComponent<MeshComponent>(swarm, tileFloorMesh);
 	//this->getComponent<Transform>(swarm).scale *= RoomHandler::TILE_WIDTH;
 
+	//int playerMesh = this->getResourceManager()->addMesh("assets/models/Character/CharRun.fbx");
+	//player = this->createEntity();
+	//this->setComponent<MeshComponent>(player);
+	//this->getComponent<MeshComponent>(player).meshID = playerMesh;
 }
 
 void RoomTesting::start()
@@ -36,5 +40,36 @@ void RoomTesting::start()
 
 void RoomTesting::update()
 {
+#ifdef _CONSOLE
 	roomHandler.imgui();
+#endif // _CONSOLE
+
+
+	const float speed = 50.f * Time::getDT();
+
+	Entity cam = this->getMainCameraID();
+	Transform& camTra = this->getComponent<Transform>(cam);
+	if (Input::isKeyDown(Keys::A))
+		camTra.position.x += speed * 5.f;
+	if (Input::isKeyDown(Keys::D))
+		camTra.position.x -= speed * 5.f;
+	if (Input::isKeyDown(Keys::W))
+		camTra.position.z += speed * 5.f;
+	if (Input::isKeyDown(Keys::S))
+		camTra.position.z -= speed * 5.f;
+	if (Input::isKeyDown(Keys::E))
+		camTra.position.y += speed * 5.f;
+	if (Input::isKeyDown(Keys::Q))
+		camTra.position.y -= speed * 5.f;
+
+	return;
+	Transform& plaTra = this->getComponent<Transform>(player);
+	if (Input::isKeyDown(Keys::LEFT))
+		plaTra.position.x += speed;
+	if (Input::isKeyDown(Keys::RIGHT))
+		plaTra.position.x -= speed;
+	if (Input::isKeyDown(Keys::UP))
+		plaTra.position.z += speed;
+	if (Input::isKeyDown(Keys::DOWN))
+		plaTra.position.z -= speed;
 }
