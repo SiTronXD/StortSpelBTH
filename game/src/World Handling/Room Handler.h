@@ -120,7 +120,7 @@ public:
 
 	void init(Scene* scene, ResourceManager* resourceMan, int roomSize, int tileTypes);
 	void generate();
-	void genTilesOnly();
+	void generate2();
 
 #ifdef  _CONSOLE
 	void imgui();

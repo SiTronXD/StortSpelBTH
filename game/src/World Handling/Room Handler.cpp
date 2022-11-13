@@ -11,7 +11,7 @@ const uint32_t RoomHandler::NUM_TWO_X_TWO = 0;
 RoomHandler::RoomHandler()
 	:scene(nullptr), hasDoor{false, false, false, false},
 	activeIndex(0), nextIndex(-1), floor(-1),
-	doorMeshID(0)
+	doorMeshID(0), tileFlorMeshId(0)
 {
 }
 
@@ -182,20 +182,25 @@ void RoomHandler::generate()
 	}
 }
 
-void RoomHandler::genTilesOnly()
+void RoomHandler::generate2()
 {
 	reset();
 
 	this->rooms.resize(1);
 
-	this->roomGen.set(roomGenDesc);
+	int meshId = -1;
+
+	this->roomGen.setDesc(roomGenDesc);
 	this->roomGen.generate();
 
-	this->rooms[0].tiles.resize(size_t(this->roomGen.getNumTiles()));
 
-	for (int j = 0; j < this->roomGen.getNumTiles(); j++)
+	this->rooms[0].tiles.resize(size_t(this->roomGen.getNumTiles()));
+	for (uint32_t i = 0; i < this->roomGen.getNumTiles(); i++)
 	{
-		const Tile2& tile = this->roomGen.getTile(j);
+		//if (rand() % 3 < 2) { meshId = (int)this->oneXOneMeshIds[0]; }
+		//else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }
+		
+		const Tile2& tile = this->roomGen.getTile(i);
 
 		Entity entity = this->scene->createEntity();
 		this->scene->setComponent<MeshComponent>(entity);
@@ -206,23 +211,43 @@ void RoomHandler::genTilesOnly()
 		transform.position *= TILE_WIDTH;
 		transform.scale *= TILE_WIDTH;
 
-		this->rooms[0].tiles[j] = entity;
+		this->rooms[0].tiles[i] = entity;
 	}
 
-	this->rooms[0].borders.resize(size_t(this->roomGen.getNumBorders()));
-	for (int j = 0; j < this->roomGen.getNumBorders(); j++)
+	this->rooms[0].exitPaths.resize(size_t(this->roomGen.getNumExitTiles()));
+	for (uint32_t i = 0; i < this->roomGen.getNumExitTiles(); i++)
 	{
-		const Tile2& tile = this->roomGen.getBorder(j);
+		/*if (rand() % 3 < 2) { meshId = (int)this->oneXOneMeshIds[0]; }
+		else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }*/
+
+		const Tile2& tile = this->roomGen.getExitTile(i);
 
 		Entity entity = this->scene->createEntity();
 		this->scene->setComponent<MeshComponent>(entity);
-		this->scene->getComponent<MeshComponent>(entity).meshID = oneXOneMeshIds[1];
+		this->scene->getComponent<MeshComponent>(entity).meshID = tileFlorMeshId;
+
+		Transform& transform = this->scene->getComponent<Transform>(entity);
+		transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
+		transform.position *= TILE_WIDTH;
+		transform.scale *= TILE_WIDTH;
+
+		this->rooms[0].exitPaths[i] = entity;
+	}
+
+	this->rooms[0].borders.resize(size_t(this->roomGen.getNumBorders()));
+	for (uint32_t i = 0; i < this->roomGen.getNumBorders(); i++)
+	{
+		const Tile2& tile = this->roomGen.getBorder(i);
+
+		Entity entity = this->scene->createEntity();
+		this->scene->setComponent<MeshComponent>(entity);
+		this->scene->getComponent<MeshComponent>(entity).meshID = borderMeshIds[0];
 
 		Transform& transform = this->scene->getComponent<Transform>(entity);
 		transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
 		transform.position *= TILE_WIDTH;
 
-		this->rooms[0].borders[j] = entity;
+		this->rooms[0].borders[i] = entity;
 	}
 
 	this->roomGen.clear();
@@ -817,10 +842,9 @@ void RoomHandler::reset()
 		room.finished = false;
 	}																				  
 
-	for (int& id : this->pathIds)
+	for (const Entity& entity : this->pathIds)
 	{
-		this->scene->removeEntity(id);
-		id = -1;
+		this->scene->removeEntity(entity);
 	}
 	this->pathIds.clear();
 	
@@ -991,40 +1015,36 @@ void RoomHandler::imgui()
 	{
 		ImGui::PushItemWidth(-100.f);
 
-		int widthHeight = roomGenDesc.widthHeight;
 		int borderSize = roomGenDesc.borderSize;
 		int radius = roomGenDesc.radius;
 		int numBranches = roomGenDesc.numBranches;
-		int branchLength = roomGenDesc.branchLength;
+		int branchDepth = roomGenDesc.branchDepth;
 		int angle = roomGenDesc.maxAngle;
 		int branchDist = roomGenDesc.branchDist;
 
-		ImGui::InputInt("width", &widthHeight, 1, 1);
 		ImGui::InputInt("border", &borderSize, 1, 1);
 		ImGui::InputInt("radius", &radius, 1, 1);
 		ImGui::InputInt("num branch", &numBranches, 1, 1);
-		ImGui::InputInt("branch length", &branchLength, 1, 1);
+		ImGui::InputInt("branch depth", &branchDepth, 1, 1);
 		ImGui::InputInt("branch dist", &branchDist, 1, 1);
 		ImGui::InputInt("angle", &angle, 1, 10);
 
-		if (widthHeight < 1)	widthHeight = 1;
 		if (radius < 1)			radius = 1;
 		if (numBranches < 1)	numBranches = 1;
-		if (branchLength < 1)	branchLength = 1;
+		if (branchDepth < 1)	branchDepth = 1;
 		if (angle < 0)			angle = 0;
 		if (branchDist < 1)		branchDist = 1;
 
-		roomGenDesc.widthHeight = widthHeight;
 		roomGenDesc.borderSize = borderSize;
 		roomGenDesc.radius = radius;
 		roomGenDesc.numBranches = numBranches;
-		roomGenDesc.branchLength = branchLength;
+		roomGenDesc.branchDepth = branchDepth;
 		roomGenDesc.maxAngle = angle;
 		roomGenDesc.branchDist = branchDist;
 
 		if (ImGui::Button("Reload"))
 		{
-			genTilesOnly();
+			generate2();
 		}
 
 		ImGui::PopItemWidth();

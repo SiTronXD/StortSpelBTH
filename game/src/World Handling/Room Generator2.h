@@ -1,18 +1,17 @@
 #pragma once
 #include "vengine.h"
 
-#define VALID(vec, xySize) (vec.x >= 0 && vec.x < xySize && vec.y >= 0 && vec.y < xySize)
 
 struct Tile2
 {
     enum Type : int
     {
-        // values are currently dependant on obj names
-        Invalid = -1,
+        Unused = -1,
         Border = 0,
         OneXOne = 1,
         OneXTwo = 2,
-        TwoXTwo = 3
+        TwoXTwo = 3,
+        Exit = 4
     };
 
     Tile2() = default;
@@ -21,22 +20,24 @@ struct Tile2
     {
     }
 
-    Type type = Type::Invalid;
+    Type type = Type::Unused;
     glm::ivec2 position = glm::ivec2(0);
 };
 
 class RoomGen
 {
 public:
+    static const uint32_t WIDTH_HEIGHT = 30u;
+
     struct RoomGenDescription
     {
-        uint32_t widthHeight = 20u;
         uint32_t borderSize = 3u;
-        uint32_t radius = 4u;
+        uint32_t radius = 3u;
         uint32_t numBranches = 4u;
-        uint32_t branchLength = 3u;
+        uint32_t branchDepth = 3u;
         uint32_t branchDist = 3u;
         uint32_t maxAngle = 90u;
+        bool exits[4] = {true, true, true, true}; // true temp
     };
 
 private:
@@ -46,21 +47,29 @@ private:
     std::vector<Tile2> tiles;
     std::vector<Tile2> borders;
     std::vector<Tile2> exitPathsTiles;
-    glm::vec2 minMaxPos[4]; // x, -x, z, -z
-    glm::vec2 exitTilesPos[4];
+    glm::ivec2 minMaxPos[4]; // x, -x, z, -z
+    glm::ivec2 exitTilesPos[4];
 
     void genCircle(const glm::ivec2& center);
+
     void setBorders();
+    void setExits();
     void finalize();
+
+    // Helpers
+    inline Tile2::Type& getType(const glm::ivec2& pos);
+    inline bool isValid(const glm::ivec2& pos);
+    inline bool onEdge(const glm::ivec2& pos);
 
 public:
     RoomGen();
     ~RoomGen();
 
-    void set(const RoomGenDescription& desc);
+    void setDesc(const RoomGenDescription& desc);
     void clear();
-
     void generate();
+
+    const glm::ivec2* getMinMax() const;
 
     uint32_t getNumTiles() const;
     uint32_t getNumBorders() const;
@@ -68,5 +77,5 @@ public:
 
     const Tile2& getTile(uint32_t index) const;
     const Tile2& getBorder(uint32_t index) const;
-    const Tile2& getExitTiles(uint32_t index) const;
+    const Tile2& getExitTile(uint32_t index) const;
 };

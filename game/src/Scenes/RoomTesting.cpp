@@ -12,7 +12,7 @@ RoomTesting::~RoomTesting()
 void RoomTesting::init()
 {
 	this->roomHandler.init(this, this->getResourceManager(), 15, this->getConfigValue<int>("tile_types"));
-	this->roomHandler.genTilesOnly();
+	this->roomHandler.generate2();
 
 	Entity cam = this->createEntity();
 	this->setComponent<Camera>(cam);
@@ -22,16 +22,11 @@ void RoomTesting::init()
 	this->setComponent<DirectionalLight>(cam,
 		{glm::vec3(0.f, -1.f, 0.f), glm::vec3(1.f)});
 
-	int tileFloorMesh = this->getResourceManager()->addMesh("assets/models/Tiles/Floor.obj");
-	int meshId =  this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
-	Entity swarm = this->createEntity();
-	this->setComponent<MeshComponent>(swarm, tileFloorMesh);
-	//this->getComponent<Transform>(swarm).scale *= RoomHandler::TILE_WIDTH;
 
-	//int playerMesh = this->getResourceManager()->addMesh("assets/models/Character/CharRun.fbx");
-	//player = this->createEntity();
-	//this->setComponent<MeshComponent>(player);
-	//this->getComponent<MeshComponent>(player).meshID = playerMesh;
+	int playerMesh = this->getResourceManager()->addMesh("assets/models/Character/CharRun.fbx");
+	player = this->createEntity();
+	this->setComponent<MeshComponent>(player);
+	this->getComponent<MeshComponent>(player).meshID = playerMesh;
 }
 
 void RoomTesting::start()
@@ -62,7 +57,6 @@ void RoomTesting::update()
 	if (Input::isKeyDown(Keys::Q))
 		camTra.position.y -= speed * 5.f;
 
-	return;
 	Transform& plaTra = this->getComponent<Transform>(player);
 	if (Input::isKeyDown(Keys::LEFT))
 		plaTra.position.x += speed;
