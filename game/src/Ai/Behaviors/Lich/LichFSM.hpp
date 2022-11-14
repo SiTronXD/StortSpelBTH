@@ -19,6 +19,7 @@ struct LichComponent
     float attackRadius          = 70 ; // I'm actually able to shoot at you!
     float nonoRadius            = 40 ; // Too close, I will back away from you! (while shooting) 
 
+    bool inCombat               = false;
 
 };
 

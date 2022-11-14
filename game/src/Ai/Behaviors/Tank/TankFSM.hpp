@@ -7,19 +7,35 @@
 
 #include <vector>
 
+struct TankFriend
+{
+	int id;
+	bool swarm;
+};
+
 struct TankComponent
 {
 	TankComponent() {};
 
     int FULL_HEALTH = 300;  
     int life = FULL_HEALTH;
-    bool isDead(){return life<=0;}
 
     float sightRadius           = 100; // I'll can attack you
     float peronalSpaceRadius    = 90 ; // This is my personal space, get away!
 
+	//Bools
+    bool isDead(){return life<=0;}
+	bool inCombat				= false;
+
+	//Timers
+	float alertTimerOrig = 1.0f;
+	float alertTimer = alertTimerOrig;
+	float huntTimerOrig = 0.5f;
+	float huntTimer = huntTimerOrig;
+
+
 	Entity firendTarget;
-	std::vector<int> friendsInSight;
+	std::vector<TankFriend> friendsInSight;
 
 
 };
@@ -38,7 +54,6 @@ private:
 
     static bool toDead(Entity entityID);
 
-	static void updateFriendsInSight(Entity entityID, Scene* scene);
 
 	EntityEvent idle_to_alert{		"idle to alert",	idleToAler};
 	EntityEvent alert_to_combat{	"alert to combat",	alertToCombat};
@@ -55,7 +70,11 @@ private:
     EntityEvent combat_to_dead{		"shield to dead",	toDead};
 
 
-public:
+private:
+	//Helper functions
+	static void updateFriendsInSight(Entity entityID);
+	static bool playerInSight(Entity entityID);
+	static bool friendlysInFight(Entity entityID);
 protected:
 	// Inherited via FSM
 	virtual void registerEntityComponents(Entity entityId) override
