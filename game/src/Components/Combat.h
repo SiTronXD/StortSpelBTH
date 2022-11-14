@@ -23,12 +23,12 @@ struct Combat
 	float knockbackHit = 25.f;
 
 	// Amount of time each attack takes
-	float lightAttackCd = 0.5f;
-	float heavyAttackCd = 1.f;
-	float comboLightCd = 1.5f;
+	float lightAttackCd = 1.f;
+	float heavyAttackCd = 1.5f;
+	float comboLightCd = 2.f;
 	float comboHeavyCd = 2.f;
 	float comboMixCd = 2.f;
-	float knockbackCd = 5.f;
+	float knockbackCd = 10.f;
 	float healCd = 10.f;
 
 	// Different types of combos aviable
@@ -54,7 +54,8 @@ struct Combat
 	// Healing Values
 	bool isHealing = false;
 	float healRadius = 28.f;
-	float hpRegen = 350.f;
+	float hpRegen = 10.f;
+	float hpRegenConverter = 0.f;
 
 	// Knockback values for each attack
 	float lightKnockback = 50.f;

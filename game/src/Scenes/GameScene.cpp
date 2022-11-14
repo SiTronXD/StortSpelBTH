@@ -36,8 +36,7 @@ void GameScene::init()
   samplerSettings.unnormalizedCoordinates = VK_TRUE;
 
   int fontTextureId = Scene::getResourceManager()->addTexture(
-      "assets/textures/UI/testBitmapFont.png", {samplerSettings, true}
-  );
+      "assets/textures/UI/testBitmapFont.png", {samplerSettings, true});
   Scene::getUIRenderer()->setBitmapFont(
       {"abcdefghij",
        "klmnopqrst",
@@ -46,8 +45,7 @@ void GameScene::init()
        "!?,<>:()#^",
        "@%        "},
       fontTextureId,
-      glm::uvec2(16, 16)
-  );
+      glm::uvec2(16, 16));
 
   int swarm =
       this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
@@ -56,8 +54,7 @@ void GameScene::init()
       this,
       this->getResourceManager(),
       this->getConfigValue<int>("room_size"),
-      this->getConfigValue<int>("tile_types")
-  );
+      this->getConfigValue<int>("tile_types"));
   roomHandler.generate();
   createPortal();
   // simon
@@ -80,8 +77,7 @@ void GameScene::init()
   // Temporary light
   Entity directionalLightEntity = this->createEntity();
   this->setComponent<DirectionalLight>(
-      directionalLightEntity, glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.6f)
-  );
+      directionalLightEntity, glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.6f));
 
   this->createSystem<HealthBarSystem>(
       this->hpBarBackgroundTextureID,
@@ -93,89 +89,84 @@ void GameScene::init()
 
 void GameScene::start()
 {
-  std::string playerName = "playerID";
-  this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+    std::string playerName = "playerID";
+    this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+    
+    this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
+    this->getAudioHandler()->setMasterVolume(0.5f);
+    this->getAudioHandler()->setMusicVolume(1.f);
+    this->getAudioHandler()->playMusic();
+    
+    this->setComponent<Combat>(playerID);
+    this->createSystem<CombatSystem>(
+        this,
+        this->getResourceManager(),
+        this->playerID,
+        this->getPhysicsEngine(),
+        this->getUIRenderer(),
+        this->getDebugRenderer());
 
-  this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
-  this->getAudioHandler()->setMasterVolume(0.5f);
-  this->getAudioHandler()->setMusicVolume(1.f);
-  this->getAudioHandler()->playMusic();
+    this->ability = this->createEntity();
+    int knockback =
+        this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
+    this->setComponent<MeshComponent>(this->ability, knockback);
+    Transform& abilityTrans = this->getComponent<Transform>(this->ability);
+    abilityTrans.position = glm::vec3(50.f, 10.f, 0.f);
+    abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
+    this->setComponent<Collider>(
+        this->ability, Collider::createSphere(4.f, glm::vec3(0), true));
+    this->setComponent<Abilities>(this->ability, healAbility);
+    this->setComponent<PointLight>(this->ability, { glm::vec3(0.f), glm::vec3(7.f, 9.f, 5.f) });
 
-  this->setComponent<Combat>(playerID);
-  this->createSystem<CombatSystem>(
-      this,
-      this->getResourceManager(),
-      this->playerID,
-      this->getPhysicsEngine(),
-      this->getUIRenderer(),
-      this->getDebugRenderer()
-  );
+    this->perk = this->createEntity();
+    int perkHp = this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
+    this->setComponent<MeshComponent>(this->perk, perkHp);
+    Transform& perkTrans = this->getComponent<Transform>(this->perk);
+    perkTrans.position = glm::vec3(30.f, 5.f, 20.f);
+    perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
+       this->setComponent<Collider>(
+           this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
+       this->setComponent<PointLight>(this->perk, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
+    this->setComponent<Perks>(this->perk);
+    Perks& perkSetting = this->getComponent<Perks>(this->perk);
+    perkSetting.multiplier = 0.5f;
+    perkSetting.perkType = hpUpPerk;
 
-  this->ability = this->createEntity();
-  int knockback =
-      this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
-  this->setComponent<MeshComponent>(this->ability, knockback);
-  Transform& abilityTrans = this->getComponent<Transform>(this->ability);
-  abilityTrans.position = glm::vec3(50.f, 10.f, 0.f);
-  abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
-  this->setComponent<Collider>(
-      this->ability, Collider::createSphere(4.f, glm::vec3(0), true)
-  );
-  this->setComponent<Abilities>(this->ability, healAbility);
-  this->setComponent<PointLight>(this->ability, glm::vec3(7.f, 9.f, 5.f));
+    this->perk1 = this->createEntity();
+    int perkDmg =
+        this->getResourceManager()->addMesh("assets/models/Perk_Dmg.obj");
+    this->setComponent<MeshComponent>(this->perk1, perkDmg);
+    Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
+    perkTrans1.position = glm::vec3(30.f, 5.f, -20.f);
+    perkTrans1.scale = glm::vec3(2.f, 2.f, 2.f);
+    this->setComponent<Collider>(
+        this->perk1, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
+    this->setComponent<PointLight>(this->perk1, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
+    this->setComponent<Perks>(this->perk1);
+    Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
+    perkSetting1.multiplier = 0.5f;
+    perkSetting1.perkType = dmgUpPerk;
 
-  this->perk = this->createEntity();
-  int perkHp = this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
-  this->setComponent<MeshComponent>(this->perk, perkHp);
-  Transform& perkTrans = this->getComponent<Transform>(this->perk);
-  perkTrans.position = glm::vec3(30.f, 5.f, 20.f);
-  perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
-  this->setComponent<Collider>(
-      this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true)
-  );
-  this->setComponent<PointLight>(this->perk, glm::vec3(5.f, 7.f, 9.f));
-  this->setComponent<Perks>(this->perk);
-  Perks& perkSetting = this->getComponent<Perks>(this->perk);
-  perkSetting.multiplier = 1.f;
-  perkSetting.perkType = hpUpPerk;
+    this->perk2 = this->createEntity();
+    int perkAtkSpeed =
+        this->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");
+    this->setComponent<MeshComponent>(this->perk2, perkAtkSpeed);
+    Transform& perkTrans2 = this->getComponent<Transform>(this->perk2);
+    perkTrans2.position = glm::vec3(30.f, 5.f, 0.f);
+    perkTrans2.scale = glm::vec3(2.f, 2.f, 2.f);
+    this->setComponent<Collider>(
+        this->perk2, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
+    this->setComponent<PointLight>(this->perk2, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
+    this->setComponent<Perks>(this->perk2);
+    Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
+    perkSetting2.multiplier = 0.5f;
+    perkSetting2.perkType = attackSpeedUpPerk;
 
-  this->perk1 = this->createEntity();
-  int perkDmg =
-      this->getResourceManager()->addMesh("assets/models/Perk_Dmg.obj");
-  this->setComponent<MeshComponent>(this->perk1, perkDmg);
-  Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
-  perkTrans1.position = glm::vec3(30.f, 5.f, -20.f);
-  perkTrans1.scale = glm::vec3(2.f, 2.f, 2.f);
-  this->setComponent<Collider>(
-      this->perk1, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true)
-  );
-  this->setComponent<PointLight>(this->perk1, glm::vec3(5.f, 7.f, 9.f));
-  this->setComponent<Perks>(this->perk1);
-  Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
-  perkSetting1.multiplier = 0.2f;
-  perkSetting1.perkType = dmgUpPerk;
+    // Ai management
+    this->aiHandler = this->getAIHandler();
+    this->aiHandler->init(this->getSceneHandler());
 
-  this->perk2 = this->createEntity();
-  int perkAtkSpeed =
-      this->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");
-  this->setComponent<MeshComponent>(this->perk2, perkAtkSpeed);
-  Transform& perkTrans2 = this->getComponent<Transform>(this->perk2);
-  perkTrans2.position = glm::vec3(30.f, 5.f, 0.f);
-  perkTrans2.scale = glm::vec3(2.f, 2.f, 2.f);
-  this->setComponent<Collider>(
-      this->perk2, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true)
-  );
-  this->setComponent<PointLight>(this->perk2, glm::vec3(5.f, 7.f, 9.f));
-  this->setComponent<Perks>(this->perk2);
-  Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
-  perkSetting2.multiplier = 1.f;
-  perkSetting2.perkType = attackSpeedUpPerk;
-
-  // Ai management
-  this->aiHandler = this->getAIHandler();
-  this->aiHandler->init(this->getSceneHandler());
-
-  aiExample();
+    aiExample();
 }
 
 void GameScene::update()
