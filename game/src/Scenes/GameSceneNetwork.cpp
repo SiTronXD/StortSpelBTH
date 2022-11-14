@@ -164,10 +164,10 @@ void GameSceneNetwork::start()
   perkSetting2.perkType = attackSpeedUpPerk;
 
   // Ai management
-  this->aiHandler = this->getAIHandler();
-  this->aiHandler->init(this->getSceneHandler());
+  //this->aiHandler = this->getAIHandler();
+  //this->aiHandler->init(this->getSceneHandler());
 
-  aiExample();
+  //aiExample();
 }
 
 void GameSceneNetwork::update()
