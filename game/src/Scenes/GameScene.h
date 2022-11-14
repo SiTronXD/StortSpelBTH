@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <string>
 
 #include "vengine.h"
 #include "../World Handling/Room Handler.h"

@@ -337,11 +337,53 @@ void GameScene::aiExample()
         }       
         
 	};
-	
+	auto b = [&](FSM* fsm, uint32_t entityId) -> void {
+		TankFSM* tankFSM = (TankFSM*)fsm;
+    
+        auto entityImguiWindow = [&](TankFSM* tankFsm, uint32_t entityId)->void 
+        {
+            auto& entityTankComponent	= this->getSceneHandler()->getScene()->getComponent<TankComponent>(entityId);
+            auto& entiyFSMAgentComp		= this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId);
+            auto& entityRigidBody		= this->getSceneHandler()->getScene()->getComponent<Rigidbody>(entityId);
+            int& health					= entityTankComponent.life;
+            std::string fis				= "Friends in sight: "+std::to_string(entityTankComponent.friendsInSight.size());
+            std::string af				= "All friends alive: "+std::to_string(entityTankComponent.allFriends.size());
+			float& gravity 				= entityRigidBody.gravityMult;
+            std::string& status			= entiyFSMAgentComp.currentNode->status;   
+            ImGui::Text(status.c_str());
+            ImGui::Text(fis.c_str());
+            ImGui::Text(af.c_str());
+            ImGui::SliderInt("health", &health, 0, entityTankComponent.FULL_HEALTH);
+            ImGui::SliderFloat("gravity", &gravity, 0, 10);
+        };
+        //TEMP             
+
+        static bool showEntityId = false;
+        ImGui::Checkbox("Show Entity ID", &showEntityId);
+        if(showEntityId)
+        {
+            
+            // Show all entity ID over entitties             
+            glm::vec4 entityPos = glm::vec4(this->getSceneHandler()->getScene()->getComponent<Transform>(entityId).position, 1.f);
+
+            auto screenPos = this->getMainCamera()->projection * this->getMainCamera()->view * entityPos;
+            glm::vec3 realScreenPos; 
+            realScreenPos.x = (screenPos.x / screenPos.w) * 1920/2;
+            realScreenPos.y = (screenPos.y / screenPos.w) * 1080/2;
+            realScreenPos.z = screenPos.z / screenPos.w;
+
+            Scene::getUIRenderer()->setTexture(this->fontTextureIndex);
+            Scene::getUIRenderer()->renderString(std::to_string(entityId), realScreenPos.x, realScreenPos.y, 20, 20); 
+        }    
+
+		entityImguiWindow(tankFSM, entityId);
+        
+	};
 
 	//SWARM
 	static SwarmFSM swarmFSM;
 	this->aiHandler->addFSM(&swarmFSM, "swarmFSM");
+	
 //TODO: Cause crash on second run, therefore disabled in distribution... 
 #ifdef _CONSOLE 
     this->aiHandler->addImguiToFSM("swarmFSM", a);
@@ -376,6 +418,9 @@ void GameScene::aiExample()
 	//TANK
 	static TankFSM tankFSM;
 	this->aiHandler->addFSM(&tankFSM, "tankFSM");
+#ifdef _CONSOLE 
+    this->aiHandler->addImguiToFSM("tankFSM", b);
+#endif 
 	for(int i = 0; i < 1; i++)
 	{
 		int tank = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
@@ -500,7 +545,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 
 						lichIdx++;
 					}
-					else if(swarmIdx < 0)
+					else if(swarmIdx < 3)
 					{
 						this->setActive(this->swarmIDs[swarmIdx]);
 						Transform& transform = this->getComponent<Transform>(this->swarmIDs[swarmIdx]);
