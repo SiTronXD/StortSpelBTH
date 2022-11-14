@@ -33,10 +33,12 @@ private:
 			:doors{-1,-1,-1,-1}, doorTriggers{-1,-1,-1,-1},
 			connectingIndex{-1,-1,-1,-1}, finished(false), 
 			type(RoomData::INVALID), position(0.f)
+			, extents{}
 		{		
 		}
 
 		glm::vec3 position;
+		float extents[4];
 		RoomData::Type type;
 
 		std::vector<Entity> tiles;

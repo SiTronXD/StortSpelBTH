@@ -96,11 +96,6 @@ void RoomGen::generate()
 	this->finalize();
 }
 
-const glm::ivec2* RoomGen::getMinMax() const
-{
-	return minMaxPos;
-}
-
 void RoomGen::setBorders()
 {
 	const int NUM = 8;
@@ -223,7 +218,8 @@ void RoomGen::setExits()
 void RoomGen::finalize()
 {
 	//const glm::ivec2 gridMid(WIDTH_NUM / 2);
-	const glm::ivec2 roomMid((minMaxPos[0].x + minMaxPos[1].x) / 2, (minMaxPos[2].y + minMaxPos[3].y) / 2);
+	middle.x = (exitTilesPos[0].x + exitTilesPos[1].x) / 2;
+	middle.y = (exitTilesPos[2].y + exitTilesPos[3].y) / 2;
 
 	glm::ivec2 position(0);
 	for (position.x = 0; position.x < WIDTH_HEIGHT; position.x++)
@@ -242,11 +238,11 @@ void RoomGen::finalize()
 			default:
 				break;
 			case Tile2::Border:
-				borders.emplace_back(Tile2::Border, position - roomMid);
+				borders.emplace_back(Tile2::Border, position - middle);
 				break;
 			case Tile2::OneXOne:
 	
-				tiles.emplace_back(Tile2::OneXOne, position - roomMid);
+				tiles.emplace_back(Tile2::OneXOne, position - middle);
 				break;
 			case Tile2::OneXTwo:
 
@@ -255,10 +251,15 @@ void RoomGen::finalize()
 
 				break;
 			case Tile2::Exit:
-				exitPathsTiles.emplace_back(Tile2::Exit, position - roomMid);
+				exitPathsTiles.emplace_back(Tile2::Exit, position - middle);
 				break;
 			}
 		}
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		exitTilesPos[i] -= middle;
 	}
 }
 
@@ -282,6 +283,21 @@ void RoomGen::genCircle(const glm::ivec2& center)
 			}
 		}
 	}
+}
+
+const glm::ivec2* RoomGen::getMinMax() const
+{
+	return minMaxPos;
+}
+
+const glm::ivec2* RoomGen::getExits() const
+{
+	return exitTilesPos;
+}
+
+glm::ivec2 RoomGen::getCenter() const
+{
+	return middle - glm::ivec2(WIDTH_HEIGHT / 2);
 }
 
 inline Tile2::Type& RoomGen::getType(const glm::ivec2& pos)

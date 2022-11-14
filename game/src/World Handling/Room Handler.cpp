@@ -184,73 +184,162 @@ void RoomHandler::generate()
 
 void RoomHandler::generate2()
 {
-	reset();
+	this->reset();
 
-	this->rooms.resize(1);
-
-	int meshId = -1;
+	this->roomLayout.generate();
+	const int numRooms = this->roomLayout.getNumRooms();
+	this->rooms.resize(numRooms);
 
 	this->roomGen.setDesc(roomGenDesc);
-	this->roomGen.generate();
+	this->roomExitPoints.resize(numRooms);
 
-
-	this->rooms[0].tiles.resize(size_t(this->roomGen.getNumTiles()));
-	for (uint32_t i = 0; i < this->roomGen.getNumTiles(); i++)
+	for (int i = 0; i < numRooms; i++)
 	{
-		//if (rand() % 3 < 2) { meshId = (int)this->oneXOneMeshIds[0]; }
-		//else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }
+		const RoomData& roomRef = this->roomLayout.getRoom(i);
+
+		this->rooms[i].position = roomRef.position;
+		this->rooms[i].type = roomRef.type;
+
+		// Save connecting indices
+		this->rooms[i].connectingIndex[0] = roomRef.left;
+		this->rooms[i].connectingIndex[1] = roomRef.right;
+		this->rooms[i].connectingIndex[2] = roomRef.up;
+		this->rooms[i].connectingIndex[3] = roomRef.down;
+
+
+		this->roomGen.generate();
+		const glm::ivec2* exits = this->roomGen.getExits();
+
+		this->rooms[i].extents[0] = std::abs((float)exits[0].x) * TILE_WIDTH - TILE_WIDTH * 0.5f;
+		this->rooms[i].extents[1] = std::abs((float)exits[1].x) * TILE_WIDTH - TILE_WIDTH * 0.5f;
+		this->rooms[i].extents[2] = std::abs((float)exits[2].y) * TILE_WIDTH - TILE_WIDTH * 0.5f;
+		this->rooms[i].extents[3] = std::abs((float)exits[3].y) * TILE_WIDTH - TILE_WIDTH * 0.5f;
+
+		for (int j = 0; j < 4; j++)
+		{
+			this->roomExitPoints[i].positions[i] = glm::vec3(exits[i].x, 0.f, exits[i].y) * TILE_WIDTH;
+		}
+
+
+		//this->rooms[i].temp = this->scene->createEntity();
+		//scene->setComponent<Collider>(this->rooms[i].temp, Collider::createBox(rooms[i].extents));
+		//scene->getComponent<Transform>(this->rooms[i].temp).position = glm::vec3(roomRef.position);
+		//printf("Ext: (%d, %d, %d) | Exit: (%d, %d, %d, %d)\n", (int)this->rooms[i].extents.x, (int)this->rooms[i].extents.y,
+		//(int)this->rooms[i].extents.z, exits[0].x, exits[1].x, exits[2].y, exits[3].y);
+
+		this->rooms[i].tiles.resize(size_t(this->roomGen.getNumTiles()));
+		for (uint32_t j = 0; j < this->roomGen.getNumTiles(); j++)
+		{
+			/*if (rand() % 3 < 2) { meshId = (int)this->oneXOneMeshIds[0]; }
+			else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }*/
 		
-		const Tile2& tile = this->roomGen.getTile(i);
+			const Tile2& tile = this->roomGen.getTile(j);
 
-		Entity entity = this->scene->createEntity();
-		this->scene->setComponent<MeshComponent>(entity);
-		this->scene->getComponent<MeshComponent>(entity).meshID = tileFlorMeshId;
+			Entity entity = this->scene->createEntity();
+			this->scene->setComponent<MeshComponent>(entity);
+			this->scene->getComponent<MeshComponent>(entity).meshID = tileFlorMeshId;
 
-		Transform& transform = this->scene->getComponent<Transform>(entity);
-		transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
-		transform.position *= TILE_WIDTH;
-		transform.scale *= TILE_WIDTH;
+			Transform& transform = this->scene->getComponent<Transform>(entity);
+			transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
+			transform.position *= TILE_WIDTH;
+			transform.scale *= TILE_WIDTH;
 
-		this->rooms[0].tiles[i] = entity;
+			this->rooms[i].tiles[j] = entity;
+		}
+
+		this->rooms[i].exitPaths.resize(size_t(this->roomGen.getNumExitTiles()));
+		for (uint32_t j = 0; j < this->roomGen.getNumExitTiles(); j++)
+		{
+			/*if (rand() % 3 < 2) { meshId = (int)this->oneXOneMeshIds[0]; }
+			else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }*/
+
+			const Tile2& tile = this->roomGen.getExitTile(j);
+
+			Entity entity = this->scene->createEntity();
+			this->scene->setComponent<MeshComponent>(entity);
+			this->scene->getComponent<MeshComponent>(entity).meshID = tileFlorMeshId;
+
+			Transform& transform = this->scene->getComponent<Transform>(entity);
+			transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
+			transform.position *= TILE_WIDTH;
+			transform.scale *= TILE_WIDTH;
+
+			this->rooms[i].exitPaths[j] = entity;
+		}
+
+		this->rooms[i].borders.resize(size_t(this->roomGen.getNumBorders()));
+		for (uint32_t j = 0; j < this->roomGen.getNumBorders(); j++)
+		{
+			const Tile2& tile = this->roomGen.getBorder(j);
+
+			Entity entity = this->scene->createEntity();
+			this->scene->setComponent<MeshComponent>(entity);
+			this->scene->getComponent<MeshComponent>(entity).meshID = borderMeshIds[0];
+
+			Transform& transform = this->scene->getComponent<Transform>(entity);
+			transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
+			transform.position *= TILE_WIDTH;
+
+			this->rooms[i].borders[j] = entity;
+		}
+
+		/*auto q = roomGen.getExits();
+		for (size_t k = 0; k < 4; k++)
+		{
+			Entity entity = this->scene->createEntity();
+			this->scene->setComponent<MeshComponent>(entity);
+			this->scene->getComponent<MeshComponent>(entity).meshID = borderMeshIds[0];
+
+			Transform& transform = this->scene->getComponent<Transform>(entity);
+			transform.position = glm::vec3(q[k].x, 0.f, q[k].y);
+			transform.position *= TILE_WIDTH;
+
+			this->rooms[i].borders.emplace_back(entity);
+		}*/
+
+		this->roomGen.clear();
 	}
 
-	this->rooms[0].exitPaths.resize(size_t(this->roomGen.getNumExitTiles()));
-	for (uint32_t i = 0; i < this->roomGen.getNumExitTiles(); i++)
+	for (int i = 0; i < roomLayout.getNumMainRooms(); i++)
 	{
-		/*if (rand() % 3 < 2) { meshId = (int)this->oneXOneMeshIds[0]; }
-		else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }*/
+		if (rooms[i].connectingIndex[3] != -1)
+		{
+			Room& other = rooms[rooms[i].connectingIndex[3]];
+			float offset = other.position.z + other.extents[2] + rooms[i].extents[3]
+				+ TILES_BETWEEN_ROOMS * TILE_WIDTH;
 
-		const Tile2& tile = this->roomGen.getExitTile(i);
+			rooms[i].position.z = offset;
+			
+			for (int j = 0; j < 4; j++)
+			{
+				roomExitPoints[i].positions[j].z += offset;
+				/*Entity q = scene->createEntity();
+				scene->setComponent<MeshComponent>(q, borderMeshIds[0]);
+				scene->getComponent<Transform>(q).scale.y = 30.f;*/
+			}
 
-		Entity entity = this->scene->createEntity();
-		this->scene->setComponent<MeshComponent>(entity);
-		this->scene->getComponent<MeshComponent>(entity).meshID = tileFlorMeshId;
-
-		Transform& transform = this->scene->getComponent<Transform>(entity);
-		transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
-		transform.position *= TILE_WIDTH;
-		transform.scale *= TILE_WIDTH;
-
-		this->rooms[0].exitPaths[i] = entity;
+			for (Entity id : rooms[i].tiles)
+			{
+				Transform& tra = this->scene->getComponent<Transform>(id);
+				tra.position.z += offset;
+			}
+			for (Entity id : rooms[i].borders)
+			{
+				Transform& tra = this->scene->getComponent<Transform>(id);
+				tra.position.z += offset;
+			}
+			for (Entity id : rooms[i].exitPaths)
+			{
+				Transform& tra = this->scene->getComponent<Transform>(id);
+				tra.position.z += offset;
+			}
+		}
 	}
 
-	this->rooms[0].borders.resize(size_t(this->roomGen.getNumBorders()));
-	for (uint32_t i = 0; i < this->roomGen.getNumBorders(); i++)
-	{
-		const Tile2& tile = this->roomGen.getBorder(i);
+	//this->setConnections();
+	//this->generatePathways();
 
-		Entity entity = this->scene->createEntity();
-		this->scene->setComponent<MeshComponent>(entity);
-		this->scene->getComponent<MeshComponent>(entity).meshID = borderMeshIds[0];
-
-		Transform& transform = this->scene->getComponent<Transform>(entity);
-		transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
-		transform.position *= TILE_WIDTH;
-
-		this->rooms[0].borders[i] = entity;
-	}
-
-	this->roomGen.clear();
+	this->roomLayout.clear();
 }
 
 const std::vector<Entity>& RoomHandler::getFreeTiles()
@@ -838,7 +927,6 @@ void RoomHandler::reset()
 				room.doorTriggers[i] = -1;
 			}
 		}
-
 		room.finished = false;
 	}																				  
 
@@ -1046,6 +1134,10 @@ void RoomHandler::imgui()
 		{
 			generate2();
 		}
+
+		static bool debugShapes = true;
+		ImGui::Checkbox("Debug shapes", &debugShapes);
+		scene->getPhysicsEngine()->renderDebugShapes(debugShapes);
 
 		ImGui::PopItemWidth();
 	}

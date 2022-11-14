@@ -37,16 +37,16 @@ void RoomLayout::generate()
 	this->setUpRooms(this->numMainRooms);
 	for (int i = 0; i < this->numBranches; i++)
 	{
-		if (!this->setRandomBranch(this->numMainRooms)) 
+		/*if (!this->setRandomBranch(this->numMainRooms)) 
 		{
 			Log::warning("Failed creating branch");
-		}
+		}*/
 	}
 
-	if (!this->setExit())
+	/*if (!this->setExit())
 	{
 		Log::warning("Failed creating exit");
-	}
+	}*/
 }
 
 void RoomLayout::setUpRooms(int numRooms)
@@ -66,7 +66,6 @@ void RoomLayout::setUpRooms(int numRooms)
 		if (i == 0)
 		{
 			curRoom.type = RoomData::Type::START_ROOM;
-			curPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 		}
 		else
 		{

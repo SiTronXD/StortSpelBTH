@@ -47,8 +47,10 @@ private:
     std::vector<Tile2> tiles;
     std::vector<Tile2> borders;
     std::vector<Tile2> exitPathsTiles;
+
     glm::ivec2 minMaxPos[4]; // x, -x, z, -z
     glm::ivec2 exitTilesPos[4];
+    glm::ivec2 middle;
 
     void genCircle(const glm::ivec2& center);
 
@@ -70,6 +72,9 @@ public:
     void generate();
 
     const glm::ivec2* getMinMax() const;
+    const glm::ivec2* getExits() const;
+    glm::ivec2 getCenter() const;
+    
 
     uint32_t getNumTiles() const;
     uint32_t getNumBorders() const;
