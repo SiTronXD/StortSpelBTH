@@ -10,12 +10,6 @@
 
 //THIS IS ON THE CLIENT SIDE
 
-#ifdef _CONSOLE
-// decreaseFps used for testing game with different framerates
-void decreaseFps();
-double heavyFunction(double value);
-#endif
-
 GameSceneNetwork::GameSceneNetwork() :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
     perk1(-1), perk2(-1), ability(-1)
@@ -34,14 +28,18 @@ void GameSceneNetwork::init()
 {
   int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 
-  //roomHandler.init(
-  //    this,
-  //    this->getResourceManager(),
-  //    this->getConfigValue<int>("room_size"),
-  //    this->getConfigValue<int>("tile_types")
-  //);
+  int seed = this->getNetworkHandler()->getServerSeed();
+  std::cout << "Client: got seed " << seed << std::endl;
+  srand(seed);
 
-  //roomHandler.generate();
+  roomHandler.init(
+      this,
+      this->getResourceManager(),
+      this->getConfigValue<int>("room_size"),
+      this->getConfigValue<int>("tile_types")
+  );
+
+  roomHandler.generate();
 
   createPortal();
 
@@ -305,7 +303,6 @@ void GameSceneNetwork::update()
 
   roomHandler.imgui();
 
-  decreaseFps();
 #endif
 }
 

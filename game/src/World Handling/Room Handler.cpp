@@ -582,23 +582,31 @@ void RoomHandler::createColliders()
 
 Entity RoomHandler::createTileEntity(int tileIndex, TileUsage usage)
 {
-	//TODO : DON'T MAKE BORDERMESHIDS OR oneXOneMeshIds TAKE MESH ID
 	Tile tile{};
 	int meshId = -1;
 	switch (usage)
 	{
 	case RoomHandler::Default:
 		tile = this->roomGenerator.getTile(tileIndex);
-		if (rand() % 3 < 2) {meshId = (int)this->oneXOneMeshIds[0]; }
-		else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }
+		if (generateMeshes)
+        {
+			if (rand() % 3 < 2) {meshId = (int)this->oneXOneMeshIds[0]; }
+			else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }
+		}
 		break;
 	case RoomHandler::Border:
 		tile = this->roomGenerator.getBorder(tileIndex);
-		meshId = (int)this->borderMeshIds[rand() % NUM_BORDER];
+		if (generateMeshes)
+		{ 
+			meshId = (int)this->borderMeshIds[rand() % NUM_BORDER];
+		}
 		break;
 	case RoomHandler::Exit:
 		tile = this->roomGenerator.getExitTiles(tileIndex);
-		meshId = (int)this->oneXOneMeshIds[rand() % NUM_ONE_X_ONE];
+		if (generateMeshes)
+        {
+          meshId = (int)this->oneXOneMeshIds[rand() % NUM_ONE_X_ONE];
+        }
 		break;
 
 	default:
@@ -637,15 +645,17 @@ Entity RoomHandler::createDoorEntity(float yRotation)
 
 Entity RoomHandler::createPathEntity()
 {
-	//TODO : HOW TO DO THIS WITHOUTMESH? just not?
 	Entity entity = this->scene->createEntity();
 	this->scene->setComponent<MeshComponent>(entity);
 
-	int meshId;
-	if (rand() % 3 < 2) { meshId = (int)this->oneXOneMeshIds[0]; }
-	else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }
+	if (this->generateMeshes)
+    {
+      	int meshId;
+		if (rand() % 3 < 2) { meshId = (int)this->oneXOneMeshIds[0]; }
+		else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }
+		this->scene->getComponent<MeshComponent>(entity).meshID = meshId;
+	}
 
-	this->scene->getComponent<MeshComponent>(entity).meshID = meshId;
 	
 	Transform& transform = this->scene->getComponent<Transform>(entity);
 	transform.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE) * TILE_WIDTH;

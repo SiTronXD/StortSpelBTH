@@ -30,7 +30,9 @@ void NetworkGameScene::start()
 {
   //TODO : just change to seed
   //send seed to players
+  std::cout << "SERVER: seed is: " << roomSeed << std::endl;
   this->addEvent({(int)GameEvents::GetLevelSeed, this->roomSeed});
+  srand(roomSeed);
   this->roomHandler.serverInit(
       this,
       this->getConfigValue<int>("room_size"),

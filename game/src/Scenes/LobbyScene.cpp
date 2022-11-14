@@ -1,5 +1,4 @@
 #include "LobbyScene.h"
-#include "vengine/network/ServerGameModes/NetworkLobbyScene.h"
 #include "GameSceneNetwork.h"
 #include "MainMenu.h"
 
@@ -138,21 +137,15 @@ void LobbyScene::update()
           //send two
           std::cout << "pressed start" << std::endl;
           this->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent{GameEvents::START});
-          this->getSceneHandler()->setScene(
-              new GameSceneNetwork(), "scripts/gamescene.lua"
-          );
         }
       
     }
-  else
+  if (this->getNetworkHandler()->getClient() != nullptr &&
+      this->getNetworkHandler()->getClient()->hasStarted())
     {
-      if (this->getNetworkHandler()->getClient() != nullptr &&
-          this->getNetworkHandler()->getClient()->hasStarted())
-        {
-          this->getSceneHandler()->setScene(
-              new GameSceneNetwork(), "scripts/gamescene.lua"
-          );
-      }
+      this->getSceneHandler()->setScene(
+          new GameSceneNetwork(), "scripts/gamescene.lua"
+      );
   }
 
   if (this->getNetworkHandler()->getClient() != nullptr && this->getNetworkHandler()->getClient()->isConnected())
