@@ -1137,7 +1137,7 @@ void RoomHandler::imgui()
 
 		static bool debugShapes = true;
 		ImGui::Checkbox("Debug shapes", &debugShapes);
-		scene->getPhysicsEngine()->renderDebugShapes(debugShapes);
+		//scene->getPhysicsEngine()->renderDebugShapes(debugShapes);
 
 		ImGui::PopItemWidth();
 	}
