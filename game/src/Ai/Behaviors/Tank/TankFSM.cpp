@@ -20,13 +20,14 @@ void TankFSM::updateFriendsInSight(Entity entityID)
         int entityid = (int)entity;
         if(scene->isActive(entityid) && entityid != entityID)
         {
+            tankComp.allFriends.insert({entityid, "Swarm"});
             bool found = false;
             float dist = glm::length(tankTransform.position - trans.position);
             if(dist < tankComp.sightRadius)
             {
                 for(auto f: tankComp.friendsInSight)
                 {
-                    if(f.id == entityid)
+                    if(f.first == entityid)
                     {
                         found = true;
                         break;
@@ -34,8 +35,7 @@ void TankFSM::updateFriendsInSight(Entity entityID)
                 }
                 if(!found)
                 {
-                    TankFriend buddy{entityid, true};
-                    tankComp.friendsInSight.emplace_back(buddy);
+                    tankComp.friendsInSight.insert({entityid, "Swarm"});
                 }
             }
         }        
@@ -44,13 +44,14 @@ void TankFSM::updateFriendsInSight(Entity entityID)
         int entityid = (int)entity;
         if(scene->isActive(entityid) && entityid != entityID)
         {
+            tankComp.allFriends.insert({entityid, "Lich"});
             bool found = false;
             float dist = glm::length(tankTransform.position - trans.position);
             if(dist < tankComp.sightRadius)
             {
                 for(auto f: tankComp.friendsInSight)
                 {
-                    if(f.id == entityid)
+                    if(f.first == entityid)
                     {
                         found = true;
                         break;
@@ -58,8 +59,7 @@ void TankFSM::updateFriendsInSight(Entity entityID)
                 }
                 if(!found)
                 {
-                    TankFriend buddy{entityid, false};
-                    tankComp.friendsInSight.push_back(buddy);
+                    tankComp.friendsInSight.insert({entityid, "Lich"});
                 }
             }
         }
@@ -67,15 +67,15 @@ void TankFSM::updateFriendsInSight(Entity entityID)
     viewSwarm.each(swarmLamda);
     viewLich.each(lichLamda);
 
-    //Clean up friends
     std::vector<int> groups;
     std::vector<int> groups_swarmID;
-    for(std::vector<TankFriend>::iterator f = tankComp.friendsInSight.begin(); f != tankComp.friendsInSight.end(); f++)
+    std::vector<int> toRemove;
+    for(auto f: tankComp.friendsInSight)
     {
-        if(f->swarm)
+        if(f.second == "Swarm")
         {
             bool found = false;
-            int groupID = scene->getComponent<SwarmComponent>(f->id).group->myId;
+            int groupID = scene->getComponent<SwarmComponent>(f.first).group->myId;
             for(auto g: groups)
             {
                 if(g == groupID)
@@ -87,15 +87,55 @@ void TankFSM::updateFriendsInSight(Entity entityID)
             if(!found)
             {
                 groups.push_back(groupID);
-                groups_swarmID.push_back(f->id);
+                groups_swarmID.push_back(f.first);
             }
-            tankComp.friendsInSight.erase(f);
+            toRemove.push_back(f.first);
+            
         }
+    }
+    for(auto tr: toRemove)
+    {
+        tankComp.friendsInSight.erase(tr);
     }
     for(auto g: groups_swarmID)
     {
-        TankFriend buddy{g, true};
-        tankComp.friendsInSight.push_back(buddy);
+        tankComp.friendsInSight.insert({g, "Swarm"});
+    }
+
+    groups.clear();
+    groups_swarmID.clear();
+    toRemove.clear();
+
+    for(auto f: tankComp.allFriends)
+    {
+        if(f.second == "Swarm")
+        {
+            bool found = false;
+            int groupID = scene->getComponent<SwarmComponent>(f.first).group->myId;
+            for(auto g: groups)
+            {
+                if(g == groupID)
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if(!found)
+            {
+                groups.push_back(groupID);
+                groups_swarmID.push_back(f.first);
+            }
+            toRemove.push_back(f.first);
+            
+        }
+    }
+    for(auto tr: toRemove)
+    {
+        tankComp.allFriends.erase(tr);
+    }
+    for(auto g: groups_swarmID)
+    {
+        tankComp.allFriends.insert({g, "Swarm"});
     }
 }
 
@@ -120,16 +160,16 @@ bool TankFSM::friendlysInFight(Entity entityID)
     Scene* theScene = getTheScene();
     for(auto f: tankComp.friendsInSight)
     {
-        if(theScene->hasComponents<SwarmComponent>(f.id))
+        if(theScene->hasComponents<SwarmComponent>(f.first))
         {
-            if(theScene->getComponent<SwarmComponent>(f.id).group->inCombat)
+            if(theScene->getComponent<SwarmComponent>(f.first).group->inCombat)
             {
                 return true;
             }
         }
-        else if(theScene->hasComponents<LichComponent>(f.id))
+        else if(theScene->hasComponents<LichComponent>(f.first))
         {
-             if(theScene->getComponent<LichComponent>(f.id).inCombat)
+             if(theScene->getComponent<LichComponent>(f.first).inCombat)
             {
                 return true;
             }
@@ -217,7 +257,7 @@ bool TankFSM::combatToShield(Entity entityID)
 {
     falseIfDead();
     bool ret = false;
-    //updateFriendsInSight(entityID);//Do we need to update every time or is it enough in only one transition?
+    updateFriendsInSight(entityID);
     TankComponent& tankComp = getTankComponent();
     if((playerInSight(entityID) || tankComp.inCombat) && tankComp.friendsInSight.size() > 0)
     {
@@ -244,8 +284,9 @@ bool TankFSM::shieldToIdle(Entity entityID)
 {
     falseIfDead();
     bool ret = false;
+    updateFriendsInSight(entityID);
     TankComponent& tankComp = getTankComponent();
-    if(!playerInSight(entityID) && !tankComp.inCombat && tankComp.friendsInSight.size() <= 0)
+    if(!playerInSight(entityID) && !tankComp.inCombat && !friendlysInFight(entityID))
     {
         ret = true;
     }
@@ -254,7 +295,6 @@ bool TankFSM::shieldToIdle(Entity entityID)
 
 bool TankFSM::toDead(Entity entityID)
 {
-    falseIfDead();
     bool ret = false;
     TankComponent& tankComp = getTankComponent();
     if(tankComp.life <= 0)
@@ -263,4 +303,3 @@ bool TankFSM::toDead(Entity entityID)
     }
     return ret;
 }
-

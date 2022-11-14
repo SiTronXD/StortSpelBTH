@@ -5,14 +5,6 @@
 #include "../Swarm/SwarmFSM.hpp"
 #include "../Lich/LichFSM.hpp"
 
-#include <vector>
-
-struct TankFriend
-{
-	int id;
-	bool swarm;
-};
-
 struct TankComponent
 {
 	TankComponent() {};
@@ -34,8 +26,10 @@ struct TankComponent
 	float huntTimer = huntTimerOrig;
 
 
-	Entity firendTarget;
-	std::vector<TankFriend> friendsInSight;
+	Entity firendTarget = -1;
+	//std::vector<TankFriend> friendsInSight;
+	std::unordered_map<int, std::string> friendsInSight;
+	std::unordered_map<int, std::string> allFriends;
 
 
 };
