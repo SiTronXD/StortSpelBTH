@@ -20,7 +20,7 @@ class TankBT : public BehaviorTree
    protected:
 
 	//Idle
-	static BTStatus HasFreindsInSight(Entity entityID);
+	static BTStatus HasFreindsTarget(Entity entityID);
 	static BTStatus AreFriendsAlive(Entity entityID);
 	static BTStatus PickNewFreinds(Entity entityID);
 	static BTStatus PickNewRandomTarget(Entity entityID);

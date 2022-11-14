@@ -1,6 +1,13 @@
 #include "TankBTs.hpp"
 #include "TankFSM.hpp"
 
+#define getTankComponent() BehaviorTree::sceneHandler->getScene()->getComponent<TankComponent>(entityID)
+#define getPlayerID(playerID) std::string playerId_str = "playerID";BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(playerID, playerId_str)
+#define getPlayerTrans(playerID) BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(playerID) 
+#define getPlayerCombat(playerID) BehaviorTree::sceneHandler->getScene()->getComponent<Combat>(playerID) 
+#define getTankTrans() BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID) 
+#define getTheScene() BehaviorTree::sceneHandler->getScene()
+
 void TankBT::registerEntityComponents(Entity entityId)
 {
 	addRequiredComponent<TankComponent>(entityId);
@@ -8,103 +15,138 @@ void TankBT::registerEntityComponents(Entity entityId)
 }
 
 
-BTStatus TankBT::HasFreindsInSight(Entity entityID)
+BTStatus TankBT::HasFreindsTarget(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	return BTStatus();
+	TankComponent& tankComp = getTankComponent();
+	if(tankComp.firendTarget != -1)
+	{
+		ret = BTStatus::Success;
+	}
+	return ret;
 }
 
 BTStatus TankBT::AreFriendsAlive(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	return BTStatus();
+	TankComponent& tankComp = getTankComponent();
+	if( tankComp.allFriends.size() > 0)
+	{
+		ret = BTStatus::Success;
+	}
+	/*for(auto f: tankComp.allFriends)
+	{
+		int health = 0;
+		if(f.second == "Swarm")
+		{
+			SwarmGroup* swarmGroup = getTheScene()->getComponent<SwarmComponent>(f.first).group;
+			for(auto g: swarmGroup->members)
+			{
+				health = getTheScene()->getComponent<SwarmComponent>(g).life;
+				if(health > 0)
+				{
+					break;
+				}
+			}
+			
+		}
+		else if(f.second == "Lich")
+		{
+			health = getTheScene()->getComponent<LichComponent>(f.first).life;
+		}
+		if(health > 0)
+		{
+			ret = BTStatus::Success;
+			break;
+		}
+		
+	}*/
+	return ret;
 }
 
 BTStatus TankBT::PickNewFreinds(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	return BTStatus();
+	return ret;
 }
 
 BTStatus TankBT::PickNewRandomTarget(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	return BTStatus();
+	return ret;
 }
 
 BTStatus TankBT::MoveAround(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	return BTStatus();
+	return ret;
 }
 
 BTStatus TankBT::playerInPersonalSpace(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	return BTStatus();
+	return ret;
 }
 
 BTStatus TankBT::GroundHump(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	return BTStatus();
+	return ret;
 }
 
 BTStatus TankBT::playerOutsidePersonalSpace(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	return BTStatus();
+	return ret;
 }
 
 BTStatus TankBT::ChargeAndRun(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	return BTStatus();
+	return ret;
 }
 
 BTStatus TankBT::getNearestGroupToPlayer(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	return BTStatus();
+	return ret;
 }
 
 BTStatus TankBT::groupInPersonalSpece(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	return BTStatus();
+	return ret;
 }
 
 BTStatus TankBT::moveTowardsGroup(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	return BTStatus();
+	return ret;
 }
 
 BTStatus TankBT::HoldShield(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	return BTStatus();
+	return ret;
 }
 
 BTStatus TankBT::playAlertAnim(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	return BTStatus();
+	return ret;
 }
 
 BTStatus TankBT::playDeathAnim(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	return BTStatus();
+	return ret;
 }
 
 BTStatus TankBT::die(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	return BTStatus();
+	return ret;
 }
-
-
 
 
 void Tank_idle::start()
@@ -118,7 +160,7 @@ void Tank_idle::start()
 	Selector*   havePosOrGetNew			= c.c.selector();
 	Task*		pickRandomPosition		= c.l.task("Pick random position", TankBT::PickNewRandomTarget);
 	// new row
-	Condition*	hasFriendTarget			= c.l.condition("Has friend target", TankBT::HasFreindsInSight);
+	Condition*	hasFriendTarget			= c.l.condition("Has friend target", TankBT::HasFreindsTarget);
 	Sequence*	getNewTargetIfFriends	= c.c.sequence();
 	// new row
 	Condition*	anyFriendsAlive			= c.l.condition("Any firends alive?", TankBT::AreFriendsAlive);
