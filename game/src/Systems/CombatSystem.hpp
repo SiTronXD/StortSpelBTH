@@ -28,8 +28,8 @@ private:
 public:
 
 	CombatSystem(Scene* scene, ResourceManager* resourceMng, Entity playerID, 
-		Entity swordID, PhysicsEngine* physics, UIRenderer* uiRenderer, DebugRenderer* debug)
-		: scene(scene), resourceMng(resourceMng), playerID(playerID), swordID(swordID), 
+		PhysicsEngine* physics, UIRenderer* uiRenderer, DebugRenderer* debug)
+		: scene(scene), resourceMng(resourceMng), playerID(playerID), 
 		physics(physics), uiRenderer(uiRenderer), debug(debug)
 	{
 		if (scene->hasComponents<Combat>(playerID))
@@ -39,6 +39,7 @@ public:
 			combat.combos.emplace_back("Light Heavy Light ");
 			combat.combos.emplace_back("Heavy Light Heavy ");
 
+			this->swordID = this->scene->createEntity();
 			combat.ability.abilityType = emptyAbility;
 			for (size_t i = 0; i < 4; i++)
 			{
