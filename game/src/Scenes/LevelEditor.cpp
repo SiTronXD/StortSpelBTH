@@ -56,6 +56,13 @@ void LevelEditor::update()
       {
           objectHandler.updateMeshTopology(this, this->getResourceManager(), data); 
       }
-
+      else if (header->messageType == MATERIAL_DATA)
+      {
+          objectHandler.addOrUpdateMaterial(this, this->getResourceManager(), data);
+      }
+      else if (header->messageType == MESH_MATERIAL_CONNECTION)
+      {
+          objectHandler.setMeshMaterial(this, this->getResourceManager(), data);
+      }
   }
 }

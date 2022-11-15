@@ -9,6 +9,7 @@ private:
   std::unordered_map<std::string, Entity> mayaObjects;
 
   MeshData createMeshData(char* data);
+  void updateMeshData(MeshData* meshData, char* data);
 
 public:
 	ObjectHandler();
@@ -18,5 +19,6 @@ public:
     void removeMesh(Scene* scene, char* data);
     void updateMeshTransform(Scene* scene, char* data);
     void updateMeshTopology(Scene* scene, ResourceManager* resourceManager, char* data);
-    void updateMeshMaterial(Scene* scene, char* data);
+    void addOrUpdateMaterial(Scene* scene, ResourceManager* resourceManager, char* data);
+    void setMeshMaterial(Scene* scene, ResourceManager* resourceManager, char* data);
 };
