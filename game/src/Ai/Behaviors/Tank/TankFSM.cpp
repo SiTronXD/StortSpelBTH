@@ -196,6 +196,22 @@ bool TankFSM::shieldToCombat(Entity entityID)
     {
         ret = true;
     }
+
+    if(ret)
+    {
+        for(auto& f: tankComp.allFriends)
+        {
+            if(f.second.type == "Swarm")
+            {
+                getTheScene()->getComponent<SwarmComponent>(f.first).shieldedByTank = false;
+            }
+            else
+            {
+                getTheScene()->getComponent<LichComponent>(f.first).shieldedByTank = false;
+        
+            }
+        }
+    }
     return ret;
 }
 
@@ -208,6 +224,21 @@ bool TankFSM::shieldToIdle(Entity entityID)
     if(!playerInSight(entityID) && !tankComp.inCombat && !friendlysInFight(entityID))
     {
         ret = true;
+    }
+    if(ret)
+    {
+        for(auto& f: tankComp.allFriends)
+        {
+            if(f.second.type == "Swarm")
+            {
+                getTheScene()->getComponent<SwarmComponent>(f.first).shieldedByTank = false;
+            }
+            else
+            {
+                getTheScene()->getComponent<LichComponent>(f.first).shieldedByTank = false;
+
+            }
+        }
     }
     return ret;
 }

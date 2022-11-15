@@ -66,8 +66,8 @@ struct TankComponent
     float sightRadius           = 100.0f; // I'll can attack you
     float peronalSpaceRadius    = 90.0f; // This is my personal space, get away!
 	float friendVisitRadius		= 15.0f; //When go this close to friends
-	float idleRotSpeed			= 15.0f;
-	float tempRotAngle			= 0.0f;
+	float idleRotSpeed			= 30.0f;
+	float tempRotAngle			= 0.0f;//Dont touch!
 
 	//Bools
     bool isDead(){return life<=0;}
@@ -81,6 +81,8 @@ struct TankComponent
 	float huntTimer				= huntTimerOrig;
 	float chargeTimerOrig		= 2.5f;
 	float chargeTimer			= huntTimerOrig;
+	float groundHumpTimerOrig	= 2.0f;
+	float groundHumpTimer		= huntTimerOrig;
 
 
 	TankFriendTarget firendTarget;

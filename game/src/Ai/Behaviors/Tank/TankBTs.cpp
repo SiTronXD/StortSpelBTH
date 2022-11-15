@@ -12,6 +12,10 @@ void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 {
 	TankComponent& tankComp = getTankComponent();
 	Transform& tankTrans = getTankTrans();
+	if(tankComp.firendTarget.id == entityID)
+	{
+		return;
+	}
 	//Rotate towards target start
 	tankTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(tankComp.firendTarget.pos.x, tankComp.firendTarget.pos.z);
@@ -162,7 +166,10 @@ BTStatus TankBT::PickNewFreinds(Entity entityID)
 
 BTStatus TankBT::PickNewRandomTarget(Entity entityID)
 {
-	BTStatus ret = BTStatus::Failure;
+	BTStatus ret = BTStatus::Success;
+	TankComponent& tankComp = getTankComponent();
+	Transform& tankTrans = getTankTrans();
+	tankComp.firendTarget = {entityID, tankTrans.position};
 	return ret;
 }
 
@@ -171,6 +178,11 @@ BTStatus TankBT::MoveAround(Entity entityID)
 	BTStatus ret = BTStatus::Running;
 
 	TankComponent& tankComp = getTankComponent();
+	if(tankComp.firendTarget.id == entityID)
+	{
+		tankComp.firendTarget.id = -1;
+		return ret;
+	}
 	Transform& tankTrans	= getTankTrans();
 	glm::vec3 moveDir		= pathFindingManager.getDirTo(tankTrans.position, tankComp.firendTarget.pos);
 	moveDir = glm::normalize(moveDir);
@@ -275,6 +287,19 @@ BTStatus TankBT::moveTowardsGroup(Entity entityID)
 BTStatus TankBT::HoldShield(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
+	TankComponent& tankComp = getTankComponent();
+	for(auto& f: tankComp.friendsInSight)
+    {
+        if(f.second.type == "Swarm")
+        {
+            getTheScene()->getComponent<SwarmComponent>(f.first).shieldedByTank = true;
+        }
+        else
+        {
+            getTheScene()->getComponent<LichComponent>(f.first).shieldedByTank = true;
+
+        }
+    }
 	return ret;
 }
 

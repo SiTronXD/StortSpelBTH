@@ -20,6 +20,7 @@ struct LichComponent
     float nonoRadius            = 40 ; // Too close, I will back away from you! (while shooting) 
 
     bool inCombat               = false;
+    bool shieldedByTank         = false;
 
 };
 
