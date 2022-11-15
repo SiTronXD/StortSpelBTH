@@ -15,7 +15,7 @@ double heavyFunction(double value);
 #endif
 
 GameScene::GameScene() :
-    playerID(-1), swordID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
+    playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
     perk1(-1), perk2(-1), ability(-1)
 {
 }
@@ -91,7 +91,6 @@ void GameScene::start()
 {
     std::string playerName = "playerID";
     this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
-    this->swordID = this->createEntity();
     
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
@@ -103,7 +102,6 @@ void GameScene::start()
         this,
         this->getResourceManager(),
         this->playerID,
-        this->swordID,
         this->getPhysicsEngine(),
         this->getUIRenderer(),
         this->getDebugRenderer());
