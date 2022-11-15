@@ -15,7 +15,7 @@ double heavyFunction(double value);
 #endif
 
 GameScene::GameScene() :
-    playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
+    playerID(-1), swordID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
     perk1(-1), perk2(-1), ability(-1)
 {
 }
@@ -89,6 +89,7 @@ void GameScene::start()
 {
     std::string playerName = "playerID";
     this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+    this->swordID = this->createEntity();
     
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
@@ -100,6 +101,7 @@ void GameScene::start()
         this,
         this->getResourceManager(),
         this->playerID,
+        this->swordID,
         this->getPhysicsEngine(),
         this->getUIRenderer(),
         this->getDebugRenderer());
@@ -169,6 +171,8 @@ void GameScene::start()
 
 void GameScene::update()
 {
+    this->aiHandler->update();
+
   if (allDead() && this->newRoomFrame)
     {
       this->newRoomFrame = false;
@@ -591,6 +595,16 @@ void GameScene::onTriggerEnter(Entity e1, Entity e2)
   Entity ability = this->hasComponents<Abilities>(e1)   ? e1
                    : this->hasComponents<Abilities>(e2) ? e2
                                                         : -1;
+
+  //Entity swarm = this->hasComponents<SwarmComponent>(e1) ? e1 : this->hasComponents<SwarmComponent>(e2) ? e2 : -1;
+
+  //if (e1 == this->swordID && swarm != -1)
+  //{
+  //}
+  //else if (e2 == this->swordID && swarm != -1)
+  //{
+
+  //}
 
   if (this->entityValid(ground))
     {

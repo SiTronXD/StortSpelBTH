@@ -11,7 +11,7 @@
 //THIS IS ON THE CLIENT SIDE
 
 GameSceneNetwork::GameSceneNetwork() :
-    playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
+    playerID(-1), swordID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
     perk1(-1), perk2(-1), ability(-1)
 {
 }
@@ -41,6 +41,8 @@ void GameSceneNetwork::init()
   int seed = this->getNetworkHandler()->getServerSeed();
   std::cout << "Client: got seed " << seed << std::endl;
   srand(seed);
+
+  this->swordID = this->createEntity();
 
   roomHandler.init(
       this,
@@ -100,6 +102,7 @@ void GameSceneNetwork::start()
       this,
       this->getResourceManager(),
       this->playerID,
+      this->swordID,
       this->getPhysicsEngine(),
       this->getUIRenderer(),
       this->getDebugRenderer()

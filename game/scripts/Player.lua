@@ -42,7 +42,7 @@ function script:init()
     self.jumpTimer = 0
     self.active = true
 
-    self.activeAnimation = {idle = 0, run = 1}
+    self.activeAnimation = {idle = 0, run = 1, sprint = 2, dodge = 3}
     self.currentAnimation = 0
 end
 
@@ -92,6 +92,7 @@ function script:update(dt)
         if (self.currentStamina > 0 and self.useStamina == true and self.moveDir ~= vector(0))
         then
             self.isSprinting = true
+            self.currentAnimation = self.activeAnimation.sprint
             self.currentSpeed = self.moveDir:normalize() * self.sprintSpeed
             self.currentStamina = self.currentStamina - (self.sprintStamDrain * dt)
             self.staminaTimer = self.staminaRegenCd
@@ -113,6 +114,7 @@ function script:update(dt)
         if (self.currentStamina > 20.0 and self.currentMoveDir ~= vector(0))
         then
             self.isDodging = true
+            self.currentAnimation = self.activeAnimation.dodge
             self.currentStamina = self.currentStamina - 20.0
             self.staminaTimer = self.staminaRegenCd
             self.currentSpeed = self.currentMoveDir * self.dodgeSpeed
