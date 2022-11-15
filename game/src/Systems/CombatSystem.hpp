@@ -193,6 +193,7 @@ public:
 			}
 			else
 			{
+				this->scene->setAnimation(this->playerID, "attack");
 				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
 				playerTrans.updateMatrix();
 				std::vector<int> hitID = physics->testContact(this->sword, playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
