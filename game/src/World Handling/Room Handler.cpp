@@ -2,7 +2,7 @@
 #include "vengine/application/Scene.hpp"
 
 const float RoomHandler::TILE_WIDTH = 25.f;
-const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 3;
+const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 5;
 const uint32_t RoomHandler::NUM_BORDER = 1;
 const uint32_t RoomHandler::NUM_ONE_X_ONE = 4;
 const uint32_t RoomHandler::NUM_ONE_X_TWO = 0;
@@ -40,8 +40,17 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize,
 		this->oneXOneMeshIds[i] = resourceMan->addMesh("assets/models/Tiles/OneXOne/" + std::to_string(i + 1u) + ".obj");
 	}
 
-	// OneXTwo
-	// TwoXTwo
+	this->oneXOneMeshIds.resize(NUM_ONE_X_TWO);
+	for (uint32_t i = 0; i < NUM_ONE_X_TWO; i++)
+	{
+		this->oneXTwoMeshIds[i] = resourceMan->addMesh("assets/models/Tiles/OneXTwo/" + std::to_string(i + 1u) + ".obj");
+	}
+
+	/*this->oneXOneMeshIds.resize(NUM_ONE_X_ONE);
+	for (uint32_t i = 0; i < NUM_ONE_X_ONE; i++)
+	{
+		this->oneXOneMeshIds[i] = resourceMan->addMesh("assets/models/Tiles/OneXOne/" + std::to_string(i + 1u) + ".obj");
+	}*/
 
 	this->doorMeshID = resourceMan->addMesh("assets/models/door.obj");
 	this->tileFlorMeshId = resourceMan->addMesh("assets/models/Tiles/Floor.obj");
@@ -187,17 +196,18 @@ void RoomHandler::generate2()
 	this->reset();
 
 	this->roomLayout.generate();
-	const int numRooms = this->roomLayout.getNumRooms();
-	this->rooms.resize(numRooms);
+	const int numTotRooms = this->roomLayout.getNumRooms();
+	const int numMainRooms = this->roomLayout.getNumMainRooms();
+	this->rooms.resize(numTotRooms);
 
 	this->roomGen.setDesc(roomGenDesc);
-	this->roomExitPoints.resize(numRooms);
+	this->roomExitPoints.resize(numTotRooms);
 
-	for (int i = 0; i < numRooms; i++)
+	for (int i = 0; i < numTotRooms; i++)
 	{
 		const RoomData& roomRef = this->roomLayout.getRoom(i);
 
-		this->rooms[i].position = roomRef.position;
+		//this->rooms[i].position = roomRef.position;
 		this->rooms[i].type = roomRef.type;
 
 		// Save connecting indices
@@ -206,8 +216,12 @@ void RoomHandler::generate2()
 		this->rooms[i].connectingIndex[2] = roomRef.up;
 		this->rooms[i].connectingIndex[3] = roomRef.down;
 
+		hasDoor[0] = roomRef.left != -1;
+		hasDoor[1] = roomRef.right != -1;
+		hasDoor[2] = roomRef.up != -1;
+		hasDoor[3] = roomRef.down != -1;
 
-		this->roomGen.generate();
+		this->roomGen.generate(hasDoor);
 		const glm::ivec2* exits = this->roomGen.getExits();
 
 		this->rooms[i].extents[0] = std::abs((float)exits[0].x) * TILE_WIDTH - TILE_WIDTH * 0.5f;
@@ -217,7 +231,10 @@ void RoomHandler::generate2()
 
 		for (int j = 0; j < 4; j++)
 		{
-			this->roomExitPoints[i].positions[i] = glm::vec3(exits[i].x, 0.f, exits[i].y) * TILE_WIDTH;
+			if (this->rooms[i].connectingIndex[j] != -1)
+			{
+				this->roomExitPoints[i].positions[j] = glm::vec3(exits[j].x, 0.f, exits[j].y) * TILE_WIDTH;
+			}
 		}
 
 
@@ -288,19 +305,35 @@ void RoomHandler::generate2()
 		{
 			Entity entity = this->scene->createEntity();
 			this->scene->setComponent<MeshComponent>(entity);
-			this->scene->getComponent<MeshComponent>(entity).meshID = borderMeshIds[0];
+			this->scene->getComponent<MeshComponent>(entity).meshID = oneXOneMeshIds[2];
 
 			Transform& transform = this->scene->getComponent<Transform>(entity);
 			transform.position = glm::vec3(q[k].x, 0.f, q[k].y);
 			transform.position *= TILE_WIDTH;
 
 			this->rooms[i].borders.emplace_back(entity);
+		}
+
+		this->rooms[i].exitPaths.resize(size_t(this->roomGen.getNumExitTiles()));
+		for (size_t j = 0; j < roomGen.getNumExitTiles(); j++)
+		{			
+			const Tile2& tile = this->roomGen.getExitTile(j);
+
+			Entity entity = this->scene->createEntity();
+			this->scene->setComponent<MeshComponent>(entity);
+			this->scene->getComponent<MeshComponent>(entity).meshID = oneXOneMeshIds[1];
+
+			Transform& transform = this->scene->getComponent<Transform>(entity);
+			transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
+			transform.position *= TILE_WIDTH;
+
+			this->rooms[i].exitPaths.emplace_back(entity);
 		}*/
 
 		this->roomGen.clear();
 	}
 
-	for (int i = 0; i < roomLayout.getNumMainRooms(); i++)
+	for (int i = 0; i < numMainRooms; i++)
 	{
 		if (rooms[i].connectingIndex[3] != -1)
 		{
@@ -308,38 +341,75 @@ void RoomHandler::generate2()
 			float offset = other.position.z + other.extents[2] + rooms[i].extents[3]
 				+ TILES_BETWEEN_ROOMS * TILE_WIDTH;
 
-			rooms[i].position.z = offset;
-			
-			for (int j = 0; j < 4; j++)
-			{
-				roomExitPoints[i].positions[j].z += offset;
-				/*Entity q = scene->createEntity();
-				scene->setComponent<MeshComponent>(q, borderMeshIds[0]);
-				scene->getComponent<Transform>(q).scale.y = 30.f;*/
-			}
-
-			for (Entity id : rooms[i].tiles)
-			{
-				Transform& tra = this->scene->getComponent<Transform>(id);
-				tra.position.z += offset;
-			}
-			for (Entity id : rooms[i].borders)
-			{
-				Transform& tra = this->scene->getComponent<Transform>(id);
-				tra.position.z += offset;
-			}
-			for (Entity id : rooms[i].exitPaths)
-			{
-				Transform& tra = this->scene->getComponent<Transform>(id);
-				tra.position.z += offset;
-			}
+			moveRoom(i, glm::vec3(0.f, 0.f, offset));
 		}
+
+		placeBranch(i, rooms[i].connectingIndex[0], rooms[i].connectingIndex[1]);
 	}
 
-	//this->setConnections();
-	//this->generatePathways();
+	this->setConnections();
+	this->generatePathways();
 
 	this->roomLayout.clear();
+}
+
+void RoomHandler::placeBranch(int index, int left, int right)
+{
+	Room& curRoom = rooms[index];
+	glm::vec3 offset = curRoom.position;
+	
+	if (left != -1)
+	{
+		Room& leftRoom = rooms[left];
+		offset.x += curRoom.extents[0] + leftRoom.extents[1] + TILES_BETWEEN_ROOMS * TILE_WIDTH;
+		moveRoom(left, offset);
+
+		if (leftRoom.connectingIndex[0] != -1)
+		{
+			placeBranch(left, leftRoom.connectingIndex[0], -1);
+		}
+	}
+	
+	offset = curRoom.position;
+	if (right != -1)
+	{
+		Room& rightRoom = rooms[right];
+		offset.x -= curRoom.extents[1] + rightRoom.extents[0] + TILES_BETWEEN_ROOMS * TILE_WIDTH;
+		moveRoom(right, offset);
+
+		if (rightRoom.connectingIndex[1] != -1)
+		{
+			placeBranch(right, -1, rightRoom.connectingIndex[1]);
+		}
+	}
+}
+
+void RoomHandler::moveRoom(int roomIndex, glm::vec3 offset)
+{
+	Room& curRoom = rooms[roomIndex];
+
+	curRoom.position += offset;
+			
+	for (int j = 0; j < 4; j++)
+	{
+		roomExitPoints[roomIndex].positions[j] += offset;
+	}
+
+	for (Entity id : curRoom.tiles)
+	{
+		Transform& tra = this->scene->getComponent<Transform>(id);
+		tra.position += offset;
+	}
+	for (Entity id : curRoom.borders)
+	{
+		Transform& tra = this->scene->getComponent<Transform>(id);
+		tra.position += offset;
+	}
+	for (Entity id : curRoom.exitPaths)
+	{
+		Transform& tra = this->scene->getComponent<Transform>(id);
+		tra.position += offset;
+	}
 }
 
 const std::vector<Entity>& RoomHandler::getFreeTiles()
@@ -436,10 +506,7 @@ void RoomHandler::setConnections()
 			this->verticalConnection[i] = true;
 
 			pair.first = this->roomExitPoints[curCon.y].positions[2];
-			pair.first.z += TILE_WIDTH;
-
 			pair.second = this->roomExitPoints[curCon.x].positions[3];
-			pair.second.z -= TILE_WIDTH;
 		}
 		else
 		{
@@ -450,10 +517,7 @@ void RoomHandler::setConnections()
 			this->verticalConnection[i] = false;
 
 			pair.first = this->roomExitPoints[curCon.y].positions[0];
-			pair.first.x += TILE_WIDTH;
-
 			pair.second = this->roomExitPoints[curCon.x].positions[1];
-			pair.second.x -= TILE_WIDTH;
 		}
 	}
 }
@@ -481,13 +545,21 @@ void RoomHandler::generatePathways()
 	Entity entity = -1;
 
 	// Used when generating borders
-	const glm::vec3 OFFSETS[4] =
+	const int ThiccNessMonster = 4;
+	const glm::vec3 OFFSETS[] =
 	{
 		{TILE_WIDTH, 0, 0},
 		{-TILE_WIDTH, 0, 0},
 		{0, 0, TILE_WIDTH},
-		{0, 0, -TILE_WIDTH}
+		{0, 0, -TILE_WIDTH},
+		
+		//{ TILE_WIDTH, 0,  TILE_WIDTH},
+		//{-TILE_WIDTH, 0,  TILE_WIDTH},
+		//{-TILE_WIDTH, 0, -TILE_WIDTH},
+		//{ TILE_WIDTH, 0, -TILE_WIDTH},
 	};
+	const int NUM_OFFSETS = sizeof(OFFSETS) / sizeof(glm::vec3);
+
 
 	// For each exit pair (the points which to make a path between)
 	for (size_t i = 0; i < this->exitPairs.size(); i++)
@@ -541,52 +613,56 @@ void RoomHandler::generatePathways()
 		bool canPlace = true;
 
 		// Go through the placed path and generate a border around it
+		//continue;
+
+		glm::vec3 upperP = p0.z > p1.z ? p0 : p1;
+		glm::vec3 lowerP = upperP == p0 ? p1 : p0;
+		
+		glm::vec3 rightP = p0.x > p1.x ? p0 : p1;
+		glm::vec3 leftP = rightP == p0 ? p1 : p0;
+
+
 		for (size_t j = startIndex; j < endIndex; j++)
 		{
 			const glm::vec3& pos = this->scene->getComponent<Transform>(this->pathIds[j]).position;
-			for (int k = 0; k < 4; k++)
+			for (int k = 0; k < NUM_OFFSETS; k++)
 			{
-				const glm::vec3 offsetPos = pos + OFFSETS[k];
-				canPlace = true;
-
-				// Don't place a border inside the room
-				if (this->verticalConnection[i])
+				for (int l = 1; l < ThiccNessMonster + 1; l++) // ThiccNess off borders around paths
 				{
-					if (std::abs(offsetPos.z - (p0.z - step.z)) < TILE_WIDTH * 0.1f || 
-						std::abs(offsetPos.z - (p1.z + step.z)) < TILE_WIDTH * 0.1f)
+					const glm::vec3 offsetPos = pos + OFFSETS[k] * (float)l;
+					canPlace = true;
+
+					// Don't place a border inside the room
+					if (this->verticalConnection[i])
 					{
-						canPlace = false;
+						canPlace = !(offsetPos.z > upperP.z || offsetPos.z < lowerP.z);
 					}
-				}
-				else
-				{
-					if (std::abs(offsetPos.x - (p0.x - step.x)) < TILE_WIDTH * 0.1f ||
-						std::abs(offsetPos.x - (p1.x + step.x)) < TILE_WIDTH * 0.1f)
+					else
 					{
-						canPlace = false;
+						canPlace = !(offsetPos.x > rightP.x || offsetPos.x < leftP.x);
 					}
-				}
 
-				// Search through the path to see if offsetPos is on a tile
-				for (size_t m = startIndex; m < this->pathIds.size() && canPlace; m++)
-				{
-					if (m != j)
+					// Search through the path to see if offsetPos is on a tile
+					for (size_t m = startIndex; m < this->pathIds.size() && canPlace; m++)
 					{
-						glm::vec3 mPosToOffset = offsetPos - this->scene->getComponent<Transform>(this->pathIds[m]).position;
-						mPosToOffset.y = 0.f;
-
-						if (glm::dot(mPosToOffset, mPosToOffset) < (TILE_WIDTH * TILE_WIDTH))
+						if (m != j)
 						{
-							canPlace = false;
-							m = this->pathIds.size();
+							glm::vec3 mPosToOffset = offsetPos - this->scene->getComponent<Transform>(this->pathIds[m]).position;
+							mPosToOffset.y = 0.f;
+
+							if (glm::dot(mPosToOffset, mPosToOffset) < (TILE_WIDTH * TILE_WIDTH))
+							{
+								canPlace = false;
+								m = this->pathIds.size();
+							}
 						}
 					}
-				}
 
-				if (canPlace)
-				{
-					entity = createPathBorderEntity(offsetPos);
-					this->pathIds.emplace_back(entity);
+					if (canPlace)
+					{
+						entity = createPathBorderEntity(offsetPos);
+						this->pathIds.emplace_back(entity);
+					}
 				}
 			}
 		}
@@ -727,7 +803,6 @@ void RoomHandler::createColliders()
 	this->scene->getComponent<Transform>(this->floor).position = floorPos;
 }
 
-
 Entity RoomHandler::createTileEntity(int tileIndex, TileUsage usage)
 {
 	Tile tile{};
@@ -782,9 +857,9 @@ Entity RoomHandler::createPathEntity()
 	Entity entity = this->scene->createEntity();
 	this->scene->setComponent<MeshComponent>(entity);
 
-	int meshId;
-	if (rand() % 3 < 2) { meshId = (int)this->oneXOneMeshIds[0]; }
-	else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }
+	int meshId = oneXOneMeshIds[0];
+	//if (rand() % 3 < 2) { meshId = (int)this->oneXOneMeshIds[0]; }
+	//else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }
 
 	this->scene->getComponent<MeshComponent>(entity).meshID = meshId;
 	
@@ -804,7 +879,7 @@ Entity RoomHandler::createPathBorderEntity(const glm::vec3& position)
 	Transform& transform = this->scene->getComponent<Transform>(entity);
 	transform.position = position;
 	transform.scale *= RoomGenerator::DEFAULT_TILE_SCALE * TILE_WIDTH;
-	transform.rotation.y = (rand() % 4) * 90.f;
+	//transform.rotation.y = (rand() % 4) * 90.f;
 
 	return entity;
 }
@@ -926,7 +1001,11 @@ void RoomHandler::reset()
 				this->scene->removeEntity(room.doorTriggers[i]);
 				room.doorTriggers[i] = -1;
 			}
+
+			room.connectingIndex[i] = -1;
+			room.extents[i] = 0.f;
 		}
+		room.position = glm::vec3(0.f);
 		room.finished = false;
 	}																				  
 
@@ -941,6 +1020,7 @@ void RoomHandler::reset()
 
 	this->exitPairs.clear();
 	this->roomExitPoints.clear();
+
 
 	this->activeIndex = 0;
 	this->nextIndex = -1;

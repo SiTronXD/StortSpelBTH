@@ -71,7 +71,8 @@ private:
 	RoomGen roomGen;
 	RoomGen::RoomGenDescription roomGenDesc;
 	int tileFlorMeshId;
-
+	void placeBranch(int index, int left, int right);
+	void moveRoom(int roomIndex, glm::vec3 offset);
 
 	// Create Entities
 	Entity createTileEntity(int tileIndex, TileUsage usage);
@@ -104,7 +105,7 @@ private:
 	// Mesh IDs
 	std::vector<uint32_t> oneXOneMeshIds;
 	std::vector<uint32_t> borderMeshIds;
-	//std::vector<uint32_t> oneXTwoMeshIds;
+	std::vector<uint32_t> oneXTwoMeshIds;
 	//std::vector<uint32_t> twoXTwoMeshIds;
 	uint32_t doorMeshID;
 

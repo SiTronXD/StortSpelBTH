@@ -37,10 +37,10 @@ void RoomLayout::generate()
 	this->setUpRooms(this->numMainRooms);
 	for (int i = 0; i < this->numBranches; i++)
 	{
-		/*if (!this->setRandomBranch(this->numMainRooms)) 
+		if (!this->setRandomBranch(this->numMainRooms)) 
 		{
 			Log::warning("Failed creating branch");
-		}*/
+		}
 	}
 
 	/*if (!this->setExit())

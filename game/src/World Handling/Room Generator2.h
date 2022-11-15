@@ -10,8 +10,9 @@ struct Tile2
         Border = 0,
         OneXOne = 1,
         OneXTwo = 2,
-        TwoXTwo = 3,
-        Exit = 4
+        TwoXOne = 3,
+        TwoXTwo = 4,
+        Exit = 5
     };
 
     Tile2() = default;
@@ -27,7 +28,7 @@ struct Tile2
 class RoomGen
 {
 public:
-    static const uint32_t WIDTH_HEIGHT = 30u;
+    static const uint32_t WIDTH_HEIGHT = 35u;
 
     struct RoomGenDescription
     {
@@ -37,7 +38,6 @@ public:
         uint32_t branchDepth = 3u;
         uint32_t branchDist = 3u;
         uint32_t maxAngle = 90u;
-        bool exits[4] = {true, true, true, true}; // true temp
     };
 
 private:
@@ -51,11 +51,13 @@ private:
     glm::ivec2 minMaxPos[4]; // x, -x, z, -z
     glm::ivec2 exitTilesPos[4];
     glm::ivec2 middle;
+    glm::ivec2 size;
 
-    void genCircle(const glm::ivec2& center);
+    void genCircle(const glm::ivec2& center, uint32_t radius);
 
     void setBorders();
-    void setExits();
+    void findMinMax();
+    void setExits(bool* doors);
     void finalize();
 
     // Helpers
@@ -63,19 +65,22 @@ private:
     inline bool isValid(const glm::ivec2& pos);
     inline bool onEdge(const glm::ivec2& pos);
 
+    bool canPlaceOneXTwo(const glm::ivec2& pos, bool vertical);
+    bool canPlaceTwoXOne(const glm::ivec2& pos);
+    bool canPlaceTwoXTwo(const glm::ivec2& pos);
+
 public:
     RoomGen();
     ~RoomGen();
 
     void setDesc(const RoomGenDescription& desc);
     void clear();
-    void generate();
+    void generate(bool* doors);
 
     const glm::ivec2* getMinMax() const;
     const glm::ivec2* getExits() const;
     glm::ivec2 getCenter() const;
     
-
     uint32_t getNumTiles() const;
     uint32_t getNumBorders() const;
     uint32_t getNumExitTiles() const;
