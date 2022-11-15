@@ -343,16 +343,21 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
                 entityTargetPos += dirEntityToPlayer;
 
             }
-			else if(rp.entity )
-            {
-
-            }
 
             canSeePlayer = rp.entity == playerId;
-        }
+            if (canSeePlayer)
+              {
+                std::cout << "stop" << std::endl;  
+			}
+        } 
 		else
 		{
-
+            glm::vec3 leftOfPlayer = glm::cross(
+                dirEntityTargetPosToPlayer, glm::vec3(0.f, 1.f, 0.f)
+            );
+            dirEntityToPlayer =
+                glm::normalize(leftOfPlayer + dirEntityTargetPosToPlayer);
+            entityTargetPos += dirEntityToPlayer;
 			if(++safetyBreak>25)
 			{
 				Log::warning("Swarm ray check running too many times,this is bad");
@@ -698,12 +703,13 @@ void Swarm_escape::start()
 
 void Swarm_dead::start()
 {
-	ResourceManager* resourceMng = sceneHandler->getResourceManager();
-	this->perkMeshes[0] = resourceMng->addMesh("assets/models/Perk_Hp.obj");
-	this->perkMeshes[1] = resourceMng->addMesh("assets/models/Perk_Dmg.obj");
-	this->perkMeshes[2] = resourceMng->addMesh("assets/models/Perk_AtkSpeed.obj");
-	this->abilityMeshes[0] = resourceMng->addMesh("assets/models/KnockbackAbility.obj");
-	this->abilityMeshes[1] = resourceMng->addMesh("assets/models/KnockbackAbility.obj");
+	//TODO : how to do this?
+	//ResourceManager* resourceMng = sceneHandler->getResourceManager();
+	//this->perkMeshes[0] = resourceMng->addMesh("assets/models/Perk_Hp.obj");
+	//this->perkMeshes[1] = resourceMng->addMesh("assets/models/Perk_Dmg.obj");
+	//this->perkMeshes[2] = resourceMng->addMesh("assets/models/Perk_AtkSpeed.obj");
+	//this->abilityMeshes[0] = resourceMng->addMesh("assets/models/KnockbackAbility.obj");
+	//this->abilityMeshes[1] = resourceMng->addMesh("assets/models/KnockbackAbility.obj");
 
 	Sequence* root = c.c.sequence();
 

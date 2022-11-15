@@ -52,9 +52,7 @@ void GameScene::init()
 
   roomHandler.init(
       this,
-      this->getResourceManager(),
-      this->getConfigValue<int>("room_size"),
-      this->getConfigValue<int>("tile_types"));
+      this->getResourceManager(), 15, 15);
   roomHandler.generate();
   createPortal();
   // simon

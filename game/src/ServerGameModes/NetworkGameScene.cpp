@@ -20,6 +20,7 @@ NetworkGameScene::NetworkGameScene() : newRoomFrame(false)
 
 NetworkGameScene::~NetworkGameScene()
 {
+  aiHandler->clean();
   if (aiHandler != nullptr)
   {
     delete aiHandler;
@@ -34,19 +35,20 @@ void NetworkGameScene::start()
   this->addEvent({(int)GameEvents::GetLevelSeed, this->roomSeed});
   srand(roomSeed);
   this->roomHandler.serverInit(
-      this,
-      this->getConfigValue<int>("room_size"),
-      this->getConfigValue<int>("tile_types")
+      this, 15, 15
   );
   this->roomHandler.generate();
+  std::cout << "print server room" << std::endl;
+  roomHandler.printRoom();
 
-  //// Ai management
+  // Ai management
   this->aiHandler = new AIHandler();
   this->aiHandler->init(this->getSceneHandler());
   aiExample();
   int floor = this->createEntity();
+  this->getComponent<Transform>(floor).position = glm::vec3(0, -4.f, 0);
   this->setComponent<Collider>(
-      floor, Collider::createBox(glm::vec3(100, 0.2, 100))
+      floor, Collider::createBox(glm::vec3(10000, 4.f, 10000))
   );
 }
 
@@ -54,166 +56,46 @@ void NetworkGameScene::init() {}
 
 void NetworkGameScene::update(float dt)
 {
+  aiHandler->update();
 
+  if (allDead() && this->newRoomFrame)
+  {
+    this->newRoomFrame = false;
+    this->addEvent({GameEvents::ROOM_CLEAR});
+    // Call when a room is cleared
+    roomHandler.roomCompleted();
+    //this->numRoomsCleared++;
 
+    //if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+    //{
+    //    this->getComponent<MeshComponent>(portal).meshID = portalOnMesh;
+    //}
+  }
+  static float timetoUpdatePlayerPos = 0;
+  timetoUpdatePlayerPos += dt;
+  if (timetoUpdatePlayerPos > 3)
+  {
+      timetoUpdatePlayerPos = 0;
+    glm::vec3 p = this->getComponent<Transform>(this->getPlayer(0)).position;
+      std::cout << "player pos: " << p.x << ", " << p.y << ", " << p.z
+                << std::endl;
+      ;
+  }
 }
 
 void NetworkGameScene::aiExample()
 {
-  auto a = [&](FSM* fsm, uint32_t entityId) -> void
-  {
-    SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
-
-    auto entityImguiWindow = [&](SwarmFSM* swarmFsm, uint32_t entityId) -> void
-    {
-      auto& entitySwarmComponent =
-          this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(
-              entityId
-          );
-      auto& entityAiCombatComponent =
-          this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId);
-      auto& entiyFSMAgentComp =
-          this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(
-              entityId
-          );
-      auto& entityRigidBody =
-          this->getSceneHandler()->getScene()->getComponent<Rigidbody>(entityId
-          );
-      int& health = entitySwarmComponent.life;
-      float& jumpForce = entitySwarmComponent.jumpForce;
-      float& jumpForceY = entitySwarmComponent.jumpY;
-      float& speed = entitySwarmComponent.speed;
-      float& attackRange = entitySwarmComponent.attackRange;
-      float& sightRange = entitySwarmComponent.sightRadius;
-      bool& inCombat = entitySwarmComponent.inCombat;
-      float& attackPerSec = entityAiCombatComponent.lightAttackTime;
-      float& lightAttackDmg = entityAiCombatComponent.lightHit;
-      float& gravity = entityRigidBody.gravityMult;
-      std::string& status = entiyFSMAgentComp.currentNode->status;
-      ImGui::Text(status.c_str());
-      ImGui::SliderInt("health", &health, 0, 100);
-      ImGui::SliderFloat("speed", &speed, 0, 100);
-      ImGui::SliderFloat("jumpForce", &jumpForce, 0, 100);
-      ImGui::SliderFloat("jumpForceY", &jumpForceY, 0, 100);
-      ImGui::SliderFloat("gravity", &gravity, 0, 10);
-      ImGui::SliderFloat("attackRange", &attackRange, 0, 100);
-      ImGui::SliderFloat("sightRange", &sightRange, 0, 100);
-      ImGui::InputFloat("attack/s", &attackPerSec);
-      ImGui::InputFloat("lightattackDmg", &lightAttackDmg);
-      ImGui::Checkbox("inCombat", &inCombat);
-    };
-    //TEMP
-
-    static bool showEntityId = false;
-    ImGui::Checkbox("Show Entity ID", &showEntityId);
-    if (showEntityId)
-      {
-
-        // Show all entity ID over entitties
-        glm::vec4 entityPos = glm::vec4(
-            this->getSceneHandler()
-                ->getScene()
-                ->getComponent<Transform>(entityId)
-                .position,
-            1.f
-        );
-
-        auto screenPos = this->getMainCamera()->projection *
-                         this->getMainCamera()->view * entityPos;
-        glm::vec3 realScreenPos;
-        realScreenPos.x = (screenPos.x / screenPos.w) * 1920 / 2;
-        realScreenPos.y = (screenPos.y / screenPos.w) * 1080 / 2;
-        realScreenPos.z = screenPos.z / screenPos.w;
-
-        Scene::getUIRenderer()->setTexture(this->fontTextureIndex);
-        Scene::getUIRenderer()->renderString(
-            std::to_string(entityId),
-            glm::vec2(realScreenPos.x, realScreenPos.y),
-            glm::vec2(20, 20)
-        );
-      }
-
-    std::string playerString = "playerID";
-    int playerID;
-    this->getSceneHandler()->getScriptHandler()->getGlobal(
-        playerID, playerString
-    );
-    auto& playerCombat =
-        this->getSceneHandler()->getScene()->getComponent<Combat>(playerID);
-    if (ImGui::Button("Kill Player"))
-      {
-        playerCombat.health = 0;
-      }
-    if (ImGui::Button("INVINCIBLE Player"))
-      {
-        playerCombat.health = INT_MAX;
-      }
-    ImGui::Separator();
-    ImGui::Separator();
-    entityImguiWindow(swarmFSM, entityId);
-
-    auto& entitySwarmComponent =
-        this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(
-            entityId
-        );
-    auto& entityAiCombatComponent =
-        this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId);
-    auto& entiyFSMAgentComp =
-        this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(
-            entityId
-        );
-
-    std::string groupName = "GroupMembers[" +
-                            std::to_string(entitySwarmComponent.group->myId) +
-                            "]";
-    if (ImGui::TreeNode(groupName.c_str()))
-      {
-        if (ImGui::Button("Kill All"))
-          {
-            entitySwarmComponent.life = 0;
-            for (auto& ent : entitySwarmComponent.group->members)
-              {
-                auto& entSwarmComp = this->getSceneHandler()
-                                         ->getScene()
-                                         ->getComponent<SwarmComponent>(ent);
-                entSwarmComp.life = 0;
-              }
-          }
-
-        static int selected_friend = -1;
-
-        for (auto& ent : entitySwarmComponent.group->members)
-          {
-            std::string entityName = "entity[" + std::to_string(ent) + "]";
-            if (ImGui::Button(entityName.c_str()))
-              {
-                selected_friend = ent;
-              }
-          }
-        if (selected_friend != -1)
-          {
-            std::string entityName =
-                "entity[" + std::to_string(selected_friend) + "]";
-            ImGui::Begin((entityName + "_popup").c_str());
-            entityImguiWindow(swarmFSM, selected_friend);
-            ImGui::End();
-          }
-        ImGui::TreePop();
-      }
-  };
   // static SwarmFSM swarmFSM;
 
   this->aiHandler->addFSM(&this->swarmFSM, "swarmFSM");
 
 //TODO: Cause crash on second run, therefore disabled in distribution...
 #ifdef _CONSOLE
-  this->aiHandler->addImguiToFSM("swarmFSM", a);
+  //this->aiHandler->addImguiToFSM("swarmFSM", a);
 #endif
 
-  //int numOfGroups = 4;
-  //int group_size = 3;
-  int numOfGroups = 1;
-  int group_size = 1;
+  int numOfGroups = 4;
+  int group_size = 3;
   for (size_t j = 0; j < numOfGroups; j++)
     {
       this->swarmGroups.push_back(new SwarmGroup);
@@ -273,8 +155,11 @@ void NetworkGameScene::onTriggerStay(Entity e1, Entity e2)
         {
           this->newRoomFrame = true;
 
+          std::cout << "walked in new room" << std::endl;
+
           int idx = 0;
           int randNumEnemies = rand() % 8 + 3;
+          //int randNumEnemies = 1;
           int counter = 0;
           const std::vector<Entity>& entites = roomHandler.getFreeTiles();
           for (Entity entity : entites)
@@ -290,6 +175,10 @@ void NetworkGameScene::onTriggerStay(Entity e1, Entity e2)
                   transform.position = tileTrans.position;
                   transform.position =
                       transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
+
+                  std::cout << "spawn enemy at: " << transform.position.x
+                            << ", " << transform.position.y << ", "
+                            << transform.position.z << std::endl;
 
                   //Temporary enemie reset
                   SwarmComponent& swarmComp =
@@ -421,9 +310,9 @@ void NetworkGameScene::onCollisionStay(Entity e1, Entity e2)
               swarmComp.inAttack = false;
               swarmComp.touchedPlayer = true;
               //aiCombat.timer = aiCombat.lightAttackTime;
-              this->getComponent<Combat>(player).health -=
-                  (int)aiCombat.lightHit;
-              std::cout << "WAS HIT\n";
+              //this->getComponent<Combat>(player).health -=
+              //    (int)aiCombat.lightHit;
+              //std::cout << "WAS HIT\n";
             }
         }
     }
