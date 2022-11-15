@@ -48,6 +48,7 @@ class TankBT : public BehaviorTree
 
 	//Helper functions
 	static void rotateTowardsTarget(Entity entityID, float precision);
+	static void rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision);
 
 };
 

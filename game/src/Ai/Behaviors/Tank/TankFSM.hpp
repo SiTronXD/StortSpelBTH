@@ -67,6 +67,7 @@ struct TankComponent
     float peronalSpaceRadius    = 90.0f; // This is my personal space, get away!
 	float friendVisitRadius		= 15.0f; //When go this close to friends
 	float idleRotSpeed			= 30.0f;
+	float shildRotSpeed			= 15.0f;
 	float tempRotAngle			= 0.0f;//Dont touch!
 
 	//Bools

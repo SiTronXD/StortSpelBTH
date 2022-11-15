@@ -56,6 +56,50 @@ void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 	}
 	//Rotate towards target end
 }
+void TankBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision)
+{
+	TankComponent& tankComp = getTankComponent();
+	Transform& tankTrans = getTankTrans();
+	//Rotate towards target start
+	tankTrans.updateMatrix();
+	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
+	glm::vec2 tankPos			= glm::vec2(tankTrans.position.x, tankTrans.position.z);
+	glm::vec2 curRot			= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	glm::vec2 tank_to_friend	= glm::normalize(targetPos - tankPos);
+
+	float angle_between			= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
+	tankComp.tempRotAngle = angle_between;
+
+	if(tankComp.rotateLeft && angle_between >= precision)
+	{
+		tankTrans.rotation.y += rotSpeed * Time::getDT();
+	}
+	else if(angle_between >= precision)
+	{
+		tankTrans.rotation.y -= rotSpeed * Time::getDT();
+	}
+
+	//Check if we rotated in correct direction
+	tankTrans.updateMatrix();
+	targetPos			= glm::vec2(target.x, target.z);
+	tankPos				= glm::vec2(tankTrans.position.x, tankTrans.position.z);
+	curRot				= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	tank_to_friend		= glm::normalize(targetPos - tankPos);
+	angle_between		= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
+	//If angle got bigger, then change direction
+	if(tankComp.tempRotAngle < angle_between)
+	{
+		if(tankComp.rotateLeft)
+		{
+			tankComp.rotateLeft = false;
+		}
+		else
+		{
+			tankComp.rotateLeft = true;
+		}
+	}
+	//Rotate towards target end
+}
 
 void TankBT::registerEntityComponents(Entity entityId)
 {
@@ -268,19 +312,19 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 
 BTStatus TankBT::getNearestGroupToPlayer(Entity entityID)
 {
-	BTStatus ret = BTStatus::Failure;
+	BTStatus ret = BTStatus::Success;
 	return ret;
 }
 
 BTStatus TankBT::groupInPersonalSpece(Entity entityID)
 {
-	BTStatus ret = BTStatus::Failure;
+	BTStatus ret = BTStatus::Success;
 	return ret;
 }
 
 BTStatus TankBT::moveTowardsGroup(Entity entityID)
 {
-	BTStatus ret = BTStatus::Failure;
+	BTStatus ret = BTStatus::Success;
 	return ret;
 }
 
@@ -300,6 +344,13 @@ BTStatus TankBT::HoldShield(Entity entityID)
 
         }
     }
+
+	int playerID = -1;
+	getPlayerID(playerID);
+	Transform& playerTrans = getPlayerTrans(playerID);
+	rotateTowards(entityID, playerTrans.position, tankComp.shildRotSpeed, 5.0f);
+
+
 	return ret;
 }
 
