@@ -13,6 +13,7 @@ private:
   AIHandler* aiHandler = nullptr;
 
   Entity playerID;
+  Entity swordID;
   Entity portal;
   Entity perk;
   Entity perk1;
