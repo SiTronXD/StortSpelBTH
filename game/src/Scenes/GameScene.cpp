@@ -171,6 +171,8 @@ void GameScene::start()
 
 void GameScene::update()
 {
+    this->aiHandler->update();
+
   if (allDead() && this->newRoomFrame)
     {
       this->newRoomFrame = false;
@@ -593,6 +595,16 @@ void GameScene::onTriggerEnter(Entity e1, Entity e2)
   Entity ability = this->hasComponents<Abilities>(e1)   ? e1
                    : this->hasComponents<Abilities>(e2) ? e2
                                                         : -1;
+
+  //Entity swarm = this->hasComponents<SwarmComponent>(e1) ? e1 : this->hasComponents<SwarmComponent>(e2) ? e2 : -1;
+
+  //if (e1 == this->swordID && swarm != -1)
+  //{
+  //}
+  //else if (e2 == this->swordID && swarm != -1)
+  //{
+
+  //}
 
   if (this->entityValid(ground))
     {
