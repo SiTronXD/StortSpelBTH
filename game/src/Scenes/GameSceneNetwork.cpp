@@ -162,26 +162,32 @@ void GameSceneNetwork::start()
   perkSetting2.multiplier = 1.f;
   perkSetting2.perkType = attackSpeedUpPerk;
 
-  // Ai management
-  //this->aiHandler = this->getAIHandler();
-  //this->aiHandler->init(this->getSceneHandler());
-
-  //aiExample();
 }
 
 void GameSceneNetwork::update()
 {
+  static int nrOfAttacks = 0;
     bool alldead = false;
     int gameEvents;
-    sf::Packet p = this->getNetworkHandler()->getScenePacket();
+    sf::Packet &p = this->getNetworkHandler()->getScenePacket();
     while (!p.endOfPacket())
+    {
+      p >> gameEvents;
+      if (gameEvents == GameEvents::ROOM_CLEAR)
       {
-        p >> gameEvents;
-        if (gameEvents == GameEvents::ROOM_CLEAR)
-          {
-            alldead = true;
-          }
+          alldead = true;
       }
+      else if (gameEvents == GameEvents::MONSTER_HIT)
+      {
+        int monsterID, damage, thePlayerID;
+        p >> monsterID >> damage >> thePlayerID;
+        //check if its us?
+        std::cout << "attacked: " << ++nrOfAttacks << std::endl;
+        this->getComponent<Combat>(playerID).health -= damage; 
+      }
+    }
+
+
     if (alldead)
       {
         this->newRoomFrame = false;
@@ -205,12 +211,16 @@ void GameSceneNetwork::update()
 		rb.velocity.y = y + Input::isKeyPressed(Keys::SPACE) * 5.0f;
 	}*/
 
+  //TODO : must check if all players are dead
   // Switch scene if the player is dead
   if (this->hasComponents<Combat>(this->playerID))
     {
       if (this->getComponent<Combat>(this->playerID).health <= 0.0f)
         {
           this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+          this->getNetworkHandler()->setPlayerNetworkHandler(-1);
+          this->getNetworkHandler()->deleteServer();
+          
         }
     }
 

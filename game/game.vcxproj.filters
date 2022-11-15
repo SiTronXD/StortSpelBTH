@@ -56,7 +56,6 @@
     <None Include=".clang-format" />
     <None Include="src\Scripts\Prefab.lua" />
     <None Include="src\Scripts\Prefabs.lua" />
-    <None Include="src\Scripts\PuzzleCreatorLua.lua" />
-    <None Include="src\Scripts\PuzzleLoader.lua" />
+    <None Include="scripts\loadBlob.lua" />
   </ItemGroup>
 </Project>

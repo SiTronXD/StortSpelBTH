@@ -1,9 +1,9 @@
+#include "NetworkGameScene.h"
 #include "../Systems/AiCombatSystem.hpp"
 #include "../Systems/AiMovementSystem.hpp"
 #include "../Systems/CameraMovementSystem.hpp"
 #include "../Systems/CombatSystem.hpp"
 #include "../Systems/MovementSystem.hpp"
-#include "NetworkGameScene.h"
 #include <iostream>
 //SEVER SIDE!!!
 
@@ -22,9 +22,9 @@ NetworkGameScene::~NetworkGameScene()
 {
   aiHandler->clean();
   if (aiHandler != nullptr)
-  {
-    delete aiHandler;
-  }
+    {
+      delete aiHandler;
+    }
 }
 
 void NetworkGameScene::start()
@@ -34,22 +34,15 @@ void NetworkGameScene::start()
   std::cout << "SERVER: seed is: " << roomSeed << std::endl;
   this->addEvent({(int)GameEvents::GetLevelSeed, this->roomSeed});
   srand(roomSeed);
-  this->roomHandler.serverInit(
-      this, 15, 15
-  );
+  this->roomHandler.serverInit(this, 15, 15);
   this->roomHandler.generate();
-  std::cout << "print server room" << std::endl;
-  roomHandler.printRoom();
+  //std::cout << "print server room" << std::endl;
+  //roomHandler.printRoom();
 
   // Ai management
   this->aiHandler = new AIHandler();
   this->aiHandler->init(this->getSceneHandler());
   aiExample();
-  int floor = this->createEntity();
-  this->getComponent<Transform>(floor).position = glm::vec3(0, -4.f, 0);
-  this->setComponent<Collider>(
-      floor, Collider::createBox(glm::vec3(10000, 4.f, 10000))
-  );
 }
 
 void NetworkGameScene::init() {}
@@ -59,50 +52,33 @@ void NetworkGameScene::update(float dt)
   aiHandler->update();
 
   if (allDead() && this->newRoomFrame)
-  {
-    this->newRoomFrame = false;
-    this->addEvent({GameEvents::ROOM_CLEAR});
-    // Call when a room is cleared
-    roomHandler.roomCompleted();
-    //this->numRoomsCleared++;
+    {
+      this->newRoomFrame = false;
+      this->addEvent({GameEvents::ROOM_CLEAR});
+      // Call when a room is cleared
+      roomHandler.roomCompleted();
+      //this->numRoomsCleared++;
 
-    //if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
-    //{
-    //    this->getComponent<MeshComponent>(portal).meshID = portalOnMesh;
-    //}
-  }
-  static float timetoUpdatePlayerPos = 0;
-  timetoUpdatePlayerPos += dt;
-  if (timetoUpdatePlayerPos > 3)
-  {
-      timetoUpdatePlayerPos = 0;
-    glm::vec3 p = this->getComponent<Transform>(this->getPlayer(0)).position;
-      std::cout << "player pos: " << p.x << ", " << p.y << ", " << p.z
-                << std::endl;
-      ;
-  }
+      //if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+      //{
+      //    this->getComponent<MeshComponent>(portal).meshID = portalOnMesh;
+      //}
+    }
 }
 
 void NetworkGameScene::aiExample()
 {
-  // static SwarmFSM swarmFSM;
 
   this->aiHandler->addFSM(&this->swarmFSM, "swarmFSM");
 
-//TODO: Cause crash on second run, therefore disabled in distribution...
-#ifdef _CONSOLE
-  //this->aiHandler->addImguiToFSM("swarmFSM", a);
-#endif
-
-  int numOfGroups = 4;
-  int group_size = 3;
+  int numOfGroups = 1;
+  int group_size = 1;
   for (size_t j = 0; j < numOfGroups; j++)
     {
       this->swarmGroups.push_back(new SwarmGroup);
       for (size_t i = 0; i < group_size; i++)
         {
-          
-          //this->enemyIDs.push_back(this->createEntity());
+
           this->enemyIDs.push_back(this->createEnemy(0));
           this->setComponent<AiCombat>(this->enemyIDs.back());
           this->setComponent<Collider>(
@@ -143,12 +119,10 @@ bool NetworkGameScene::allDead()
 
 void NetworkGameScene::onTriggerStay(Entity e1, Entity e2)
 {
-    //TODO : player 0 is temp
-  Entity player = e1 == this->getPlayer(0)   ? e1
-                  : e2 == this->getPlayer(0) ? e2
-                                             : -1;
+  //TODO : player 0 is temp
+  Entity player = isAPlayer(e1) ? e1 : isAPlayer(e2) ? e2 : -1;
 
-  if (player == this->getPlayer(0))  // player triggered a trigger :]
+  if (isAPlayer(player))  // player triggered a trigger :]
     {
       Entity other = e1 == player ? e2 : e1;
       if (roomHandler.onPlayerTrigger(other))
@@ -158,8 +132,8 @@ void NetworkGameScene::onTriggerStay(Entity e1, Entity e2)
           std::cout << "walked in new room" << std::endl;
 
           int idx = 0;
-          int randNumEnemies = rand() % 8 + 3;
-          //int randNumEnemies = 1;
+          //int randNumEnemies = rand() % 8 + 3;
+          int randNumEnemies = 1;
           int counter = 0;
           const std::vector<Entity>& entites = roomHandler.getFreeTiles();
           for (Entity entity : entites)
@@ -294,11 +268,9 @@ void NetworkGameScene::onCollisionEnter(Entity e1, Entity e2)
 
 void NetworkGameScene::onCollisionStay(Entity e1, Entity e2)
 {
-  Entity player = e1 == this->getPlayer(0)   ? e1
-                  : e2 == this->getPlayer(0) ? e2
-                                             : -1;
+  Entity player = this->isAPlayer(e1) ? e1 : this->isAPlayer(e2) ? e2 : -1;
 
-  if (player == this->getPlayer(0))  // player triggered a trigger :]
+  if (this->isAPlayer(player))  // player triggered a trigger :]
     {
       Entity other = e1 == player ? e2 : e1;
       if (this->hasComponents<SwarmComponent>(other))
@@ -309,10 +281,13 @@ void NetworkGameScene::onCollisionStay(Entity e1, Entity e2)
               auto& aiCombat = this->getComponent<AiCombat>(other);
               swarmComp.inAttack = false;
               swarmComp.touchedPlayer = true;
-              //aiCombat.timer = aiCombat.lightAttackTime;
-              //this->getComponent<Combat>(player).health -=
-              //    (int)aiCombat.lightHit;
-              //std::cout << "WAS HIT\n";
+              aiCombat.timer = aiCombat.lightAttackTime;
+              this->addEvent(
+                  {(int)GameEvents::MONSTER_HIT,
+                   other,
+                   (int)aiCombat.lightHit,
+                   player}
+              );
             }
         }
     }
