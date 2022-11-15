@@ -545,7 +545,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 
 						lichIdx++;
 					}
-					else if(swarmIdx < 3)
+					else if(swarmIdx < 6)
 					{
 						this->setActive(this->swarmIDs[swarmIdx]);
 						Transform& transform = this->getComponent<Transform>(this->swarmIDs[swarmIdx]);
@@ -606,6 +606,11 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 					}
 					
 			}
+			for(auto t: tankIDs)
+			{
+				TankComponent& tankComp = this->getComponent<TankComponent>(t);
+				tankComp.setFriends(this, t);
+			}
 		}        
 
 		if (other == portal && numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
@@ -624,6 +629,34 @@ void GameScene::onCollisionEnter(Entity e1, Entity e2)
 		SwarmComponent& s2 = this->getComponent<SwarmComponent>(e2);
 		s1.touchedFriend = true;
 		s1.friendTouched = this->getComponent<Transform>(e2).position;
+		s2.touchedFriend = true;
+		s2.friendTouched = this->getComponent<Transform>(e1).position;
+	}
+	else if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<TankComponent>(e2))
+	{
+		SwarmComponent& s1 = this->getComponent<SwarmComponent>(e1);
+		TankComponent& s2 = this->getComponent<TankComponent>(e2);
+		s1.touchedFriend = true;
+		s1.friendTouched = this->getComponent<Transform>(e2).position;
+	}
+	else if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<LichComponent>(e2))
+	{
+		SwarmComponent& s1 = this->getComponent<SwarmComponent>(e1);
+		TankComponent& s2 = this->getComponent<TankComponent>(e2);
+		s1.touchedFriend = true;
+		s1.friendTouched = this->getComponent<Transform>(e2).position;
+	}
+	else if(this->hasComponents<SwarmComponent>(e2) && this->hasComponents<TankComponent>(e1))
+	{
+		SwarmComponent& s2 = this->getComponent<SwarmComponent>(e2);
+		TankComponent& s1 = this->getComponent<TankComponent>(e1);
+		s2.touchedFriend = true;
+		s2.friendTouched = this->getComponent<Transform>(e1).position;
+	}
+	else if(this->hasComponents<SwarmComponent>(e2) && this->hasComponents<LichComponent>(e1))
+	{
+		SwarmComponent& s2 = this->getComponent<SwarmComponent>(e2);
+		TankComponent& s1 = this->getComponent<TankComponent>(e1);
 		s2.touchedFriend = true;
 		s2.friendTouched = this->getComponent<Transform>(e1).position;
 	}

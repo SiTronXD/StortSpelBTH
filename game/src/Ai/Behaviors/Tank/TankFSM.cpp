@@ -11,132 +11,51 @@
 void TankFSM::updateFriendsInSight(Entity entityID)
 {
     Scene* scene = getTheScene();
+
     TankComponent& tankComp = scene->getComponent<TankComponent>(entityID);
     tankComp.friendsInSight.clear();
-    Transform& tankTransform = scene->getComponent<Transform>(entityID);;
-    auto viewSwarm = scene->getSceneReg().view<SwarmComponent, Transform>();
-    auto viewLich = scene->getSceneReg().view<LichComponent, Transform>();
-    auto swarmLamda = [&](const auto& entity, SwarmComponent& comp, Transform& trans) {
-        int entityid = (int)entity;
-        if(scene->isActive(entityid) && entityid != entityID)
-        {
-            tankComp.allFriends.insert({entityid, "Swarm"});
-            bool found = false;
-            float dist = glm::length(tankTransform.position - trans.position);
-            if(dist < tankComp.sightRadius)
-            {
-                for(auto f: tankComp.friendsInSight)
-                {
-                    if(f.first == entityid)
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-                if(!found)
-                {
-                    tankComp.friendsInSight.insert({entityid, "Swarm"});
-                }
-            }
-        }        
-    };
-    auto lichLamda = [&](const auto& entity, LichComponent& comp, Transform& trans) {
-        int entityid = (int)entity;
-        if(scene->isActive(entityid) && entityid != entityID)
-        {
-            tankComp.allFriends.insert({entityid, "Lich"});
-            bool found = false;
-            float dist = glm::length(tankTransform.position - trans.position);
-            if(dist < tankComp.sightRadius)
-            {
-                for(auto f: tankComp.friendsInSight)
-                {
-                    if(f.first == entityid)
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-                if(!found)
-                {
-                    tankComp.friendsInSight.insert({entityid, "Lich"});
-                }
-            }
-        }
-    };
-    viewSwarm.each(swarmLamda);
-    viewLich.each(lichLamda);
+    Transform& tankTransform = scene->getComponent<Transform>(entityID);
 
-    std::vector<int> groups;
-    std::vector<int> groups_swarmID;
     std::vector<int> toRemove;
-    for(auto f: tankComp.friendsInSight)
-    {
-        if(f.second == "Swarm")
-        {
-            bool found = false;
-            int groupID = scene->getComponent<SwarmComponent>(f.first).group->myId;
-            for(auto g: groups)
-            {
-                if(g == groupID)
-                {
-                    found = true;
-                    break;
-                }
-            }
-            if(!found)
-            {
-                groups.push_back(groupID);
-                groups_swarmID.push_back(f.first);
-            }
-            toRemove.push_back(f.first);
-            
-        }
-    }
-    for(auto tr: toRemove)
-    {
-        tankComp.friendsInSight.erase(tr);
-    }
-    for(auto g: groups_swarmID)
-    {
-        tankComp.friendsInSight.insert({g, "Swarm"});
-    }
-
-    groups.clear();
-    groups_swarmID.clear();
-    toRemove.clear();
-
     for(auto f: tankComp.allFriends)
     {
-        if(f.second == "Swarm")
+        if(f.second.type == "Swarm")
         {
-            bool found = false;
-            int groupID = scene->getComponent<SwarmComponent>(f.first).group->myId;
-            for(auto g: groups)
+            bool foundReplacement = false;
+            SwarmComponent& swarmComp = scene->getComponent<SwarmComponent>(f.first);
+            if(swarmComp.life <= 0)
             {
-                if(g == groupID)
+                //Find replacemen in group
+                if(foundReplacement)
                 {
-                    found = true;
-                    break;
                 }
+                toRemove.push_back(f.first);
+                continue;
             }
-            if(!found)
-            {
-                groups.push_back(groupID);
-                groups_swarmID.push_back(f.first);
-            }
-            toRemove.push_back(f.first);
-            
         }
+        else
+        {
+            LichComponent& lichComp = scene->getComponent<LichComponent>(f.first);
+            if(lichComp.life <= 0)
+            {
+                toRemove.push_back(f.first);
+                continue;
+            }
+        }
+
+        Transform& transComp = scene->getComponent<Transform>(f.first);
+        float dist = glm::length(transComp.position - tankTransform.position);
+        if(dist < tankComp.sightRadius)
+        {
+            tankComp.friendsInSight.insert({f.first, {f.second.type, f.second.visited}});
+        }
+
     }
-    for(auto tr: toRemove)
+    for(auto r: toRemove)
     {
-        tankComp.allFriends.erase(tr);
+        tankComp.allFriends.erase(r);
     }
-    for(auto g: groups_swarmID)
-    {
-        tankComp.allFriends.insert({g, "Swarm"});
-    }
+    
 }
 
 bool TankFSM::playerInSight(Entity entityID)

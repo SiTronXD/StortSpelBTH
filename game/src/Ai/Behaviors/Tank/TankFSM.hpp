@@ -5,33 +5,88 @@
 #include "../Swarm/SwarmFSM.hpp"
 #include "../Lich/LichFSM.hpp"
 
+struct TankFriend
+{
+	std::string type;
+	bool visited = false;
+};
+
+struct TankFriendTarget
+{
+	int id = -1;
+	glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
+};
+
 struct TankComponent
 {
 	TankComponent() {};
 
-    int FULL_HEALTH = 300;  
-    int life = FULL_HEALTH;
+	void setFriends(Scene* scene, Entity entityID)
+	{
+		TankComponent& tankComp = scene->getComponent<TankComponent>(entityID);
+		tankComp.allFriends.clear();
+		auto viewSwarm = scene->getSceneReg().view<SwarmComponent, Transform>();
+        auto viewLich = scene->getSceneReg().view<LichComponent, Transform>();
+        auto swarmLamda = [&](const auto& entity, SwarmComponent& comp, Transform& trans) {
+            int entityid = (int)entity;
+            if(scene->isActive(entityid) && entityid != entityID)
+            {
+				bool found = false;
+				for(auto g: comp.group->members)
+				{
+					if(tankComp.allFriends.find(g) != tankComp.allFriends.end())
+					{
+						found = true;
+					}
+				}
+				if(!found)
+				{
+					tankComp.allFriends.insert({entityid, {"Swarm", false}});
+				}
+            }        
+        };
+        auto lichLamda = [&](const auto& entity, LichComponent& comp, Transform& trans) {
+            int entityid = (int)entity;
+            if(scene->isActive(entityid) && entityid != entityID)
+            {
+                tankComp.allFriends.insert({entityid, {"Lich", false}});
+            }
+        };
+        viewSwarm.each(swarmLamda);
+        viewLich.each(lichLamda);
+	}
 
-    float sightRadius           = 100; // I'll can attack you
-    float peronalSpaceRadius    = 90 ; // This is my personal space, get away!
+	//Ints
+    int FULL_HEALTH				= 300;  
+    int life					= FULL_HEALTH;
+
+	//Floats
+	float idleSpeed				= 10.0f;
+	float cahargeSpeed			= 30.0f;
+    float sightRadius           = 100.0f; // I'll can attack you
+    float peronalSpaceRadius    = 90.0f; // This is my personal space, get away!
+	float friendVisitRadius		= 15.0f; //When go this close to friends
+	float idleRotSpeed			= 15.0f;
+	float tempRotAngle			= 0.0f;
 
 	//Bools
     bool isDead(){return life<=0;}
 	bool inCombat				= false;
+	bool rotateLeft				= true;
 
 	//Timers
-	float alertTimerOrig = 1.0f;
-	float alertTimer = alertTimerOrig;
-	float huntTimerOrig = 0.5f;
-	float huntTimer = huntTimerOrig;
+	float alertTimerOrig		= 1.0f;
+	float alertTimer			= alertTimerOrig;
+	float huntTimerOrig			= 0.5f;
+	float huntTimer				= huntTimerOrig;
+	float chargeTimerOrig		= 2.5f;
+	float chargeTimer			= huntTimerOrig;
 
 
-	Entity firendTarget = -1;
-	//std::vector<TankFriend> friendsInSight;
-	std::unordered_map<int, std::string> friendsInSight;
-	std::unordered_map<int, std::string> allFriends;
+	TankFriendTarget firendTarget;
 
-
+	std::unordered_map<int, TankFriend> friendsInSight;
+	std::unordered_map<int, TankFriend> allFriends;
 };
 
 

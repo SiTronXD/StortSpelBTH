@@ -68,8 +68,8 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 	{
 		float len = glm::length(swarmComp.idleMoveTo - swarmTransform.position);
 		glm::vec3 dir = glm::normalize(swarmComp.idleMoveTo - swarmTransform.position);
+		float velLenght = glm::length(swarmRB.velocity);
  		swarmRB.velocity = dir * swarmComp.idleSpeed;
-
 		Ray rayToPlayer{swarmTransform.position, swarmTransform.forward()};    
 		RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, 4.0f);
 		if(rp.hit)
@@ -94,6 +94,12 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 			//Set move to
 			swarmComp.idleMoveTo = swarmComp.group->idleMidPos;
 			glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
+			swarmComp.idleMoveTo = swarmComp.group->idleMidPos + dir * swarmComp.group->idleRadius;
+		}
+		else if(velLenght <= 0.5f)
+		{
+			swarmComp.idleMoveTo = swarmComp.group->idleMidPos;
+			dir = -swarmTransform.forward();
 			swarmComp.idleMoveTo = swarmComp.group->idleMidPos + dir * swarmComp.group->idleRadius;
 		}
 	}

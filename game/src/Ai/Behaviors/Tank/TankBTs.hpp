@@ -44,6 +44,11 @@ class TankBT : public BehaviorTree
 	//Dead
 	static BTStatus playDeathAnim(Entity entityID);
 	static BTStatus die(Entity entityID);
+
+
+	//Helper functions
+	static void rotateTowardsTarget(Entity entityID, float precision);
+
 };
 
 
