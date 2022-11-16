@@ -545,7 +545,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 
 						lichIdx++;
 					}
-					else if(swarmIdx < 6)
+					else if(swarmIdx < 0)
 					{
 						this->setActive(this->swarmIDs[swarmIdx]);
 						Transform& transform = this->getComponent<Transform>(this->swarmIDs[swarmIdx]);

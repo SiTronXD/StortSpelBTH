@@ -101,6 +101,24 @@ void TankBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 	//Rotate towards target end
 }
 
+bool TankBT::rotationDone(Entity entityID, glm::vec3 target, float rotSpeed, float precision)
+{
+	Transform& tankTrans = getTankTrans();
+	tankTrans.updateMatrix();
+	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
+	glm::vec2 tankPos			= glm::vec2(tankTrans.position.x, tankTrans.position.z);
+	glm::vec2 curRot			= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	glm::vec2 tank_to_friend	= glm::normalize(targetPos - tankPos);
+
+	float angle_between			= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
+
+	if(angle_between <= precision)
+	{
+		return true;
+	}
+	return false;
+}
+
 void TankBT::registerEntityComponents(Entity entityId)
 {
 	addRequiredComponent<TankComponent>(entityId);
@@ -307,7 +325,41 @@ BTStatus TankBT::playerOutsidePersonalSpace(Entity entityID)
 
 BTStatus TankBT::ChargeAndRun(Entity entityID)
 {
-	BTStatus ret = BTStatus::Failure;
+	BTStatus ret = BTStatus::Running;
+	TankComponent& tankComp = getTankComponent();
+	int playerID			= -1;
+    getPlayerID(playerID);
+    Transform& playerTrans  = getPlayerTrans(playerID);
+    Transform& tankTrans    = getTankTrans();
+	if(!tankComp.hasRunTarget && (tankComp.chargeTimer > 0.0f || !rotationDone(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f)))
+	{
+		rotateTowards(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f);
+		tankComp.chargeTimer -= Time::getDT();
+		return ret;
+	}
+	if(!tankComp.hasRunTarget)
+	{
+		tankComp.runTarget = playerTrans.position;
+		tankComp.runOrigin = tankTrans.position;
+		tankComp.runDist = glm::length(playerTrans.position - tankTrans.position);
+		tankComp.runDir = glm::normalize(playerTrans.position - tankTrans.position);
+		tankComp.hasRunTarget = true;
+	}
+
+	Rigidbody& rb = getTheScene()->getComponent<Rigidbody>(entityID);
+
+	if(glm::length(tankComp.runOrigin - tankTrans.position) < tankComp.runDist)
+	{
+		rb.velocity = tankComp.runDir * tankComp.cahargeSpeed;
+		
+	}
+	else
+	{
+		tankComp.chargeTimer = tankComp.chargeTimerOrig;
+		tankComp.hasRunTarget = false;
+	}
+
+
 	return ret;
 }
 

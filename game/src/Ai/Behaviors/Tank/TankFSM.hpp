@@ -67,7 +67,7 @@ struct TankComponent
 	//Floats
 	float idleSpeed				= 10.0f;
 	float shieldSpeed			= 5.0f;
-	float cahargeSpeed			= 30.0f;
+	float cahargeSpeed			= 120.0f;
     float sightRadius           = 100.0f; // I'll can attack you
     float peronalSpaceRadius    = 50.0f; // This is my personal space, get away!
 	float friendVisitRadius		= 15.0f; //When go this close to friends
@@ -75,12 +75,14 @@ struct TankComponent
 	float shildRotSpeed			= 30.0f;
 	float tempRotAngle			= 0.0f;//Dont touch!
 	float shieldAngle			= 270.0f; //How many degrees the shiled goes around the tank
+	float runDist				= 0.0f;
 
 	//Bools
     bool isDead(){return life<=0;}
 	bool inCombat				= false;
 	bool rotateLeft				= true;
 	bool canBeHit				= true;
+	bool hasRunTarget			= false;
 
 	//Timers
 	float alertTimerOrig		= 1.0f;
@@ -96,6 +98,9 @@ struct TankComponent
 
 	//Vecs
 	glm::vec3 shieldTargetPos	= glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 runTarget			= glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 runOrigin			= glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 runDir			= glm::vec3(0.0f, 0.0f, 0.0f);
 
 
 	TankFriendTarget firendTarget;
