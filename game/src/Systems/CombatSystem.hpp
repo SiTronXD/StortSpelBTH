@@ -184,6 +184,7 @@ public:
 			}
 			return combat.activeAttack;
 		}
+		return combat.activeAttack;
 	};
 
 	void dealDamage(Combat& combat)
@@ -492,7 +493,8 @@ public:
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 		int maxSpeed = 0;
 		this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
-		maxSpeed *= combat.movementMultiplier;
+		float tempSpeed = (float)maxSpeed * combat.movementMultiplier;
+		maxSpeed = (int)tempSpeed;
 		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
 	}
 
@@ -550,7 +552,8 @@ public:
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 		int maxSpeed = 0;
 		this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
-		maxSpeed /= combat.movementMultiplier;
+		float tempSpeed = (float)maxSpeed / combat.movementMultiplier;
+		maxSpeed = (int)tempSpeed;
 		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
 	}
 
