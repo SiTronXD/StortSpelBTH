@@ -7,6 +7,10 @@ class Scene;
 class ResourceManager;
 typedef int Entity;
 
+#ifdef _CONSOLE
+class PhysicsEngine;
+#endif
+
 class RoomHandler
 {
 public:
@@ -41,9 +45,10 @@ private:
 		float extents[4];
 		RoomData::Type type;
 
-		std::vector<Entity> tiles;
-		std::vector<Entity> borders;
-		std::vector<Entity> exitPaths;
+		std::vector<Entity> mainTiles; // "Playable" tiles
+		std::vector<Entity> objects; // Occupied tiles + their floors
+		std::vector<Entity> borders; // Borders
+		std::vector<Entity> exitPaths; // Tiles leading to path
 
 		Entity doors[4];
 		Entity doorTriggers[4];
@@ -73,12 +78,16 @@ private:
 	int tileFlorMeshId;
 	void placeBranch(int index, int left, int right);
 	void moveRoom(int roomIndex, glm::vec3 offset);
+	
+	// New Create Entities
+	Entity createFloorEntity(const glm::vec2& pos);
+	Entity createBorderEntity(const glm::vec2& position, bool scalePos);
+
 
 	// Create Entities
 	Entity createTileEntity(int tileIndex, TileUsage usage);
 	Entity createDoorEntity(float yRotation);
 	Entity createPathEntity();
-	Entity createPathBorderEntity(const glm::vec3& position);
 	
 	// Tile creation
 	void createDoors(int roomIndex);
@@ -106,7 +115,7 @@ private:
 	std::vector<uint32_t> oneXOneMeshIds;
 	std::vector<uint32_t> borderMeshIds;
 	std::vector<uint32_t> oneXTwoMeshIds;
-	//std::vector<uint32_t> twoXTwoMeshIds;
+	std::vector<uint32_t> twoXTwoMeshIds;
 	uint32_t doorMeshID;
 
 	// Other
@@ -126,7 +135,7 @@ public:
 	void generate2();
 
 #ifdef  _CONSOLE
-	void imgui();
+	void imgui(PhysicsEngine* physicsEngine = nullptr);
 #endif //  _CONSOLE
 
 	void roomCompleted();

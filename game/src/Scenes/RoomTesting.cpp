@@ -38,11 +38,12 @@ void RoomTesting::start()
 void RoomTesting::update()
 {
 #ifdef _CONSOLE
-	roomHandler.imgui();
+	roomHandler.imgui(this->getPhysicsEngine());
 #endif // _CONSOLE
 
 
-	const float speed = 50.f * Time::getDT() * Input::isKeyDown(Keys::SHIFT) ? 0.1f : 1.f;
+	const float speed = 50.f * Time::getDT() * 
+		Input::isKeyDown(Keys::CTRL) ? 0.1f : Input::isKeyDown(Keys::SHIFT) ? 3.f : 1.f;
 
 	Entity cam = this->getMainCameraID();
 	Transform& camTra = this->getComponent<Transform>(cam);
@@ -58,6 +59,11 @@ void RoomTesting::update()
 		camTra.position.y += speed * 10.f;
 	if (Input::isKeyDown(Keys::Q))
 		camTra.position.y -= speed * 10.f;
+
+	/*if (ImGui::Begin("aa"))
+	{
+		ImGui::Text("Cam pos: (%d, %d, %d)", (int)camTra.position.x,(int)camTra.position.y,(int)camTra.position.z);
+	}ImGui::End();*/
 
 	Transform& plaTra = this->getComponent<Transform>(player);
 	if (Input::isKeyDown(Keys::LEFT))
