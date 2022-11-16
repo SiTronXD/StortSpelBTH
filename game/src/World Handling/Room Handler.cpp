@@ -263,16 +263,24 @@ void RoomHandler::generate2()
 			const Tile2& tile = roomGen.getBigTile(j);
 
 			Entity entity = this->scene->createEntity();
-			this->scene->setComponent<MeshComponent>(entity);
-			this->scene->getComponent<MeshComponent>(entity).meshID = twoXTwoMeshIds[0];
-
 			Transform& transform = this->scene->getComponent<Transform>(entity);
+
+			this->scene->setComponent<MeshComponent>(entity);
+			if (tile.type == Tile2::TwoXTwo)
+				this->scene->getComponent<MeshComponent>(entity).meshID = twoXTwoMeshIds[0];
+			else if (tile.type == Tile2::TwoXOne)
+				this->scene->getComponent<MeshComponent>(entity).meshID = oneXTwoMeshIds[0];
+			else if (tile.type == Tile2::OneXTwo)
+			{
+				this->scene->getComponent<MeshComponent>(entity).meshID = oneXTwoMeshIds[0];
+				transform.rotation.y = 90.f;
+			}
+
 			transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
 			transform.position *= TILE_WIDTH;
-			if (roomGen.print)
-			{
-				transform.scale.y = 3.f;
-			}
+			if (tile.type == Tile2::TwoXOne || tile.type == Tile2::OneXTwo)
+				transform.scale.y = 10.f;
+
 			curRoom.objects[j] = entity;
 		}
 

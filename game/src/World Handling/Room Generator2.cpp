@@ -93,6 +93,10 @@ void RoomGen::generate(bool* doors)
 			iBranch += fBranch * (float)desc.branchDist;
 		}
 	}
+	//getType(gridMid) = Tile2::TwoXOne;
+	//getType(gridMid + glm::ivec2(1, 0)) = Tile2::TwoXOne;
+	//tryPlaceTwoXTwo(gridMid + glm::ivec2(1));
+	//tryPlaceTwoXTwo(gridMid + glm::ivec2(2, 0));
 
 	this->findMinMax();
 	this->set2x2();
@@ -145,34 +149,26 @@ void RoomGen::set2x2()
 	//	getType(pos) = Tile2::TwoXTwo;
 	//}
 
-	int placedCount = 0;
+	int placedCount2x2 = 0;
+	int placedCount1x2 = 0;
+
 	glm::ivec2 position(0);
 	for (position.x = minMaxPos[RIGHT_P].x; position.x < minMaxPos[LEFT_P].x; position.x++)
 	{
 		for (position.y = minMaxPos[LOWER_P].y; position.y < minMaxPos[UPPER_P].y; position.y++)
 		{
-			if (rand() % 100 < TWO_X_TWO_CHANCE && getType(position) == Tile2::OneXOne)
+			if (rand() % 100 < TWO_X_TWO_CHANCE && getType(position) == Tile2::OneXOne) // can remove OneXOne check ?
 			{
-				//drawCircle(position, desc.radius);
-				placedCount += tryPlaceTwoXTwo(position);
-
-				if (placedCount == MAX_TWO_X_TWO)
-					position.x = position.y = WIDTH_HEIGHT;
+				if (placedCount2x2 < MAX_TWO_X_TWO)
+					placedCount2x2 += tryPlaceTwoXTwo(position);
+			}
+			else if (rand() % 100 < ONE_X_TWO_CHANCE && getType(position) == Tile2::OneXOne)
+			{
+				if (placedCount1x2 < MAX_ONE_X_TWO)
+					placedCount1x2 += tryPlaceOneXTwo(position, bool(rand() % 2));
 			}
 		}
 	}
-	//if (print) printf("num: %d\n", placedCount);
-
-	/*for (position.x = minMaxPos[RIGHT_P].x; position.x < minMaxPos[LEFT_P].x; position.x++)
-	{
-		for (position.y = minMaxPos[LOWER_P].y; position.y < minMaxPos[UPPER_P].y; position.y++)
-		{
-			if (getType(position) == Tile2::TwoXTwo)
-			{
-				tryPlaceTwoXTwo(position);
-			}
-		}
-	}*/
 }
 
 void RoomGen::setExits(bool* doors)
@@ -286,7 +282,6 @@ void RoomGen::setBorders()
 
 void RoomGen::finalize()
 {
-	const glm::vec2 half(0.5f);
 	const glm::vec2 fMiddle = middle;
 	glm::vec2 fPosition(0.f);
 
@@ -311,15 +306,28 @@ void RoomGen::finalize()
 			case Tile2::Border:
 				borders.emplace_back(Tile2::Border, fPosition - fMiddle);
 				break;
+
 			case Tile2::OneXOne:
 				mainTiles.emplace_back(Tile2::OneXOne, fPosition - fMiddle);
 				break;
+
+			case Tile2::TwoXOne:
+				bigTiles.emplace_back(Tile2::TwoXOne, (fPosition + glm::vec2(0.5f, 0.f)) - fMiddle);
+				getType(position + glm::ivec2(1, 0)) = Tile2::Reserved;
+				break;
+
+			case Tile2::OneXTwo:
+				bigTiles.emplace_back(Tile2::OneXTwo, (fPosition + glm::vec2(0.f, 0.5f)) - fMiddle);
+				getType(position + glm::ivec2(0, 1)) = Tile2::Reserved;
+				break;
+
 			case Tile2::TwoXTwo:
-				bigTiles.emplace_back(Tile2::TwoXTwo, (fPosition + half) - fMiddle);
+				bigTiles.emplace_back(Tile2::TwoXTwo, (fPosition + glm::vec2(0.5f)) - fMiddle);
 				getType(position + glm::ivec2(1, 0)) = Tile2::Reserved;
 				getType(position + glm::ivec2(0, 1)) = Tile2::Reserved;
 				getType(position + glm::ivec2(1, 1)) = Tile2::Reserved;
 				break;
+
 			case Tile2::Exit:
 				exitPathsTiles.emplace_back(Tile2::Exit, fPosition - fMiddle);
 				break;
@@ -367,10 +375,26 @@ bool RoomGen::canPlaceOneXTwo(const glm::ivec2& pos, bool vertical)
 		return false;
 	}
 
-	//if (getType(pos) == Tile2::Exit || getType(adjacent) == Tile2::Unused)
 	if (getType(pos) != Tile2::OneXOne || getType(adjacent) != Tile2::OneXOne)
 	{
 		return false;
+	}
+
+	glm::ivec2 curPos(0);
+	const int thicc = (int)BIG_TILE_MIN_DIST;
+	for (curPos.x = pos.x - thicc; curPos.x <= (pos.x + (int)!vertical + thicc); curPos.x++)
+	{
+		for (curPos.y = pos.y - thicc; curPos.y <= (pos.y + (int)vertical + thicc); curPos.y++)
+		{
+			if (isValid(curPos))
+			{
+				const Tile2::Type& ref = getType(curPos);
+				if (ref != Tile2::OneXOne && ref != Tile2::Unused)
+				{
+					return false;
+				}
+			}
+		}
 	}
 
 	return true;
@@ -384,8 +408,14 @@ bool RoomGen::canPlaceTwoXTwo(const glm::ivec2& pos)
 		return false;
 	}
 
+	if (getType(pos) != Tile2::OneXOne || getType(pos + glm::ivec2(1, 0)) != Tile2::OneXOne ||
+		getType(pos + glm::ivec2(0, 1)) != Tile2::OneXOne || getType(pos + glm::ivec2(1, 1)) != Tile2::OneXOne)
+	{
+		return false;
+	}
+
 	glm::ivec2 curPos(0);
-	const int thicc = DIST_TWO_X_TWO + 1;
+	const int thicc = (int)BIG_TILE_MIN_DIST;
 	for (curPos.x = pos.x - thicc; curPos.x <= (pos.x + 1 + thicc); curPos.x++)
 	{
 		for (curPos.y = pos.y - thicc; curPos.y <= (pos.y + 1 + thicc); curPos.y++)
@@ -393,7 +423,7 @@ bool RoomGen::canPlaceTwoXTwo(const glm::ivec2& pos)
 			if (isValid(curPos))
 			{
 				const Tile2::Type& ref = getType(curPos);
-				if (ref == Tile2::TwoXTwo)
+				if (ref != Tile2::OneXOne && ref != Tile2::Unused)
 				{
 					return false;
 				}
@@ -412,6 +442,24 @@ bool RoomGen::tryPlaceTwoXTwo(const glm::ivec2& pos)
 	}
 
 	getType(pos) = Tile2::TwoXTwo;
+	getType(pos + glm::ivec2(1, 0)) = Tile2::TwoXTwo;
+	getType(pos + glm::ivec2(0, 1)) = Tile2::TwoXTwo;
+	getType(pos + glm::ivec2(1, 1)) = Tile2::TwoXTwo;
+
+	return true;
+}
+
+bool RoomGen::tryPlaceOneXTwo(const glm::ivec2& pos, bool vertical)
+{
+	if (!canPlaceOneXTwo(pos, vertical))
+	{
+		return false;
+	}
+
+	const glm::ivec2 adjacent(pos.x + 1 * !vertical, pos.y + 1 * vertical);
+
+	getType(pos)		    = vertical ? Tile2::OneXTwo : Tile2::TwoXOne;
+	getType(adjacent) = vertical ? Tile2::OneXTwo : Tile2::TwoXOne;
 
 	return true;
 }

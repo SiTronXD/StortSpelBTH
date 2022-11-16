@@ -13,8 +13,8 @@ struct Tile2
         Unused = -1,
         Border = 0,
         OneXOne = 1,
-        OneXTwo = 2,
-        TwoXOne = 3,
+        TwoXOne = 2,
+        OneXTwo = 3,
         TwoXTwo = 4,
         Reserved = 5,
         Exit = 6
@@ -30,14 +30,22 @@ struct Tile2
     glm::vec2 position = glm::vec2(0.f);
 };
 
+// TODO: Fix room when it generates to edges
+// TODO: Fix room when it generates to edges
+// TODO: Fix room when it generates to edges
+
 class RoomGen
 {
 public:
     static const uint32_t WIDTH_HEIGHT = 35u;
 
-    static const uint32_t TWO_X_TWO_CHANCE = 100u; // Percentage
-    static const uint32_t DIST_TWO_X_TWO = 0u;
-    static const uint32_t MAX_TWO_X_TWO = 100u;
+    static const uint32_t TWO_X_TWO_CHANCE = 5u; // Percentage
+    static const uint32_t MAX_TWO_X_TWO = 6u;
+
+    static const uint32_t ONE_X_TWO_CHANCE = 5u;
+    static const uint32_t MAX_ONE_X_TWO = 6u;
+
+    static const uint32_t BIG_TILE_MIN_DIST = 2u;
 
     struct RoomGenDescription
     {
@@ -83,6 +91,7 @@ private:
     bool canPlaceTwoXTwo(const glm::ivec2& pos);
 
     bool tryPlaceTwoXTwo(const glm::ivec2& pos);
+    bool tryPlaceOneXTwo(const glm::ivec2& pos, bool vertical);
 public:
 
     bool print = false;
