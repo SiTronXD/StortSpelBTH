@@ -86,6 +86,7 @@ bool TankFSM::playerInSight(Entity entityID)
 
 bool TankFSM::friendlysInFight(Entity entityID)
 {
+    updateFriendsInSight(entityID);
     TankComponent& tankComp = getTankComponent();
     Scene* theScene = getTheScene();
     for(auto f: tankComp.friendsInSight)
@@ -154,9 +155,9 @@ bool TankFSM::alertToShield(Entity entityID)
 {
     falseIfDead();
     bool ret = false;
-    updateFriendsInSight(entityID);  
+    //updateFriendsInSight(entityID);  
     TankComponent& tankComp = getTankComponent();
-    if (tankComp.alertTimer <= 0 && tankComp.friendsInSight.size() > 0)
+    if (tankComp.alertTimer <= 0 && tankComp.allFriends.size() > 0)
     {
         tankComp.alertTimer = tankComp.alertTimerOrig;
         ret = true;
@@ -217,7 +218,7 @@ bool TankFSM::shieldToCombat(Entity entityID)
     bool ret = false;
     updateFriendsInSight(entityID);
     TankComponent& tankComp = getTankComponent();
-    if((playerInSight(entityID) || tankComp.inCombat) && tankComp.friendsInSight.size() <= 0)
+    if((playerInSight(entityID) || tankComp.inCombat) && tankComp.allFriends.size() <= 0)
     {
         ret = true;
     }
@@ -237,6 +238,7 @@ bool TankFSM::shieldToCombat(Entity entityID)
             }
         }
         tankComp.inCombat = true;
+        tankComp.canBeHit = true;
     }
     return ret;
 }
@@ -247,7 +249,7 @@ bool TankFSM::shieldToIdle(Entity entityID)
     bool ret = false;
     updateFriendsInSight(entityID);
     TankComponent& tankComp = getTankComponent();
-    if(!playerInSight(entityID) && !tankComp.inCombat && !friendlysInFight(entityID))
+    if(!playerInSight(entityID) && !tankComp.inCombat && tankComp.allFriends.size() <= 0)
     {
         ret = true;
     }
@@ -265,6 +267,7 @@ bool TankFSM::shieldToIdle(Entity entityID)
 
             }
         }
+        tankComp.canBeHit = true;
     }
     return ret;
 }

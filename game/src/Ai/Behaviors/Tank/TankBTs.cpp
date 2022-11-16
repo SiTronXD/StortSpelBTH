@@ -285,6 +285,7 @@ BTStatus TankBT::playerInPersonalSpace(Entity entityID)
 BTStatus TankBT::GroundHump(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
+
 	return ret;
 }
 
@@ -385,6 +386,7 @@ BTStatus TankBT::HoldShield(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
 	TankComponent& tankComp = getTankComponent();
+	Transform& tankTrans = getTankTrans();
 	if(tankComp.friendHealTimer <= 0)
 	{
 		tankComp.friendHealTimer = tankComp.friendHealTimerOrig;
@@ -433,6 +435,23 @@ BTStatus TankBT::HoldShield(Entity entityID)
 	getPlayerID(playerID);
 	Transform& playerTrans = getPlayerTrans(playerID);
 	rotateTowards(entityID, playerTrans.position, tankComp.shildRotSpeed, 5.0f);
+
+	glm::vec3 tank_player_vec = playerTrans.position - tankTrans.position;
+	float tank_player_len = glm::length(tank_player_vec);
+	tank_player_vec = glm::normalize(tank_player_vec);
+	float hitDeg = (360.0f - tankComp.shieldAngle)/2.0f;
+	hitDeg = 180 - hitDeg;
+	if(tank_player_len < tankComp.peronalSpaceRadius)
+	{
+		if(getAngleBetween(tank_player_vec, -tankTrans.forward()) >= hitDeg)
+		{
+			tankComp.canBeHit = true;
+		}
+		else
+		{
+			tankComp.canBeHit = false;
+		}
+	}
 
 	return ret;
 }

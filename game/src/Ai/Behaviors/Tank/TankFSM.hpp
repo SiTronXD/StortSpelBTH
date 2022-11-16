@@ -71,14 +71,16 @@ struct TankComponent
     float sightRadius           = 100.0f; // I'll can attack you
     float peronalSpaceRadius    = 50.0f; // This is my personal space, get away!
 	float friendVisitRadius		= 15.0f; //When go this close to friends
-	float idleRotSpeed			= 30.0f;
-	float shildRotSpeed			= 15.0f;
+	float idleRotSpeed			= 40.0f;
+	float shildRotSpeed			= 30.0f;
 	float tempRotAngle			= 0.0f;//Dont touch!
+	float shieldAngle			= 270.0f; //How many degrees the shiled goes around the tank
 
 	//Bools
     bool isDead(){return life<=0;}
 	bool inCombat				= false;
 	bool rotateLeft				= true;
+	bool canBeHit				= true;
 
 	//Timers
 	float alertTimerOrig		= 1.0f;
