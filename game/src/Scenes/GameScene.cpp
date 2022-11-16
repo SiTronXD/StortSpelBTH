@@ -75,7 +75,16 @@ void GameScene::init()
   // Temporary light
   Entity directionalLightEntity = this->createEntity();
   this->setComponent<DirectionalLight>(
-      directionalLightEntity, glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.6f));
+      directionalLightEntity, 
+      glm::vec3(-1.0f, -1.0f, -1.0f), 
+      glm::vec3(0.6f)
+  );
+  DirectionalLight& dirLight = this->getComponent<DirectionalLight>(directionalLightEntity);
+  dirLight.shadowMapFrustumHalfWidth = 200.0f;
+  dirLight.shadowMapFrustumHalfHeight = 200.0f;
+  dirLight.shadowMapFrustumDepth = 800.0f;
+  dirLight.shadowMapMinBias = 0.0001f;
+  dirLight.shadowMapAngleBias = 0.001f;
 
   this->createSystem<HealthBarSystem>(
       this->hpBarBackgroundTextureID,
