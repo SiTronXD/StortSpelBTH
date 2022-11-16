@@ -19,7 +19,10 @@ struct TankFriendTarget
 
 struct TankComponent
 {
-	TankComponent() {};
+	TankComponent() 
+	{
+		//this->hitCol = Collider::createSphere(4.0f);
+	};
 
 	void setFriends(Scene* scene, Entity entityID)
 	{
@@ -59,12 +62,14 @@ struct TankComponent
 	//Ints
     int FULL_HEALTH				= 300;  
     int life					= FULL_HEALTH;
+	int friendHealthRegen		= 10.0f;
 
 	//Floats
 	float idleSpeed				= 10.0f;
+	float shieldSpeed			= 5.0f;
 	float cahargeSpeed			= 30.0f;
     float sightRadius           = 100.0f; // I'll can attack you
-    float peronalSpaceRadius    = 90.0f; // This is my personal space, get away!
+    float peronalSpaceRadius    = 50.0f; // This is my personal space, get away!
 	float friendVisitRadius		= 15.0f; //When go this close to friends
 	float idleRotSpeed			= 30.0f;
 	float shildRotSpeed			= 15.0f;
@@ -84,6 +89,11 @@ struct TankComponent
 	float chargeTimer			= huntTimerOrig;
 	float groundHumpTimerOrig	= 2.0f;
 	float groundHumpTimer		= huntTimerOrig;
+	float friendHealTimerOrig	= 1.0f;
+	float friendHealTimer		= huntTimerOrig;
+
+	//Vecs
+	glm::vec3 shieldTargetPos	= glm::vec3(0.0f, 0.0f, 0.0f);
 
 
 	TankFriendTarget firendTarget;

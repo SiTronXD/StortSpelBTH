@@ -17,23 +17,31 @@ void TankFSM::updateFriendsInSight(Entity entityID)
     Transform& tankTransform = scene->getComponent<Transform>(entityID);
 
     std::vector<int> toRemove;
+    std::vector<int> toAddID;
+    std::vector<TankFriend> toAddData;
     for(auto f: tankComp.allFriends)
     {
         if(f.second.type == "Swarm")
         {
-            bool foundReplacement = false;
             SwarmComponent& swarmComp = scene->getComponent<SwarmComponent>(f.first);
             if(swarmComp.life <= 0)
             {
-                //Find replacemen in group
-                if(foundReplacement)
+                
+                for(auto g: swarmComp.group->members)
                 {
+                    if(scene->getComponent<SwarmComponent>(g).life > 0)
+                    {
+                        toAddID.push_back(g);
+                        toAddData.push_back({f.second.type, f.second.visited});
+                        break;
+                    }
                 }
+                
                 toRemove.push_back(f.first);
                 continue;
             }
         }
-        else
+        else if(f.second.type == "Lich")
         {
             LichComponent& lichComp = scene->getComponent<LichComponent>(f.first);
             if(lichComp.life <= 0)
@@ -55,7 +63,10 @@ void TankFSM::updateFriendsInSight(Entity entityID)
     {
         tankComp.allFriends.erase(r);
     }
-    
+    for(int i = 0; i < toAddID.size(); i++)
+    {
+        tankComp.allFriends.insert({toAddID[i],{toAddData[i].type, toAddData[i].visited}});
+    }
 }
 
 bool TankFSM::playerInSight(Entity entityID)
@@ -131,6 +142,11 @@ bool TankFSM::alertToCombat(Entity entityID)
         tankComp.alertTimer -= Time::getDT();
     }
 
+
+    if(ret)
+    {
+        tankComp.inCombat = true;
+    }
     return ret;
 }
 
@@ -138,7 +154,7 @@ bool TankFSM::alertToShield(Entity entityID)
 {
     falseIfDead();
     bool ret = false;
-    updateFriendsInSight(entityID);   
+    updateFriendsInSight(entityID);  
     TankComponent& tankComp = getTankComponent();
     if (tankComp.alertTimer <= 0 && tankComp.friendsInSight.size() > 0)
     {
@@ -169,6 +185,10 @@ bool TankFSM::combatToIdel(Entity entityID)
     }
 
 
+    if(ret)
+    {
+        tankComp.inCombat = false;
+    }
     return ret;
 }
 
@@ -181,6 +201,11 @@ bool TankFSM::combatToShield(Entity entityID)
     if((playerInSight(entityID) || tankComp.inCombat) && tankComp.friendsInSight.size() > 0)
     {
         ret = true;
+    }
+
+    if(ret)
+    {
+        tankComp.inCombat = false;
     }
 
     return ret;
@@ -211,6 +236,7 @@ bool TankFSM::shieldToCombat(Entity entityID)
         
             }
         }
+        tankComp.inCombat = true;
     }
     return ret;
 }
