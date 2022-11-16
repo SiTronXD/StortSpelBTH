@@ -66,8 +66,7 @@ private:
     glm::ivec2 middle;
     glm::ivec2 size;
 
-    // ignore == Unused -> override all
-    void genCircle(const glm::ivec2& center, uint32_t radius, Tile2::Type ignore = Tile2::Unused);
+    void drawCircle(const glm::ivec2& center, uint32_t radius);
 
     void setBorders();
     void findMinMax();

@@ -68,7 +68,7 @@ void RoomGen::clear()
 void RoomGen::generate(bool* doors)
 {
 	const glm::ivec2 gridMid(WIDTH_HEIGHT / 2);
-	genCircle(gridMid, desc.radius);
+	drawCircle(gridMid, desc.radius);
 	//branchEnds.resize(desc.numBranches);
 
 	glm::vec2 fBranch(0);
@@ -83,7 +83,7 @@ void RoomGen::generate(bool* doors)
 
 		for (uint32_t j = 0; j < desc.branchDepth; j++)
 		{
-			genCircle(iBranch, desc.radius);
+			drawCircle(iBranch, desc.radius);
 			
 			if (desc.maxAngle != 0)
 			{
@@ -153,7 +153,7 @@ void RoomGen::set2x2()
 		{
 			if (rand() % 100 < TWO_X_TWO_CHANCE && getType(position) == Tile2::OneXOne)
 			{
-				//genCircle(position, desc.radius);
+				//drawCircle(position, desc.radius);
 				placedCount += tryPlaceTwoXTwo(position);
 
 				if (placedCount == MAX_TWO_X_TWO)
@@ -212,8 +212,8 @@ void RoomGen::setExits(bool* doors)
 		{
 			doorsPos[i] += offsets[i];
 
-			genCircle(doorsPos[i], desc.radius);
-			genCircle(doorsPos[i] + -dirs[i] * (int)desc.radius, desc.radius - 1u, Tile2::TwoXTwo);
+			drawCircle(doorsPos[i], desc.radius);
+			drawCircle(doorsPos[i] + -dirs[i] * (int)desc.radius, desc.radius - 1u);
 
 			doorsPos[i] += dirs[i] * (int)desc.radius;
 
@@ -316,7 +316,6 @@ void RoomGen::finalize()
 				break;
 			case Tile2::TwoXTwo:
 				bigTiles.emplace_back(Tile2::TwoXTwo, (fPosition + half) - fMiddle);
-				if (print) printf("%d, %d\n", position.x, position.y);
 				getType(position + glm::ivec2(1, 0)) = Tile2::Reserved;
 				getType(position + glm::ivec2(0, 1)) = Tile2::Reserved;
 				getType(position + glm::ivec2(1, 1)) = Tile2::Reserved;
@@ -332,7 +331,7 @@ void RoomGen::finalize()
 		exitTilesPos[i] -= middle;
 }
 
-void RoomGen::genCircle(const glm::ivec2& center, uint32_t radius, Tile2::Type ignore)
+void RoomGen::drawCircle(const glm::ivec2& center, uint32_t radius)
 {
 	const glm::ivec2 start = glm::ivec2(center) - glm::ivec2(radius);
 
@@ -344,7 +343,7 @@ void RoomGen::genCircle(const glm::ivec2& center, uint32_t radius, Tile2::Type i
 			if (this->isValid(currentPoint))
 			{
 				Tile2::Type& ref = getType(currentPoint);
-				if ((ref != ignore || ignore == Tile2::Unused) && ref != Tile2::Reserved)
+				if (ref == Tile2::Unused && ref != Tile2::Reserved)
 				{
 					// check if tile is within radius to center
 					// glm::dot only accepts floating point numbers

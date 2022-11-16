@@ -1189,7 +1189,7 @@ void RoomHandler::imgui(PhysicsEngine* physicsEngine)
 
 		if (physicsEngine)
 		{
-			static bool debugShapes = true;
+			static bool debugShapes = false;
 			ImGui::Checkbox("Debug shapes", &debugShapes);
 			physicsEngine->renderDebugShapes(debugShapes);
 		}
