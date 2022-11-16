@@ -175,7 +175,7 @@ bool TankFSM::combatToIdel(Entity entityID)
     bool ret = false;
     updateFriendsInSight(entityID);
     TankComponent& tankComp = getTankComponent();
-    if(!playerInSight(entityID) && !tankComp.inCombat && tankComp.huntTimer <= 0)
+    if(!playerInSight(entityID) && tankComp.huntTimer <= 0)
     {
         tankComp.huntTimer = tankComp.huntTimerOrig;
         ret = true;
