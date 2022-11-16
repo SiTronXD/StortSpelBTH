@@ -16,7 +16,7 @@ double heavyFunction(double value);
 
 GameScene::GameScene() :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
-    perk1(-1), perk2(-1), ability(-1)
+    perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1)
 {
 }
 
@@ -57,16 +57,23 @@ void GameScene::init()
   createPortal();
   // simon
   ResourceManager* resourceMng = this->getResourceManager();
-  abilityTextures[0] =
+  this->perkMeshes[0] = resourceMng->addMesh("assets/models/Perk_Hp.obj");
+  this->perkMeshes[1] = resourceMng->addMesh("assets/models/Perk_Dmg.obj");
+  this->perkMeshes[2] = resourceMng->addMesh("assets/models/Perk_AtkSpeed.obj");
+  this->perkMeshes[3] = resourceMng->addMesh("assets/models/Perk_Movement.obj");
+  this->perkMeshes[4] = resourceMng->addMesh("assets/models/Perk_Stamina.obj");
+
+  this->abilityTextures[0] =
       resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
-  abilityTextures[1] =
+  this->abilityTextures[1] =
       resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
-  abilityTextures[2] = resourceMng->addTexture("assets/textures/UI/empty.png");
-  perkTextures[0] = resourceMng->addTexture("assets/textures/UI/hpUp.png");
-  perkTextures[1] = resourceMng->addTexture("assets/textures/UI/dmgUp.png");
-  perkTextures[2] =
-      resourceMng->addTexture("assets/textures/UI/atkSpeedUp.png");
-  perkTextures[3] = resourceMng->addTexture("assets/textures/UI/empty.png");
+  this->abilityTextures[2] = resourceMng->addTexture("assets/textures/UI/empty.png");
+  this->perkTextures[0] = resourceMng->addTexture("assets/textures/UI/hpUp.png");
+  this->perkTextures[1] = resourceMng->addTexture("assets/textures/UI/dmgUp.png");
+  this->perkTextures[2] = resourceMng->addTexture("assets/textures/UI/atkSpeedUp.png");
+  this->perkTextures[3] = resourceMng->addTexture("assets/textures/UI/moveUp.png");
+  this->perkTextures[4] = resourceMng->addTexture("assets/textures/UI/staminaUp.png");
+  this->perkTextures[5] = resourceMng->addTexture("assets/textures/UI/empty.png");
   this->hpBarBackgroundTextureID =
       resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
   this->hpBarTextureID =
@@ -126,8 +133,7 @@ void GameScene::start()
     this->setComponent<PointLight>(this->ability, { glm::vec3(0.f), glm::vec3(7.f, 9.f, 5.f) });
 
     this->perk = this->createEntity();
-    int perkHp = this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
-    this->setComponent<MeshComponent>(this->perk, perkHp);
+    this->setComponent<MeshComponent>(this->perk, this->perkMeshes[hpUpPerk]);
     Transform& perkTrans = this->getComponent<Transform>(this->perk);
     perkTrans.position = glm::vec3(30.f, 5.f, 20.f);
     perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
@@ -137,12 +143,10 @@ void GameScene::start()
     this->setComponent<Perks>(this->perk);
     Perks& perkSetting = this->getComponent<Perks>(this->perk);
     perkSetting.multiplier = 0.5f;
-    perkSetting.perkType = staminaUpPerk;
+    perkSetting.perkType = hpUpPerk;
 
     this->perk1 = this->createEntity();
-    int perkDmg =
-        this->getResourceManager()->addMesh("assets/models/Perk_Dmg.obj");
-    this->setComponent<MeshComponent>(this->perk1, perkDmg);
+    this->setComponent<MeshComponent>(this->perk1, this->perkMeshes[dmgUpPerk]);
     Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
     perkTrans1.position = glm::vec3(30.f, 5.f, -20.f);
     perkTrans1.scale = glm::vec3(2.f, 2.f, 2.f);
@@ -152,12 +156,10 @@ void GameScene::start()
     this->setComponent<Perks>(this->perk1);
     Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
     perkSetting1.multiplier = 0.5f;
-    perkSetting1.perkType = movementUpPerk;
+    perkSetting1.perkType = dmgUpPerk;
 
     this->perk2 = this->createEntity();
-    int perkAtkSpeed =
-        this->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");
-    this->setComponent<MeshComponent>(this->perk2, perkAtkSpeed);
+    this->setComponent<MeshComponent>(this->perk2, this->perkMeshes[attackSpeedUpPerk]);
     Transform& perkTrans2 = this->getComponent<Transform>(this->perk2);
     perkTrans2.position = glm::vec3(30.f, 5.f, 0.f);
     perkTrans2.scale = glm::vec3(2.f, 2.f, 2.f);
@@ -168,6 +170,32 @@ void GameScene::start()
     Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
     perkSetting2.multiplier = 0.5f;
     perkSetting2.perkType = attackSpeedUpPerk;
+
+    this->perk3 = this->createEntity();
+    this->setComponent<MeshComponent>(this->perk3, this->perkMeshes[movementUpPerk]);
+    Transform& perkTrans3 = this->getComponent<Transform>(this->perk3);
+    perkTrans3.position = glm::vec3(30.f, 5.f, -40.f);
+    perkTrans3.scale = glm::vec3(3.f, 3.f, 3.f);
+    this->setComponent<Collider>(
+        this->perk3, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
+    this->setComponent<PointLight>(this->perk3, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
+    this->setComponent<Perks>(this->perk3);
+    Perks& perkSetting3 = this->getComponent<Perks>(this->perk3);
+    perkSetting3.multiplier = 0.5f;
+    perkSetting3.perkType = movementUpPerk;
+
+    this->perk4 = this->createEntity();
+    this->setComponent<MeshComponent>(this->perk4, this->perkMeshes[staminaUpPerk]);
+    Transform& perkTrans4 = this->getComponent<Transform>(this->perk4);
+    perkTrans4.position = glm::vec3(30.f, 5.f, -60.f);
+    perkTrans4.scale = glm::vec3(3.f, 3.f, 3.f);
+    this->setComponent<Collider>(
+        this->perk4, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
+    this->setComponent<PointLight>(this->perk4, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
+    this->setComponent<Perks>(this->perk4);
+    Perks& perkSetting4 = this->getComponent<Perks>(this->perk4);
+    perkSetting4.multiplier = 0.5f;
+    perkSetting4.perkType = staminaUpPerk;
 
     // Ai management
     this->aiHandler = this->getAIHandler();
@@ -225,7 +253,7 @@ void GameScene::update()
   for (size_t i = 0; i < 4; i++)
     {
       this->getUIRenderer()->setTexture(
-          perkTextures[playerCombat.perks[i].perkType]
+          this->perkTextures[playerCombat.perks[i].perkType]
       );
       this->getUIRenderer()->renderTexture(
           glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f),

@@ -17,6 +17,8 @@ private:
   Entity perk;
   Entity perk1;
   Entity perk2;
+  Entity perk3;
+  Entity perk4;
   Entity ability;
 
   int numRoomsCleared;
@@ -25,8 +27,10 @@ private:
   std::vector<int> enemyIDs;
   std::vector<SwarmGroup*> swarmGroups;
 
+  int perkMeshes[5];
+
   uint32_t abilityTextures[3];
-  uint32_t perkTextures[4];
+  uint32_t perkTextures[6];
   uint32_t fontTextureIndex;
 
   uint32_t hpBarBackgroundTextureID;

@@ -17,7 +17,7 @@ private:
 	UIRenderer* uiRenderer;
 	ScriptHandler* script;
 
-	int perkMeshes[3];
+	int perkMeshes[5];
 	int abilityMeshes[1];
 	int healingMesh;
 	Entity heal = -1;
@@ -46,11 +46,13 @@ public:
 				combat.perks[i].multiplier = 0;
 				combat.perks[i].perkType = emptyPerk;
 			}
-			perkMeshes[0] = this->resourceMng->addMesh("assets/models/Perk_Hp.obj");
-			perkMeshes[1] = this->resourceMng->addMesh("assets/models/Perk_Dmg.obj");
-			perkMeshes[2] = this->resourceMng->addMesh("assets/models/Perk_AtkSpeed.obj");
-			abilityMeshes[0] = this->resourceMng->addMesh("assets/models/KnockbackAbility.obj");
-			healingMesh = this->resourceMng->addMesh("assets/models/HealingAbility.obj");
+			this->perkMeshes[0] = this->resourceMng->addMesh("assets/models/Perk_Hp.obj");
+			this->perkMeshes[1] = this->resourceMng->addMesh("assets/models/Perk_Dmg.obj");
+			this->perkMeshes[2] = this->resourceMng->addMesh("assets/models/Perk_AtkSpeed.obj");
+			this->perkMeshes[3] = this->resourceMng->addMesh("assets/models/Perk_Movement.obj");
+			this->perkMeshes[4] = this->resourceMng->addMesh("assets/models/Perk_Stamina.obj");
+			this->abilityMeshes[0] = this->resourceMng->addMesh("assets/models/KnockbackAbility.obj");
+			this->healingMesh = this->resourceMng->addMesh("assets/models/HealingAbility.obj");
 		}
 	}
 
@@ -488,7 +490,8 @@ public:
 			combat.movementMultiplier += perk.multiplier;
 		}
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		int maxSpeed = this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
+		int maxSpeed = 0;
+		this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
 		maxSpeed *= combat.movementMultiplier;
 		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
 	}
@@ -501,12 +504,14 @@ public:
 			combat.staminaMultiplier += perk.multiplier;
 		}
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		int stamina = this->script->getScriptComponentValue(playerScript, stamina, "maxStamina");
-		float tempStam = (float)stamina * combat.staminaMultiplier;
-		stamina = (int)tempStam;
-		int currentStam = script->getScriptComponentValue(playerScript, currentStam, "currentStamina");
-		currentStam = std::min(currentStam, stamina);
-		this->script->setScriptComponentValue(playerScript, stamina, "maxStamina");
+		int maxStam = 0;
+		this->script->getScriptComponentValue(playerScript, maxStam, "maxStamina");
+		float tempStam = (float)maxStam * combat.staminaMultiplier;
+		maxStam = (int)tempStam;
+		int currentStam = 0;
+		script->getScriptComponentValue(playerScript, currentStam, "currentStamina");
+		currentStam = std::min(currentStam, maxStam);
+		this->script->setScriptComponentValue(playerScript, maxStam, "maxStamina");
 		this->script->setScriptComponentValue(playerScript, currentStam, "currentStamina");
 	}
 
@@ -543,7 +548,8 @@ public:
 	void setDefaultMovementSpeed(Combat& combat)
 	{
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		int maxSpeed = this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
+		int maxSpeed = 0;
+		this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
 		maxSpeed /= combat.movementMultiplier;
 		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
 	}
@@ -551,7 +557,8 @@ public:
 	void setDefaultStamina(Combat& combat)
 	{
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		int maxStam = this->script->getScriptComponentValue(playerScript, maxStam, "maxStamina");
+		int maxStam = 0;
+		this->script->getScriptComponentValue(playerScript, maxStam, "maxStamina");
 		float tempStam = (float)maxStam / combat.staminaMultiplier;
 		maxStam = (int)(tempStam + 0.5f);
 		this->script->setScriptComponentValue(playerScript, maxStam, "maxStamina");
@@ -639,16 +646,19 @@ public:
 				combat.attackSpeedMultiplier += perk.multiplier;
 				updateAttackSpeed(combat, perk, false);
 				spawnPerk(perk);
+				break;
 			case movementUpPerk:
 				setDefaultMovementSpeed(combat);
 				combat.movementMultiplier -= perk.multiplier;
 				updateMovementSpeed(combat, perk, false);
 				spawnPerk(perk);
+				break;
 			case staminaUpPerk:
 				setDefaultStamina(combat);
 				combat.staminaMultiplier -= perk.multiplier;
 				updateStamina(combat, perk, false);
 				spawnPerk(perk);
+				break;
 			}
 			perk.multiplier = 0;
 			perk.perkType = emptyPerk;
