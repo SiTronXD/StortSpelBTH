@@ -102,7 +102,7 @@ void GameScene::start()
         this->playerID,
         this->getPhysicsEngine(),
         this->getUIRenderer(),
-        this->getDebugRenderer());
+        this->getScriptHandler());
 
     this->ability = this->createEntity();
     int knockback =
@@ -128,7 +128,7 @@ void GameScene::start()
     this->setComponent<Perks>(this->perk);
     Perks& perkSetting = this->getComponent<Perks>(this->perk);
     perkSetting.multiplier = 0.5f;
-    perkSetting.perkType = hpUpPerk;
+    perkSetting.perkType = staminaUpPerk;
 
     this->perk1 = this->createEntity();
     int perkDmg =
@@ -143,7 +143,7 @@ void GameScene::start()
     this->setComponent<Perks>(this->perk1);
     Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
     perkSetting1.multiplier = 0.5f;
-    perkSetting1.perkType = dmgUpPerk;
+    perkSetting1.perkType = movementUpPerk;
 
     this->perk2 = this->createEntity();
     int perkAtkSpeed =

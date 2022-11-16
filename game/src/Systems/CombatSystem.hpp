@@ -15,7 +15,7 @@ private:
 	Entity swordID;
 	PhysicsEngine* physics;
 	UIRenderer* uiRenderer;
-	DebugRenderer* debug;
+	ScriptHandler* script;
 
 	int perkMeshes[3];
 	int abilityMeshes[1];
@@ -28,9 +28,9 @@ private:
 public:
 
 	CombatSystem(Scene* scene, ResourceManager* resourceMng, Entity playerID, 
-		PhysicsEngine* physics, UIRenderer* uiRenderer, DebugRenderer* debug)
+		PhysicsEngine* physics, UIRenderer* uiRenderer, ScriptHandler* script)
 		: scene(scene), resourceMng(resourceMng), playerID(playerID), 
-		physics(physics), uiRenderer(uiRenderer), debug(debug)
+		physics(physics), uiRenderer(uiRenderer), script(script)
 	{
 		if (scene->hasComponents<Combat>(playerID))
 		{
@@ -480,6 +480,36 @@ public:
 		combat.knockbackCd *= combat.attackSpeedMultiplier;
 	}
 
+	void updateMovementSpeed(Combat& combat, Perks& perk, bool doUpgrade = true)
+	{
+		if (doUpgrade)
+		{
+			setDefaultMovementSpeed(combat);
+			combat.movementMultiplier += perk.multiplier;
+		}
+		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+		int maxSpeed = this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
+		maxSpeed *= combat.movementMultiplier;
+		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
+	}
+
+	void updateStamina(Combat& combat, Perks& perk, bool doUpgrade = true)
+	{
+		if (doUpgrade)
+		{
+			setDefaultStamina(combat);
+			combat.staminaMultiplier += perk.multiplier;
+		}
+		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+		int stamina = this->script->getScriptComponentValue(playerScript, stamina, "maxStamina");
+		float tempStam = (float)stamina * combat.staminaMultiplier;
+		stamina = (int)tempStam;
+		int currentStam = script->getScriptComponentValue(playerScript, currentStam, "currentStamina");
+		currentStam = std::min(currentStam, stamina);
+		this->script->setScriptComponentValue(playerScript, stamina, "maxStamina");
+		this->script->setScriptComponentValue(playerScript, currentStam, "currentStamina");
+	}
+
 	void setDefaultHp(Combat& combat)
 	{
 		float tempHp = (float)combat.maxHealth / combat.hpMultiplier;
@@ -508,6 +538,23 @@ public:
 		combat.animationMultiplier[3] = 2.1f;
 		combat.animationMultiplier[4] = 2.1f;
 		combat.animationMultiplier[5] = 1.f;
+	}
+
+	void setDefaultMovementSpeed(Combat& combat)
+	{
+		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+		int maxSpeed = this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
+		maxSpeed /= combat.movementMultiplier;
+		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
+	}
+
+	void setDefaultStamina(Combat& combat)
+	{
+		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+		int maxStam = this->script->getScriptComponentValue(playerScript, maxStam, "maxStamina");
+		float tempStam = (float)maxStam / combat.staminaMultiplier;
+		maxStam = (int)(tempStam + 0.5f);
+		this->script->setScriptComponentValue(playerScript, maxStam, "maxStamina");
 	}
 
 	void setupPerkSpawn(Entity& entity, Perks& perk)
@@ -552,6 +599,20 @@ public:
 			setupPerkSpawn(newPerk, perk);
 		}
 		break;
+		case movementUpPerk:
+		{
+			Entity newPerk = this->scene->createEntity();
+			this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[movementUpPerk]);
+			setupPerkSpawn(newPerk, perk);
+		}
+		break;
+		case staminaUpPerk:
+		{
+			Entity newPerk = this->scene->createEntity();
+			this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[staminaUpPerk]);
+			setupPerkSpawn(newPerk, perk);
+		}
+		break;
 		}
 	}
 
@@ -577,6 +638,16 @@ public:
 				setDefaultAtttackSpeed(combat);
 				combat.attackSpeedMultiplier += perk.multiplier;
 				updateAttackSpeed(combat, perk, false);
+				spawnPerk(perk);
+			case movementUpPerk:
+				setDefaultMovementSpeed(combat);
+				combat.movementMultiplier -= perk.multiplier;
+				updateMovementSpeed(combat, perk, false);
+				spawnPerk(perk);
+			case staminaUpPerk:
+				setDefaultStamina(combat);
+				combat.staminaMultiplier -= perk.multiplier;
+				updateStamina(combat, perk, false);
 				spawnPerk(perk);
 			}
 			perk.multiplier = 0;
@@ -686,6 +757,14 @@ public:
 									break;
 								case attackSpeedUpPerk:
 									updateAttackSpeed(combat, combat.perks[j]);
+									this->scene->removeEntity(hitID[i]);
+									break;
+								case movementUpPerk:
+									updateMovementSpeed(combat, combat.perks[j]);
+									this->scene->removeEntity(hitID[i]);
+									break;
+								case staminaUpPerk:
+									updateStamina(combat, combat.perks[j]);
 									this->scene->removeEntity(hitID[i]);
 									break;
 								}
