@@ -137,8 +137,8 @@ void GameScene::start()
     this->perk = this->createEntity();
     this->setComponent<MeshComponent>(this->perk, this->perkMeshes[hpUpPerk]);
     Transform& perkTrans = this->getComponent<Transform>(this->perk);
-    perkTrans.position = glm::vec3(30.f, 5.f, 20.f);
-    perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
+    perkTrans.position = glm::vec3(30.f, 7.f, 20.f);
+    perkTrans.scale = glm::vec3(3.f, 3.f, 3.f);
     this->setComponent<Collider>(
         this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
     this->setComponent<PointLight>(this->perk, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
@@ -150,8 +150,8 @@ void GameScene::start()
     this->perk1 = this->createEntity();
     this->setComponent<MeshComponent>(this->perk1, this->perkMeshes[dmgUpPerk]);
     Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
-    perkTrans1.position = glm::vec3(30.f, 5.f, -20.f);
-    perkTrans1.scale = glm::vec3(4.f, 4.f, 4.f);
+    perkTrans1.position = glm::vec3(30.f, 7.f, -20.f);
+    perkTrans1.scale = glm::vec3(3.f, 3.f, 3.f);
     this->setComponent<Collider>(
         this->perk1, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
     this->setComponent<PointLight>(this->perk1, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
@@ -163,8 +163,8 @@ void GameScene::start()
     this->perk2 = this->createEntity();
     this->setComponent<MeshComponent>(this->perk2, this->perkMeshes[attackSpeedUpPerk]);
     Transform& perkTrans2 = this->getComponent<Transform>(this->perk2);
-    perkTrans2.position = glm::vec3(30.f, 5.f, 0.f);
-    perkTrans2.scale = glm::vec3(4.f, 4.f, 4.f);
+    perkTrans2.position = glm::vec3(30.f, 7.f, 0.f);
+    perkTrans2.scale = glm::vec3(3.f, 3.f, 3.f);
     this->setComponent<Collider>(
         this->perk2, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
     this->setComponent<PointLight>(this->perk2, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
