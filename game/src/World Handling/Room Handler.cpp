@@ -259,7 +259,27 @@ void RoomHandler::generate2()
 		curRoom.objects.resize(size_t(numBig));
 		for (uint32_t j = 0; j < numBig; j++)
 		{
-			curRoom.objects[j] = createObjectEntity(this->roomGen.getBigTile(j));
+			const Tile2& tile = this->roomGen.getBigTile(j);
+			curRoom.objects[j] = createObjectEntity(tile);
+			switch (tile.type)
+			{
+			default:
+				break;
+			case Tile2::TwoXTwo:
+				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.5f)));
+				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(-0.5f)));
+				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.5f, -0.5f)));
+				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(-0.5f, 0.5f)));
+				break;
+			case Tile2::TwoXOne:
+				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(-0.5f, 0.f)));
+				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.5f, 0.f)));
+				break;
+			case Tile2::OneXTwo:
+				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.f, 0.5f)));
+				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.f, -0.5f)));
+				break;
+			}
 		}
 
 		curRoom.exitPaths.resize(size_t(this->roomGen.getNumExitTiles()));
