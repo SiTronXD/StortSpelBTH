@@ -8,6 +8,21 @@
 #define falseIfDead() TankComponent& tankComp_____macro = getTankComponent();if(tankComp_____macro.isDead()) {return false;}if(!getTheScene()->isActive(entityID)){return false;}
 #define getTheScene() FSM::sceneHandler->getScene()
 
+void TankFSM::resetTimers(Entity entityID)
+{
+    TankComponent& tankComp = getTankComponent();
+    tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
+    
+
+	tankComp.alertTimer       = tankComp.alertTimerOrig;
+	tankComp.huntTimer        = tankComp.huntTimerOrig;   
+	tankComp.chargeTimer      = tankComp.chargeTimerOrig; 
+	tankComp.runTimer	      = tankComp.runTimerOrig;    
+	tankComp.groundHumpTimer  = tankComp.groundHumpTimerOrig;     
+	tankComp.friendHealTimer  = tankComp.friendHealTimerOrig;     
+
+}
+
 void TankFSM::updateFriendsInSight(Entity entityID)
 {
     Scene* scene = getTheScene();
@@ -86,6 +101,8 @@ bool TankFSM::playerInSight(Entity entityID)
 
 bool TankFSM::friendlysInFight(Entity entityID)
 {
+    bool ret = false;
+
     updateFriendsInSight(entityID);
     TankComponent& tankComp = getTankComponent();
     Scene* theScene = getTheScene();
@@ -106,8 +123,15 @@ bool TankFSM::friendlysInFight(Entity entityID)
             }
         }
     }
+
+
+
     return false;
 }
+
+
+
+
 
 bool TankFSM::idleToAler(Entity entityID)
 {
@@ -131,6 +155,7 @@ bool TankFSM::idleToAler(Entity entityID)
         tankComp.alertTempYpos = getTheScene()->getComponent<Transform>(entityID).position.y;
 		tankComp.alertDone = false;
 		tankComp.alertAtTop = false;
+        resetTimers(entityID);
     }
 
     return ret;
@@ -148,6 +173,11 @@ bool TankFSM::alertToCombat(Entity entityID)
 		tankComp.alertDone = false;
 		ret = true;
 	}
+
+    if(ret)
+    {
+        resetTimers(entityID);
+    }
 
     /*if (tankComp.alertTimer <= 0 && tankComp.friendsInSight.size() <= 0)
     {
@@ -178,6 +208,12 @@ bool TankFSM::alertToShield(Entity entityID)
 		tankComp.alertDone = false;
 		ret = true;
 	}
+
+
+    if(ret)
+    {
+        resetTimers(entityID);
+    }
 
     /*if (tankComp.alertTimer <= 0 && tankComp.allFriends.size() > 0)
     {
@@ -211,6 +247,9 @@ bool TankFSM::combatToIdel(Entity entityID)
     if(ret)
     {
         tankComp.inCombat = false;
+        tankComp.humps.clear();
+	    tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
+        resetTimers(entityID);
     }
     return ret;
 }
@@ -229,6 +268,8 @@ bool TankFSM::combatToShield(Entity entityID)
     if(ret)
     {
         tankComp.inCombat = false;
+        tankComp.humps.clear();
+        resetTimers(entityID);
     }
 
     return ret;
@@ -261,6 +302,8 @@ bool TankFSM::shieldToCombat(Entity entityID)
         }
         tankComp.inCombat = true;
         tankComp.canBeHit = true;
+
+        resetTimers(entityID);
     }
     return ret;
 }
@@ -290,6 +333,7 @@ bool TankFSM::shieldToIdle(Entity entityID)
             }
         }
         tankComp.canBeHit = true;
+        resetTimers(entityID);
     }
     return ret;
 }
@@ -301,6 +345,7 @@ bool TankFSM::toDead(Entity entityID)
     if(tankComp.life <= 0)
     {
         ret = true;
+        resetTimers(entityID);
     }
     return ret;
 }

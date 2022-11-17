@@ -95,6 +95,7 @@ struct TankComponent
 	bool hasRunTarget				= false;
 	bool alertAtTop					= false;
 	bool alertDone					= false;
+	bool canAttack					= false;
 
 	//Timers
 	float alertTimerOrig			= 1.0f;
@@ -159,6 +160,7 @@ private:
 	static void updateFriendsInSight(Entity entityID);
 	static bool playerInSight(Entity entityID);
 	static bool friendlysInFight(Entity entityID);
+	static void resetTimers(Entity entityID);
 protected:
 	// Inherited via FSM
 	virtual void registerEntityComponents(Entity entityId) override

@@ -305,6 +305,8 @@ BTStatus TankBT::GroundHump(Entity entityID)
 	BTStatus ret = BTStatus::Running;
 
 	TankComponent& tankComp = getTankComponent();
+	tankComp.chargeTimer = tankComp.chargeTimerOrig;
+
 	if(tankComp.groundHumpTimer <= 0)
 	{
 		std::cout<<"Hump!\n";
@@ -348,7 +350,8 @@ BTStatus TankBT::GroundHump(Entity entityID)
 			BehaviorTree::sceneHandler->getScriptHandler()->setScriptComponentValue(playerScript , 1.0f, "pushTimer");
 			glm::vec3 to = playerTrans.position;
 			glm::normalize(to);
-			//glm::normalize(to);
+			AiCombatTank& aiCombat = getTheScene()->getComponent<AiCombatTank>(entityID);
+			getTheScene()->getComponent<Combat>(playerID).health -= (int)aiCombat.humpHit;
 
 			glm::vec3 dir = glm::normalize(to - tankTrans.position);
 			playerRB.velocity = dir * tankComp.humpForce;
@@ -395,6 +398,9 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
     Transform& tankTrans    = getTankTrans();
 	Collider& tankCol = getTheScene()->getComponent<Collider>(entityID);
 	Rigidbody& rb = getTheScene()->getComponent<Rigidbody>(entityID);
+
+	tankComp.humps.clear();
+	tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
 
 	//Ray test to avoid detect obstcles
 	//Not really working
@@ -468,6 +474,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.runDist = glm::length(playerTrans.position - tankTrans.position);
 		tankComp.runDir = glm::normalize(playerTrans.position - tankTrans.position);
 		tankComp.hasRunTarget = true;
+		tankComp.canAttack = true;
 	}
 
 	
@@ -483,6 +490,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.chargeTimer = tankComp.chargeTimerOrig;
 		tankComp.runTimer = tankComp.runTimerOrig;
 		tankComp.hasRunTarget = false;
+		tankComp.canAttack = false;
 	}
 
 
@@ -564,6 +572,7 @@ BTStatus TankBT::HoldShield(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
 	TankComponent& tankComp = getTankComponent();
+
 	Transform& tankTrans = getTankTrans();
 	if(tankComp.friendHealTimer <= 0)
 	{

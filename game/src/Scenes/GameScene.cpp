@@ -798,19 +798,31 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
     {
       Entity other = e1 == player ? e2 : e1;
       if (this->hasComponents<SwarmComponent>(other))
+      {
+        auto& swarmComp = this->getComponent<SwarmComponent>(other);
+        if (swarmComp.inAttack)
+          {
+            auto& aiCombat = this->getComponent<AiCombatSwarm>(other);
+            swarmComp.inAttack = false;
+            swarmComp.touchedPlayer = true;
+            //aiCombat.timer = aiCombat.lightAttackTime;
+            this->getComponent<Combat>(player).health -=
+                (int)aiCombat.lightHit;
+            std::cout << "WAS HIT\n";
+          }
+      }
+      else if (this->hasComponents<TankComponent>(other))
+      {
+        auto& tankComp = this->getComponent<TankComponent>(other);
+        if (tankComp.canAttack)
         {
-          auto& swarmComp = this->getComponent<SwarmComponent>(other);
-          if (swarmComp.inAttack)
-            {
-              auto& aiCombat = this->getComponent<AiCombatSwarm>(other);
-              swarmComp.inAttack = false;
-              swarmComp.touchedPlayer = true;
-              //aiCombat.timer = aiCombat.lightAttackTime;
-              this->getComponent<Combat>(player).health -=
-                  (int)aiCombat.lightHit;
-              std::cout << "WAS HIT\n";
-            }
+          auto& aiCombat = this->getComponent<AiCombatTank>(other);
+          tankComp.canAttack = false;
+          this->getComponent<Combat>(player).health -=
+              (int)aiCombat.directHit;
+          std::cout << "WAS HIT\n";
         }
+      }
     }
 
   if(e1 == this->roomHandler.getFloor() || e2 == this->roomHandler.getFloor())
