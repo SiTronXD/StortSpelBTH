@@ -22,10 +22,10 @@ function script:update(dt)
 	staminaMaxPercent = self.playerScript.maxStamina * 0.01
 
     uiRenderer.setTexture(self.staminaBarBackgroundTxtID)
-	uiRenderer.renderTexture(xPos - (1.0 - staminaMaxPercent) * xSize, yPos - 15, (xSize * staminaMaxPercent) + 10, ySize + 10)
+	uiRenderer.renderTexture(vector(xPos - (1.0 - staminaMaxPercent) * xSize, yPos - 15), vector((xSize * staminaMaxPercent) + 10, ySize + 10))
 
     uiRenderer.setTexture(self.staminaBarTxtID)
-	uiRenderer.renderTexture(xPos - (1.0 - staminaPercent) * xSize * 0.5, yPos - 15, xSize * staminaPercent, ySize)
+	uiRenderer.renderTexture(vector(xPos - (1.0 - staminaPercent) * xSize * 0.5, yPos - 15), vector(xSize * staminaPercent, ySize))
 
 	-- Perk slots
 	--uiRenderer.setTexture(self.perkSlotTextureID)
@@ -36,7 +36,7 @@ function script:update(dt)
 
 	-- Crosshair
 	uiRenderer.setTexture(self.crosshairTextureID)
-	uiRenderer.renderTexture(0, 0, 30, 30)
+	uiRenderer.renderTexture(vector(0, 0), vector.fill(30))
 end
 
 return script

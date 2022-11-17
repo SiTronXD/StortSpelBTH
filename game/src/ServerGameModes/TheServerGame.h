@@ -1,14 +1,23 @@
 #pragma once
-#include "vengine/network/ServerEngine/NetworkScene.h"
+#include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../vengine/vengine/ai/PathFinding.h"
+#include "vengine/ai/AIHandler.hpp"
+#include "vengine/network/ServerEngine/NetworkScene.h"
 
 class TheServerGame : public NetworkScene
 {
- private:
+private:
+  uint32_t fontTextureIndex;
+  AIHandler* aiHandler = nullptr;
+  std::vector<int> enemyIDs;
+  std::vector<SwarmGroup*> swarmGroups;
+  SwarmFSM swarmFSM;
 
- public:
+public:
   TheServerGame();
-  void init();
-  void update(float dt);
-
+  virtual ~TheServerGame();
+  void start() override;
+  void init() override;
+  void update(float dt) override;
+  void aiExample();
 };
