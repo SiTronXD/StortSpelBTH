@@ -77,7 +77,16 @@ void GameScene::init()
   // Temporary light
   Entity directionalLightEntity = this->createEntity();
   this->setComponent<DirectionalLight>(
-      directionalLightEntity, glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.6f));
+      directionalLightEntity, 
+      glm::vec3(-1.0f, -1.0f, -1.0f), 
+      glm::vec3(0.6f)
+  );
+  DirectionalLight& dirLight = this->getComponent<DirectionalLight>(directionalLightEntity);
+  dirLight.shadowMapFrustumHalfWidth = 200.0f;
+  dirLight.shadowMapFrustumHalfHeight = 200.0f;
+  dirLight.shadowMapFrustumDepth = 800.0f;
+  dirLight.shadowMapMinBias = 0.0001f;
+  dirLight.shadowMapAngleBias = 0.001f;
 
   this->createSystem<HealthBarSystem>(
       this->hpBarBackgroundTextureID,
@@ -171,6 +180,8 @@ void GameScene::start()
 
 void GameScene::update()
 {
+    this->aiHandler->update();
+
   if (allDead() && this->newRoomFrame)
     {
       this->newRoomFrame = false;
@@ -593,6 +604,16 @@ void GameScene::onTriggerEnter(Entity e1, Entity e2)
   Entity ability = this->hasComponents<Abilities>(e1)   ? e1
                    : this->hasComponents<Abilities>(e2) ? e2
                                                         : -1;
+
+  //Entity swarm = this->hasComponents<SwarmComponent>(e1) ? e1 : this->hasComponents<SwarmComponent>(e2) ? e2 : -1;
+
+  //if (e1 == this->swordID && swarm != -1)
+  //{
+  //}
+  //else if (e2 == this->swordID && swarm != -1)
+  //{
+
+  //}
 
   if (this->entityValid(ground))
     {
