@@ -2,7 +2,7 @@
 #include "GameScene.h"
 #include "LevelEditor.h"
 #include "logInScene.h"
-#include "vengine/network/ServerGameModes/NetworkLobbyScene.h"
+//#include "vengine/network/ServerGameModes/NetworkLobbyScene.h"
 
 void MainMenu::init()
 {
@@ -107,7 +107,8 @@ void MainMenu::update()
             this->getUIRenderer()->renderString(
                 "loading...", glm::vec2(0.f, 0.f), glm::vec2(100.f, 100.f)
             );
-            this->getNetworkHandler()->createServer(new NetworkLobbyScene());
+            //TODO : Change to networkLobbyScene
+            this->getNetworkHandler()->createServer();
 			this->getSceneHandler()->setScene(new logInScene());
 		}
         if (this->getComponent<UIArea>(joinGameButton).isClicking())

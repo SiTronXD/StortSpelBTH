@@ -1,5 +1,10 @@
 --local playerMesh = resources.addMesh("assets/models/Amogus/source/1.fbx")
-local playerMesh = resources.addAnimations({ "assets/models/Character/CharRun.fbx" }, "assets/textures/playerMesh")
+local playerMesh = resources.addAnimations({ "assets/models/Character/CharIdle.fbx", "assets/models/Character/CharRun.fbx", 
+"assets/models/Character/CharOutwardAttack.fbx", "assets/models/Character/CharHeavyAttack.fbx", 
+"assets/models/Character/CharSpinAttack.fbx", "assets/models/Character/CharKnockbackAttack.fbx", 
+"assets/models/Character/CharInwardAttack.fbx", "assets/models/Character/CharSlashAttack.fbx" }, "assets/textures/playerMesh")
+resources.mapAnimations(playerMesh, {"idle", "run", "lightAttack", "heavyAttack", 
+"spinAttack", "knockback", "mixAttack", "slashAttack"})
 --local playerAttackMesh = resources.addMesh("assets/models/Hurricane Kick.fbx", "assets/textures/playerMesh")
 print(playerMesh)
 
@@ -7,7 +12,7 @@ print(playerMesh)
 local cam = scene.createPrefab("scripts/prefabs/CameraPrefab.lua")
 scene.setMainCamera(cam)
 
--- Player
+-- 
 playerID = scene.createEntity()
 scene.setComponent(playerID, CompType.Mesh, playerMesh)
 local playerAnim = 
