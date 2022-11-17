@@ -48,6 +48,7 @@ private:
 		std::vector<Entity> mainTiles; // "Playable" tiles
 		std::vector<Entity> objects; // Occupied tiles + their floors
 		std::vector<Entity> borders; // Borders
+		std::vector<Entity> innerBorders; // Inner borders (has colliders)
 		std::vector<Entity> exitPaths; // Tiles leading to path
 
 		Entity doors[4];
@@ -80,14 +81,13 @@ private:
 	void moveRoom(int roomIndex, glm::vec3 offset);
 	
 	// New Create Entities
-	Entity createFloorEntity(const glm::vec2& pos);
+	Entity createFloorEntity(const glm::vec2& pos, bool scalePos);
 	Entity createBorderEntity(const glm::vec2& position, bool scalePos);
 	Entity createObjectEntity(const Tile2& tile);
 
 	// Create Entities
 	Entity createTileEntity(int tileIndex, TileUsage usage);
 	Entity createDoorEntity(float yRotation);
-	Entity createPathEntity();
 	
 	// Tile creation
 	void createDoors(int roomIndex);
@@ -97,6 +97,8 @@ private:
 	// IDs
 	std::vector<Room> rooms;
 	std::vector<Entity> pathIds;
+	std::vector<Entity> innerBorderPaths;
+	//std::vector<Entity> outerBorderPaths;
 	Entity floor;
 
 	// Room Updating

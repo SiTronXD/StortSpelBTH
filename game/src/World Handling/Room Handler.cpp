@@ -252,7 +252,7 @@ void RoomHandler::generate2()
 		curRoom.mainTiles.resize(size_t(numSmall));
 		for (uint32_t j = 0; j < numSmall; j++)
 		{
-			curRoom.mainTiles[j] = createFloorEntity(this->roomGen.getMainTile(j).position);
+			curRoom.mainTiles[j] = createFloorEntity(this->roomGen.getMainTile(j).position, true);
 		}
 
 		const uint32_t numBig = this->roomGen.getNumBigTiles();
@@ -266,32 +266,41 @@ void RoomHandler::generate2()
 			default:
 				break;
 			case Tile2::TwoXTwo:
-				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.5f)));
-				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(-0.5f)));
-				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.5f, -0.5f)));
-				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(-0.5f, 0.5f)));
+				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.5f), true));
+				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(-0.5f), true));
+				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.5f, -0.5f), true));
+				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(-0.5f, 0.5f), true));
 				break;
 			case Tile2::TwoXOne:
-				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(-0.5f, 0.f)));
-				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.5f, 0.f)));
+				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(-0.5f, 0.f), true));
+				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.5f, 0.f), true));
 				break;
 			case Tile2::OneXTwo:
-				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.f, 0.5f)));
-				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.f, -0.5f)));
+				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.f, 0.5f), true));
+				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.f, -0.5f), true));
 				break;
 			}
 		}
-
-		curRoom.exitPaths.resize(size_t(this->roomGen.getNumExitTiles()));
-		for (uint32_t j = 0; j < this->roomGen.getNumExitTiles(); j++)
+		
+		const uint32_t numExit = this->roomGen.getNumExitTiles();
+		curRoom.exitPaths.resize(size_t(numExit));
+		for (uint32_t j = 0; j < numExit; j++)
 		{
-			curRoom.exitPaths[j] = createFloorEntity(this->roomGen.getExitTile(j).position);
+			curRoom.exitPaths[j] = createFloorEntity(this->roomGen.getExitTile(j).position, true);
 		}
 
-		curRoom.borders.resize(size_t(this->roomGen.getNumBorders()));
-		for (uint32_t j = 0; j < this->roomGen.getNumBorders(); j++)
+		const uint32_t numBorders = this->roomGen.getNumBorders();
+		curRoom.borders.resize(size_t(numBorders));
+		for (uint32_t j = 0; j < numBorders; j++)
 		{
 			curRoom.borders[j] = createBorderEntity(this->roomGen.getBorder(j).position, true);
+		}
+
+		const uint32_t numInnerBorders = this->roomGen.getNumInnerBorders();
+		curRoom.innerBorders.resize(size_t(numBorders));
+		for (uint32_t j = 0; j < numInnerBorders; j++)
+		{
+			curRoom.innerBorders[j] = createBorderEntity(this->roomGen.getInnerBorder(j).position, true);
 		}
 
 		this->roomGen.clear();
@@ -316,37 +325,6 @@ void RoomHandler::generate2()
 	this->createColliders();
 
 	this->roomLayout.clear();
-}
-
-void RoomHandler::placeBranch(int index, int left, int right)
-{
-	Room& curRoom = rooms[index];
-	glm::vec3 offset = curRoom.position;
-	
-	if (left != -1)
-	{
-		Room& leftRoom = rooms[left];
-		offset.x += curRoom.extents[0] + leftRoom.extents[1] + TILES_BETWEEN_ROOMS * TILE_WIDTH;
-		moveRoom(left, offset);
-
-		if (leftRoom.connectingIndex[0] != -1)
-		{
-			placeBranch(left, leftRoom.connectingIndex[0], -1);
-		}
-	}
-	
-	offset = curRoom.position;
-	if (right != -1)
-	{
-		Room& rightRoom = rooms[right];
-		offset.x -= curRoom.extents[1] + rightRoom.extents[0] + TILES_BETWEEN_ROOMS * TILE_WIDTH;
-		moveRoom(right, offset);
-
-		if (rightRoom.connectingIndex[1] != -1)
-		{
-			placeBranch(right, -1, rightRoom.connectingIndex[1]);
-		}
-	}
 }
 
 void RoomHandler::moveRoom(int roomIndex, glm::vec3 offset)
@@ -380,6 +358,11 @@ void RoomHandler::moveRoom(int roomIndex, glm::vec3 offset)
 		Transform& tra = this->scene->getComponent<Transform>(entity);
 		tra.position += offset;
 	}
+	for (Entity entity : curRoom.innerBorders)
+	{
+		Transform& tra = this->scene->getComponent<Transform>(entity);
+		tra.position += offset;
+	}
 	for (Entity entity : curRoom.exitPaths)
 	{
 		Transform& tra = this->scene->getComponent<Transform>(entity);
@@ -387,13 +370,44 @@ void RoomHandler::moveRoom(int roomIndex, glm::vec3 offset)
 	}
 }
 
-Entity RoomHandler::createFloorEntity(const glm::vec2& pos)
+void RoomHandler::placeBranch(int index, int left, int right)
+{
+	Room& curRoom = rooms[index];
+	glm::vec3 offset = curRoom.position;
+	
+	if (left != -1)
+	{
+		Room& leftRoom = rooms[left];
+		offset.x += curRoom.extents[0] + leftRoom.extents[1] + TILES_BETWEEN_ROOMS * TILE_WIDTH;
+		moveRoom(left, offset);
+
+		if (leftRoom.connectingIndex[0] != -1)
+		{
+			placeBranch(left, leftRoom.connectingIndex[0], -1);
+		}
+	}
+	
+	offset = curRoom.position;
+	if (right != -1)
+	{
+		Room& rightRoom = rooms[right];
+		offset.x -= curRoom.extents[1] + rightRoom.extents[0] + TILES_BETWEEN_ROOMS * TILE_WIDTH;
+		moveRoom(right, offset);
+
+		if (rightRoom.connectingIndex[1] != -1)
+		{
+			placeBranch(right, -1, rightRoom.connectingIndex[1]);
+		}
+	}
+}
+
+Entity RoomHandler::createFloorEntity(const glm::vec2& pos, bool scalePos)
 {
 	Entity entity = scene->createEntity();
 	scene->setComponent<MeshComponent>(entity, tileFlorMeshId);
 	Transform& transform = scene->getComponent<Transform>(entity);
-	transform.position.x = pos.x * TILE_WIDTH;
-	transform.position.z = pos.y * TILE_WIDTH;
+	transform.position.x = pos.x * (scalePos ? TILE_WIDTH : 1.f);
+	transform.position.z = pos.y * (scalePos ? TILE_WIDTH : 1.f);
 	transform.scale *= TILE_WIDTH;
 
 	return entity;
@@ -559,8 +573,7 @@ void RoomHandler::generatePathways()
 		size_t startIndex = this->pathIds.size();
 		while(true)
 		{
-			this->pathIds.emplace_back(this->createPathEntity());
-			this->scene->getComponent<Transform>(this->pathIds.back()).position = curPos;
+			this->pathIds.emplace_back(this->createFloorEntity({curPos.x, curPos.z}, false));
 			
 			if (glm::length(curPos - p0) >= glm::length(delta))
 			{
@@ -627,10 +640,25 @@ void RoomHandler::generatePathways()
 						}
 					}
 
+					for (size_t m = 0; m < this->innerBorderPaths.size() && canPlace; m++)
+					{
+						//if (m != j)
+						{
+							glm::vec3 mPosToOffset = offsetPos - this->scene->getComponent<Transform>(this->innerBorderPaths[m]).position;
+							mPosToOffset.y = 0.f;
+
+							if (glm::dot(mPosToOffset, mPosToOffset) < (TILE_WIDTH * TILE_WIDTH))
+							{
+								canPlace = false;
+								m = this->innerBorderPaths.size();
+							}
+						}
+					}
+
 					if (canPlace)
 					{
 						entity = createBorderEntity({offsetPos.x, offsetPos.z}, false);
-						this->pathIds.emplace_back(entity);
+						this->innerBorderPaths.emplace_back(entity);
 					}
 				}
 			}
@@ -703,7 +731,7 @@ void RoomHandler::createColliders()
 
 	for (Room& room : this->rooms)
 	{
-		for (Entity entity : room.borders)
+		for (Entity entity : room.innerBorders)
 		{
 			this->scene->setComponent<Collider>(entity, Collider::createBox(borderColDims));
 		}
@@ -733,17 +761,9 @@ void RoomHandler::createColliders()
 	}
 
 	// TODO: SEPERATE PATH BORDERS FROM PATHIDS
-	for (Entity entity : this->pathIds)
+	for (Entity entity : this->innerBorderPaths)
 	{
-		const int meshID = this->scene->getComponent<MeshComponent>(entity).meshID;
-		for (int i = 0; i < (int)borderMeshIds.size(); i++)
-		{
-			if (meshID == (int)borderMeshIds[i])
-			{
-				this->scene->setComponent<Collider>(entity, Collider::createBox(borderColDims));
-				i = (int)borderMeshIds.size();
-			}
-		}
+		this->scene->setComponent<Collider>(entity, Collider::createBox(borderColDims));
 	}
 
 	float minX = 10000000.f;
@@ -819,24 +839,6 @@ Entity RoomHandler::createDoorEntity(float yRotation)
 	return entity;
 }
 
-Entity RoomHandler::createPathEntity()
-{
-	Entity entity = this->scene->createEntity();
-	this->scene->setComponent<MeshComponent>(entity);
-
-	int meshId = oneXOneMeshIds[0];
-	//if (rand() % 3 < 2) { meshId = (int)this->oneXOneMeshIds[0]; }
-	//else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }
-
-	this->scene->getComponent<MeshComponent>(entity).meshID = meshId;
-	
-	Transform& transform = this->scene->getComponent<Transform>(entity);
-	transform.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE) * TILE_WIDTH;
-	transform.rotation.y = (rand() % 4) * 90.f;
-
-	return entity;
-}
-
 Entity RoomHandler::createBorderEntity(const glm::vec2& position, bool scalePos)
 {
 	Entity entity = this->scene->createEntity();
@@ -846,6 +848,7 @@ Entity RoomHandler::createBorderEntity(const glm::vec2& position, bool scalePos)
 	Transform& transform = this->scene->getComponent<Transform>(entity);
 	transform.position.x = position.x * (scalePos ? TILE_WIDTH : 1.f);
 	transform.position.z = position.y * (scalePos ? TILE_WIDTH : 1.f);
+	transform.rotation.y = 90.f * float(rand() % 4);
 	return entity;
 }
 
@@ -882,7 +885,6 @@ Entity RoomHandler::createObjectEntity(const Tile2& tile)
 			transform.rotation.y = 90.f;
 		}
 
-		transform.scale.y = 10.f;
 		transform.rotation.y += float(rand() % 40 - 20);
 	}
 
@@ -965,10 +967,18 @@ void RoomHandler::showPaths(bool show)
 		{
 			this->scene->setActive(tile);
 		}
+		for (Entity tile : this->innerBorderPaths)
+		{
+			this->scene->setActive(tile);
+		}
 	}
 	else
 	{
 		for (Entity tile : this->pathIds)
+		{
+			this->scene->setInactive(tile);
+		}
+		for (Entity tile : this->innerBorderPaths)
 		{
 			this->scene->setInactive(tile);
 		}
@@ -1024,6 +1034,11 @@ void RoomHandler::reset()
 		this->scene->removeEntity(entity);
 	}
 	this->pathIds.clear();
+	for (const Entity& entity : this->innerBorderPaths)
+	{
+		this->scene->removeEntity(entity);
+	}
+	this->innerBorderPaths.clear();
 	
 	this->scene->removeEntity(this->floor);
 	this->floor = -1;

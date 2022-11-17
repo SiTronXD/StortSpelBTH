@@ -56,8 +56,8 @@ void RoomGen::clear()
 	mainTiles.clear();
 	bigTiles.clear();
 	borders.clear();
+	innerBorders.clear();
 	exitPathsTiles.clear();
-	//branchEnds.clear();
 
 	for (uint32_t i = 0; i < WIDTH_HEIGHT; i++)
 	{
@@ -99,7 +99,7 @@ void RoomGen::generate(bool* doors)
 	//tryPlaceTwoXTwo(gridMid + glm::ivec2(2, 0));
 
 	this->findMinMax();
-	this->set2x2();
+	//this->set2x2();
 	this->setExits(doors);
 	this->setBorders();
 	this->finalize();
@@ -271,8 +271,32 @@ void RoomGen::setBorders()
 						{
 							const Tile2::Type& adj = this->getType(adjacent);
 							if (adj == Tile2::OneXOne || adj == Tile2::TwoXTwo)
-								currTile = Tile2::Border;
+							{
+								currTile = Tile2::Border; 
+								i = NUM;
+								j = desc.borderSize + 1;
+							}
 						}
+					}
+				}
+			}
+		}
+	}
+
+	for (position.x = 0; position.x < WIDTH_HEIGHT; position.x++)
+	{
+		for (position.y = 0; position.y < WIDTH_HEIGHT; position.y++)
+		{
+			Tile2::Type& currTile = this->getType(position);
+			if (currTile == Tile2::OneXOne || currTile == Tile2::Exit)
+			{
+				for (int i = 0; i < 4; i++)
+				{
+					adjacent = position + DIRS[i];
+					if (this->isValid(adjacent))
+					{
+						if (getType(adjacent) == Tile2::Border)
+							getType(adjacent) = Tile2::InnerBorder;
 					}
 				}
 			}
@@ -305,6 +329,9 @@ void RoomGen::finalize()
 				break;
 			case Tile2::Border:
 				borders.emplace_back(Tile2::Border, fPosition - fMiddle);
+				break;
+			case Tile2::InnerBorder:
+				innerBorders.emplace_back(Tile2::InnerBorder, fPosition - fMiddle);
 				break;
 
 			case Tile2::OneXOne:
@@ -505,6 +532,11 @@ uint32_t RoomGen::getNumBorders() const
 	return (int)borders.size();
 }
 
+uint32_t RoomGen::getNumInnerBorders() const
+{
+	return (int)innerBorders.size();
+}
+
 uint32_t RoomGen::getNumExitTiles() const
 {
 	return (int)exitPathsTiles.size();
@@ -523,6 +555,11 @@ const Tile2& RoomGen::getBigTile(uint32_t index) const
 const Tile2& RoomGen::getBorder(uint32_t index) const
 {
 	return borders[index];
+}
+
+const Tile2& RoomGen::getInnerBorder(uint32_t index) const
+{
+	return innerBorders[index];
 }
 
 const Tile2& RoomGen::getExitTile(uint32_t index) const

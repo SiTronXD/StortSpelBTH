@@ -11,13 +11,14 @@ struct Tile2
     enum Type : int
     {
         Unused = -1,
-        Border = 0,
-        OneXOne = 1,
-        TwoXOne = 2,
-        OneXTwo = 3,
-        TwoXTwo = 4,
-        Reserved = 5,
-        Exit = 6
+        Border,
+        InnerBorder,
+        OneXOne,
+        TwoXOne,
+        OneXTwo,
+        TwoXTwo,
+        Reserved,
+        Exit
     };
 
     Tile2() = default;
@@ -42,7 +43,7 @@ public:
     static const uint32_t TWO_X_TWO_CHANCE = 5u; // Percentage
     static const uint32_t MAX_TWO_X_TWO = 6u;
 
-    static const uint32_t ONE_X_TWO_CHANCE = 5u;
+    static const uint32_t ONE_X_TWO_CHANCE = 5u; // Percentage
     static const uint32_t MAX_ONE_X_TWO = 6u;
 
     static const uint32_t BIG_TILE_MIN_DIST = 2u;
@@ -64,10 +65,8 @@ private:
     std::vector<Tile2> mainTiles;
     std::vector<Tile2> bigTiles;
     std::vector<Tile2> borders;
+    std::vector<Tile2> innerBorders;
     std::vector<Tile2> exitPathsTiles;
-
-    // End point of branches
-    //std::vector<glm::ivec2> branchEnds;
 
     glm::ivec2 minMaxPos[4]; // x, -x, z, -z
     glm::ivec2 exitTilesPos[4];
@@ -108,10 +107,12 @@ public:
     uint32_t getNumMainTiles() const;
     uint32_t getNumBigTiles() const;
     uint32_t getNumBorders() const;
+    uint32_t getNumInnerBorders() const;
     uint32_t getNumExitTiles() const;
 
     const Tile2& getMainTile(uint32_t index) const;
     const Tile2& getBigTile(uint32_t index) const;
     const Tile2& getBorder(uint32_t index) const;
+    const Tile2& getInnerBorder(uint32_t index) const;
     const Tile2& getExitTile(uint32_t index) const;
 };
