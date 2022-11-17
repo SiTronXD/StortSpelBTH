@@ -13,10 +13,17 @@ void NetworkLobbyScene::init() {
 
 void NetworkLobbyScene::update(float dt)
 {
-	if (((NetworkSceneHandler*)this->getSceneHandler())->getCallFromClient() == GameEvents::START)
-	{
-		std::cout << "got start in network lobby" << std::endl;
-		((NetworkSceneHandler*)this->getSceneHandler())->setScene(new NetworkGameScene());
-		this->addEvent({(int)GameEvents::START});
-	}
+	sf::Packet packet = ((NetworkSceneHandler*)this->getSceneHandler())->getCallFromClient();
+  while (!packet.endOfPacket())
+  {
+      int gameEvent;
+      packet >> gameEvent;
+      if (gameEvent == GameEvents::START)
+        {
+          std::cout << "got start in network lobby" << std::endl;
+          ((NetworkSceneHandler*)this->getSceneHandler())->setScene(new NetworkGameScene());
+          this->addEvent({(int)GameEvents::START});
+        }
+  }
+	
 }
