@@ -63,7 +63,10 @@ function script:update(dt)
     -- Check if grounded
     local payload = physics.raycast(self.transform.position, vector(0, -1, 0))
     if (payload) then
-        self.onGround = (self.transform.position - payload.hitPoint):length() < 7.5
+        if (scene.getComponent(payload.entity, CompType.Collider).isTrigger == false and
+            payload.entity ~= self.playerID) then
+            self.onGround = (self.transform.position - payload.hitPoint):length() < 7.5
+        end
     end
 
     -- New movement using rigidbody
