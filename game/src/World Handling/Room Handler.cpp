@@ -981,24 +981,3 @@ void RoomHandler::imgui()
 
 #endif // _CONSOLE
 
-void RoomHandler::printRoom() {
-  for (int i = 0; i < rooms.size(); i++)
-  {
-      std::cout << "r: " << rooms[i].position.x << ", " << rooms[i].position.y
-                << ", "
-                << rooms[i].position.z << std::endl;
-      for (int d = 0; d < 4; d++)
-      {
-          if (rooms[i].doors[d] != -1)
-            {
-              glm::vec3 p =
-                  this->scene->getComponent<Transform>(rooms[i].doors[d])
-                      .position;
-              std::cout << "d:" << p.x << ", " << p.y << ", " << p.z << std::endl;
-		  }
-			
-	  }
-      
-  }
-}
-

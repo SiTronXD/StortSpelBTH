@@ -130,6 +130,4 @@ public:
 	int getNumRooms() const;
 
 	Entity getFloor() const;
-
-		void printRoom();
 };

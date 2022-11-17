@@ -18,6 +18,7 @@ private:
   //room handler
   int roomSeed;
   RoomHandler roomHandler;
+  uint8_t numRoomsCleared;
   bool newRoomFrame;
 
 public:

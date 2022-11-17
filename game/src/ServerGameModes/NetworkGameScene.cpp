@@ -29,15 +29,12 @@ NetworkGameScene::~NetworkGameScene()
 
 void NetworkGameScene::start()
 {
-  //TODO : just change to seed
   //send seed to players
   std::cout << "SERVER: seed is: " << roomSeed << std::endl;
   this->addEvent({(int)GameEvents::GetLevelSeed, this->roomSeed});
   srand(roomSeed);
   this->roomHandler.serverInit(this, 15, 15);
   this->roomHandler.generate();
-  //std::cout << "print server room" << std::endl;
-  //roomHandler.printRoom();
 
   // Ai management
   this->aiHandler = new AIHandler();
@@ -57,12 +54,12 @@ void NetworkGameScene::update(float dt)
       this->addEvent({GameEvents::ROOM_CLEAR});
       // Call when a room is cleared
       roomHandler.roomCompleted();
-      //this->numRoomsCleared++;
+      this->numRoomsCleared++;
 
-      //if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
-      //{
-      //    this->getComponent<MeshComponent>(portal).meshID = portalOnMesh;
-      //}
+      if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+      {
+          //send event to spawn portal
+      }
     }
 }
 
