@@ -55,7 +55,7 @@ void GameScene::init()
       this->getResourceManager(),
       this->getConfigValue<int>("room_size"),
       this->getConfigValue<int>("tile_types"));
-  roomHandler.generate();
+  roomHandler.generate2();
   createPortal();
   // simon
   ResourceManager* resourceMng = this->getResourceManager();
@@ -551,7 +551,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
                     }
                 }
               group->idleMidBos /= numAlive;
-              //Set ilde radius
+              //Set ilde RADIUS
               for (auto b : group->members)
                 {
                   if (isActive(b) &&

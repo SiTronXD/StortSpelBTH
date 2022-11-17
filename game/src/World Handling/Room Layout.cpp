@@ -4,7 +4,7 @@
 #include <ctime>
 
 RoomLayout::RoomLayout()
-	:distance(0.f), numMainRooms(0), numBranches(0), largestBranchSize(0)
+	:distance(0.f), numMainRooms(0), NUM_BRANCHES(0), largestBranchSize(0)
 {
 }
 
@@ -20,7 +20,7 @@ void RoomLayout::setRoomDistance(float distance)
 void RoomLayout::clear()
 {
 	this->numMainRooms = 0;
-	this->numBranches = 0;
+	this->NUM_BRANCHES = 0;
 	this->largestBranchSize = 0;
 
 	this->rooms.clear();
@@ -30,12 +30,12 @@ void RoomLayout::clear()
 void RoomLayout::generate()
 {
 	this->numMainRooms = rand() % ((MAX_MAIN_ROOMS - MIN_MAIN_ROOMS) + 1) + MIN_MAIN_ROOMS;
-	this->numBranches = rand() % ((MAX_NUM_BRANCHES - MIN_NUM_BRANCHES) + 1) + MIN_NUM_BRANCHES;
+	this->NUM_BRANCHES = rand() % ((MAX_NUM_BRANCHES - MIN_NUM_BRANCHES) + 1) + MIN_NUM_BRANCHES;
 
-	this->connections.reserve(size_t(this->numMainRooms + this->numBranches) - 1ull);
+	this->connections.reserve(size_t(this->numMainRooms + this->NUM_BRANCHES) - 1ull);
 
 	this->setUpRooms(this->numMainRooms);
-	for (int i = 0; i < this->numBranches; i++)
+	for (int i = 0; i < this->NUM_BRANCHES; i++)
 	{
 		if (!this->setRandomBranch(this->numMainRooms)) 
 		{

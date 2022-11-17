@@ -75,7 +75,6 @@ private:
 
 	// Room generation 2
 	RoomGen roomGen;
-	RoomGen::RoomGenDescription roomGenDesc;
 	int tileFlorMeshId;
 	void placeBranch(int index, int left, int right);
 	void moveRoom(int roomIndex, glm::vec3 offset);
@@ -116,6 +115,7 @@ private:
 	// Mesh IDs
 	std::vector<uint32_t> oneXOneMeshIds;
 	std::vector<uint32_t> borderMeshIds;
+	uint32_t innerBorderMesh;
 	std::vector<uint32_t> oneXTwoMeshIds;
 	std::vector<uint32_t> twoXTwoMeshIds;
 	uint32_t doorMeshID;

@@ -41,6 +41,8 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize,
 		this->borderMeshIds[i] = resourceMan->addMesh("assets/models/Tiles/Border/" + std::to_string(i + 1u) + ".obj");
 	}
 
+	innerBorderMesh = resourceMan->addMesh("assets/models/Tiles/Border/innerBorder.obj");
+
 	this->oneXOneMeshIds.resize(NUM_ONE_X_ONE);
 	for (uint32_t i = 0; i < NUM_ONE_X_ONE; i++)
 	{
@@ -207,7 +209,6 @@ void RoomHandler::generate2()
 	const int numMainRooms = this->roomLayout.getNumMainRooms();
 	this->rooms.resize(numTotRooms);
 
-	this->roomGen.setDesc(roomGenDesc);
 	this->roomExitPoints.resize(numTotRooms);
 	static int rCount = 0;
 	rCount++;
@@ -297,10 +298,11 @@ void RoomHandler::generate2()
 		}
 
 		const uint32_t numInnerBorders = this->roomGen.getNumInnerBorders();
-		curRoom.innerBorders.resize(size_t(numBorders));
+		curRoom.innerBorders.resize(size_t(numInnerBorders));
 		for (uint32_t j = 0; j < numInnerBorders; j++)
 		{
 			curRoom.innerBorders[j] = createBorderEntity(this->roomGen.getInnerBorder(j).position, true);
+			this->scene->getComponent<MeshComponent>(curRoom.innerBorders[j]).meshID = innerBorderMesh;
 		}
 
 		this->roomGen.clear();
@@ -590,7 +592,7 @@ void RoomHandler::generatePathways()
 
 		// Go through the placed path and generate a border around it
 
-		const int ThiccNessMonster = 2;
+		const int ThiccNessMonster = 3;
 		for (int l = 1; l <= ThiccNessMonster; l++) // ThiccNess off borders around paths
 			surroundPaths(startIndex, endIndex, p0, p1, (float)l, this->verticalConnection[i], l == 1);
 	}
@@ -668,9 +670,14 @@ void RoomHandler::surroundPaths(size_t start, size_t end, glm::vec3 p0, glm::vec
 			{
 				Entity entity = createBorderEntity({offsetPos.x, offsetPos.z}, false);
 				if (colliders)
+				{
 					this->innerBorderPaths.emplace_back(entity);
+					this->scene->getComponent<MeshComponent>(entity).meshID = innerBorderMesh;
+				}
 				else
+				{
 					pathIds.emplace_back(entity);
+				}
 			}
 			
 		}
@@ -1018,9 +1025,15 @@ void RoomHandler::reset()
 		{
 			this->scene->removeEntity(entity);
 		}
+		for (const Entity& entity : room.innerBorders)
+		{
+			this->scene->removeEntity(entity);
+		}
+
 		room.mainTiles.clear();
 		room.objects.clear();
 		room.borders.clear();
+		room.innerBorders.clear();
 		room.exitPaths.clear();
 
 		for (int i = 0; i < 4; i++)
@@ -1226,48 +1239,10 @@ void RoomHandler::imgui(PhysicsEngine* physicsEngine)
 #else
 	if (ImGui::Begin("Rooms"))
 	{
-		ImGui::PushItemWidth(-100.f);
-
-		int borderSize = roomGenDesc.borderSize;
-		int radius = roomGenDesc.radius;
-		int numBranches = roomGenDesc.numBranches;
-		int branchDepth = roomGenDesc.branchDepth;
-		int angle = roomGenDesc.maxAngle;
-		int branchDist = roomGenDesc.branchDist;
-
-		ImGui::InputInt("border", &borderSize, 1, 1);
-		ImGui::InputInt("radius", &radius, 1, 1);
-		ImGui::InputInt("num branch", &numBranches, 1, 1);
-		ImGui::InputInt("branch depth", &branchDepth, 1, 1);
-		ImGui::InputInt("branch dist", &branchDist, 1, 1);
-		ImGui::InputInt("angle", &angle, 1, 10);
-
-		if (radius < 1)			radius = 1;
-		if (numBranches < 1)	numBranches = 1;
-		if (branchDepth < 1)	branchDepth = 1;
-		if (angle < 0)			angle = 0;
-		if (branchDist < 1)		branchDist = 1;
-
-		roomGenDesc.borderSize = borderSize;
-		roomGenDesc.radius = radius;
-		roomGenDesc.numBranches = numBranches;
-		roomGenDesc.branchDepth = branchDepth;
-		roomGenDesc.maxAngle = angle;
-		roomGenDesc.branchDist = branchDist;
-
 		if (ImGui::Button("Reload"))
 		{
-			generate2();
+			this->generate2();
 		}
-
-		if (physicsEngine)
-		{
-			static bool debugShapes = false;
-			ImGui::Checkbox("Debug shapes", &debugShapes);
-			physicsEngine->renderDebugShapes(debugShapes);
-		}
-
-		ImGui::PopItemWidth();
 	}
 	ImGui::End();
 #endif

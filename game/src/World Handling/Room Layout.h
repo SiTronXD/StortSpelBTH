@@ -50,7 +50,7 @@ private:
 	float distance;
 
 	int numMainRooms;
-	int numBranches;
+	int NUM_BRANCHES;
 	int largestBranchSize;
 
 	std::vector<RoomData> rooms;

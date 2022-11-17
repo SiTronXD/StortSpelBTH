@@ -41,11 +41,6 @@ RoomGen::~RoomGen()
 	tiles2D = nullptr;
 }
 
-void RoomGen::setDesc(const RoomGenDescription& desc)
-{
-	this->desc = desc;
-}
-
 void RoomGen::clear()
 {
 	exitTilesPos[LEFT_P] = minMaxPos[LEFT_P] = glm::ivec2(-1);
@@ -68,29 +63,29 @@ void RoomGen::clear()
 void RoomGen::generate(bool* doors)
 {
 	const glm::ivec2 gridMid(WIDTH_HEIGHT / 2);
-	drawCircle(gridMid, desc.radius);
-	//branchEnds.resize(desc.numBranches);
+	drawCircle(gridMid, RADIUS);
+	//branchEnds.resize(NUM_BRANCHES);
 
 	glm::vec2 fBranch(0);
 	glm::ivec2 iBranch(0);
-	for (uint32_t i = 0; i < desc.numBranches; i++)
+	for (uint32_t i = 0; i < NUM_BRANCHES; i++)
 	{
 		fBranch.x = float(rand() % 2001) * 0.001f - 1.f;
 		fBranch.y = float(rand() % 2001) * 0.001f - 1.f;
 		fBranch = glm::normalize(fBranch);
-		iBranch = fBranch * (float)desc.branchDist;
+		iBranch = fBranch * (float)BRANCH_DIST;
 		iBranch += gridMid;
 
-		for (uint32_t j = 0; j < desc.branchDepth; j++)
+		for (uint32_t j = 0; j < BRANCH_DEPTH; j++)
 		{
-			drawCircle(iBranch, desc.radius);
+			drawCircle(iBranch, RADIUS);
 			
-			if (desc.maxAngle != 0)
+			if (MAX_ANGLE != 0)
 			{
-				const float rotAngle = float(rand() % (int)desc.maxAngle - (int)desc.maxAngle / 2);
+				const float rotAngle = float(rand() % (int)MAX_ANGLE - (int)MAX_ANGLE / 2);
 				fBranch = glm::rotate(fBranch, float(rotAngle * (M_PI / 180.f)));
 			}
-			iBranch += fBranch * (float)desc.branchDist;
+			iBranch += fBranch * (float)BRANCH_DIST;
 		}
 	}
 	//getType(gridMid) = Tile2::TwoXOne;
@@ -99,7 +94,7 @@ void RoomGen::generate(bool* doors)
 	//tryPlaceTwoXTwo(gridMid + glm::ivec2(2, 0));
 
 	this->findMinMax();
-	//this->set2x2();
+	this->set2x2();
 	this->setExits(doors);
 	this->setBorders();
 	this->finalize();
@@ -187,10 +182,10 @@ void RoomGen::setExits(bool* doors)
 
 	const glm::ivec2 offsets[4] =
 	{
-		{0, desc.radius / 2},
-		{0, desc.radius / 2},
-		{desc.radius / 2, 0},
-		{desc.radius / 2, 0}
+		{0, RADIUS / 2},
+		{0, RADIUS / 2},
+		{RADIUS / 2, 0},
+		{RADIUS / 2, 0}
 	};
 
 	const glm::ivec2 dirs[4] =
@@ -208,10 +203,10 @@ void RoomGen::setExits(bool* doors)
 		{
 			doorsPos[i] += offsets[i];
 
-			drawCircle(doorsPos[i], desc.radius);
-			drawCircle(doorsPos[i] + -dirs[i] * (int)desc.radius, desc.radius - 1u);
+			drawCircle(doorsPos[i], RADIUS);
+			drawCircle(doorsPos[i] + -dirs[i] * (int)RADIUS, RADIUS - 1u);
 
-			doorsPos[i] += dirs[i] * (int)desc.radius;
+			doorsPos[i] += dirs[i] * (int)RADIUS;
 
 			if (this->onEdge(doorsPos[i]))
 			{
@@ -221,7 +216,7 @@ void RoomGen::setExits(bool* doors)
 			else
 			{
 				glm::ivec2 lastValid = doorsPos[i];
-				for (int j = 1; j < (int)desc.borderSize + 1; j++)
+				for (int j = 1; j < (int)BORDER_SIZE + 1; j++)
 				{
 					adjacent = doorsPos[i] + dirs[i] * j;
 					if (this->isValid(adjacent))
@@ -264,17 +259,18 @@ void RoomGen::setBorders()
 			{
 				for (uint32_t i = 0; i < NUM; i++)
 				{
-					for (int j = 1; j < (int)desc.borderSize + 1; j++)
+					for (int j = 1; j < (int)BORDER_SIZE + 1; j++)
 					{
 						adjacent = position + DIRS[i] * j;
 						if (this->isValid(adjacent))
 						{
 							const Tile2::Type& adj = this->getType(adjacent);
-							if (adj == Tile2::OneXOne || adj == Tile2::TwoXTwo)
+							if (adj == Tile2::OneXOne || adj == Tile2::TwoXTwo ||
+								currTile == Tile2::Exit || currTile == Tile2::OneXTwo || currTile == Tile2::TwoXOne)
 							{
 								currTile = Tile2::Border; 
 								i = NUM;
-								j = desc.borderSize + 1;
+								j = BORDER_SIZE + 1;
 							}
 						}
 					}
@@ -288,7 +284,8 @@ void RoomGen::setBorders()
 		for (position.y = 0; position.y < WIDTH_HEIGHT; position.y++)
 		{
 			Tile2::Type& currTile = this->getType(position);
-			if (currTile == Tile2::OneXOne || currTile == Tile2::Exit)
+			if (currTile == Tile2::OneXOne || currTile == Tile2::Exit || 
+				currTile == Tile2::OneXTwo || currTile == Tile2::TwoXOne || currTile == Tile2::TwoXTwo)
 			{
 				for (int i = 0; i < 4; i++)
 				{
@@ -366,24 +363,24 @@ void RoomGen::finalize()
 		exitTilesPos[i] -= middle;
 }
 
-void RoomGen::drawCircle(const glm::ivec2& center, uint32_t radius)
+void RoomGen::drawCircle(const glm::ivec2& center, uint32_t RADIUS)
 {
-	const glm::ivec2 start = glm::ivec2(center) - glm::ivec2(radius);
+	const glm::ivec2 start = glm::ivec2(center) - glm::ivec2(RADIUS);
 
 	glm::ivec2 currentPoint{};
-	for (currentPoint.x = start.x; currentPoint.x < start.x + (int)radius * 2 + 1; currentPoint.x++)
+	for (currentPoint.x = start.x; currentPoint.x < start.x + (int)RADIUS * 2 + 1; currentPoint.x++)
 	{
-		for (currentPoint.y = start.y; currentPoint.y < start.y + (int)radius * 2 + 1; currentPoint.y++)
+		for (currentPoint.y = start.y; currentPoint.y < start.y + (int)RADIUS * 2 + 1; currentPoint.y++)
 		{
 			if (this->isValid(currentPoint))
 			{
 				Tile2::Type& ref = getType(currentPoint);
 				if (ref == Tile2::Unused && ref != Tile2::Reserved)
 				{
-					// check if tile is within radius to center
+					// check if tile is within RADIUS to center
 					// glm::dot only accepts floating point numbers
 					const glm::vec2 vec(currentPoint - center);
-					if (glm::dot(vec, vec) <= ((float)radius + 0.5f) * ((float)radius + 0.5f))
+					if (glm::dot(vec, vec) <= ((float)RADIUS + 0.5f) * ((float)RADIUS + 0.5f))
 					{
 						ref = Tile2::Type::OneXOne;
 					}

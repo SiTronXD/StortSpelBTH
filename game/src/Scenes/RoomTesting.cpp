@@ -66,10 +66,13 @@ void RoomTesting::update()
 	if (Input::isKeyDown(Keys::Q))
 		camTra.position.y -= speed * 10.f;
 
-	/*if (ImGui::Begin("aa"))
+	if (ImGui::Begin("aa"))
 	{
 		ImGui::Text("Cam pos: (%d, %d, %d)", (int)camTra.position.x,(int)camTra.position.y,(int)camTra.position.z);
-	}ImGui::End();*/
+		static bool colls = false;
+		ImGui::Checkbox("Show colliders", &colls);
+		this->getPhysicsEngine()->renderDebugShapes(colls);
+	}ImGui::End();
 
 	Transform& plaTra = this->getComponent<Transform>(player);
 	if (Input::isKeyDown(Keys::LEFT))

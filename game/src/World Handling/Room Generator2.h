@@ -40,26 +40,21 @@ class RoomGen
 public:
     static const uint32_t WIDTH_HEIGHT = 35u;
 
-    static const uint32_t TWO_X_TWO_CHANCE = 5u; // Percentage
-    static const uint32_t MAX_TWO_X_TWO = 6u;
+    static const uint32_t TWO_X_TWO_CHANCE = 10u; // Percentage
+    static const uint32_t MAX_TWO_X_TWO = 10u;
 
-    static const uint32_t ONE_X_TWO_CHANCE = 5u; // Percentage
-    static const uint32_t MAX_ONE_X_TWO = 6u;
+    static const uint32_t ONE_X_TWO_CHANCE = 10u; // Percentage
+    static const uint32_t MAX_ONE_X_TWO = 10u;
 
-    static const uint32_t BIG_TILE_MIN_DIST = 2u;
-
-    struct RoomGenDescription
-    {
-        uint32_t borderSize = 3u;
-        uint32_t radius = 3u;
-        uint32_t numBranches = 4u;
-        uint32_t branchDepth = 3u;
-        uint32_t branchDist = 3u;
-        uint32_t maxAngle = 90u;
-    };
+    static const uint32_t BIG_TILE_MIN_DIST = 1u;
 
 private:
-    RoomGenDescription desc;
+    static const uint32_t BORDER_SIZE = 3u;
+    static const uint32_t RADIUS = 2u;
+    static const uint32_t NUM_BRANCHES = 3u;
+    static const uint32_t BRANCH_DEPTH = 2u;
+    static const uint32_t BRANCH_DIST = 2u;
+    static const uint32_t MAX_ANGLE = 180u;
 
     Tile2::Type** tiles2D;
     std::vector<Tile2> mainTiles;
@@ -73,7 +68,7 @@ private:
     glm::ivec2 middle;
     glm::ivec2 size;
 
-    void drawCircle(const glm::ivec2& center, uint32_t radius);
+    void drawCircle(const glm::ivec2& center, uint32_t RADIUS);
 
     void setBorders();
     void findMinMax();
@@ -97,7 +92,6 @@ public:
     RoomGen();
     ~RoomGen();
 
-    void setDesc(const RoomGenDescription& desc);
     void clear();
     void generate(bool* doors);
 
