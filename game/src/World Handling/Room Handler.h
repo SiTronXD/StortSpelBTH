@@ -18,7 +18,7 @@ public:
 	static const uint32_t TILES_BETWEEN_ROOMS;
 	static const uint32_t NUM_BORDER;
 	static const uint32_t NUM_ONE_X_ONE;
-	static const uint32_t NUM_ONE_X_TWO;
+	static const uint32_t NUM_TWO_X_ONE;
 	static const uint32_t NUM_TWO_X_TWO;
 private:
 
@@ -82,7 +82,7 @@ private:
 	// New Create Entities
 	Entity createFloorEntity(const glm::vec2& pos);
 	Entity createBorderEntity(const glm::vec2& position, bool scalePos);
-
+	Entity createObjectEntity(const Tile2& tile);
 
 	// Create Entities
 	Entity createTileEntity(int tileIndex, TileUsage usage);

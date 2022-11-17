@@ -6,7 +6,7 @@ const float RoomHandler::TILE_WIDTH = 25.f;
 const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 5;
 const uint32_t RoomHandler::NUM_BORDER = 1;
 const uint32_t RoomHandler::NUM_ONE_X_ONE = 4;
-const uint32_t RoomHandler::NUM_ONE_X_TWO = 1;
+const uint32_t RoomHandler::NUM_TWO_X_ONE = 1;
 const uint32_t RoomHandler::NUM_TWO_X_TWO = 1;
 
 RoomHandler::RoomHandler()
@@ -47,8 +47,8 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize,
 		this->oneXOneMeshIds[i] = resourceMan->addMesh("assets/models/Tiles/OneXOne/" + std::to_string(i + 1u) + ".obj");
 	}
 
-	this->oneXTwoMeshIds.resize(NUM_ONE_X_TWO);
-	for (uint32_t i = 0; i < NUM_ONE_X_TWO; i++)
+	this->oneXTwoMeshIds.resize(NUM_TWO_X_ONE);
+	for (uint32_t i = 0; i < NUM_TWO_X_ONE; i++)
 	{
 		this->oneXTwoMeshIds[i] = resourceMan->addMesh("assets/models/Tiles/OneXTwo/" + std::to_string(i + 1u) + ".obj");
 	}
@@ -257,31 +257,9 @@ void RoomHandler::generate2()
 
 		const uint32_t numBig = this->roomGen.getNumBigTiles();
 		curRoom.objects.resize(size_t(numBig));
-
 		for (uint32_t j = 0; j < numBig; j++)
 		{
-			const Tile2& tile = roomGen.getBigTile(j);
-
-			Entity entity = this->scene->createEntity();
-			Transform& transform = this->scene->getComponent<Transform>(entity);
-
-			this->scene->setComponent<MeshComponent>(entity);
-			if (tile.type == Tile2::TwoXTwo)
-				this->scene->getComponent<MeshComponent>(entity).meshID = twoXTwoMeshIds[0];
-			else if (tile.type == Tile2::TwoXOne)
-				this->scene->getComponent<MeshComponent>(entity).meshID = oneXTwoMeshIds[0];
-			else if (tile.type == Tile2::OneXTwo)
-			{
-				this->scene->getComponent<MeshComponent>(entity).meshID = oneXTwoMeshIds[0];
-				transform.rotation.y = 90.f;
-			}
-
-			transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
-			transform.position *= TILE_WIDTH;
-			if (tile.type == Tile2::TwoXOne || tile.type == Tile2::OneXTwo)
-				transform.scale.y = 10.f;
-
-			curRoom.objects[j] = entity;
+			curRoom.objects[j] = createObjectEntity(this->roomGen.getBigTile(j));
 		}
 
 		curRoom.exitPaths.resize(size_t(this->roomGen.getNumExitTiles()));
@@ -848,6 +826,46 @@ Entity RoomHandler::createBorderEntity(const glm::vec2& position, bool scalePos)
 	Transform& transform = this->scene->getComponent<Transform>(entity);
 	transform.position.x = position.x * (scalePos ? TILE_WIDTH : 1.f);
 	transform.position.z = position.y * (scalePos ? TILE_WIDTH : 1.f);
+	return entity;
+}
+
+Entity RoomHandler::createObjectEntity(const Tile2& tile)
+{
+	Entity entity = this->scene->createEntity();
+	Transform& transform = this->scene->getComponent<Transform>(entity);
+
+	this->scene->setComponent<MeshComponent>(entity);
+	switch (tile.type)
+	{
+	default:
+		break;
+	case Tile2::TwoXTwo:
+		this->scene->getComponent<MeshComponent>(entity).meshID = twoXTwoMeshIds[rand() % NUM_TWO_X_TWO];
+		break;
+	case Tile2::TwoXOne:
+		this->scene->getComponent<MeshComponent>(entity).meshID = oneXTwoMeshIds[rand() % NUM_TWO_X_ONE];
+		break;
+	case Tile2::OneXTwo:
+		this->scene->getComponent<MeshComponent>(entity).meshID = oneXTwoMeshIds[rand() % NUM_TWO_X_ONE];
+		break;
+	}
+
+	transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
+	transform.position *= TILE_WIDTH;
+	transform.position.x += float(rand() % 20 - 10);
+	transform.position.z += float(rand() % 20 - 10);
+
+	if (tile.type == Tile2::TwoXOne || tile.type == Tile2::OneXTwo)
+	{
+		if (tile.type == Tile2::OneXTwo)
+		{
+			transform.rotation.y = 90.f;
+		}
+
+		transform.scale.y = 10.f;
+		transform.rotation.y += float(rand() % 40 - 20);
+	}
+
 	return entity;
 }
 
