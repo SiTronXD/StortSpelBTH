@@ -316,12 +316,27 @@ BTStatus TankBT::GroundHump(Entity entityID)
 		tankComp.groundHumpTimer -= Time::getDT();
 	}
 
+	int playerID = -1;
+	getPlayerID(playerID);
+	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+	Collider& playerCol = getTheScene()->getComponent<Collider>(playerID);
+	Transform& tankTrans = getTankTrans();
 	std::vector<int> toRemove;
 	for(int i = 0; i < tankComp.humps.size(); i++)
 	{
 		tankComp.humps[i] += tankComp.humpShockwaveSpeed * Time::getDT();
+		float dist = glm::length(playerTrans.position - tankTrans.position);
+		float minHitDist = dist - playerCol.radius;
+		float maxHitDist = dist + playerCol.radius;
+
 		if(tankComp.humps[i] >= tankComp.humpShockwaveMaxRadius)
 		{
+			toRemove.push_back(i);
+		}
+		else if(dist >= minHitDist && dist <= maxHitDist)
+		{
+			//PlayerHit!
+			std::cout<<"Player humped!\n";
 			toRemove.push_back(i);
 		}
 	}
