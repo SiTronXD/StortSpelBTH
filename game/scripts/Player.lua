@@ -42,8 +42,12 @@ function script:init()
     self.jumpTimer = 0
     self.active = true
 
-    self.activeAnimation = {idle = 0, run = 1, sprint = 2, dodge = 3}
-    self.currentAnimation = 0
+    self.activeAnimation = {idle = 1, run = 2, sprint = 3, dodge = 3}
+    self.currentAnimation = 1
+    self.idleAnimTime = 1.0
+    self.runAnimTime = 0.7
+    self.sprintAnimTime = 1.2
+    self.dodgeAnimTime = 2.5
 end
 
 function script:update(dt)
@@ -95,7 +99,6 @@ function script:update(dt)
         if (self.currentStamina > 0 and self.useStamina == true and self.moveDir ~= vector(0))
         then
             self.isSprinting = true
-            self.currentAnimation = self.activeAnimation.sprint
             self.currentSpeed = self.moveDir:normalize() * self.sprintSpeed
             self.currentStamina = self.currentStamina - (self.sprintStamDrain * dt)
             self.staminaTimer = self.staminaRegenCd
@@ -188,9 +191,14 @@ function script:update(dt)
         then
             if (self.isSprinting and self.moveDir ~= vector(0))
             then
-                local anim = scene.getComponent(self.ID, CompType.Animation)
-                anim.timeScale = 1.2
-                scene.setComponent(self.ID, CompType.Animation, anim)
+                if self.currentAnimation ~= self.activeAnimation.sprint
+                then
+                    local anim = scene.getComponent(self.ID, CompType.Animation)
+                    self.currentAnimation = self.activeAnimation.sprint
+                    anim.timeScale = 1.2
+                    scene.setComponent(self.ID, CompType.Animation, anim)
+                    scene.setAnimation(self.ID, "run")
+                end
             end
         end
     end

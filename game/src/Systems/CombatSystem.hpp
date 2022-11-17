@@ -11,16 +11,15 @@ private:
 
 	Scene* scene;
 	ResourceManager* resourceMng;
-	Entity playerID;
-	Entity swordID;
 	PhysicsEngine* physics;
 	UIRenderer* uiRenderer;
 	ScriptHandler* script;
+	Entity playerID;
+	Entity swordID;
+	Entity heal;
 
 	int perkMeshes[5];
-	int abilityMeshes[1];
-	int healingMesh;
-	Entity heal = -1;
+	int abilityMeshes[2];
 
 	std::vector<Entity> hitEnemies;
 	bool canHit = true;
@@ -29,8 +28,8 @@ public:
 
 	CombatSystem(Scene* scene, ResourceManager* resourceMng, Entity playerID, 
 		PhysicsEngine* physics, UIRenderer* uiRenderer, ScriptHandler* script)
-		: scene(scene), resourceMng(resourceMng), playerID(playerID), 
-		physics(physics), uiRenderer(uiRenderer), script(script)
+		: scene(scene), resourceMng(resourceMng), playerID(playerID), heal(-1),
+		swordID(-1), physics(physics), uiRenderer(uiRenderer), script(script)
 	{
 		if (scene->hasComponents<Combat>(playerID))
 		{
@@ -52,7 +51,7 @@ public:
 			this->perkMeshes[3] = this->resourceMng->addMesh("assets/models/Perk_Movement.obj");
 			this->perkMeshes[4] = this->resourceMng->addMesh("assets/models/Perk_Stamina.obj");
 			this->abilityMeshes[0] = this->resourceMng->addMesh("assets/models/KnockbackAbility.obj");
-			this->healingMesh = this->resourceMng->addMesh("assets/models/HealingAbility.obj");
+			this->abilityMeshes[1] = this->resourceMng->addMesh("assets/models/HealingAbility.obj");
 		}
 	}
 
@@ -352,7 +351,7 @@ public:
 				combat.ability.abilityType = emptyAbility;
 
 				this->heal = this->scene->createEntity();
-				this->scene->setComponent<MeshComponent>(this->heal, this->healingMesh);
+				this->scene->setComponent<MeshComponent>(this->heal, this->abilityMeshes[healAbility]);
 				this->scene->setComponent<PointLight>(this->heal, { glm::vec3(0.f, 10.f, 0.f), glm::vec3(9.f, 7.f, 9.f) });
 				Transform& healTrans = this->scene->getComponent<Transform>(this->heal);
 				Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
@@ -489,13 +488,50 @@ public:
 		{
 			setDefaultMovementSpeed(combat);
 			combat.movementMultiplier += perk.multiplier;
+			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+
+			float moveTimers[4] = { 0.f, 0.f, 0.f, 0.f };
+			this->script->getScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
+			this->script->getScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
+			this->script->getScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
+			this->script->getScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
+			for (size_t i = 0; i < 4; i++)
+			{
+				moveTimers[i] += perk.multiplier;
+			}
+			this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
+			this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
+			this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
+			this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
+			if (combat.movementMultiplier < 0.3f)
+			{
+				combat.movementMultiplier = 0.3f;
+				moveTimers[0] = 1.7f;
+				moveTimers[1] = 1.4f;
+				moveTimers[2] = 1.9f;
+				moveTimers[3] = 3.2f;
+				this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
+				this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
+				this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
+				this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
+			}
 		}
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 		int maxSpeed = 0;
+		int sprintSpeed = 0;
+		int dodgeSpeed = 0;
 		this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
-		float tempSpeed = (float)maxSpeed * combat.movementMultiplier;
-		maxSpeed = (int)tempSpeed;
+		this->script->getScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
+		this->script->getScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
+		float tempMaxSpeed = (float)maxSpeed * combat.movementMultiplier;
+		float tempSprintSpeed = (float)sprintSpeed * combat.movementMultiplier;
+		float tempDodgeSpeed = (float)dodgeSpeed * combat.movementMultiplier;
+		maxSpeed = (int)tempMaxSpeed;
+		sprintSpeed = (int)tempSprintSpeed;
+		dodgeSpeed = (int)tempDodgeSpeed;
 		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
+		this->script->setScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
+		this->script->setScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
 	}
 
 	void updateStamina(Combat& combat, Perks& perk, bool doUpgrade = true)
@@ -551,10 +587,20 @@ public:
 	{
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 		int maxSpeed = 0;
+		int sprintSpeed = 0;
+		int dodgeSpeed = 0;
 		this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
-		float tempSpeed = (float)maxSpeed / combat.movementMultiplier;
-		maxSpeed = (int)tempSpeed;
+		this->script->getScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
+		this->script->getScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
+		float tempMaxSpeed = (float)maxSpeed / combat.movementMultiplier;
+		float tempSprintSpeed = (float)sprintSpeed / combat.movementMultiplier;
+		float tempDodgeSpeed = (float)dodgeSpeed / combat.movementMultiplier;
+		maxSpeed = (int)tempMaxSpeed;
+		sprintSpeed = (int)tempSprintSpeed;
+		dodgeSpeed = (int)tempDodgeSpeed;
 		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
+		this->script->setScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
+		this->script->setScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
 	}
 
 	void setDefaultStamina(Combat& combat)

@@ -174,7 +174,7 @@ void GameScene::start()
     this->setComponent<PointLight>(this->perk3, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
     this->setComponent<Perks>(this->perk3);
     Perks& perkSetting3 = this->getComponent<Perks>(this->perk3);
-    perkSetting3.multiplier = 0.5f;
+    perkSetting3.multiplier = 1.f;
     perkSetting3.perkType = movementUpPerk;
 
     this->perk4 = this->createEntity();
