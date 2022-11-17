@@ -664,7 +664,11 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 						glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
 						swarmComp.idleMoveTo = swarmComp.group->idleMidPos + dir * swarmComp.group->idleRadius;
 					}
-					
+					for(auto t: tankIDs)
+			        {
+			        	TankComponent& tankComp = this->getComponent<TankComponent>(t);
+			        	tankComp.setFriends(this, t);
+			        }
 			}
 		}        
 

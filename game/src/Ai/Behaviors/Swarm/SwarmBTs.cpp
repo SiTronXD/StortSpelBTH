@@ -315,7 +315,10 @@ BTStatus SwarmBT::informFriends(Entity entityID)
 }
 BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 {
+
 	BTStatus ret = BTStatus::Running;
+
+	
 
 	Collider& entityCollider = BehaviorTree::sceneHandler->getScene()->getComponent<Collider>(entityID);
 	Collider& playerCollider = BehaviorTree::sceneHandler->getScene()->getComponent<Collider>(getPlayerID(sceneHandler));
@@ -329,49 +332,54 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 	entityTransform.updateMatrix();    
 
 	glm::vec3 newPlayerPos = playerTransform.position;
-	newPlayerPos.y+=3.5f;
+	newPlayerPos = newPlayerPos + playerTransform.up() * 3.0f;
+	/*newPlayerPos.y+=3.5f;
 	glm::vec3 playerDown = -playerTransform.up();
 	float playerLen = playerCollider.height;
 	float swarmLen = entityCollider.radius;
 	float newPosOffset = playerLen - swarmLen;
-	newPlayerPos = newPlayerPos + playerDown * newPosOffset;
+	newPlayerPos = newPlayerPos + playerDown * newPosOffset;*/
 	//Temp code end------------------------------------------
     
+    glm::vec3 entityPos	= entityTransform.position;
     glm::vec3 dirEntityToPlayer = glm::normalize(newPlayerPos - entityTransform.position);
-    glm::vec3 entityTargetPos = entityTransform.position;
-    float distEntityTargetPosToPlayer = glm::length(newPlayerPos - entityTargetPos);
-    glm::vec3 dirEntityTargetPosToPlayer = glm::normalize(newPlayerPos - entityTargetPos);
+    float distEntityToPlayer	= glm::length(newPlayerPos - entityPos);
+    //glm::vec3 dirEntityTargetPosToPlayer = glm::normalize(newPlayerPos - entityTargetPos);
 	int safetyBreak = 0;
     bool canSeePlayer = false; 
 	//TODO: saftybeak is bad stuff, fix this shit
     while(!canSeePlayer) 
     {
-        distEntityTargetPosToPlayer = glm::length(newPlayerPos - entityTargetPos) ;
-        dirEntityTargetPosToPlayer = glm::normalize(newPlayerPos - entityTargetPos);
-        Ray rayToPlayer{entityTargetPos, dirEntityTargetPosToPlayer};    
-        RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, distEntityTargetPosToPlayer+10.f);
+        dirEntityToPlayer = glm::normalize(newPlayerPos - entityPos);
+        distEntityToPlayer	= glm::length(newPlayerPos - entityPos);
+        Ray rayToPlayer{entityPos, dirEntityToPlayer};    
+        RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, distEntityToPlayer);
+
+		//Draw ray
+		/*BehaviorTree::sceneHandler->getPhysicsEngine()->renderDebugShapes(true);
+		BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
+		entityPos,
+		entityPos + dirEntityToPlayer * distEntityToPlayer,
+		glm::vec3(1.0f, 0.0f, 0.0f));*/
 
         if (rp.hit)
-        {        
-            int playerId = getPlayerID(sceneHandler);
+        {    
+            int playerId = -1;
+            std::string playerStr = "playerID";
+            BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(playerId, playerStr);
 
             if(playerId != rp.entity)
             {
-                glm::vec3 leftOfPlayer = glm::cross(dirEntityTargetPosToPlayer, glm::vec3(0.f,1.f,0.f));
-                dirEntityToPlayer = glm::normalize(leftOfPlayer + dirEntityTargetPosToPlayer); 
-                entityTargetPos += dirEntityToPlayer;
-
+				glm::vec3 leftOfBlob = glm::cross(dirEntityToPlayer, glm::vec3(0.f,1.f,0.f));
+                entityPos += leftOfBlob;
             }
-			else if(rp.entity )
+			else if(playerId == rp.entity )
             {
-
+				canSeePlayer = true;
             }
-
-            canSeePlayer = rp.entity == playerId;
         }
 		else
 		{
-
 			if(++safetyBreak>25)
 			{
 				Log::warning("Swarm ray check running too many times,this is bad");
@@ -396,6 +404,95 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 	}
 
 	return ret;
+
+	//BTStatus ret = BTStatus::Running;
+
+	//Collider& entityCollider = BehaviorTree::sceneHandler->getScene()->getComponent<Collider>(entityID);
+	//Collider& playerCollider = BehaviorTree::sceneHandler->getScene()->getComponent<Collider>(getPlayerID(sceneHandler));
+	//Transform& entityTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
+	//Transform& playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(getPlayerID(sceneHandler));
+	//SwarmComponent& swarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+	//Rigidbody& rigidbody = BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
+ //   
+
+ //   entityTransform.rotation.y = lookAtY(entityTransform, playerTransform);
+	//entityTransform.updateMatrix();    
+
+	//glm::vec3 newPlayerPos = playerTransform.position;
+	//newPlayerPos.y+=3.5f;
+	//glm::vec3 playerDown = -playerTransform.up();
+	//float playerLen = playerCollider.height;
+	//float swarmLen = entityCollider.radius;
+	//float newPosOffset = playerLen - swarmLen;
+	//newPlayerPos = newPlayerPos + playerDown * newPosOffset;
+	////Temp code end------------------------------------------
+ //   
+ //   glm::vec3 dirEntityToPlayer = glm::normalize(newPlayerPos - entityTransform.position);
+ //   glm::vec3 entityTargetPos = entityTransform.position;
+ //   float distEntityTargetPosToPlayer = glm::length(newPlayerPos - entityTargetPos);
+ //   glm::vec3 dirEntityTargetPosToPlayer = glm::normalize(newPlayerPos - entityTargetPos);
+	//int safetyBreak = 0;
+ //   bool canSeePlayer = false; 
+	////TODO: saftybeak is bad stuff, fix this shit
+ //   while(!canSeePlayer) 
+ //   {
+ //       distEntityTargetPosToPlayer = glm::length(newPlayerPos - entityTargetPos) ;
+ //       dirEntityTargetPosToPlayer = glm::normalize(newPlayerPos - entityTargetPos);
+ //       Ray rayToPlayer{entityTargetPos, dirEntityTargetPosToPlayer};    
+ //       RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, distEntityTargetPosToPlayer+10.f);
+
+	//	BehaviorTree::sceneHandler->getPhysicsEngine()->renderDebugShapes(true);
+	//	BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
+	//	    entityTransform.position,
+	//	    entityTransform.position + dirEntityToPlayer * distEntityTargetPosToPlayer,
+	//	    glm::vec3(1.0f, 0.0f, 0.0f)
+	//	);
+
+ //       if (rp.hit)
+ //       {        
+ //           int playerId = getPlayerID(sceneHandler);
+
+ //           if(playerId != rp.entity)
+ //           {
+ //               glm::vec3 leftOfPlayer = glm::cross(dirEntityTargetPosToPlayer, glm::vec3(0.f,1.f,0.f));
+ //               dirEntityToPlayer = glm::normalize(leftOfPlayer + dirEntityTargetPosToPlayer); 
+ //               entityTargetPos += dirEntityToPlayer;
+
+ //           }
+	//		else if(rp.entity )
+ //           {
+
+ //           }
+
+ //           canSeePlayer = rp.entity == playerId;
+ //       }
+	//	else
+	//	{
+
+	//		if(++safetyBreak>25)
+	//		{
+	//			Log::warning("Swarm ray check running too many times,this is bad");
+	//			break;
+	//		}
+	//	}
+
+ //   }
+
+ //   dirEntityToPlayer.y = 0;
+ //   float tempYvel =  rigidbody.velocity.y;
+ //   rigidbody.velocity = dirEntityToPlayer * swarmComp.speed;
+ //   rigidbody.velocity.y = tempYvel;
+
+
+ //   
+
+	////TODO: Something may be wrong here??!?
+	//if (closeEnoughToPlayer(entityID) == BTStatus::Success)
+	//{
+	//	return BTStatus::Success;
+	//}
+
+	//return ret;
 }
 BTStatus SwarmBT::closeEnoughToPlayer(Entity entityID)
 {
