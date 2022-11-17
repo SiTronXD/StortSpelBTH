@@ -286,52 +286,10 @@ void GameScene::update()
 #endif
 }
 
-void GameScene::aiExample()
+void GameScene::aiExample() 
 {
 
-  auto a = [&](FSM* fsm, uint32_t entityId) -> void
-  {
-    SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
 
-    auto entityImguiWindow = [&](SwarmFSM* swarmFsm, uint32_t entityId) -> void
-    {
-      auto& entitySwarmComponent =
-          this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(
-              entityId
-          );
-      auto& entityAiCombatComponent =
-          this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId);
-      auto& entiyFSMAgentComp =
-          this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(
-              entityId
-          );
-      auto& entityRigidBody =
-          this->getSceneHandler()->getScene()->getComponent<Rigidbody>(entityId
-          );
-      int& health = entitySwarmComponent.life;
-      float& jumpForce = entitySwarmComponent.jumpForce;
-      float& jumpForceY = entitySwarmComponent.jumpY;
-      float& speed = entitySwarmComponent.speed;
-      float& attackRange = entitySwarmComponent.attackRange;
-      float& sightRange = entitySwarmComponent.sightRadius;
-      bool& inCombat = entitySwarmComponent.inCombat;
-      float& attackPerSec = entityAiCombatComponent.lightAttackTime;
-      float& lightAttackDmg = entityAiCombatComponent.lightHit;
-      float& gravity = entityRigidBody.gravityMult;
-      std::string& status = entiyFSMAgentComp.currentNode->status;
-      ImGui::Text(status.c_str());
-      ImGui::SliderInt("health", &health, 0, 100);
-      ImGui::SliderFloat("speed", &speed, 0, 100);
-      ImGui::SliderFloat("jumpForce", &jumpForce, 0, 100);
-      ImGui::SliderFloat("jumpForceY", &jumpForceY, 0, 100);
-      ImGui::SliderFloat("gravity", &gravity, 0, 10);
-      ImGui::SliderFloat("attackRange", &attackRange, 0, 100);
-      ImGui::SliderFloat("sightRange", &sightRange, 0, 100);
-      ImGui::InputFloat("attack/s", &attackPerSec);
-      ImGui::InputFloat("lightattackDmg", &lightAttackDmg);
-      ImGui::Checkbox("inCombat", &inCombat);
-    };
-    //TEMP
 
 	auto a = [&](FSM* fsm, uint32_t entityId) -> void {
 		SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
@@ -366,87 +324,61 @@ void GameScene::aiExample()
             ImGui::Checkbox("inCombat", &inCombat);		            
         };
         //TEMP             
-    static bool showEntityId = false;
-    ImGui::Checkbox("Show Entity ID", &showEntityId);
-    if (showEntityId)
-      {
 
-        // Show all entity ID over entitties
-        glm::vec4 entityPos = glm::vec4(
-            this->getSceneHandler()
-                ->getScene()
-                ->getComponent<Transform>(entityId)
-                .position,
-            1.f
-        );
+        static bool showEntityId = false;
+        ImGui::Checkbox("Show Entity ID", &showEntityId);
+        if(showEntityId)
+        {
+            
+            // Show all entity ID over entitties             
+            glm::vec3 entityPos3 =this->getSceneHandler()->getScene()->getComponent<Transform>(entityId).position;
+            glm::vec4 entityPos4 = glm::vec4(entityPos3, 1.f);
 
-        auto screenPos = this->getMainCamera()->projection *
-                         this->getMainCamera()->view * entityPos;
-        glm::vec3 realScreenPos;
-        realScreenPos.x = (screenPos.x / screenPos.w) * 1920 / 2;
-        realScreenPos.y = (screenPos.y / screenPos.w) * 1080 / 2;
-        realScreenPos.z = screenPos.z / screenPos.w;
+            auto screenPos = this->getMainCamera()->projection * this->getMainCamera()->view * entityPos4;
+            glm::vec3 realScreenPos; 
+            realScreenPos.x = (screenPos.x / screenPos.w) * 1920/2;
+            realScreenPos.y = (screenPos.y / screenPos.w) * 1080/2;
+            realScreenPos.z = screenPos.z / screenPos.w;
 
-        //Scene::getUIRenderer()->setTexture(this->fontTextureIndex);
-        Scene::getUIRenderer()->renderString(
-            std::to_string(entityId),
-            glm::vec2(realScreenPos.x, realScreenPos.y),
-            glm::vec2(20)
-        );
-      }
+            Scene::getUIRenderer()->setTexture(this->fontTextureIndex);
+            //Scene::getUIRenderer()->renderString(std::to_string(entityId), realScreenPos.x, realScreenPos.y, 20, 20); 
+            Scene::getUIRenderer()->renderString(std::to_string(entityId), entityPos3, glm::vec2(20, 20)); 
+        }    
 
-    if (ImGui::Button("SWITCHsCENE"))
-      {
-        this->switchScene(new GameScene(), "scripts/gamescene.lua");
-      }
-    std::string playerString = "playerID";
-    int playerID;
-    this->getSceneHandler()->getScriptHandler()->getGlobal(
-        playerID, playerString
-    );
-    auto& playerCombat =
-        this->getSceneHandler()->getScene()->getComponent<Combat>(playerID);
-    if (ImGui::Button("Kill Player"))
-      {
-        playerCombat.health = 0;
-      }
-    if (ImGui::Button("INVINCIBLE Player"))
-      {
-        playerCombat.health = INT_MAX;
-      }
-    ImGui::Separator();
-    ImGui::Separator();
-    entityImguiWindow(swarmFSM, entityId);
+        if(ImGui::Button("SWITCHsCENE")){
+            this->switchScene(new GameScene(), "scripts/gamescene.lua");            
+        }
+        std::string playerString = "playerID";
+        int playerID;
+        this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerString);
+        auto& playerCombat = this->getSceneHandler()->getScene()->getComponent<Combat>(playerID);
+        if(ImGui::Button("Kill Player")){
+            playerCombat.health = 0; 
+        }
+        if(ImGui::Button("INVINCIBLE Player")){
+            playerCombat.health = INT_MAX; 
+        }
+		ImGui::Separator();
+		ImGui::Separator();
+		entityImguiWindow(swarmFSM, entityId);
 
-    auto& entitySwarmComponent =
-        this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(
-            entityId
-        );
-    auto& entityAiCombatComponent =
-        this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId);
-    auto& entiyFSMAgentComp =
-        this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(
-            entityId
-        );
+        auto& entitySwarmComponent = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId);
+        auto& entityAiCombatComponent = this->getSceneHandler()->getScene()->getComponent<AiCombatSwarm>(entityId);
+        auto& entiyFSMAgentComp = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId);
 
-    std::string groupName = "GroupMembers[" +
-                            std::to_string(entitySwarmComponent.group->myId) +
-                            "]";
-    if (ImGui::TreeNode(groupName.c_str()))
-      {
-        if (ImGui::Button("Kill All"))
-          {
-            entitySwarmComponent.life = 0;
-            for (auto& ent : entitySwarmComponent.group->members)
-              {
-                auto& entSwarmComp = this->getSceneHandler()
-                                         ->getScene()
-                                         ->getComponent<SwarmComponent>(ent);
-                entSwarmComp.life = 0;
-              }
-          }
+        std::string groupName = "GroupMembers["+std::to_string(entitySwarmComponent.group->myId)+"]";
+        if(ImGui::TreeNode(groupName.c_str()))
+        {
+            if(ImGui::Button("Kill All")){
+                entitySwarmComponent.life = 0; 
+                for(auto& ent : entitySwarmComponent.group->members)
+                {              
+                    auto& entSwarmComp = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(ent);                    
+                    entSwarmComp.life = 0; 
+                }
+            }
 
-        static int selected_friend = -1;
+            static int selected_friend = -1; 
 
             for(auto& ent : entitySwarmComponent.group->members)
             {              
@@ -500,7 +432,8 @@ void GameScene::aiExample()
             realScreenPos.z = screenPos.z / screenPos.w;
 
             Scene::getUIRenderer()->setTexture(this->fontTextureIndex);
-            Scene::getUIRenderer()->renderString(std::to_string(entityId), realScreenPos.x, realScreenPos.y, 20, 20); 
+            //Scene::getUIRenderer()->renderString(std::to_string(entityId), realScreenPos.x, realScreenPos.y, 20, 20); 
+            Scene::getUIRenderer()->renderString(std::to_string(entityId), glm::vec3(entityPos), glm::vec2(20, 20)); 
         }    
 
 		entityImguiWindow(tankFSM, entityId);
@@ -521,8 +454,8 @@ void GameScene::aiExample()
 	int group_size = 3;
     for(size_t j = 0; j < numOfGroups; j++)
     {
-      this->swarmGroups.push_back(new SwarmGroup);
-      for (size_t i = 0; i < group_size; i++)
+        this->swarmGroups.push_back(new SwarmGroup);
+        for (size_t i = 0; i < group_size; i++)
         {
             this->swarmIDs.push_back(this->createEntity());
             this->setComponent<MeshComponent>(this->swarmIDs.back(), swarm);
@@ -630,14 +563,15 @@ bool GameScene::allDead()
 
 void GameScene::onTriggerStay(Entity e1, Entity e2)
 {
-  Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
+	Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
+	
+	if (player == playerID) // player triggered a trigger :]
+	{
+		Entity other = e1 == player ? e2 : e1;
+		if (roomHandler.onPlayerTrigger(other))
+		{
+			this->newRoomFrame = true;
 
-  if (player == playerID)  // player triggered a trigger :]
-    {
-      Entity other = e1 == player ? e2 : e1;
-      if (roomHandler.onPlayerTrigger(other))
-        {
-          this->newRoomFrame = true;
 			int swarmIdx = 0;
 			int lichIdx = 0;
 			int tankIdx = 0;
@@ -671,7 +605,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 
 						lichIdx++;
 					}
-					else if(swarmIdx < 0)
+					else if(swarmIdx < 3)
 					{
 						this->setActive(this->swarmIDs[swarmIdx]);
 						Transform& transform = this->getComponent<Transform>(this->swarmIDs[swarmIdx]);
@@ -732,76 +666,13 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 					}
 					
 			}
-			for(auto t: tankIDs)
-			{
-				TankComponent& tankComp = this->getComponent<TankComponent>(t);
-				tankComp.setFriends(this, t);
-			}
 		}        
 
-                  swarmComp.group->aliveMembers.push(0
-                  );  // TODO: This should be done somewhere else... Like in SwarmFSM/BT
-
-                  idx++;
-                  counter++;
-                }
-            }
-          for (SwarmGroup* group : this->swarmGroups)
-            {
-              //Set idle mid pos
-              group->idleMidBos = glm::vec3(0.0f, 0.0f, 0.0f);
-              int numAlive = 0;
-              for (auto b : group->members)
-                {
-                  if (isActive(b) &&
-                      this->getComponent<SwarmComponent>(b).life > 0)
-                    {
-                      group->idleMidBos +=
-                          this->getComponent<Transform>(b).position;
-                      numAlive++;
-                    }
-                }
-              group->idleMidBos /= numAlive;
-              //Set ilde radius
-              for (auto b : group->members)
-                {
-                  if (isActive(b) &&
-                      this->getComponent<SwarmComponent>(b).life > 0)
-                    {
-                      float len = glm::length(
-                          group->idleMidBos -
-                          this->getComponent<Transform>(b).position
-                      );
-                      if (len > group->idleRadius)
-                        {
-                          group->idleRadius = len;
-                        }
-                    }
-                }
-              //Set move to
-              for (auto b : group->members)
-                {
-                  SwarmComponent& swarmComp =
-                      this->getComponent<SwarmComponent>(b);
-                  swarmComp.idleMoveTo = group->idleMidBos;
-                  glm::vec3 dir = glm::normalize(glm::vec3(
-                      rand() * (rand() % 2 == 0 ? -1 : 1),
-                      0.0f,
-                      rand() * (rand() % 2 == 0 ? -1 : 1)
-                  ));
-                  swarmComp.idleMoveTo = swarmComp.group->idleMidBos +
-                                         dir * swarmComp.group->idleRadius;
-                }
-            }
-        }
-
-      if (other == portal &&
-          numRoomsCleared >= this->roomHandler.getNumRooms() -
-                                 1)  // -1 not counting start room
-        {
-          this->switchScene(new GameScene(), "scripts/gamescene.lua");
-        }
-    }
+		if (other == portal && numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
+		{
+			this->switchScene(new GameScene(), "scripts/gamescene.lua");
+		}
+	}
 }
 
 void GameScene::onTriggerEnter(Entity e1, Entity e2)
@@ -903,7 +774,7 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
           auto& swarmComp = this->getComponent<SwarmComponent>(other);
           if (swarmComp.inAttack)
             {
-              auto& aiCombat = this->getComponent<AiCombat>(other);
+              auto& aiCombat = this->getComponent<AiCombatSwarm>(other);
               swarmComp.inAttack = false;
               swarmComp.touchedPlayer = true;
               //aiCombat.timer = aiCombat.lightAttackTime;

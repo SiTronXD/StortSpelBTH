@@ -43,7 +43,6 @@ void SwarmBT::registerEntityComponents(Entity entityId)
 
 BTStatus SwarmBT::hasFriends(Entity entityID)
 {
-  std::cout << "has friends" << std::endl;
 	BTStatus ret = BTStatus::Success;
 
 	SwarmGroup* groupPtr =
@@ -56,7 +55,6 @@ BTStatus SwarmBT::hasFriends(Entity entityID)
 }
 BTStatus SwarmBT::jumpInCircle(Entity entityID)
 {
-  std::cout << "jumpInCircle" << std::endl;
 	BTStatus ret = BTStatus::Running;
 	if (hasFriends(entityID) == BTStatus::Failure)
 	{
@@ -143,7 +141,6 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 }
 BTStatus SwarmBT::lookingForGroup(Entity entityID)
 {
-  std::cout << "lookingForGroup" << std::endl;
 	BTStatus ret = BTStatus::Running;
 	//TODO: Make blob jump around and look for friends!
 
@@ -155,7 +152,6 @@ BTStatus SwarmBT::lookingForGroup(Entity entityID)
 }
 BTStatus SwarmBT::JoinGroup(Entity entityID)
 {
-  std::cout << "joinGroup" << std::endl;
 	BTStatus ret = BTStatus::Running;
 	//TODO: Make blob jump in circle!
 
@@ -185,7 +181,6 @@ BTStatus SwarmBT::JoinGroup(Entity entityID)
 
 BTStatus SwarmBT::seesNewFriends(Entity entityID)
 {
-  std::cout << "seeNewFriend" << std::endl;
 	BTStatus ret = BTStatus::Failure;
 
 	SwarmComponent& thisSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
@@ -213,7 +208,6 @@ BTStatus SwarmBT::seesNewFriends(Entity entityID)
 }
 BTStatus SwarmBT::escapeToFriends(Entity entityID)
 {
-  std::cout << "EscapeToFriends" << std::endl;
 	BTStatus ret = BTStatus::Running;
 	
 	SwarmComponent& thisSwarmComp =
@@ -258,7 +252,6 @@ BTStatus SwarmBT::escapeToFriends(Entity entityID)
 }
 BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 {
-  std::cout << "EscapeFromPlayer" << std::endl;
 	BTStatus ret = BTStatus::Running;
 	//TODO: change to real player ID
 	int player = getPlayerID(sceneHandler);
@@ -302,7 +295,6 @@ BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 
 BTStatus SwarmBT::informFriends(Entity entityID)
 {
-  std::cout << "informFriends" << std::endl;
 	BTStatus ret = BTStatus::Success;
 
 	SwarmComponent& thisSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
@@ -323,7 +315,6 @@ BTStatus SwarmBT::informFriends(Entity entityID)
 }
 BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 {
-  std::cout << "jump to player" << std::endl;
 	BTStatus ret = BTStatus::Running;
 
 	Collider& entityCollider = BehaviorTree::sceneHandler->getScene()->getComponent<Collider>(entityID);
@@ -408,7 +399,6 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 }
 BTStatus SwarmBT::closeEnoughToPlayer(Entity entityID)
 {
-  std::cout << "closeEnough" << std::endl;
 	BTStatus ret = BTStatus::Failure;
 
 	SwarmComponent& thisSwarmComp = BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
@@ -426,7 +416,6 @@ BTStatus SwarmBT::closeEnoughToPlayer(Entity entityID)
 
 BTStatus SwarmBT::attack(Entity entityID)
 {    
-	std::cout << "ATTACK!" << std::endl;
 	BTStatus ret = BTStatus::Running;
 
 	Transform& thisTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID);
@@ -581,7 +570,6 @@ BTStatus SwarmBT::die(Entity entityID)
 
 BTStatus SwarmBT::alerted(Entity entityID)
 {
-  std::cout << "alerted" << std::endl;
 	BTStatus ret = BTStatus::Running;
 	SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	Transform& playerTransform = BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(getPlayerID(sceneHandler));
