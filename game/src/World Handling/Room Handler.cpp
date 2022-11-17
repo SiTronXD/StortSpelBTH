@@ -535,16 +535,7 @@ void RoomHandler::generatePathways()
 	glm::vec3 curPos{};
 	Entity entity = -1;
 
-	// Used when generating borders
-	const int ThiccNessMonster = 4;
-	const glm::vec3 OFFSETS[] =
-	{
-		{TILE_WIDTH, 0, 0},
-		{-TILE_WIDTH, 0, 0},
-		{0, 0, TILE_WIDTH},
-		{0, 0, -TILE_WIDTH},
-	};
-	const int NUM_OFFSETS = sizeof(OFFSETS) / sizeof(glm::vec3);
+
 
 
 	// For each exit pair (the points which to make a path between)
@@ -595,73 +586,93 @@ void RoomHandler::generatePathways()
 		}
 
 		const size_t endIndex = this->pathIds.size();
-		bool canPlace = true;
-
-		glm::vec3 upperP = p0.z > p1.z ? p0 : p1;
-		glm::vec3 lowerP = upperP == p0 ? p1 : p0;
 		
-		glm::vec3 rightP = p0.x > p1.x ? p0 : p1;
-		glm::vec3 leftP = rightP == p0 ? p1 : p0;
 
 		// Go through the placed path and generate a border around it
-		for (size_t j = startIndex; j < endIndex; j++)
+
+		const int ThiccNessMonster = 2;
+		for (int l = 1; l <= ThiccNessMonster; l++) // ThiccNess off borders around paths
+			surroundPaths(startIndex, endIndex, p0, p1, (float)l, this->verticalConnection[i], l == 1);
+	}
+
+	printf("pathIds: %zd, inner: %zd\n", pathIds.size(), innerBorderPaths.size());
+}
+
+void RoomHandler::surroundPaths(size_t start, size_t end, glm::vec3 p0, glm::vec3 p1, float distFactor, bool vertical, bool colliders)
+{
+	const glm::vec3 OFFSETS[] =
+	{
+		{TILE_WIDTH, 0, 0},
+		{-TILE_WIDTH, 0, 0},
+		{0, 0, TILE_WIDTH},
+		{0, 0, -TILE_WIDTH},
+	};
+	const int NUM_OFFSETS = sizeof(OFFSETS) / sizeof(glm::vec3);
+
+	bool canPlace = true;
+
+	glm::vec3 upperP = p0.z > p1.z ? p0 : p1;
+	glm::vec3 lowerP = upperP == p0 ? p1 : p0;
+	
+	glm::vec3 rightP = p0.x > p1.x ? p0 : p1;
+	glm::vec3 leftP = rightP == p0 ? p1 : p0;
+
+	for (size_t j = start; j < end; j++)
+	{
+		const glm::vec3& pos = this->scene->getComponent<Transform>(this->pathIds[j]).position;
+		for (int k = 0; k < NUM_OFFSETS; k++)
 		{
-			const glm::vec3& pos = this->scene->getComponent<Transform>(this->pathIds[j]).position;
-			for (int k = 0; k < NUM_OFFSETS; k++)
+			const glm::vec3 offsetPos = pos + OFFSETS[k] * distFactor;
+			canPlace = true;
+
+			// Don't place a border inside the room
+			if (vertical)
 			{
-				for (int l = 1; l < ThiccNessMonster + 1; l++) // ThiccNess off borders around paths
+				canPlace = !(offsetPos.z > upperP.z || offsetPos.z < lowerP.z);
+			}
+			else
+			{
+				canPlace = !(offsetPos.x > rightP.x || offsetPos.x < leftP.x);
+			}
+
+			// Search through the path to see if offsetPos is on a tile
+			for (size_t m = start; m < this->pathIds.size() && canPlace; m++)
+			{
+				if (m != j)
 				{
-					const glm::vec3 offsetPos = pos + OFFSETS[k] * (float)l;
-					canPlace = true;
+					glm::vec3 mPosToOffset = offsetPos - this->scene->getComponent<Transform>(this->pathIds[m]).position;
+					mPosToOffset.y = 0.f;
 
-					// Don't place a border inside the room
-					if (this->verticalConnection[i])
+					if (glm::dot(mPosToOffset, mPosToOffset) < (TILE_WIDTH * TILE_WIDTH))
 					{
-						canPlace = !(offsetPos.z > upperP.z || offsetPos.z < lowerP.z);
-					}
-					else
-					{
-						canPlace = !(offsetPos.x > rightP.x || offsetPos.x < leftP.x);
-					}
-
-					// Search through the path to see if offsetPos is on a tile
-					for (size_t m = startIndex; m < this->pathIds.size() && canPlace; m++)
-					{
-						if (m != j)
-						{
-							glm::vec3 mPosToOffset = offsetPos - this->scene->getComponent<Transform>(this->pathIds[m]).position;
-							mPosToOffset.y = 0.f;
-
-							if (glm::dot(mPosToOffset, mPosToOffset) < (TILE_WIDTH * TILE_WIDTH))
-							{
-								canPlace = false;
-								m = this->pathIds.size();
-							}
-						}
-					}
-
-					for (size_t m = 0; m < this->innerBorderPaths.size() && canPlace; m++)
-					{
-						//if (m != j)
-						{
-							glm::vec3 mPosToOffset = offsetPos - this->scene->getComponent<Transform>(this->innerBorderPaths[m]).position;
-							mPosToOffset.y = 0.f;
-
-							if (glm::dot(mPosToOffset, mPosToOffset) < (TILE_WIDTH * TILE_WIDTH))
-							{
-								canPlace = false;
-								m = this->innerBorderPaths.size();
-							}
-						}
-					}
-
-					if (canPlace)
-					{
-						entity = createBorderEntity({offsetPos.x, offsetPos.z}, false);
-						this->innerBorderPaths.emplace_back(entity);
+						canPlace = false;
 					}
 				}
 			}
+
+			for (size_t m = 0; m < this->innerBorderPaths.size() && canPlace; m++)
+			{
+				//if (m != j)
+				{
+					glm::vec3 mPosToOffset = offsetPos - this->scene->getComponent<Transform>(this->innerBorderPaths[m]).position;
+					mPosToOffset.y = 0.f;
+
+					if (glm::dot(mPosToOffset, mPosToOffset) < (TILE_WIDTH * TILE_WIDTH))
+					{
+						canPlace = false;
+					}
+				}
+			}
+
+			if (canPlace)
+			{
+				Entity entity = createBorderEntity({offsetPos.x, offsetPos.z}, false);
+				if (colliders)
+					this->innerBorderPaths.emplace_back(entity);
+				else
+					pathIds.emplace_back(entity);
+			}
+			
 		}
 	}
 }
@@ -971,6 +982,7 @@ void RoomHandler::showPaths(bool show)
 		{
 			this->scene->setActive(tile);
 		}
+
 	}
 	else
 	{
