@@ -20,11 +20,15 @@ NetworkGameScene::NetworkGameScene() : newRoomFrame(false)
 
 NetworkGameScene::~NetworkGameScene()
 {
-  aiHandler->clean();
   if (aiHandler != nullptr)
     {
+      aiHandler->clean();
       delete aiHandler;
     }
+  for (int i = 0; i < swarmGroups.size(); i++)
+  {
+      delete swarmGroups[i]; 
+  }
 }
 
 void NetworkGameScene::start()
@@ -35,7 +39,7 @@ void NetworkGameScene::start()
   srand(roomSeed);
   this->roomHandler.serverInit(this, 15, 15);
   this->roomHandler.generate();
-
+  
   // Ai management
   this->aiHandler = new AIHandler();
   this->aiHandler->init(this->getSceneHandler());
@@ -47,7 +51,7 @@ void NetworkGameScene::init() {}
 void NetworkGameScene::update(float dt)
 {
   aiHandler->update();
-
+  
   if (allDead() && this->newRoomFrame)
     {
       this->newRoomFrame = false;
@@ -55,7 +59,7 @@ void NetworkGameScene::update(float dt)
       // Call when a room is cleared
       roomHandler.roomCompleted();
       this->numRoomsCleared++;
-
+  
       if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
       {
           //send event to spawn portal

@@ -5,6 +5,7 @@ class NetworkLobbyScene : public NetworkScene
 {
   public:
 	NetworkLobbyScene();
+    virtual ~NetworkLobbyScene();
 	void init();
 	void update(float dt);
 };

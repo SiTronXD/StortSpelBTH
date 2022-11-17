@@ -19,9 +19,9 @@ GameSceneNetwork::GameSceneNetwork() :
 GameSceneNetwork::~GameSceneNetwork()
 {
   for (auto& p : swarmGroups)
-    {
-      delete p;
-    }
+  {
+    delete p;
+  }
 }
 
 void GameSceneNetwork::init()
@@ -71,14 +71,15 @@ void GameSceneNetwork::init()
   // Temporary light
   Entity directionalLightEntity = this->createEntity();
   this->setComponent<DirectionalLight>(
-      directionalLightEntity, glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(1.0f)
+      directionalLightEntity, glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.6f)
   );
-
-  Entity sun = this->createEntity();
-  this->setComponent<DirectionalLight>(sun);
-  DirectionalLight& light = this->getComponent<DirectionalLight>(sun);
-  light.color = glm::vec3(1.f, 0.8f, 0.5f);
-  light.direction = glm::normalize(glm::vec3(-1.f));
+  DirectionalLight& dirLight =
+      this->getComponent<DirectionalLight>(directionalLightEntity);
+  dirLight.shadowMapFrustumHalfWidth = 200.0f;
+  dirLight.shadowMapFrustumHalfHeight = 200.0f;
+  dirLight.shadowMapFrustumDepth = 800.0f;
+  dirLight.shadowMapMinBias = 0.0001f;
+  dirLight.shadowMapAngleBias = 0.001f;
 
   this->createSystem<HealthBarSystem>(
       this->hpBarBackgroundTextureID,

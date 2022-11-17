@@ -4,16 +4,19 @@
 
 NetworkLobbyScene::NetworkLobbyScene() {}
 
+NetworkLobbyScene::~NetworkLobbyScene() {}
+
 void NetworkLobbyScene::init() {
 	((NetworkSceneHandler*)this->getSceneHandler())->clientGetFunc();
 }
+
 
 void NetworkLobbyScene::update(float dt)
 {
 	if (((NetworkSceneHandler*)this->getSceneHandler())->getCallFromClient() == GameEvents::START)
 	{
 		std::cout << "got start in network lobby" << std::endl;
-      ((NetworkSceneHandler*)this->getSceneHandler())->setScene(new NetworkGameScene());
+		((NetworkSceneHandler*)this->getSceneHandler())->setScene(new NetworkGameScene());
 		this->addEvent({(int)GameEvents::START});
 	}
 }
