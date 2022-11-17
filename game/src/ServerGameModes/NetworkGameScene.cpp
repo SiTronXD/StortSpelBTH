@@ -68,8 +68,8 @@ void NetworkGameScene::aiExample()
 
   this->aiHandler->addFSM(&this->swarmFSM, "swarmFSM");
 
-  int numOfGroups = 1;
-  int group_size = 1;
+  int numOfGroups = 3;
+  int group_size = 4;
   for (size_t j = 0; j < numOfGroups; j++)
     {
       this->swarmGroups.push_back(new SwarmGroup);
@@ -116,7 +116,8 @@ bool NetworkGameScene::allDead()
 
 void NetworkGameScene::onTriggerStay(Entity e1, Entity e2)
 {
-  //TODO : player 0 is temp
+
+  //TODO : this is going to be sent by player to make this
   Entity player = isAPlayer(e1) ? e1 : isAPlayer(e2) ? e2 : -1;
 
   if (isAPlayer(player))  // player triggered a trigger :]
@@ -129,8 +130,7 @@ void NetworkGameScene::onTriggerStay(Entity e1, Entity e2)
           std::cout << "walked in new room" << std::endl;
 
           int idx = 0;
-          //int randNumEnemies = rand() % 8 + 3;
-          int randNumEnemies = 1;
+          int randNumEnemies = rand() % 8 + 3;
           int counter = 0;
           const std::vector<Entity>& entites = roomHandler.getFreeTiles();
           for (Entity entity : entites)

@@ -49,8 +49,6 @@ void GameSceneNetwork::init()
   );
 
   roomHandler.generate();
-  std::cout << "print client room" << std::endl;
-  roomHandler.printRoom();
 
   createPortal();
 
