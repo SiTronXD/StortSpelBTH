@@ -628,6 +628,7 @@ public:
 		glm::vec3 throwDir = glm::normalize(playerTrans.forward());
 		perkRb.gravityMult = 6.f;
 		perkRb.velocity = glm::vec3(throwDir.x * 20.f, 30.f, throwDir.z * 20.f);
+		this->scene->setScriptComponent(entity, "scripts/spin.lua");
 	}
 
 	void spawnPerk(Perks& perk)
