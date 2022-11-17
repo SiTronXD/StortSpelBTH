@@ -2,9 +2,9 @@
 local playerMesh = resources.addAnimations({ "assets/models/Character/CharIdle.fbx", "assets/models/Character/CharRun.fbx", 
 "assets/models/Character/CharOutwardAttack.fbx", "assets/models/Character/CharHeavyAttack.fbx", 
 "assets/models/Character/CharSpinAttack.fbx", "assets/models/Character/CharKnockbackAttack.fbx", 
-"assets/models/Character/CharInwardAttack.fbx", "assets/models/Character/CharSlashAttack.fbx" }, "assets/textures/playerMesh")
+"assets/models/Character/CharInwardAttack.fbx", "assets/models/Character/CharSlashAttack.fbx", "assets/models/Character/CharDodge.fbx" }, "assets/textures/playerMesh")
 resources.mapAnimations(playerMesh, {"idle", "run", "lightAttack", "heavyAttack", 
-"spinAttack", "knockback", "mixAttack", "slashAttack"})
+"spinAttack", "knockback", "mixAttack", "slashAttack", "dodge"})
 --local playerAttackMesh = resources.addMesh("assets/models/Hurricane Kick.fbx", "assets/textures/playerMesh")
 print(playerMesh)
 

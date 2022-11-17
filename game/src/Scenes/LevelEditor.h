@@ -14,6 +14,10 @@ private:
     
     Entity playerID;
     ObjectHandler objectHandler;
+    Entity playerCamera;
+    Entity mayaCamera;
+
+    void readBuffer();
 
 public:
     LevelEditor();
