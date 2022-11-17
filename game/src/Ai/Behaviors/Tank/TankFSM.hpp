@@ -78,9 +78,14 @@ struct TankComponent
 	float shieldAngle				= 270.0f; //How many degrees the shiled goes around the tank
 	float runDist					= 0.0f;
 	float humpForce					= 75.0f;
+	float humpYForce				= 150.0f;
 	float humpShockwaveSpeed		= 30.0f;
 	float humpShockwaveMaxRadius	= sightRadius;
-	float deathAnimSpeed			= 1.0f;
+	float deathAnimSpeed			= 3.0f;
+	float origScaleY				= 1.0f;
+	float alertScale				= 1.5f;
+	float alertAnimSpeed			= 3.0f;
+	float alertTempYpos				= 0.0f;
 
 	//Bools
     bool isDead(){return life<=0;}
@@ -88,6 +93,8 @@ struct TankComponent
 	bool rotateLeft					= true;
 	bool canBeHit					= true;
 	bool hasRunTarget				= false;
+	bool alertAtTop					= false;
+	bool alertDone					= false;
 
 	//Timers
 	float alertTimerOrig			= 1.0f;

@@ -346,9 +346,13 @@ BTStatus TankBT::GroundHump(Entity entityID)
 			std::cout<<"Player humped!\n";
 			Script& playerScript = getTheScene()->getComponent<Script>(playerID);
 			BehaviorTree::sceneHandler->getScriptHandler()->setScriptComponentValue(playerScript , 1.0f, "pushTimer");
-			glm::vec3 dir = glm::normalize(playerTrans.position - tankTrans.position);
+			glm::vec3 to = playerTrans.position;
+			glm::normalize(to);
+			//glm::normalize(to);
+
+			glm::vec3 dir = glm::normalize(to - tankTrans.position);
 			playerRB.velocity = dir * tankComp.humpForce;
-		
+			playerRB.velocity.y += tankComp.humpYForce;
 			toRemove.push_back(i);
 		}
 		else
@@ -632,7 +636,59 @@ BTStatus TankBT::HoldShield(Entity entityID)
 
 BTStatus TankBT::playAlertAnim(Entity entityID)
 {
-	BTStatus ret = BTStatus::Failure;
+	BTStatus ret = BTStatus::Running;
+
+	TankComponent& tankComp = getTankComponent();
+	int playerID = 0;
+	getPlayerID(playerID);
+	Transform& playerTransform = getPlayerTrans(playerID);
+	Transform& tankTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+	Collider& tankCol = sceneHandler->getScene()->getComponent<Collider>(entityID);
+	float toMove = (tankCol.radius*2) * (1.0f - tankComp.origScaleY + tankComp.alertScale);
+	
+	tankTrans.rotation.y = lookAtY(tankTrans, playerTransform);
+	tankTrans.updateMatrix();
+
+	if(!tankComp.alertAtTop)
+	{
+        std::cout << tankTrans.scale.y << std::endl;
+		if(tankTrans.scale.y >= tankComp.origScaleY + tankComp.alertScale &&
+		tankTrans.position.y >= (tankComp.alertTempYpos + toMove))
+		{
+			tankComp.alertAtTop = true;
+		}
+		else
+		{
+			if (tankTrans.scale.y < tankComp.origScaleY + tankComp.alertScale)
+			{
+				tankTrans.scale.y += tankComp.alertAnimSpeed * Time::getDT();
+			}
+			if (tankTrans.position.y < (tankComp.alertTempYpos + toMove))
+			{
+				tankTrans.position.y += tankComp.alertAnimSpeed * Time::getDT();
+			}
+		}
+	}
+	else
+	{
+		if(tankTrans.scale.y <= tankComp.origScaleY)
+		{
+			tankTrans.scale.y = tankComp.origScaleY;
+			tankTrans.position.y = tankComp.alertTempYpos;
+			tankComp.alertAtTop = false;
+			tankComp.alertDone = true;
+			ret = BTStatus::Success;
+            std::cout << "succ" << std::endl;
+		}
+		else
+		{
+			if(tankTrans.scale.y > 1.0)
+			{
+				tankTrans.scale.y -= tankComp.alertAnimSpeed * Time::getDT();
+			}
+		}
+	}
+
 	return ret;
 }
 

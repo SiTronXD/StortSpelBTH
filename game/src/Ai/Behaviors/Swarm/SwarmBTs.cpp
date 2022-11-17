@@ -706,7 +706,6 @@ BTStatus SwarmBT::alerted(Entity entityID)
 			swarmComp.alertAtTop = false;
 			swarmComp.alertDone = true;
 			ret = BTStatus::Success;
-            std::cout << "succ" << std::endl;
 		}
 		else
 		{

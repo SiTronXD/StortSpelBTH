@@ -409,6 +409,7 @@ void GameScene::aiExample()
             std::string af				= "All friends alive: "+std::to_string(entityTankComponent.allFriends.size());
 			float& gravity 				= entityRigidBody.gravityMult;
 			float& humpForce 			= entityTankComponent.humpForce;
+			float& humpYForce 			= entityTankComponent.humpYForce;
 			float& humpShockwaveSpeed 	= entityTankComponent.humpShockwaveSpeed;
 			float& humpSpeed 			= entityTankComponent.groundHumpTimerOrig;
             std::string& status			= entiyFSMAgentComp.currentNode->status;   
@@ -417,6 +418,7 @@ void GameScene::aiExample()
             ImGui::Text(af.c_str());
             ImGui::SliderInt("health",                  &health,               0,      entityTankComponent.FULL_HEALTH);
             ImGui::SliderFloat("humpForce",             &humpForce,            0.0f,   200.0f);
+            ImGui::SliderFloat("humpYForce",            &humpYForce,           0.0f,   200.0f);
             ImGui::SliderFloat("humpShockwaveSpeed",    &humpShockwaveSpeed,   0.0f,   200.0f);
             ImGui::SliderFloat("humpSpeed",             &humpSpeed,            0.1f,   10.0f);
             ImGui::SliderFloat("gravity",               &gravity,              0,      10);
@@ -503,6 +505,8 @@ void GameScene::aiExample()
 		transform.scale = glm::vec3(3.0f, 3.0f, 3.0f);
 		this->setComponent<Collider>(this->tankIDs.back(), Collider::createSphere(4.0f*transform.scale.x));
 		this->aiHandler->createAIEntity(this->tankIDs.back(), "tankFSM");
+        TankComponent& tankComp = this->getComponent<TankComponent>(this->tankIDs.back());
+        tankComp.origScaleY = transform.scale.y;
 		this->setInactive(this->tankIDs.back());
 	}
 	//stnky LICH
