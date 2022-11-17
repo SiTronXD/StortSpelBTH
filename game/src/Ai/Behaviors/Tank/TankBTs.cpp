@@ -316,12 +316,19 @@ BTStatus TankBT::GroundHump(Entity entityID)
 		tankComp.groundHumpTimer -= Time::getDT();
 	}
 
+
 	int playerID = -1;
 	getPlayerID(playerID);
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	Collider& playerCol = getTheScene()->getComponent<Collider>(playerID);
+	Rigidbody& playerRB = getTheScene()->getComponent<Rigidbody>(playerID);
+	Combat& combat =  getTheScene()->getComponent<Combat>(playerID);
 	Transform& tankTrans = getTankTrans();
 	std::vector<int> toRemove;
+
+
+	rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
+
 	for(int i = 0; i < tankComp.humps.size(); i++)
 	{
 		tankComp.humps[i] += tankComp.humpShockwaveSpeed * Time::getDT();
@@ -333,17 +340,25 @@ BTStatus TankBT::GroundHump(Entity entityID)
 		{
 			toRemove.push_back(i);
 		}
-		else if(dist >= minHitDist && dist <= maxHitDist)
+		else if(tankComp.humps[i] >= minHitDist && tankComp.humps[i] <= maxHitDist && combat.grounded)
 		{
 			//PlayerHit!
 			std::cout<<"Player humped!\n";
+			Script& playerScript = getTheScene()->getComponent<Script>(playerID);
+			BehaviorTree::sceneHandler->getScriptHandler()->setScriptComponentValue(playerScript , 1.0f, "pushTimer");
+			glm::vec3 dir = glm::normalize(playerTrans.position - tankTrans.position);
+			playerRB.velocity = dir * tankComp.humpForce;
+		
 			toRemove.push_back(i);
+		}
+		else
+		{
+			int test = 0;
 		}
 	}
 	for(auto r: toRemove)
 	{
 		 tankComp.humps.erase(tankComp.humps.begin() + r);
-		 std::cout<<"Removed hump!\n";
 	}
 
 
@@ -438,7 +453,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 
 	if(!tankComp.hasRunTarget && (tankComp.chargeTimer > 0.0f || !rotationDone(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f)))
 	{
-		rotateTowards(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f);
+		rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
 		tankComp.chargeTimer -= Time::getDT();
 		return ret;
 	}
@@ -453,13 +468,16 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 
 	
 
-	if(glm::length(tankComp.runOrigin - tankTrans.position) < tankComp.runDist)
+	if(glm::length(tankComp.runOrigin - tankTrans.position) < tankComp.runDist &&
+		tankComp.runTimer > 0.0f)
 	{
+		tankComp.runTimer -= Time::getDT();
 		rb.velocity = tankComp.runDir * tankComp.cahargeSpeed;
 	}
 	else
 	{
 		tankComp.chargeTimer = tankComp.chargeTimerOrig;
+		tankComp.runTimer = tankComp.runTimerOrig;
 		tankComp.hasRunTarget = false;
 	}
 
@@ -621,12 +639,36 @@ BTStatus TankBT::playAlertAnim(Entity entityID)
 BTStatus TankBT::playDeathAnim(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
+
+	TankComponent& tankComp = getTankComponent();
+	Transform& tankTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+	if(tankTrans.scale.y <= 0.0f)
+	{
+		ret = BTStatus::Success;
+	}
+	else
+	{
+		tankTrans.rotation.y +=  1000*tankComp.deathAnimSpeed*Time::getDT();
+		tankTrans.scale.y -= tankComp.deathAnimSpeed*Time::getDT();
+	}
+
 	return ret;
 }
 
 BTStatus TankBT::die(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
+
+	int playerID = -1;
+	getPlayerID(playerID);
+	Combat& playerCombat = sceneHandler->getScene()->getComponent<Combat>(playerID);
+	if (playerCombat.health <= (playerCombat.maxHealth - 10))
+	{
+		playerCombat.health += 10;
+	}
+
+	getTheScene()->setInactive(entityID);
+
 	return ret;
 }
 

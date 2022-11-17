@@ -408,12 +408,18 @@ void GameScene::aiExample()
             std::string fis				= "Friends in sight: "+std::to_string(entityTankComponent.friendsInSight.size());
             std::string af				= "All friends alive: "+std::to_string(entityTankComponent.allFriends.size());
 			float& gravity 				= entityRigidBody.gravityMult;
+			float& humpForce 			= entityTankComponent.humpForce;
+			float& humpShockwaveSpeed 	= entityTankComponent.humpShockwaveSpeed;
+			float& humpSpeed 			= entityTankComponent.groundHumpTimerOrig;
             std::string& status			= entiyFSMAgentComp.currentNode->status;   
             ImGui::Text(status.c_str());
             ImGui::Text(fis.c_str());
             ImGui::Text(af.c_str());
-            ImGui::SliderInt("health", &health, 0, entityTankComponent.FULL_HEALTH);
-            ImGui::SliderFloat("gravity", &gravity, 0, 10);
+            ImGui::SliderInt("health",                  &health,               0,      entityTankComponent.FULL_HEALTH);
+            ImGui::SliderFloat("humpForce",             &humpForce,            0.0f,   200.0f);
+            ImGui::SliderFloat("humpShockwaveSpeed",    &humpShockwaveSpeed,   0.0f,   200.0f);
+            ImGui::SliderFloat("humpSpeed",             &humpSpeed,            0.1f,   10.0f);
+            ImGui::SliderFloat("gravity",               &gravity,              0,      10);
         };
         //TEMP             
 
@@ -572,18 +578,23 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 		{
 			this->newRoomFrame = true;
 
-			int swarmIdx = 0;
-			int lichIdx = 0;
-			int tankIdx = 0;
-			int randNumEnemies = 10;
-			int counter = 0;
+            //Num to spawn
+            int numTanks        = 1;
+            int numLich         = 0;
+            int numSwarm        = 0;
+
+			int swarmIdx        = 0;
+			int lichIdx         = 0;
+			int tankIdx         = 0;
+			int randNumEnemies  = 10;
+			int counter         = 0;
 			const std::vector<Entity>& tiles = roomHandler.getFreeTiles();
 			for (Entity tile : tiles)
 			{
 				if (randNumEnemies - counter != 0)
 				{
 					
-					if(tankIdx < 1)
+					if(tankIdx < numTanks)
 					{
 						this->setActive(this->tankIDs[tankIdx]);
 						Transform& transform = this->getComponent<Transform>(this->tankIDs[tankIdx]);
@@ -594,7 +605,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 
 						tankIdx++;
 					}
-					else if(lichIdx < 0)
+					else if(lichIdx < numLich)
 					{
 						this->setActive(this->lichIDs[lichIdx]);
 						Transform& transform = this->getComponent<Transform>(this->lichIDs[lichIdx]);
@@ -605,7 +616,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 
 						lichIdx++;
 					}
-					else if(swarmIdx < 3)
+					else if(swarmIdx < numSwarm)
 					{
 						this->setActive(this->swarmIDs[swarmIdx]);
 						Transform& transform = this->getComponent<Transform>(this->swarmIDs[swarmIdx]);
@@ -764,6 +775,15 @@ void GameScene::onCollisionEnter(Entity e1, Entity e2)
       this->getComponent<SwarmComponent>(e1).touchedFriend = true;
       this->getComponent<SwarmComponent>(e2).touchedFriend = true;
     }
+
+
+  if(e1 == this->roomHandler.getFloor() || e2 == this->roomHandler.getFloor())
+  {
+      if(e1 == playerID || e2 == playerID)
+      {
+          this->getComponent<Combat>(playerID).grounded = true;
+      }
+  }
 }
 
 void GameScene::onCollisionStay(Entity e1, Entity e2)
@@ -789,6 +809,14 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
         }
     }
 
+  if(e1 == this->roomHandler.getFloor() || e2 == this->roomHandler.getFloor())
+  {
+      if(e1 == playerID || e2 == playerID)
+      {
+          this->getComponent<Combat>(playerID).grounded = true;
+      }
+  }
+
   if (this->hasComponents<SwarmComponent>(e1) &&
       this->hasComponents<SwarmComponent>(e2))
     {
@@ -806,6 +834,14 @@ void GameScene::onCollisionExit(Entity e1, Entity e2)
       this->getComponent<SwarmComponent>(e1).touchedFriend = false;
       this->getComponent<SwarmComponent>(e2).touchedFriend = false;
     }
+
+  if(e1 == this->roomHandler.getFloor() || e2 == this->roomHandler.getFloor())
+  {
+      if(e1 == playerID || e2 == playerID)
+      {
+          this->getComponent<Combat>(playerID).grounded = false;
+      }
+  }
 }
 
 void GameScene::createPortal()

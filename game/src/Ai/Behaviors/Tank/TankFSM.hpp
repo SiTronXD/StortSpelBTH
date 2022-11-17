@@ -68,14 +68,19 @@ struct TankComponent
 	float idleSpeed					= 10.0f;
 	float shieldSpeed				= 5.0f;
 	float cahargeSpeed				= 120.0f;
-    float sightRadius				= 100.0f; // I'll can attack you
+    float sightRadius				= 150.0f; // I'll can attack you
     float peronalSpaceRadius		= 50.0f; // This is my personal space, get away!
 	float friendVisitRadius			= 15.0f; //When go this close to friends
+	float combatRotSpeed			= 50.0f;
 	float idleRotSpeed				= 40.0f;
 	float shildRotSpeed				= 30.0f;
 	float tempRotAngle				= 0.0f;//Dont touch!
 	float shieldAngle				= 270.0f; //How many degrees the shiled goes around the tank
 	float runDist					= 0.0f;
+	float humpForce					= 75.0f;
+	float humpShockwaveSpeed		= 30.0f;
+	float humpShockwaveMaxRadius	= sightRadius;
+	float deathAnimSpeed			= 1.0f;
 
 	//Bools
     bool isDead(){return life<=0;}
@@ -91,12 +96,12 @@ struct TankComponent
 	float huntTimer					= huntTimerOrig;
 	float chargeTimerOrig			= 2.5f;
 	float chargeTimer				= huntTimerOrig;
+	float runTimerOrig				= 3.0f;
+	float runTimer					= huntTimerOrig;
 	float groundHumpTimerOrig		= 3.0f;
 	float groundHumpTimer			= huntTimerOrig;
 	float friendHealTimerOrig		= 1.0f;
 	float friendHealTimer			= huntTimerOrig;
-	float humpShockwaveSpeed		= 100.0f;
-	float humpShockwaveMaxRadius	= sightRadius;
 	std::vector<float> humps;	//Represents the shockwaves radius fromt the hump attack
 
 	//Vecs
