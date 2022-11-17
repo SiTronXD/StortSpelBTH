@@ -26,10 +26,28 @@ GameSceneNetwork::~GameSceneNetwork()
 
 void GameSceneNetwork::init()
 {
+  TextureSamplerSettings samplerSettings{};
+  samplerSettings.filterMode = vk::Filter::eNearest;
+  samplerSettings.unnormalizedCoordinates = VK_TRUE;
+
+  int fontTextureId = Scene::getResourceManager()->addTexture(
+      "assets/textures/UI/testBitmapFont.png", {samplerSettings, true}
+  );
+  Scene::getUIRenderer()->setBitmapFont(
+      {"abcdefghij",
+       "klmnopqrst",
+       "uvwxyz+-.'",
+       "0123456789",
+       "!?,<>:()#^",
+       "@%        "},
+      fontTextureId,
+      glm::uvec2(16, 16)
+  );
+
   int swarm =
       this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
   int playerModel = this->getResourceManager()->addAnimations(
-      std::vector<std::string>({"assets/models/Character/CharRun.fbx"}),
+      std::vector<std::string>({"assets/models/Amogus/source/1.fbx"}),
       "assets/textures/playerMesh"
   );
 
@@ -45,7 +63,8 @@ void GameSceneNetwork::init()
   roomHandler.init(
       this,
       this->getResourceManager(),
-        15,15
+      this->getConfigValue<int>("room_size"),
+      this->getConfigValue<int>("tile_types")
   );
 
   roomHandler.generate();
@@ -91,9 +110,12 @@ void GameSceneNetwork::init()
 
 void GameSceneNetwork::start()
 {
-  this->getNetworkHandler()->createPlayers();
+  
   std::string playerName = "playerID";
   this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+
+  //spawn other players
+  this->getNetworkHandler()->createPlayers();
 
   this->setComponent<Combat>(playerID);
   this->createSystem<CombatSystem>(
@@ -106,15 +128,12 @@ void GameSceneNetwork::start()
   );
 
   this->ability = this->createEntity();
-  int knockback =
-      this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
+  int knockback = this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
   this->setComponent<MeshComponent>(this->ability, knockback);
   Transform& abilityTrans = this->getComponent<Transform>(this->ability);
   abilityTrans.position = glm::vec3(50.f, 10.f, 0.f);
   abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
-  this->setComponent<Collider>(
-      this->ability, Collider::createSphere(4.f, glm::vec3(0), true)
-  );
+  this->setComponent<Collider>(this->ability, Collider::createSphere(4.f, glm::vec3(0), true));
   this->setComponent<Abilities>(this->ability, healAbility);
 
   this->perk = this->createEntity();
@@ -123,24 +142,19 @@ void GameSceneNetwork::start()
   Transform& perkTrans = this->getComponent<Transform>(this->perk);
   perkTrans.position = glm::vec3(30.f, 5.f, 20.f);
   perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
-  this->setComponent<Collider>(
-      this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true)
-  );
+  this->setComponent<Collider>(this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
   this->setComponent<Perks>(this->perk);
   Perks& perkSetting = this->getComponent<Perks>(this->perk);
   perkSetting.multiplier = 1.f;
   perkSetting.perkType = hpUpPerk;
 
   this->perk1 = this->createEntity();
-  int perkDmg =
-      this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
+  int perkDmg = this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
   this->setComponent<MeshComponent>(this->perk1, perkDmg);
   Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
   perkTrans1.position = glm::vec3(30.f, 5.f, -20.f);
   perkTrans1.scale = glm::vec3(2.f, 2.f, 2.f);
-  this->setComponent<Collider>(
-      this->perk1, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true)
-  );
+  this->setComponent<Collider>(this->perk1, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
   this->setComponent<Perks>(this->perk1);
   Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
   perkSetting1.multiplier = 0.2f;

@@ -7,14 +7,36 @@ LobbyScene::~LobbyScene() {}
 
 void LobbyScene::init()
 {
-    //TODO : FIX THIS!
-  
-  int playerModel = this->getResourceManager()->addAnimations(
-      std::vector<std::string>({"assets/models/Character/CharRun.fbx"}), 
+  this->playerModel = this->getResourceManager()->addAnimations(
+        std::vector<std::string>(
+            {"assets/models/Character/CharIdle.fbx",
+             "assets/models/Character/CharRun.fbx",
+             "assets/models/Character/CharDodge.fbx",
+             "assets/models/Character/CharOutwardAttack.fbx",
+             "assets/models/Character/CharHeavyAttack.fbx",
+             "assets/models/Character/CharSpinAttack.fbx",
+             "assets/models/Character/CharKnockbackAttack.fbx",
+             "assets/models/Character/CharInwardAttack.fbx",
+             "assets/models/Character/CharSlashAttack.fbx"}
+        ), 
       "assets/textures/playerMesh"
   );
+    this->getResourceManager()->mapAnimations(
+        playerModel,
+        std::vector<std::string>(
+            {"idle",
+             "run",
+             "dodge",
+             "lightAttack",
+             "heavyAttack",
+             "spinAttack",
+             "knockback",
+             "mixAttack",
+             "slashAttack"}
+        )
+    );
   this->getNetworkHandler()->setMeshes("PlayerMesh", playerModel);
-
+   
   TextureSamplerSettings samplerSettings{};
   samplerSettings.filterMode = vk::Filter::eNearest;
   samplerSettings.unnormalizedCoordinates = VK_TRUE;
@@ -61,8 +83,11 @@ void LobbyScene::init()
   this->setComponent<UIArea>(this->disconnectButton, area);
 
   int mainPlayer = this->createEntity();
-  this->setComponent<MeshComponent>(mainPlayer, playerModel);  //TODO : change to player model
+  this->setComponent<MeshComponent>(mainPlayer, playerModel);
+  this->setComponent<AnimationComponent>(mainPlayer);
+  this->setAnimation(mainPlayer, "idle", true);
   this->getComponent<Transform>(mainPlayer).position = playerPositions[0];
+  this->getComponent<Transform>(mainPlayer).rotation = glm::vec3(0,180,0);
 }
 
 void LobbyScene::start() {
@@ -81,7 +106,7 @@ void LobbyScene::start() {
 
   int light = this->createEntity();
   this->setComponent<PointLight>(light);
-  this->getComponent<PointLight>(light).color = glm::vec3(255, 200, 200);
+  this->getComponent<PointLight>(light).color = glm::vec3(20, 10, 10);
   this->getComponent<Transform>(light).position = glm::vec3(0, 0, 0);
 }
 
@@ -97,12 +122,22 @@ void LobbyScene::update()
           int e = this->getNetworkHandler()->getPlayers()[i].first;
           this->players.push_back(e);
           this->getComponent<Transform>(e).position = playerPositions[i + 1];
-          this->playersNames.push_back(
-              this->getNetworkHandler()->getPlayers()[i].second
-          );
+          this->getComponent<Transform>(e).rotation = glm::vec3(0,180,0);
+          this->setComponent<MeshComponent>(e, playerModel);
+          this->setComponent<AnimationComponent>(e);
+          this->setAnimation(e, "idle", true);
+          this->playersNames.push_back(this->getNetworkHandler()->getPlayers()[i].second);
         }
     }
-
+  if (Input::isKeyPressed(Keys::A))
+  {
+      int fuckboii = this->createEntity();
+      this->setComponent<MeshComponent>(fuckboii, playerModel);
+      this->setComponent<AnimationComponent>(fuckboii);
+      this->setAnimation(fuckboii, "idle", true);
+      this->getComponent<Transform>(fuckboii).position = playerPositions[1];
+      this->getComponent<Transform>(fuckboii).rotation = glm::vec3(0, 180, 0);
+  }
   //write player names in lobby
   Scene::getUIRenderer()->setTexture(this->fontTextureId);
   this->getUIRenderer()->renderString(

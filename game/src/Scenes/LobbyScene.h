@@ -17,6 +17,7 @@ private:
   int startButton;
   int disconnectButton;
   int light;
+  int playerModel;
 
 public:
   LobbyScene();

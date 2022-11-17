@@ -54,7 +54,8 @@ void GameScene::init()
         this,
         this->getResourceManager(),
         this->getConfigValue<int>("room_size"),
-        this->getConfigValue<int>("tile_types"));
+        this->getConfigValue<int>("tile_types")
+    );
     roomHandler.generate();
     createPortal();
     // simon
@@ -123,14 +124,12 @@ void GameScene::start()
         this->getScriptHandler());
 
     this->ability = this->createEntity();
-    int knockback =
-        this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
+    int knockback = this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
     this->setComponent<MeshComponent>(this->ability, knockback);
     Transform& abilityTrans = this->getComponent<Transform>(this->ability);
     abilityTrans.position = glm::vec3(50.f, 10.f, 0.f);
     abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
-    this->setComponent<Collider>(
-        this->ability, Collider::createSphere(4.f, glm::vec3(0), true));
+    this->setComponent<Collider>(this->ability, Collider::createSphere(4.f, glm::vec3(0), true));
     this->setComponent<Abilities>(this->ability, healAbility);
     this->setComponent<PointLight>(this->ability, { glm::vec3(0.f), glm::vec3(7.f, 9.f, 5.f) });
 
@@ -139,8 +138,7 @@ void GameScene::start()
     Transform& perkTrans = this->getComponent<Transform>(this->perk);
     perkTrans.position = glm::vec3(30.f, 5.f, 20.f);
     perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
-    this->setComponent<Collider>(
-        this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
+    this->setComponent<Collider>(this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
     this->setComponent<PointLight>(this->perk, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
     this->setComponent<Perks>(this->perk);
     Perks& perkSetting = this->getComponent<Perks>(this->perk);

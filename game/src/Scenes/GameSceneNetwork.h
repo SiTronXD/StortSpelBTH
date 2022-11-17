@@ -5,7 +5,6 @@
 #include "../World Handling/Room Handler.h"
 #include "vengine.h"
 
-
 //THIS IS ON THE CLIENT SIDE!!!
 class GameSceneNetwork : public Scene
 {
@@ -55,3 +54,4 @@ private:
 
   void createPortal();
 };
+
