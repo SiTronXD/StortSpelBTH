@@ -23,6 +23,12 @@ void RoomTesting::init()
 	this->getComponent<Transform>(cam).position.y = 400.f;
 	this->setComponent<DirectionalLight>(cam,
 		{glm::vec3(0.f, -1.f, 0.f), glm::vec3(1.f)});
+	DirectionalLight& light = this->getComponent<DirectionalLight>(cam);
+	light.shadowMapFrustumHalfWidth = 200.0f;
+	light.shadowMapFrustumHalfHeight = 200.0f;
+	light.shadowMapFrustumDepth = 800.0f;
+	light.shadowMapMinBias = 0.0001f;
+	light.shadowMapAngleBias = 0.001f;
 
 
 	int playerMesh = this->getResourceManager()->addMesh("assets/models/Character/CharRun.fbx");
