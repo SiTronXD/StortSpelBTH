@@ -103,7 +103,7 @@ void GameSceneNetwork::start()
       this->playerID,
       this->getPhysicsEngine(),
       this->getUIRenderer(),
-      this->getDebugRenderer()
+      this->getScriptHandler()
   );
 
   this->ability = this->createEntity();
@@ -131,6 +131,7 @@ void GameSceneNetwork::start()
   Perks& perkSetting = this->getComponent<Perks>(this->perk);
   perkSetting.multiplier = 1.f;
   perkSetting.perkType = hpUpPerk;
+  this->setScriptComponent(this->perk, "scripts/spin.lua");
 
   this->perk1 = this->createEntity();
   int perkDmg =
@@ -146,6 +147,7 @@ void GameSceneNetwork::start()
   Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
   perkSetting1.multiplier = 0.2f;
   perkSetting1.perkType = hpUpPerk;
+  this->setScriptComponent(this->perk1, "scripts/spin.lua");
 
   this->perk2 = this->createEntity();
   int perkAtkSpeed =
@@ -161,6 +163,7 @@ void GameSceneNetwork::start()
   Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
   perkSetting2.multiplier = 1.f;
   perkSetting2.perkType = attackSpeedUpPerk;
+  this->setScriptComponent(this->perk2, "scripts/spin.lua");
 
   // Ai management
   this->aiHandler = this->getAIHandler();

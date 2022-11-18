@@ -22,14 +22,18 @@ private:
   Entity perk;
   Entity perk1;
   Entity perk2;
+  Entity perk3;
+  Entity perk4;
   Entity ability;
 
   int numRoomsCleared;
   bool newRoomFrame;
 
 
+  int perkMeshes[5];
+
   uint32_t abilityTextures[3];
-  uint32_t perkTextures[4];
+  uint32_t perkTextures[6];
   uint32_t fontTextureIndex;
   std::vector<int> swarmIDs;
   std::vector<int> lichIDs;

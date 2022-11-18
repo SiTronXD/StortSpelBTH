@@ -633,6 +633,7 @@ BTStatus SwarmBT::die(Entity entityID)
 		perkRb.velocity = glm::normalize(spawnDir) * 20.f;
 		sceneHandler->getScene()->setComponent<Perks>(perkEnt, perk);
 		sceneHandler->getScene()->setComponent<PointLight>(perkEnt, glm::vec3(5.f, 7.f, 9.f));
+		sceneHandler->getScene()->setScriptComponent(perkEnt, "scripts/spin.lua");
 	}
 	else if (spawnLoot == 2)
 	{
