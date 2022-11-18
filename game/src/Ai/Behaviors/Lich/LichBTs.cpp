@@ -78,6 +78,13 @@ BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
 
 BTStatus LichBT::hasMana(Entity entityID)
 {
+    BTStatus ret = BTStatus::Failure;
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    if(lichComp.mana > 0)
+    {
+        ret = BTStatus::Success;
+    }
+
     return BTStatus::Failure;
 }
 
