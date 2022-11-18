@@ -39,7 +39,7 @@ void TheServerGame::update(float dt)
   //    this->getComponent<Transform>(this->getEnemies(i)).rotation.y +=
   //        dt * 50 * (i + 1);
   //  }
-  aiHandler->update();
+  aiHandler->update(dt);
   //Transform& t = this->getComponent<Transform>(this->enemyIDs[0]);
   //glm::vec3 enemyToPlayer = pt.position - t.position;
   //Ray rayToPlayer{t.position, enemyToPlayer};
@@ -69,7 +69,7 @@ void TheServerGame::aiExample()
               entityId
           );
       auto& entityAiCombatComponent =
-          this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId);
+          this->getSceneHandler()->getScene()->getComponent<AiCombatSwarm>(entityId);
       auto& entiyFSMAgentComp =
           this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(
               entityId
@@ -153,7 +153,7 @@ void TheServerGame::aiExample()
             entityId
         );
     auto& entityAiCombatComponent =
-        this->getSceneHandler()->getScene()->getComponent<AiCombat>(entityId);
+        this->getSceneHandler()->getScene()->getComponent<AiCombatSwarm>(entityId);
     auto& entiyFSMAgentComp =
         this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(
             entityId
@@ -217,7 +217,7 @@ void TheServerGame::aiExample()
       for (size_t i = 0; i < group_size; i++)
         {
           this->enemyIDs.push_back(this->createEnemy(1));
-          this->setComponent<AiCombat>(this->enemyIDs.back());
+          this->setComponent<AiCombatSwarm>(this->enemyIDs.back());
           this->setComponent<Collider>(
               this->enemyIDs.back(), Collider::createSphere(4.0f)
           );

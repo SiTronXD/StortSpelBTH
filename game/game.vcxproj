@@ -272,6 +272,10 @@ SET ERRORLEVEL=0</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Ai\Behaviors\HelperFuncs.cpp" />
+    <ClCompile Include="src\Ai\Behaviors\Lich\LichBTs.cpp" />
+    <ClCompile Include="src\Ai\Behaviors\Lich\LichFSM.cpp" />
+    <ClCompile Include="src\Ai\Behaviors\Tank\TankBTs.cpp" />
+    <ClCompile Include="src\Ai\Behaviors\Tank\TankFSM.cpp" />
     <ClCompile Include="src\Scenes\GameOverScene.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmBTs.cpp" />
@@ -292,6 +296,13 @@ SET ERRORLEVEL=0</Command>
     <ClInclude Include="Components\Movement.h" />
     <ClInclude Include="src\Components\Abilities.h" />
     <ClInclude Include="src\Ai\Behaviors\HelperFuncs.hpp" />
+    <ClInclude Include="src\Ai\Behaviors\Lich\LichBTs.hpp" />
+    <ClInclude Include="src\Ai\Behaviors\Lich\LichFSM.hpp" />
+    <ClInclude Include="src\Ai\Behaviors\Tank\TankBTs.hpp" />
+    <ClInclude Include="src\Ai\Behaviors\Tank\TankFSM.hpp" />
+    <ClInclude Include="src\Components\AiCombatLich.hpp" />
+    <ClInclude Include="src\Components\AiCombatSwarm.h" />
+    <ClInclude Include="src\Components\AICombatTank.hpp" />
     <ClInclude Include="src\Components\Perks.h" />
     <ClInclude Include="src\Scenes\GameOverScene.h" />
     <ClInclude Include="src\Ai\Behaviors\Swarm\SwarmBTs.hpp" />
