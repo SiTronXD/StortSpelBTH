@@ -7,6 +7,7 @@
 #define getPlayerCombat(playerID) BehaviorTree::sceneHandler->getScene()->getComponent<Combat>(playerID) 
 #define getTankTrans() BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID) 
 #define getTheScene() BehaviorTree::sceneHandler->getScene()
+#define get_dt() BehaviorTree::sceneHandler->getAIHandler()->getDeltaTime()
 
 void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 {
@@ -28,11 +29,11 @@ void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 
 	if(tankComp.rotateLeft && angle_between >= precision)
 	{
-		tankTrans.rotation.y += tankComp.idleRotSpeed * Time::getDT();
+		tankTrans.rotation.y += tankComp.idleRotSpeed * get_dt();
 	}
 	else if(angle_between >= precision)
 	{
-		tankTrans.rotation.y -= tankComp.idleRotSpeed * Time::getDT();
+		tankTrans.rotation.y -= tankComp.idleRotSpeed * get_dt();
 	}
 
 	//Check if we rotated in correct direction
@@ -72,11 +73,11 @@ void TankBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 
 	if(tankComp.rotateLeft && angle_between >= precision)
 	{
-		tankTrans.rotation.y += rotSpeed * Time::getDT();
+		tankTrans.rotation.y += rotSpeed * get_dt();
 	}
 	else if(angle_between >= precision)
 	{
-		tankTrans.rotation.y -= rotSpeed * Time::getDT();
+		tankTrans.rotation.y -= rotSpeed * get_dt();
 	}
 
 	//Check if we rotated in correct direction
@@ -316,7 +317,7 @@ BTStatus TankBT::GroundHump(Entity entityID)
 	}
 	else
 	{
-		tankComp.groundHumpTimer -= Time::getDT();
+		tankComp.groundHumpTimer -= get_dt();
 	}
 
 	int playerID = -1;
@@ -335,7 +336,7 @@ BTStatus TankBT::GroundHump(Entity entityID)
 
 	for(int i = 0; i < tankComp.humps.size(); i++)
 	{
-		tankComp.humps[i] += tankComp.humpShockwaveSpeed * Time::getDT();
+		tankComp.humps[i] += tankComp.humpShockwaveSpeed * get_dt();
 		float dist = glm::length(playerTrans.position - tankTrans.position);
 		float minHitDist = dist - playerCol.radius;
 		float maxHitDist = dist + playerCol.radius;
@@ -465,7 +466,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	if(!tankComp.hasRunTarget && (tankComp.chargeTimer > 0.0f || !rotationDone(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f)))
 	{
 		rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
-		tankComp.chargeTimer -= Time::getDT();
+		tankComp.chargeTimer -= get_dt();
 		return ret;
 	}
 	if(!tankComp.hasRunTarget)
@@ -483,7 +484,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	if(glm::length(tankComp.runOrigin - tankTrans.position) < tankComp.runDist &&
 		tankComp.runTimer > 0.0f)
 	{
-		tankComp.runTimer -= Time::getDT();
+		tankComp.runTimer -= get_dt();
 		rb.velocity = tankComp.runDir * tankComp.cahargeSpeed;
 	}
 	else
@@ -615,7 +616,7 @@ BTStatus TankBT::HoldShield(Entity entityID)
 	}
 	else
 	{
-		tankComp.friendHealTimer -= Time::getDT();
+		tankComp.friendHealTimer -= get_dt();
 	}
 	
 
@@ -671,11 +672,11 @@ BTStatus TankBT::playAlertAnim(Entity entityID)
 		{
 			if (tankTrans.scale.y < tankComp.origScaleY + tankComp.alertScale)
 			{
-				tankTrans.scale.y += tankComp.alertAnimSpeed * Time::getDT();
+				tankTrans.scale.y += tankComp.alertAnimSpeed * get_dt();
 			}
 			if (tankTrans.position.y < (tankComp.alertTempYpos + toMove))
 			{
-				tankTrans.position.y += tankComp.alertAnimSpeed * Time::getDT();
+				tankTrans.position.y += tankComp.alertAnimSpeed * get_dt();
 			}
 		}
 	}
@@ -694,7 +695,7 @@ BTStatus TankBT::playAlertAnim(Entity entityID)
 		{
 			if(tankTrans.scale.y > 1.0)
 			{
-				tankTrans.scale.y -= tankComp.alertAnimSpeed * Time::getDT();
+				tankTrans.scale.y -= tankComp.alertAnimSpeed * get_dt();
 			}
 		}
 	}
@@ -714,8 +715,8 @@ BTStatus TankBT::playDeathAnim(Entity entityID)
 	}
 	else
 	{
-		tankTrans.rotation.y +=  1000*tankComp.deathAnimSpeed*Time::getDT();
-		tankTrans.scale.y -= tankComp.deathAnimSpeed*Time::getDT();
+		tankTrans.rotation.y +=  1000*tankComp.deathAnimSpeed*get_dt();
+		tankTrans.scale.y -= tankComp.deathAnimSpeed*get_dt();
 	}
 
 	return ret;

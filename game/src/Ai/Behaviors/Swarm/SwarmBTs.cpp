@@ -6,6 +6,8 @@
 #include "../../../Components/Abilities.h"
 #include <limits>
 
+#define get_dt() BehaviorTree::sceneHandler->getAIHandler()->getDeltaTime()
+
 int SwarmGroup::getNewId = 0;
 int SwarmBT::perkMeshes[] = { 0, 0, 0 };
 int SwarmBT::abilityMeshes[] = { 0, 0 };
@@ -128,7 +130,7 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 		}
 		else
 		{
-			swarmComp.lonelyTimer += Time::getDT();
+			swarmComp.lonelyTimer += get_dt();
 		}
 		swarmRB.velocity = swarmComp.lonelyDir * swarmComp.idleSpeed;
 
@@ -280,11 +282,11 @@ BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 
 	 if(rand()%2==0)
 	 {
-		 thisTransform.rotation.y += 100 * thisSwarmComp.escapeAnimSpeed * Time::getDT();
+		 thisTransform.rotation.y += 100 * thisSwarmComp.escapeAnimSpeed * get_dt();
 	 }
 	 else
 	 {
-		 thisTransform.rotation.y -= 100 * thisSwarmComp.escapeAnimSpeed * Time::getDT();
+		 thisTransform.rotation.y -= 100 * thisSwarmComp.escapeAnimSpeed * get_dt();
 	 }
 
 	//TODO BTStatus: failure not returned.
@@ -549,16 +551,16 @@ BTStatus SwarmBT::attack(Entity entityID)
 
 	if(!swarmComp.grounded && swarmComp.groundTimer > 0.0f)
 	{
-		swarmComp.groundTimer -= Time::getDT();
+		swarmComp.groundTimer -= get_dt();
 	}
 
 
 	if(swarmComp.grounded && combat.timer > 0.0f)
 	{
-		combat.timer -= Time::getDT();
+		combat.timer -= get_dt();
 		if(thisTransform.scale.y > 0.5f)
 		{
-			thisTransform.scale.y -= swarmComp.chargeAnimSpeed * Time::getDT();
+			thisTransform.scale.y -= swarmComp.chargeAnimSpeed * get_dt();
 		}
 	}
 	else if(!swarmComp.inAttack && !swarmComp.touchedPlayer && swarmComp.grounded)
@@ -595,8 +597,8 @@ BTStatus SwarmBT::playDeathAnim(Entity entityID)
 	}
 	else
 	{
-		swarmTrans.rotation.y +=  1000*swarmComp.deathAnimSpeed*Time::getDT();
-		swarmTrans.scale.y -= swarmComp.deathAnimSpeed*Time::getDT();
+		swarmTrans.rotation.y +=  1000*swarmComp.deathAnimSpeed*get_dt();
+		swarmTrans.scale.y -= swarmComp.deathAnimSpeed*get_dt();
 	}
 
 	return ret;
@@ -689,11 +691,11 @@ BTStatus SwarmBT::alerted(Entity entityID)
 		{
 			if (swarmTrans.scale.y < swarmComp.alertScale)
 			{
-				swarmTrans.scale.y += swarmComp.alertAnimSpeed * Time::getDT();
+				swarmTrans.scale.y += swarmComp.alertAnimSpeed * get_dt();
 			}
 			if (swarmTrans.position.y < (swarmComp.alertTempYpos + toMove))
 			{
-				swarmTrans.position.y += swarmComp.alertAnimSpeed * Time::getDT();
+				swarmTrans.position.y += swarmComp.alertAnimSpeed * get_dt();
 			}
 		}
 	}
@@ -711,7 +713,7 @@ BTStatus SwarmBT::alerted(Entity entityID)
 		{
 			if(swarmTrans.scale.y > 1.0)
 			{
-				swarmTrans.scale.y -= swarmComp.alertAnimSpeed * Time::getDT();
+				swarmTrans.scale.y -= swarmComp.alertAnimSpeed * get_dt();
 			}
 		}
 	}

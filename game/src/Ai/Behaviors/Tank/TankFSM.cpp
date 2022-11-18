@@ -7,6 +7,7 @@
 #define getTankTrans() FSM::sceneHandler->getScene()->getComponent<Transform>(entityID) 
 #define falseIfDead() TankComponent& tankComp_____macro = getTankComponent();if(tankComp_____macro.isDead()) {return false;}if(!getTheScene()->isActive(entityID)){return false;}
 #define getTheScene() FSM::sceneHandler->getScene()
+#define get_dt() FSM::sceneHandler->getAIHandler()->getDeltaTime()
 
 void TankFSM::resetTimers(Entity entityID)
 {
@@ -137,7 +138,8 @@ bool TankFSM::idleToAler(Entity entityID)
 {
     falseIfDead();
     bool ret = false;
-
+    
+        
     TankComponent& tankComp = getTankComponent();
 
     updateFriendsInSight(entityID);
@@ -182,7 +184,7 @@ bool TankFSM::alertToCombat(Entity entityID)
     }
     else
     {
-        tankComp.alertTimer -= Time::getDT();
+        tankComp.alertTimer -= get_dt();
     }
 
 
@@ -218,7 +220,7 @@ bool TankFSM::alertToShield(Entity entityID)
     }
     else
     {
-        tankComp.alertTimer -= Time::getDT();
+        tankComp.alertTimer -= get_dt();
     }*/
     return ret;
 }
@@ -236,7 +238,7 @@ bool TankFSM::combatToIdel(Entity entityID)
     }
     else
     {
-        tankComp.huntTimer -= Time::getDT();
+        tankComp.huntTimer -= get_dt();
     }
 
 

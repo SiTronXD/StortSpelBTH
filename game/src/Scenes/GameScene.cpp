@@ -180,7 +180,7 @@ void GameScene::start()
 
 void GameScene::update()
 {
-    this->aiHandler->update();
+    this->aiHandler->update(Time::getDT());
 
   if (allDead() && this->newRoomFrame)
     {
