@@ -65,6 +65,26 @@ void NetworkGameScene::update(float dt)
           //send event to spawn portal
       }
     }
+  sf::Packet &packet = ((NetworkSceneHandler*)this->getSceneHandler())->getCallFromClient();
+  while (!packet.endOfPacket())
+  {
+      int gameEvent;
+      packet >> gameEvent;
+      if (gameEvent == GameEvents::HitMonster)
+        {
+          int monsterID, damage;
+          packet >> monsterID >> damage;
+          SwarmComponent& enemy = this->getComponent<SwarmComponent>(monsterID);
+          std::cout << "enemy got hit enemy hp: " << enemy.life << " - " << damage << " = ";
+          enemy.life -= damage;
+          std::cout << enemy.life << std::endl;
+          Rigidbody& enemyRB = this->getComponent<Rigidbody>(monsterID);
+          Transform& enemyTrans = this->getComponent<Transform>(monsterID);
+		  //glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+		  //enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * combat.knockbackArr[combat.activeAttack];
+		  //this->hitEnemies.emplace_back(hitID[i]);
+        }
+  }
 }
 
 void NetworkGameScene::aiExample()

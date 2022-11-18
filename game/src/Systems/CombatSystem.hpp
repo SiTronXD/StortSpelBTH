@@ -194,11 +194,52 @@ public:
 			Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
 			playerTrans.updateMatrix();
 			std::vector<int> hitID = physics->testContact(this->scene->getComponent<Collider>(this->swordID),
-				playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
+			playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
 
-			for (size_t i = 0; i < hitID.size(); i++)
-			{
-				if (scene->hasComponents<SwarmComponent>(hitID[i]))
+			//check for multiPlayer
+            if (scene->getNetworkHandler()->getClient()->hasStarted())
+            {
+                for (size_t i = 0; i < hitID.size(); i++)//gå igenom alla enemies
+				{
+                    bool done = false;
+					for (int i = 0; i < scene->getNetworkHandler()->getMonsters().size() && !done; i++)
+					{
+					    if (hitID[i] == scene->getNetworkHandler()->getMonsters()[i].first)
+					    {
+                            done = true;
+							for (size_t j = 0; j < this->hitEnemies.size(); j++)
+							{
+							    if (this->hitEnemies[j] == hitID[i])
+							    {
+							        this->canHit = false;
+							    }
+							    else
+							    {
+							        this->canHit = true;
+							    }
+							}
+							if (canHit)
+							{
+                                std::cout << "sent hit" << std::endl;
+								scene->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent({
+									GameEvents::HitMonster,
+									2,
+									scene->getNetworkHandler()->getMonsters()[i].second,
+									(int)combat.dmgArr[combat.activeAttack]
+									})
+								);
+								this->hitEnemies.emplace_back(hitID[i]);
+							}
+						}
+					}
+				}
+			}
+            else
+            {
+				for (size_t i = 0; i < hitID.size(); i++)
+				{
+				//check for singlePlayer
+				if (scene->hasComponents<SwarmComponent>(hitID[i]))//kolla så det är en enemy
 				{
 					for (size_t j = 0; j < this->hitEnemies.size(); j++)
 					{
@@ -222,7 +263,9 @@ public:
 						this->hitEnemies.emplace_back(hitID[i]);
 					}
 				}
-			}
+				}
+            }
+			
 		}
 	}
 
