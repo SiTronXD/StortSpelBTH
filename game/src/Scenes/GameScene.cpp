@@ -585,7 +585,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
             //Num to spawn
             int numTanks        = 1;
             int numLich         = 0;
-            int numSwarm        = 6;
+            int numSwarm        = 3;
 
 			int swarmIdx        = 0;
 			int lichIdx         = 0;

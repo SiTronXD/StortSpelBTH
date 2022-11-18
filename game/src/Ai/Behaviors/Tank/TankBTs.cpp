@@ -310,7 +310,7 @@ BTStatus TankBT::GroundHump(Entity entityID)
 
 	if(tankComp.groundHumpTimer <= 0)
 	{
-		std::cout<<"Hump!\n";
+		std::cout<<"Stomp!\n";
 		tankComp.humps.push_back(0.0f);
 		tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
 	}
@@ -347,7 +347,6 @@ BTStatus TankBT::GroundHump(Entity entityID)
 		else if(tankComp.humps[i] >= minHitDist && tankComp.humps[i] <= maxHitDist && playerGrounded)
 		{
 			//PlayerHit!
-			std::cout<<"Player humped!\n";
 			Script& playerScript = getTheScene()->getComponent<Script>(playerID);
 			BehaviorTree::sceneHandler->getScriptHandler()->setScriptComponentValue(playerScript , 1.0f, "pushTimer");
 			glm::vec3 to = playerTrans.position;
