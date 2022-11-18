@@ -81,19 +81,20 @@ void GameScene::init()
     this->hpBarTextureID =
         resourceMng->addTexture("assets/textures/UI/hpBar.png");
 
-  // Temporary light
-  Entity directionalLightEntity = this->createEntity();
-  this->setComponent<DirectionalLight>(
-      directionalLightEntity, 
-      glm::vec3(-1.0f, -1.0f, -1.0f), 
-      glm::vec3(0.6f)
-  );
-  DirectionalLight& dirLight = this->getComponent<DirectionalLight>(directionalLightEntity);
-  dirLight.shadowMapFrustumHalfWidth = 200.0f;
-  dirLight.shadowMapFrustumHalfHeight = 200.0f;
-  dirLight.shadowMapFrustumDepth = 800.0f;
-  dirLight.shadowMapMinBias = 0.0001f;
-  dirLight.shadowMapAngleBias = 0.001f;
+    // Temporary light
+    this->dirLightEntity = this->createEntity();
+    this->setComponent<DirectionalLight>(
+        this->dirLightEntity,
+        glm::vec3(-1.0f, -1.0f, -1.0f),
+        glm::vec3(0.6f)
+        );
+    DirectionalLight& dirLight = this->getComponent<DirectionalLight>(this->dirLightEntity);
+    dirLight.cascadeSizes[0] = 0.034f;
+    dirLight.cascadeSizes[1] = 0.092f;
+    dirLight.cascadeSizes[2] = 1.0f;
+    dirLight.cascadeDepthScale = 24.352f;
+    dirLight.shadowMapMinBias = 0.00001f;
+    dirLight.shadowMapAngleBias = 0.0004f;
 
     this->createSystem<HealthBarSystem>(
         this->hpBarBackgroundTextureID,
@@ -293,6 +294,17 @@ void GameScene::update()
     );
 
 #ifdef _CONSOLE
+
+    // Cascades
+   /*DirectionalLight& dirLight = this->getComponent<DirectionalLight>(this->dirLightEntity);
+   ImGui::Begin("Shadows");
+   ImGui::SliderFloat("Cascade size 0", &dirLight.cascadeSizes[0], 0.0f, 1.0f);
+   ImGui::SliderFloat("Cascade size 1", &dirLight.cascadeSizes[1], 0.0f, 1.0f);
+   ImGui::SliderFloat("Cascade size 2", &dirLight.cascadeSizes[2], 0.0f, 1.0f);
+   ImGui::SliderFloat("Cascade depth", &dirLight.cascadeDepthScale, 1.0f, 50.0f);
+   ImGui::Checkbox("Visualize cascades", &dirLight.cascadeVisualization);
+   ImGui::SliderFloat("Shadow map angle bias", &dirLight.shadowMapAngleBias, 0.0f, 0.005f);
+   ImGui::End();*/
 
     static bool renderDebug = false;
     if (ImGui::Begin("Debug"))

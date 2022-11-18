@@ -26,6 +26,8 @@ private:
   Entity perk4;
   Entity ability;
 
+  Entity dirLightEntity;
+
   int numRoomsCleared;
   bool newRoomFrame;
 
