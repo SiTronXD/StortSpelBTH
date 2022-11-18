@@ -56,6 +56,7 @@ private:
 		int connectingIndex[4];
 
 		bool finished;
+		Entity finishedRock;
 	};
 
 	// Scene

@@ -88,16 +88,19 @@ void RoomGen::generate(bool* doors)
 			iBranch += fBranch * (float)BRANCH_DIST;
 		}
 	}
-	//getType(gridMid) = Tile2::TwoXOne;
-	//getType(gridMid + glm::ivec2(1, 0)) = Tile2::TwoXOne;
-	//tryPlaceTwoXTwo(gridMid + glm::ivec2(1));
-	//tryPlaceTwoXTwo(gridMid + glm::ivec2(2, 0));
 
-	this->findMinMax();
-	this->set2x2();
-	this->setExits(doors);
-	this->setBorders();
-	this->finalize();
+	this->findMinMax(); // Find minMax tiles & middle
+
+	// Reserve middle tiles for big rock
+	getType(middle) = Tile2::Reserved;
+	getType(middle + glm::ivec2(1, 0)) = Tile2::Reserved;
+	getType(middle + glm::ivec2(0, 1)) = Tile2::Reserved;
+	getType(middle + glm::ivec2(1, 1)) = Tile2::Reserved;
+
+	this->setBigTiles();	// Select spots for 1x2/2x1/2x2
+	this->setExits(doors);	// Set doors and make room for them
+	this->setBorders();		// Surround the room with borders
+	this->finalize();		// Finalize, fill Tile vectors and offset room to origo
 }
 
 void RoomGen::findMinMax()
@@ -137,7 +140,7 @@ void RoomGen::findMinMax()
 	size.y = minMaxPos[UPPER_P].y - minMaxPos[LOWER_P].y;
 }
 
-void RoomGen::set2x2()
+void RoomGen::setBigTiles()
 {
 	//for (auto& pos : branchEnds)
 	//{
@@ -363,14 +366,14 @@ void RoomGen::finalize()
 		exitTilesPos[i] -= middle;
 }
 
-void RoomGen::drawCircle(const glm::ivec2& center, uint32_t RADIUS)
+void RoomGen::drawCircle(const glm::ivec2& center, uint32_t radius)
 {
-	const glm::ivec2 start = glm::ivec2(center) - glm::ivec2(RADIUS);
+	const glm::ivec2 start = glm::ivec2(center) - glm::ivec2(radius);
 
 	glm::ivec2 currentPoint{};
-	for (currentPoint.x = start.x; currentPoint.x < start.x + (int)RADIUS * 2 + 1; currentPoint.x++)
+	for (currentPoint.x = start.x; currentPoint.x < start.x + (int)radius * 2 + 1; currentPoint.x++)
 	{
-		for (currentPoint.y = start.y; currentPoint.y < start.y + (int)RADIUS * 2 + 1; currentPoint.y++)
+		for (currentPoint.y = start.y; currentPoint.y < start.y + (int)radius * 2 + 1; currentPoint.y++)
 		{
 			if (this->isValid(currentPoint))
 			{
@@ -380,7 +383,7 @@ void RoomGen::drawCircle(const glm::ivec2& center, uint32_t RADIUS)
 					// check if tile is within RADIUS to center
 					// glm::dot only accepts floating point numbers
 					const glm::vec2 vec(currentPoint - center);
-					if (glm::dot(vec, vec) <= ((float)RADIUS + 0.5f) * ((float)RADIUS + 0.5f))
+					if (glm::dot(vec, vec) <= ((float)radius + 0.5f) * ((float)radius + 0.5f))
 					{
 						ref = Tile2::Type::OneXOne;
 					}
@@ -432,6 +435,7 @@ bool RoomGen::canPlaceTwoXTwo(const glm::ivec2& pos)
 		return false;
 	}
 
+	// can remove ?
 	if (getType(pos) != Tile2::OneXOne || getType(pos + glm::ivec2(1, 0)) != Tile2::OneXOne ||
 		getType(pos + glm::ivec2(0, 1)) != Tile2::OneXOne || getType(pos + glm::ivec2(1, 1)) != Tile2::OneXOne)
 	{
@@ -482,7 +486,7 @@ bool RoomGen::tryPlaceOneXTwo(const glm::ivec2& pos, bool vertical)
 
 	const glm::ivec2 adjacent(pos.x + 1 * !vertical, pos.y + 1 * vertical);
 
-	getType(pos)		    = vertical ? Tile2::OneXTwo : Tile2::TwoXOne;
+	getType(pos)	  = vertical ? Tile2::OneXTwo : Tile2::TwoXOne;
 	getType(adjacent) = vertical ? Tile2::OneXTwo : Tile2::TwoXOne;
 
 	return true;
@@ -496,6 +500,11 @@ const glm::ivec2* RoomGen::getMinMax() const
 const glm::ivec2* RoomGen::getExits() const
 {
 	return exitTilesPos;
+}
+
+const glm::ivec2& RoomGen::getMiddle() const
+{
+	return middle;
 }
 
 inline Tile2::Type& RoomGen::getType(const glm::ivec2& pos)

@@ -68,12 +68,12 @@ private:
     glm::ivec2 middle;
     glm::ivec2 size;
 
-    void drawCircle(const glm::ivec2& center, uint32_t RADIUS);
+    void drawCircle(const glm::ivec2& center, uint32_t radius);
 
     void setBorders();
     void findMinMax();
     void setExits(bool* doors);
-    void set2x2();
+    void setBigTiles();
     void finalize();
 
     // Helpers
@@ -97,7 +97,8 @@ public:
 
     const glm::ivec2* getMinMax() const;
     const glm::ivec2* getExits() const;
-    
+    const glm::ivec2& getMiddle() const;
+
     uint32_t getNumMainTiles() const;
     uint32_t getNumBigTiles() const;
     uint32_t getNumBorders() const;

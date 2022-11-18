@@ -12,19 +12,13 @@ const uint32_t RoomHandler::NUM_TWO_X_TWO = 1;
 RoomHandler::RoomHandler()
 	:scene(nullptr), hasDoor{false, false, false, false},
 	activeIndex(0), nextIndex(-1), floor(-1),
-	doorMeshID(0), tileFlorMeshId(0)
+	doorMeshID(0), tileFlorMeshId(0), innerBorderMesh(0)
 {
 }
 
 RoomHandler::~RoomHandler()
 {
 }
-
-/*
- No path borders?
- Wrong pos for 2x2 ? 
-
-*/
 
 void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize, int tileTypes)
 {
@@ -250,7 +244,7 @@ void RoomHandler::generate2()
 		}
 
 		const uint32_t numSmall = this->roomGen.getNumMainTiles();
-		curRoom.mainTiles.resize(size_t(numSmall));
+		curRoom.mainTiles.resize(size_t(numSmall + (i == 0 ? 4ull : 0ull)));
 		for (uint32_t j = 0; j < numSmall; j++)
 		{
 			curRoom.mainTiles[j] = createFloorEntity(this->roomGen.getMainTile(j).position, true);
@@ -305,6 +299,22 @@ void RoomHandler::generate2()
 			this->scene->getComponent<MeshComponent>(curRoom.innerBorders[j]).meshID = innerBorderMesh;
 		}
 
+		if (i != 0)
+		{
+			Entity rock = this->scene->createEntity();
+			this->scene->getComponent<Transform>(rock).position = glm::vec3(TILE_WIDTH * 0.5f, 0.f, TILE_WIDTH * 0.5f);
+			this->scene->getComponent<Transform>(rock).scale *= 4.f;
+			this->scene->setComponent<MeshComponent>(rock, (int)borderMeshIds[0]);
+			curRoom.finishedRock = rock;
+		}
+		else
+		{
+			curRoom.objects.emplace_back(createFloorEntity(glm::vec2(0.f), true));
+			curRoom.objects.emplace_back(createFloorEntity(glm::vec2(1.f), true));
+			curRoom.objects.emplace_back(createFloorEntity(glm::vec2(1.f, 0.f), true));
+			curRoom.objects.emplace_back(createFloorEntity(glm::vec2(0.f, 1.f), true));
+		}
+
 		this->roomGen.clear();
 	}
 
@@ -327,6 +337,50 @@ void RoomHandler::generate2()
 	this->createColliders();
 
 	this->roomLayout.clear();
+	this->exitPairs.clear();
+	this->roomExitPoints.clear();
+	this->verticalConnection.clear();
+
+#ifdef _CONSOLE
+	if (this->showAllRooms) 
+	{ 
+		for (int i = 0; i < numTotRooms; i++)
+		{
+			this->activateRoom(i);
+		}
+		this->showPaths(true);
+	}
+	else
+	{
+		for (int i = 0; i < numTotRooms; i++)
+		{
+			if (i != this->activeIndex) 
+			{ 
+				this->deactivateRoom(i); 
+			}
+		}
+		this->showPaths(true);
+	}
+#else
+	for (int i = 0; i < numTotRooms; i++)
+	{
+		if (i != this->activeIndex)
+		{
+			this->deactivateRoom(i);
+		}
+	}
+	this->showPaths(true);
+
+#endif // _CONSOLE
+
+	this->rooms[this->activeIndex].finished = true;
+	for (int i = 0; i < 4; i++)
+	{
+		if (this->rooms[this->activeIndex].doors[i] != -1)
+		{
+			this->scene->setScriptComponent(this->rooms[this->activeIndex].doors[i], "scripts/opendoor.lua");
+		}
+	}
 }
 
 void RoomHandler::moveRoom(int roomIndex, glm::vec3 offset)
@@ -334,7 +388,8 @@ void RoomHandler::moveRoom(int roomIndex, glm::vec3 offset)
 	Room& curRoom = rooms[roomIndex];
 
 	curRoom.position += offset;
-			
+	this->scene->getComponent<Transform>(curRoom.finishedRock).position += offset;
+
 	for (int i = 0; i < 4; i++)
 	{
 		roomExitPoints[roomIndex].positions[i] += offset;
@@ -594,10 +649,11 @@ void RoomHandler::generatePathways()
 
 		const int ThiccNessMonster = 3;
 		for (int l = 1; l <= ThiccNessMonster; l++) // ThiccNess off borders around paths
+		{
 			surroundPaths(startIndex, endIndex, p0, p1, (float)l, this->verticalConnection[i], l == 1);
+		}
 	}
 
-	printf("pathIds: %zd, inner: %zd\n", pathIds.size(), innerBorderPaths.size());
 }
 
 void RoomHandler::surroundPaths(size_t start, size_t end, glm::vec3 p0, glm::vec3 p1, float distFactor, bool vertical, bool colliders)
@@ -1052,6 +1108,7 @@ void RoomHandler::reset()
 		}
 		room.position = glm::vec3(0.f);
 		room.finished = false;
+		this->scene->removeEntity(room.finishedRock);
 	}																				  
 
 	for (const Entity& entity : this->pathIds)
@@ -1137,6 +1194,10 @@ void RoomHandler::activateRoom(int index)
 	{
 		this->scene->setActive(entity);
 	}
+	for (const Entity& entity : curRoom.innerBorders)
+	{
+		this->scene->setActive(entity);
+	}
 	for (const Entity& entity : curRoom.exitPaths)
 	{
 		this->scene->setActive(entity);
@@ -1150,6 +1211,11 @@ void RoomHandler::activateRoom(int index)
 			 this->scene->setActive(curRoom.doorTriggers[i]);
 			 this->scene->getComponent<Transform>(curRoom.doors[i]).position.y = -25;
 		}
+	}
+
+	if (index != 0)
+	{
+		this->scene->setActive(curRoom.finishedRock);
 	}
 }
 
@@ -1173,11 +1239,14 @@ void RoomHandler::deactivateRoom(int index)
 	{
 		this->scene->setInactive(entity);
 	}
+	for (const Entity& entity : curRoom.innerBorders)
+	{
+		this->scene->setInactive(entity);
+	}
 	for (const Entity& entity : curRoom.exitPaths)
 	{
 		this->scene->setInactive(entity);
 	}
-	
 	for (int i = 0; i < 4; i++)
 	{
 		if (curRoom.doors[i] != -1)
@@ -1185,6 +1254,10 @@ void RoomHandler::deactivateRoom(int index)
 			 this->scene->setInactive(curRoom.doors[i]);
 			 this->scene->setInactive(curRoom.doorTriggers[i]);
 		}
+	}
+	if (index != 0)
+	{
+		this->scene->setInactive(curRoom.finishedRock);
 	}
 }
 

@@ -43,10 +43,10 @@ void RoomLayout::generate()
 		}
 	}
 
-	/*if (!this->setExit())
+	if (!this->setExit())
 	{
 		Log::warning("Failed creating exit");
-	}*/
+	}
 }
 
 void RoomLayout::setUpRooms(int numRooms)
