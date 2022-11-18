@@ -37,7 +37,7 @@ private:
 			:doors{-1,-1,-1,-1}, doorTriggers{-1,-1,-1,-1},
 			connectingIndex{-1,-1,-1,-1}, finished(false), 
 			type(RoomData::INVALID), position(0.f)
-			, extents{}
+			, extents{}, rock(-1), rockFence(-1)
 		{		
 		}
 
@@ -56,7 +56,8 @@ private:
 		int connectingIndex[4];
 
 		bool finished;
-		Entity finishedRock;
+		Entity rock;
+		Entity rockFence;
 	};
 
 	// Scene
@@ -116,9 +117,11 @@ private:
 	// Mesh IDs
 	std::vector<uint32_t> oneXOneMeshIds;
 	std::vector<uint32_t> borderMeshIds;
-	uint32_t innerBorderMesh;
 	std::vector<uint32_t> oneXTwoMeshIds;
 	std::vector<uint32_t> twoXTwoMeshIds;
+	uint32_t innerBorderMesh;
+	uint32_t rockMeshId;
+	uint32_t rockFenceMeshId;
 	uint32_t doorMeshID;
 
 	// Other

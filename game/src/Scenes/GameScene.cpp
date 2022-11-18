@@ -30,6 +30,7 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
+    printf("INIT--------------------------\n");
 
     TextureSamplerSettings samplerSettings{};
     samplerSettings.filterMode = vk::Filter::eNearest;
@@ -105,6 +106,7 @@ void GameScene::init()
 
 void GameScene::start()
 {
+    printf("START--------------------------\n");
     std::string playerName = "playerID";
     this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 

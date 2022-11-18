@@ -329,6 +329,11 @@ SET ERRORLEVEL=0</Command>
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
+    <None Include="scripts\moveRock.lua">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
     <None Include="src\Scripts\Prefab.lua" />
     <None Include="src\Scripts\Prefabs.lua" />
     <None Include="src\Scripts\PuzzleCreatorLua.lua" />

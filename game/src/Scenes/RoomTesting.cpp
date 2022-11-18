@@ -24,9 +24,9 @@ void RoomTesting::init()
 	this->setComponent<DirectionalLight>(cam,
 		{glm::vec3(0.f, -1.f, 0.f), glm::vec3(1.f)});
 	DirectionalLight& light = this->getComponent<DirectionalLight>(cam);
-	light.shadowMapFrustumHalfWidth = 200.0f;
-	light.shadowMapFrustumHalfHeight = 200.0f;
-	light.shadowMapFrustumDepth = 800.0f;
+	light.shadowMapFrustumHalfWidth = 1000.0f;
+	light.shadowMapFrustumHalfHeight = 1000.0f;
+	light.shadowMapFrustumDepth = 2000.0f;
 	light.shadowMapMinBias = 0.0001f;
 	light.shadowMapAngleBias = 0.001f;
 
@@ -48,23 +48,23 @@ void RoomTesting::update()
 #endif // _CONSOLE
 
 
-	const float speed = 50.f * Time::getDT() * 
-		Input::isKeyDown(Keys::CTRL) ? 0.1f : Input::isKeyDown(Keys::SHIFT) ? 3.f : 1.f;
+	static float speed = 10.f;
+	const float frameSpeed = speed * Time::getDT() * Input::isKeyDown(Keys::CTRL) ? 0.1f : Input::isKeyDown(Keys::SHIFT) ? 3.f : 1.f;
 
 	Entity cam = this->getMainCameraID();
 	Transform& camTra = this->getComponent<Transform>(cam);
 	if (Input::isKeyDown(Keys::A))
-		camTra.position.x += speed * 10.f;
+		camTra.position.x += frameSpeed;
 	if (Input::isKeyDown(Keys::D))
-		camTra.position.x -= speed * 10.f;
+		camTra.position.x -= frameSpeed;
 	if (Input::isKeyDown(Keys::W))
-		camTra.position.z += speed * 10.f;
+		camTra.position.z += frameSpeed;
 	if (Input::isKeyDown(Keys::S))
-		camTra.position.z -= speed * 10.f;
+		camTra.position.z -= frameSpeed;
 	if (Input::isKeyDown(Keys::E))
-		camTra.position.y += speed * 10.f;
+		camTra.position.y += frameSpeed;
 	if (Input::isKeyDown(Keys::Q))
-		camTra.position.y -= speed * 10.f;
+		camTra.position.y -= frameSpeed;
 
 	if (ImGui::Begin("aa"))
 	{
@@ -72,15 +72,17 @@ void RoomTesting::update()
 		static bool colls = false;
 		ImGui::Checkbox("Show colliders", &colls);
 		this->getPhysicsEngine()->renderDebugShapes(colls);
+
+		ImGui::DragFloat("Speed", &speed, 0.1f, 0.f, 100.f);
 	}ImGui::End();
 
 	Transform& plaTra = this->getComponent<Transform>(player);
 	if (Input::isKeyDown(Keys::LEFT))
-		plaTra.position.x += speed;
+		plaTra.position.x += frameSpeed;
 	if (Input::isKeyDown(Keys::RIGHT))
-		plaTra.position.x -= speed;
+		plaTra.position.x -= frameSpeed;
 	if (Input::isKeyDown(Keys::UP))
-		plaTra.position.z += speed;
+		plaTra.position.z += frameSpeed;
 	if (Input::isKeyDown(Keys::DOWN))
-		plaTra.position.z -= speed;
+		plaTra.position.z -= frameSpeed;
 }
