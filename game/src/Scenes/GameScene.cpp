@@ -30,7 +30,6 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
-
     TextureSamplerSettings samplerSettings{};
     samplerSettings.filterMode = vk::Filter::eNearest;
     samplerSettings.unnormalizedCoordinates = VK_TRUE;
