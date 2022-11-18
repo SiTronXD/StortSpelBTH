@@ -6,6 +6,25 @@
 #include <limits>
 
 
+Scene* LichBT::getTheScene()
+{
+    return BehaviorTree::sceneHandler->getScene();
+}
+
+float LichBT::get_dt()
+{
+    return BehaviorTree::sceneHandler->getAIHandler()->getDeltaTime();
+}
+
+int LichBT::getPlayerID()
+{
+    int playerID = -1;
+    std::string playerId_str = "playerID";
+    BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(playerID, playerId_str);
+    return playerID;
+}
+
+
 void LichBT::registerEntityComponents(Entity entityId)
 {
     this->addRequiredComponent<LichComponent>(entityId);
@@ -104,7 +123,18 @@ BTStatus LichBT::playDeathAnim(Entity entityID)
 
 BTStatus LichBT::die(Entity entityID)
 {
-    return BTStatus::Failure;
+   BTStatus ret = BTStatus::Failure;
+
+	int playerID = getPlayerID();
+	Combat& playerCombat = sceneHandler->getScene()->getComponent<Combat>(playerID);
+	if (playerCombat.health <= (playerCombat.maxHealth - 10))
+	{
+		playerCombat.health += 10;
+	}
+
+	getTheScene()->setInactive(entityID);
+
+	return ret;
 }
 
 BTStatus LichBT::alerted(Entity entityID)
