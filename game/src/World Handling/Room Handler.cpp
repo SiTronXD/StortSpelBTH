@@ -63,6 +63,7 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize,
 void RoomHandler::roomCompleted()
 {
 	this->rooms[this->activeIndex].finished = true;
+	this->scene->setActive(this->rooms[this->activeIndex].finishedRock);
 
 	this->openDoors(this->activeIndex);
 	this->showPaths(true);
@@ -307,13 +308,12 @@ void RoomHandler::generate2()
 			this->scene->setComponent<MeshComponent>(rock, (int)borderMeshIds[0]);
 			curRoom.finishedRock = rock;
 		}
-		else
-		{
-			curRoom.objects.emplace_back(createFloorEntity(glm::vec2(0.f), true));
-			curRoom.objects.emplace_back(createFloorEntity(glm::vec2(1.f), true));
-			curRoom.objects.emplace_back(createFloorEntity(glm::vec2(1.f, 0.f), true));
-			curRoom.objects.emplace_back(createFloorEntity(glm::vec2(0.f, 1.f), true));
-		}
+
+		curRoom.objects.emplace_back(createFloorEntity(glm::vec2(0.f), true));
+		curRoom.objects.emplace_back(createFloorEntity(glm::vec2(1.f), true));
+		curRoom.objects.emplace_back(createFloorEntity(glm::vec2(1.f, 0.f), true));
+		curRoom.objects.emplace_back(createFloorEntity(glm::vec2(0.f, 1.f), true));
+	
 
 		this->roomGen.clear();
 	}
@@ -1109,7 +1109,7 @@ void RoomHandler::reset()
 		room.position = glm::vec3(0.f);
 		room.finished = false;
 		this->scene->removeEntity(room.finishedRock);
-	}																				  
+	}				  
 
 	for (const Entity& entity : this->pathIds)
 	{
@@ -1215,7 +1215,10 @@ void RoomHandler::activateRoom(int index)
 
 	if (index != 0)
 	{
-		this->scene->setActive(curRoom.finishedRock);
+		if (curRoom.finished)
+		{
+			this->scene->setActive(curRoom.finishedRock);
+		}
 	}
 }
 
