@@ -6,6 +6,101 @@ Scene* TankBT::getTheScene()
     return BehaviorTree::sceneHandler->getScene();
 }
 
+void TankBT::updateCanBeHit(Entity entityID)
+{
+	int playerID = getPlayerID();
+	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	glm::vec3 tank_player_vec = playerTrans.position - tankTrans.position;
+	float tank_player_len = glm::length(tank_player_vec);
+	tank_player_vec = glm::normalize(tank_player_vec);
+	float hitDeg = (360.0f - tankComp.shieldAngle)/2.0f;
+	hitDeg = 180 - hitDeg;
+	if(tank_player_len < tankComp.peronalSpaceRadius)
+	{
+		if(getAngleBetween(tank_player_vec, -tankTrans.forward()) >= hitDeg)
+		{
+			tankComp.canBeHit = true;
+		}
+		else
+		{
+			tankComp.canBeHit = false;
+		}
+	}
+}
+
+void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
+{
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	tankComp.chargeTimer = tankComp.chargeTimerOrig;
+	tankComp.hasRunTarget = false;
+
+	if(tankComp.groundHumpTimer <= 0)
+	{
+		std::cout<<"Stomp!\n";
+		tankComp.humps.push_back(0.0f);
+		tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
+	}
+	else
+	{
+		tankComp.groundHumpTimer -= get_dt();
+	}
+
+	int playerID = getPlayerID();
+	
+	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+	Collider& playerCol = getTheScene()->getComponent<Collider>(playerID);
+	Rigidbody& playerRB = getTheScene()->getComponent<Rigidbody>(playerID);
+	Script& playerScript = getTheScene()->getComponent<Script>(playerID);
+	bool playerGrounded = false;
+	BehaviorTree::sceneHandler->getScriptHandler()->getScriptComponentValue(playerScript, playerGrounded, "onGround");
+	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
+	std::vector<int> toRemove;
+
+
+	rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
+
+	for(int i = 0; i < tankComp.humps.size(); i++)
+	{
+		tankComp.humps[i] += tankComp.humpShockwaveSpeed * get_dt();
+		float dist = glm::length(playerTrans.position - tankTrans.position);
+		float minHitDist = dist - playerCol.radius;
+		float maxHitDist = dist + playerCol.radius;
+
+		if(tankComp.humps[i] >= maxRad)
+		{
+			toRemove.push_back(i);
+		}
+		else if(tankComp.humps[i] >= minHitDist && tankComp.humps[i] <= maxHitDist && playerGrounded)
+		{
+			//PlayerHit!
+			Script& playerScript = getTheScene()->getComponent<Script>(playerID);
+			BehaviorTree::sceneHandler->getScriptHandler()->setScriptComponentValue(playerScript , 1.0f, "pushTimer");
+			glm::vec3 to = playerTrans.position;
+			glm::normalize(to);
+			AiCombatTank& aiCombat = getTheScene()->getComponent<AiCombatTank>(entityID);
+			getTheScene()->getComponent<Combat>(playerID).health -= (int)aiCombat.humpHit;
+
+			glm::vec3 dir = glm::normalize(to - tankTrans.position);
+			playerRB.velocity = dir * tankComp.humpForce;
+			playerRB.velocity.y += tankComp.humpYForce;
+			toRemove.push_back(i);
+		}
+		else
+		{
+			int test = 0;
+		}
+	}
+	for(auto r: toRemove)
+	{
+		 tankComp.humps.erase(tankComp.humps.begin() + r);
+	}
+
+
+	updateCanBeHit(entityID);
+}
+
 float TankBT::get_dt()
 {
     return BehaviorTree::sceneHandler->getAIHandler()->getDeltaTime();
@@ -288,70 +383,7 @@ BTStatus TankBT::GroundHump(Entity entityID)
 	BTStatus ret = BTStatus::Running;
 
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
-	tankComp.chargeTimer = tankComp.chargeTimerOrig;
-	tankComp.hasRunTarget = false;
-
-	if(tankComp.groundHumpTimer <= 0)
-	{
-		std::cout<<"Stomp!\n";
-		tankComp.humps.push_back(0.0f);
-		tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
-	}
-	else
-	{
-		tankComp.groundHumpTimer -= get_dt();
-	}
-
-	int playerID = getPlayerID();
-	
-	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
-	Collider& playerCol = getTheScene()->getComponent<Collider>(playerID);
-	Rigidbody& playerRB = getTheScene()->getComponent<Rigidbody>(playerID);
-	Script& playerScript = getTheScene()->getComponent<Script>(playerID);
-	bool playerGrounded = false;
-	BehaviorTree::sceneHandler->getScriptHandler()->getScriptComponentValue(playerScript, playerGrounded, "onGround");
-	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
-	std::vector<int> toRemove;
-
-
-	rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
-
-	for(int i = 0; i < tankComp.humps.size(); i++)
-	{
-		tankComp.humps[i] += tankComp.humpShockwaveSpeed * get_dt();
-		float dist = glm::length(playerTrans.position - tankTrans.position);
-		float minHitDist = dist - playerCol.radius;
-		float maxHitDist = dist + playerCol.radius;
-
-		if(tankComp.humps[i] >= tankComp.humpShockwaveMaxRadius)
-		{
-			toRemove.push_back(i);
-		}
-		else if(tankComp.humps[i] >= minHitDist && tankComp.humps[i] <= maxHitDist && playerGrounded)
-		{
-			//PlayerHit!
-			Script& playerScript = getTheScene()->getComponent<Script>(playerID);
-			BehaviorTree::sceneHandler->getScriptHandler()->setScriptComponentValue(playerScript , 1.0f, "pushTimer");
-			glm::vec3 to = playerTrans.position;
-			glm::normalize(to);
-			AiCombatTank& aiCombat = getTheScene()->getComponent<AiCombatTank>(entityID);
-			getTheScene()->getComponent<Combat>(playerID).health -= (int)aiCombat.humpHit;
-
-			glm::vec3 dir = glm::normalize(to - tankTrans.position);
-			playerRB.velocity = dir * tankComp.humpForce;
-			playerRB.velocity.y += tankComp.humpYForce;
-			toRemove.push_back(i);
-		}
-		else
-		{
-			int test = 0;
-		}
-	}
-	for(auto r: toRemove)
-	{
-		 tankComp.humps.erase(tankComp.humps.begin() + r);
-	}
-
+	groundHumpShortcut(entityID, tankComp.humpShockwaveAttackRadius);
 
 	return ret;
 }
@@ -604,22 +636,9 @@ BTStatus TankBT::HoldShield(Entity entityID)
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	rotateTowards(entityID, playerTrans.position, tankComp.shildRotSpeed, 5.0f);
 
-	glm::vec3 tank_player_vec = playerTrans.position - tankTrans.position;
-	float tank_player_len = glm::length(tank_player_vec);
-	tank_player_vec = glm::normalize(tank_player_vec);
-	float hitDeg = (360.0f - tankComp.shieldAngle)/2.0f;
-	hitDeg = 180 - hitDeg;
-	if(tank_player_len < tankComp.peronalSpaceRadius)
-	{
-		if(getAngleBetween(tank_player_vec, -tankTrans.forward()) >= hitDeg)
-		{
-			tankComp.canBeHit = true;
-		}
-		else
-		{
-			tankComp.canBeHit = false;
-		}
-	}
+	groundHumpShortcut(entityID, tankComp.humpShockwaveShieldRadius);
+
+	updateCanBeHit(entityID);
 
 	return ret;
 }

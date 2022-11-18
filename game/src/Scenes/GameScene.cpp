@@ -652,6 +652,11 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 						transform.position = tileTrans.position;
 						transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
 
+                        //Reset
+                        TankComponent& tankComp = this->getComponent<TankComponent>(this->tankIDs[tankIdx]);
+                        tankComp.life = tankComp.FULL_HEALTH;
+                        transform.scale.y = tankComp.origScaleY;
+
 						tankIdx++;
 					}
 					else if(lichIdx < numLich)
@@ -662,6 +667,10 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 						float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
 						transform.position = tileTrans.position;
 						transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
+
+                        //Reset
+                        LichComponent& lichComp = this->getComponent<LichComponent>(this->lichIDs[tankIdx]);
+                        lichComp.life = lichComp.FULL_HEALTH;
 
 						lichIdx++;
 					}
