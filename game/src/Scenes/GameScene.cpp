@@ -146,6 +146,7 @@ void GameScene::start()
     Perks& perkSetting = this->getComponent<Perks>(this->perk);
     perkSetting.multiplier = 0.5f;
     perkSetting.perkType = hpUpPerk;
+    this->setScriptComponent(this->perk, "scripts/spin.lua");
 
     this->perk1 = this->createEntity();
     this->setComponent<MeshComponent>(this->perk1, this->perkMeshes[dmgUpPerk]);
@@ -637,23 +638,13 @@ void GameScene::onTriggerEnter(Entity e1, Entity e2)
         : this->hasComponents<Abilities>(e2) ? e2
         : -1;
 
-    //Entity swarm = this->hasComponents<SwarmComponent>(e1) ? e1 : this->hasComponents<SwarmComponent>(e2) ? e2 : -1;
-
-    //if (e1 == this->swordID && swarm != -1)
-    //{
-    //}
-    //else if (e2 == this->swordID && swarm != -1)
-    //{
-
-    //}
-
     if (this->entityValid(ground))
     {
         if (this->entityValid(perk))
         {
             this->removeComponent<Rigidbody>(perk);
             Transform& perkTrans = this->getComponent<Transform>(perk);
-            perkTrans.position.y = 2.f;
+            perkTrans.position.y = 6.f;
         }
         else if (this->entityValid(ability))
         {
