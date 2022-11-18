@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 
-struct AiCombat
+struct AiCombatSwarm
 {
 	float lightHit = 10.f;
 	float lightAttackTime = 2.0f;
