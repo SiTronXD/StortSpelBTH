@@ -80,7 +80,7 @@ struct TankComponent
 	float humpForce					= 75.0f;
 	float humpYForce				= 150.0f;
 	float humpShockwaveSpeed		= 30.0f;
-	float humpShockwaveShieldRadius	= sightRadius +30.0f;
+	float humpShockwaveShieldRadius	= sightRadius;
 	float humpShockwaveAttackRadius	= sightRadius;
 	float deathAnimSpeed			= 3.0f;
 	float origScaleY				= 1.0f;
@@ -139,6 +139,7 @@ private:
 	static bool shieldToIdle(Entity entityID);
 
     static bool toDead(Entity entityID);
+    static bool revive(Entity entityID);
 
 
 	EntityEvent idle_to_alert{		"idle to alert",	idleToAler};
@@ -154,6 +155,10 @@ private:
     EntityEvent alert_to_dead{		"alert to dead",	toDead};
     EntityEvent shield_to_dead{		"hunt to dead",		toDead};
     EntityEvent combat_to_dead{		"shield to dead",	toDead};
+
+    EntityEvent dead_to_idle{		"dead to idle",	revive};
+
+
 
 
 private:
@@ -198,6 +203,8 @@ protected:
         addEntityTransition("alerted",  TankFSM::alert_to_dead,			"dead");
         addEntityTransition("combat",   TankFSM::combat_to_dead,		"dead");
         addEntityTransition("shield",   TankFSM::shield_to_dead,		"dead");
+
+		addEntityTransition("dead", TankFSM::dead_to_idle, "idle");
 
 
 		setInitialNode("idle");

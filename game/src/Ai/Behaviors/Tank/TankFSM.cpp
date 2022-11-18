@@ -340,3 +340,16 @@ bool TankFSM::toDead(Entity entityID)
     }
     return ret;
 }
+
+bool TankFSM::revive(Entity entityID)
+{
+    bool ret = false;
+
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	if(tankComp.life > 0)
+	{
+		ret = true;
+	}
+
+	return ret;
+}
