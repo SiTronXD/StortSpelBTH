@@ -248,6 +248,9 @@ public:
 			else
 			{
 				this->scene->setAnimation(this->playerID, "lightAttack");
+				Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+				this->script->setScriptComponentValue(playerScript, 4, "currentAnimation");
+				this->script->setScriptComponentValue(playerScript, combat.lightAttackCd, "animTimer");
 				this->scene->getComponent<AnimationComponent>(this->playerID).timeScale = combat.animationMultiplier[lightActive];
 
 				this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 6.f, glm::vec3(0), true));
@@ -282,6 +285,9 @@ public:
 			else
 			{
 				this->scene->setAnimation(this->playerID, "heavyAttack");
+				Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+				this->script->setScriptComponentValue(playerScript, 5, "currentAnimation");
+				this->script->setScriptComponentValue(playerScript, combat.heavyAttackCd, "animTimer");
 				this->scene->getComponent<AnimationComponent>(this->playerID).timeScale = combat.animationMultiplier[heavyActive];
 
 				this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 6.f, glm::vec3(0), true));
@@ -325,6 +331,9 @@ public:
 				else
 				{
 					this->scene->setAnimation(this->playerID, "knockback");
+					Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+					this->script->setScriptComponentValue(playerScript, 9, "currentAnimation");
+					this->script->setScriptComponentValue(playerScript, combat.knockbackCd, "animTimer");
 					this->scene->getComponent<AnimationComponent>(this->playerID).timeScale = combat.animationMultiplier[knockbackActive];
 
 					this->scene->setComponent<Collider>(this->swordID, Collider::createSphere(8.f, glm::vec3(0), true));
@@ -372,6 +381,9 @@ public:
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive1;
 			this->scene->setAnimation(this->playerID, "spinAttack");
+			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+			this->script->setScriptComponentValue(playerScript, 6, "currentAnimation");
+			this->script->setScriptComponentValue(playerScript, combat.comboLightCd, "animTimer");
 			this->scene->getComponent<AnimationComponent>(this->playerID).timeScale = combat.animationMultiplier[comboActive1];
 
 			this->scene->setComponent<Collider>(this->swordID, Collider::createSphere(8.f, glm::vec3(0), true));
@@ -387,6 +399,9 @@ public:
 			combat.activeAttack = comboActive2;
 
 			this->scene->setAnimation(this->playerID, "mixAttack");
+			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+			this->script->setScriptComponentValue(playerScript, 7, "currentAnimation");
+			this->script->setScriptComponentValue(playerScript, combat.comboMixCd, "animTimer");
 			this->scene->getComponent<AnimationComponent>(this->playerID).timeScale = combat.animationMultiplier[comboActive2];
 
 			this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 6.f, glm::vec3(0), true));
@@ -403,6 +418,9 @@ public:
 			combat.activeAttack = comboActive3;
 
 			this->scene->setAnimation(this->playerID, "slashAttack");
+			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+			this->script->setScriptComponentValue(playerScript, 8, "currentAnimation");
+			this->script->setScriptComponentValue(playerScript, combat.comboHeavyCd, "animTimer");
 			this->scene->getComponent<AnimationComponent>(this->playerID).timeScale = combat.animationMultiplier[comboActive3];
 
 			this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 6.f, glm::vec3(0), true));

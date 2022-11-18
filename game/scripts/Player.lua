@@ -42,7 +42,9 @@ function script:init()
     self.jumpTimer = 0
     self.active = true
 
-    self.activeAnimation = {idle = 1, run = 2, sprint = 3, dodge = 3}
+    self.activeAnimation = {idle = 1, run = 2, sprint = 3, dodge = 3, 
+    lightAttack = 4, heavyAttack = 5, spinCombo = 6, mixCombo = 7, 
+    heavyCombo = 8, knockback = 9}
     self.currentAnimation = 1
     self.idleAnimTime = 1.0
     self.runAnimTime = 0.7
