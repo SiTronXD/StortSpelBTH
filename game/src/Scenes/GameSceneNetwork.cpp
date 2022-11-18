@@ -47,8 +47,32 @@ void GameSceneNetwork::init()
   int swarm =
       this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
   int playerModel = this->getResourceManager()->addAnimations(
-      std::vector<std::string>({"assets/models/Amogus/source/1.fbx"}),
+      std::vector<std::string>(
+          {"assets/models/Character/CharIdle.fbx",
+           "assets/models/Character/CharRun.fbx",
+           "assets/models/Character/CharDodge.fbx",
+           "assets/models/Character/CharOutwardAttack.fbx",
+           "assets/models/Character/CharHeavyAttack.fbx",
+           "assets/models/Character/CharSpinAttack.fbx",
+           "assets/models/Character/CharKnockbackAttack.fbx",
+           "assets/models/Character/CharInwardAttack.fbx",
+           "assets/models/Character/CharSlashAttack.fbx"}
+      ),
       "assets/textures/playerMesh"
+  );
+  this->getResourceManager()->mapAnimations(
+      playerModel,
+      std::vector<std::string>(
+          {"idle",
+           "run",
+           "dodge",
+           "lightAttack",
+           "heavyAttack",
+           "spinAttack",
+           "knockback",
+           "mixAttack",
+           "slashAttack"}
+      )
   );
 
   this->getNetworkHandler()->setMeshes("blob", swarm);
@@ -116,15 +140,6 @@ void GameSceneNetwork::start()
 
   //spawn other players
   this->getNetworkHandler()->createPlayers();
-  //for (int i = 0; i < this->getNetworkHandler()->getPlayers().size(); i++)
-  //{
-  //    int e = this->createEntity();
-  //    this->setComponent<MeshComponent>(e, playerModel);
-  //    this->setComponent<AnimationComponent>(e);
-  //    this->getComponent<Transform>(e).position = glm::vec3(0, 10000, 0);
-  //    this->getComponent<Transform>(e).rotation = glm::vec3(0, 180, 0);
-  //    this->setAnimation(e, "idle", true);
-  //}
 
   this->setComponent<Combat>(playerID);
   this->createSystem<CombatSystem>(
@@ -373,7 +388,10 @@ void GameSceneNetwork::onTriggerStay(Entity e1, Entity e2)
       if (roomHandler.onPlayerTrigger(other))
       {
           this->newRoomFrame = true;
-          int counter = 0;
+          //TODO : need to do something here so I know witch room I should switch to
+        this->getNetworkHandler()->sendTCPDataToClient(
+            TCPPacketEvent({GameEvents::WentInToNewRoom})
+        );
           const std::vector<Entity>& entites = roomHandler.getFreeTiles();
       }
 
@@ -428,25 +446,6 @@ void GameSceneNetwork::onCollisionEnter(Entity e1, Entity e2)
 void GameSceneNetwork::onCollisionStay(Entity e1, Entity e2)
 {
   Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
-
-  if (player == playerID)  // player triggered a trigger :]
-    {
-      Entity other = e1 == player ? e2 : e1;
-      if (this->hasComponents<SwarmComponent>(other))
-        {
-          auto& swarmComp = this->getComponent<SwarmComponent>(other);
-          if (swarmComp.inAttack)
-            {
-              auto& aiCombat = this->getComponent<AiCombat>(other);
-              swarmComp.inAttack = false;
-              swarmComp.touchedPlayer = true;
-              //aiCombat.timer = aiCombat.lightAttackTime;
-              this->getComponent<Combat>(player).health -=
-                  (int)aiCombat.lightHit;
-              std::cout << "WAS HIT\n";
-            }
-        }
-    }
 
   if (this->hasComponents<SwarmComponent>(e1) &&
       this->hasComponents<SwarmComponent>(e2))
