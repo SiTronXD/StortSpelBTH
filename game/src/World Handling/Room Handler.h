@@ -18,7 +18,7 @@ public:
 	static const uint32_t TILES_BETWEEN_ROOMS;
 	static const uint32_t NUM_BORDER;
 	static const uint32_t NUM_ONE_X_ONE;
-	static const uint32_t NUM_TWO_X_ONE;
+	static const uint32_t NUM_ONE_X_TWO;
 	static const uint32_t NUM_TWO_X_TWO;
 private:
 
@@ -62,6 +62,7 @@ private:
 
 	// Scene
 	Scene* scene;
+	ResourceManager* resourceMan;
 
 	// Layout generation
 	RoomLayout roomLayout;
@@ -79,10 +80,10 @@ private:
 	RoomGen roomGen;
 	int tileFlorMeshId;
 	void placeBranch(int index, int left, int right);
-	void moveRoom(int roomIndex, glm::vec3 offset);
+	void moveRoom(int roomIndex, const glm::vec3& offset);
 	
 	// New Create Entities
-	Entity createFloorEntity(const glm::vec2& pos, bool scalePos);
+	Entity createFloorDecoEntity(const glm::vec2& pos, bool scalePos);
 	Entity createBorderEntity(const glm::vec2& position, bool scalePos);
 	Entity createObjectEntity(const Tile2& tile);
 
@@ -117,8 +118,8 @@ private:
 	// Mesh IDs
 	std::vector<uint32_t> oneXOneMeshIds;
 	std::vector<uint32_t> borderMeshIds;
-	std::vector<uint32_t> oneXTwoMeshIds;
-	std::vector<uint32_t> twoXTwoMeshIds;
+	std::vector<std::pair<uint32_t, uint32_t>> oneXTwoMeshIds;
+	std::vector<std::pair<uint32_t, uint32_t>> twoXTwoMeshIds;
 	uint32_t innerBorderMesh;
 	uint32_t rockMeshId;
 	uint32_t rockFenceMeshId;

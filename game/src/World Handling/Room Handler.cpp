@@ -6,7 +6,7 @@ const float RoomHandler::TILE_WIDTH = 25.f;
 const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 5;
 const uint32_t RoomHandler::NUM_BORDER = 1;
 const uint32_t RoomHandler::NUM_ONE_X_ONE = 4;
-const uint32_t RoomHandler::NUM_TWO_X_ONE = 1;
+const uint32_t RoomHandler::NUM_ONE_X_TWO = 2;
 const uint32_t RoomHandler::NUM_TWO_X_TWO = 1;
 
 RoomHandler::RoomHandler()
@@ -25,6 +25,7 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize,
 	roomSize = 15;
 
 	this->scene = scene;
+	this->resourceMan = resourceMan;
 
 	this->roomGenerator.init(roomSize, tileTypes);
 	this->roomLayout.setRoomDistance(TILE_WIDTH * roomSize + TILE_WIDTH * TILES_BETWEEN_ROOMS);	
@@ -43,16 +44,21 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize,
 		this->oneXOneMeshIds[i] = resourceMan->addMesh("assets/models/Tiles/OneXOne/" + std::to_string(i + 1u) + ".obj");
 	}
 
-	this->oneXTwoMeshIds.resize(NUM_TWO_X_ONE);
-	for (uint32_t i = 0; i < NUM_TWO_X_ONE; i++)
+	this->oneXTwoMeshIds.resize(NUM_ONE_X_TWO);
+	for (uint32_t i = 0; i < NUM_ONE_X_TWO; i++)
 	{
-		this->oneXTwoMeshIds[i] = resourceMan->addMesh("assets/models/Tiles/OneXTwo/" + std::to_string(i + 1u) + ".obj");
+		this->oneXTwoMeshIds[i].first = resourceMan->addMesh("assets/models/Tiles/OneXTwo/" + std::to_string(i + 1u) + ".obj");
+		const uint32_t collId = resourceMan->addCollisionShapeFromMesh("assets/models/Tiles/OneXTwo/" + std::to_string(i + 1u) + ".obj");
+		this->oneXTwoMeshIds[i].second = resourceMan->getCollisionShapeFromMesh(collId).size() ? collId : ~0u;
 	}
 
 	this->twoXTwoMeshIds.resize(NUM_TWO_X_TWO);
 	for (uint32_t i = 0; i < NUM_TWO_X_TWO; i++)
 	{
-		this->twoXTwoMeshIds[i] = resourceMan->addMesh("assets/models/Tiles/TwoXTwo/" + std::to_string(i + 1u) + ".obj");
+		this->twoXTwoMeshIds[i].first = resourceMan->addMesh("assets/models/Tiles/TwoXTwo/" + std::to_string(i + 1u) + ".obj");
+		const uint32_t collId = resourceMan->addCollisionShapeFromMesh("assets/models/Tiles/TwoXTwo/" + std::to_string(i + 1u) + ".obj");
+		this->twoXTwoMeshIds[i].second = resourceMan->getCollisionShapeFromMesh(collId).size() ? collId : ~0u;
+		
 	}
 
 	this->doorMeshID = resourceMan->addMesh("assets/models/door.obj");
@@ -199,6 +205,15 @@ void RoomHandler::generate()
 	}
 }
 
+/*
+	REWORK PATH ALGO (MAYBE DON'T NEED LINES? JUST SURROUND PATH "BOX" WITH BORDERS? MILLION TIMES EASIER?)
+	REWORK PATH ALGO (MAYBE DON'T NEED LINES? JUST SURROUND PATH "BOX" WITH BORDERS? MILLION TIMES EASIER?)
+	REWORK PATH ALGO (MAYBE DON'T NEED LINES? JUST SURROUND PATH "BOX" WITH BORDERS? MILLION TIMES EASIER?)
+	REWORK PATH ALGO (MAYBE DON'T NEED LINES? JUST SURROUND PATH "BOX" WITH BORDERS? MILLION TIMES EASIER?)
+	REWORK PATH ALGO (MAYBE DON'T NEED LINES? JUST SURROUND PATH "BOX" WITH BORDERS? MILLION TIMES EASIER?)
+	REWORK PATH ALGO (MAYBE DON'T NEED LINES? JUST SURROUND PATH "BOX" WITH BORDERS? MILLION TIMES EASIER?)
+*/
+
 void RoomHandler::generate2()
 {
 	this->reset();
@@ -254,7 +269,10 @@ void RoomHandler::generate2()
 		curRoom.mainTiles.resize(size_t(numSmall));
 		for (uint32_t j = 0; j < numSmall; j++)
 		{
-			curRoom.mainTiles[j] = createFloorEntity(this->roomGen.getMainTile(j).position, true);
+			if (rand() % 100 < 30)
+			{
+				curRoom.mainTiles[j] = createFloorDecoEntity(this->roomGen.getMainTile(j).position, true);
+			}
 		}
 
 		const uint32_t numBig = this->roomGen.getNumBigTiles();
@@ -263,32 +281,17 @@ void RoomHandler::generate2()
 		{
 			const Tile2& tile = this->roomGen.getBigTile(j);
 			curRoom.objects[j] = createObjectEntity(tile);
-			switch (tile.type)
-			{
-			default:
-				break;
-			case Tile2::TwoXTwo:
-				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.5f), true));
-				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(-0.5f), true));
-				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.5f, -0.5f), true));
-				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(-0.5f, 0.5f), true));
-				break;
-			case Tile2::TwoXOne:
-				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(-0.5f, 0.f), true));
-				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.5f, 0.f), true));
-				break;
-			case Tile2::OneXTwo:
-				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.f, 0.5f), true));
-				curRoom.objects.emplace_back(createFloorEntity(tile.position + glm::vec2(0.f, -0.5f), true));
-				break;
-			}
 		}
 		
 		const uint32_t numExit = this->roomGen.getNumExitTiles();
 		curRoom.exitPaths.resize(size_t(numExit));
 		for (uint32_t j = 0; j < numExit; j++)
 		{
-			curRoom.exitPaths[j] = createFloorEntity(this->roomGen.getExitTile(j).position, true);
+			if (rand() % 100 < 30)
+			{
+				curRoom.exitPaths[j] = createFloorDecoEntity(this->roomGen.getExitTile(j).position, true);
+			}
+
 		}
 
 		const uint32_t numBorders = this->roomGen.getNumBorders();
@@ -319,10 +322,10 @@ void RoomHandler::generate2()
 			curRoom.rock = entity;
 		}
 
-		curRoom.mainTiles.emplace_back(createFloorEntity(glm::vec2(0.f), true));
-		curRoom.mainTiles.emplace_back(createFloorEntity(glm::vec2(1.f), true));
-		curRoom.mainTiles.emplace_back(createFloorEntity(glm::vec2(1.f, 0.f), true));
-		curRoom.mainTiles.emplace_back(createFloorEntity(glm::vec2(0.f, 1.f), true));
+		curRoom.mainTiles.emplace_back(createFloorDecoEntity(glm::vec2(0.f), true));
+		curRoom.mainTiles.emplace_back(createFloorDecoEntity(glm::vec2(1.f), true));
+		curRoom.mainTiles.emplace_back(createFloorDecoEntity(glm::vec2(1.f, 0.f), true));
+		curRoom.mainTiles.emplace_back(createFloorDecoEntity(glm::vec2(0.f, 1.f), true));
 	
 
 		this->roomGen.clear();
@@ -392,7 +395,7 @@ void RoomHandler::generate2()
 	}
 }
 
-void RoomHandler::moveRoom(int roomIndex, glm::vec3 offset)
+void RoomHandler::moveRoom(int roomIndex, const glm::vec3& offset)
 {
 	Room& curRoom = rooms[roomIndex];
 
@@ -467,7 +470,7 @@ void RoomHandler::placeBranch(int index, int left, int right)
 	}
 }
 
-Entity RoomHandler::createFloorEntity(const glm::vec2& pos, bool scalePos)
+Entity RoomHandler::createFloorDecoEntity(const glm::vec2& pos, bool scalePos)
 {
 	Entity entity = scene->createEntity();
 	scene->setComponent<MeshComponent>(entity, tileFlorMeshId);
@@ -627,8 +630,9 @@ void RoomHandler::generatePathways()
 		size_t startIndex = this->pathIds.size();
 		while(true)
 		{
-			this->pathIds.emplace_back(this->createFloorEntity({curPos.x, curPos.z}, false));
-			
+			this->pathIds.emplace_back(this->createFloorDecoEntity({curPos.x, curPos.z}, false));
+			ööö fix paths so work without the floor entities?
+
 			if (glm::length(curPos - p0) >= glm::length(delta))
 			{
 				break;
@@ -869,12 +873,14 @@ void RoomHandler::createColliders()
 
 	const float HalfRoom = (float)this->roomGenerator.getRoomSize() * TILE_WIDTH * 0.5f + TILE_WIDTH * 0.5f;
 
-	const glm::vec3 floorPos((minX + maxX) * 0.5f, -4.f, (minZ + maxZ) * 0.5f);
+	const glm::vec3 floorPos((minX + maxX) * 0.5f, 0.f, (minZ + maxZ) * 0.5f);
 	const glm::vec3 floorDimensions((maxX - minX) * 0.5f + extents[0] + extents[1], 4.f, (maxZ - minZ) * 0.5f +  + extents[2] + extents[3]);
 
 	this->floor = this->scene->createEntity();
-	this->scene->setComponent<Collider>(this->floor, Collider::createBox(floorDimensions));
+	this->scene->setComponent<MeshComponent>(this->floor, tileFlorMeshId);
+	this->scene->setComponent<Collider>(this->floor, Collider::createBox(floorDimensions, glm::vec3(0.f, -4.f, 0.f)));
 	this->scene->getComponent<Transform>(this->floor).position = floorPos;
+	this->scene->getComponent<Transform>(this->floor).scale = glm::vec3(floorDimensions.x * 2.f, 1.f, floorDimensions.z * 2.f);
 }
 
 Entity RoomHandler::createTileEntity(int tileIndex, TileUsage usage)
@@ -950,14 +956,44 @@ Entity RoomHandler::createObjectEntity(const Tile2& tile)
 	default:
 		break;
 	case Tile2::TwoXTwo:
-		this->scene->getComponent<MeshComponent>(entity).meshID = twoXTwoMeshIds[rand() % NUM_TWO_X_TWO];
+		{
+		const std::pair<uint32_t, uint32_t>& pair = twoXTwoMeshIds[rand() % NUM_TWO_X_TWO];
+		this->scene->getComponent<MeshComponent>(entity).meshID = pair.first;
+		if (pair.second != ~0u)
+		{
+			ColliderDataRes colData = resourceMan->getCollisionShapeFromMesh(pair.second)[0];
+			this->scene->setComponent<Collider>(entity, colData.col);
+			Collider& col = this->scene->getComponent<Collider>(entity);
+			col.offset = colData.position;
+		}
 		break;
+		}
 	case Tile2::TwoXOne:
-		this->scene->getComponent<MeshComponent>(entity).meshID = oneXTwoMeshIds[rand() % NUM_TWO_X_ONE];
+		{
+		const std::pair<uint32_t, uint32_t>& pair = oneXTwoMeshIds[rand() % NUM_ONE_X_TWO];
+		this->scene->getComponent<MeshComponent>(entity).meshID = pair.first;
+		if (pair.second != ~0u)
+		{
+			ColliderDataRes colData = resourceMan->getCollisionShapeFromMesh(pair.second)[0];
+			this->scene->setComponent<Collider>(entity, colData.col);
+			Collider& col = this->scene->getComponent<Collider>(entity);
+			col.offset = colData.position;
+		}
+		}
 		break;
 	case Tile2::OneXTwo:
-		this->scene->getComponent<MeshComponent>(entity).meshID = oneXTwoMeshIds[rand() % NUM_TWO_X_ONE];
+		{
+		const std::pair<uint32_t, uint32_t>& pair = oneXTwoMeshIds[rand() % NUM_ONE_X_TWO];
+		this->scene->getComponent<MeshComponent>(entity).meshID = pair.first;
+		if (pair.second != ~0u)
+		{
+			ColliderDataRes colData = resourceMan->getCollisionShapeFromMesh(pair.second)[0];
+			this->scene->setComponent<Collider>(entity, colData.col);
+			Collider& col = this->scene->getComponent<Collider>(entity);
+			col.offset = colData.position;
+		}
 		break;
+		}
 	}
 
 	transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
