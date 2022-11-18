@@ -784,6 +784,7 @@ void GameScene::onTriggerEnter(Entity e1, Entity e2)
             this->removeComponent<Rigidbody>(perk);
             Transform& perkTrans = this->getComponent<Transform>(perk);
             perkTrans.position.y = 6.f;
+            this->setScriptComponent(perk, "scripts/spin.lua");
         }
         else if (this->entityValid(ability))
         {

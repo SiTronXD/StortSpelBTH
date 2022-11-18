@@ -3,6 +3,7 @@
 #include <vengine.h>
 #include "../Components/Combat.h"
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
+#include "../Ai/Behaviors/Tank/TankFSM.hpp"
 #include <string>
 
 class CombatSystem : public System
@@ -219,6 +220,33 @@ public:
 						glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
 						enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * combat.knockbackArr[combat.activeAttack];
 						this->hitEnemies.emplace_back(hitID[i]);
+					}
+				}
+				else if (scene->hasComponents<TankComponent>(hitID[i]))
+				{
+					for (size_t j = 0; j < this->hitEnemies.size(); j++)
+					{
+						if (this->hitEnemies[j] == hitID[i])
+						{
+							this->canHit = false;
+						}
+						else
+						{
+							this->canHit = true;
+						}
+					}
+					if (this->canHit == true)
+					{
+						TankComponent& enemy = this->scene->getComponent<TankComponent>(hitID[i]);
+						if (enemy.canBeHit)
+						{
+							enemy.life -= (int)combat.dmgArr[combat.activeAttack];
+							Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(hitID[i]);
+							Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
+							glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+							enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * combat.knockbackArr[combat.activeAttack];
+							this->hitEnemies.emplace_back(hitID[i]);
+						}
 					}
 				}
 			}
@@ -646,7 +674,6 @@ public:
 		glm::vec3 throwDir = glm::normalize(playerTrans.forward());
 		perkRb.gravityMult = 6.f;
 		perkRb.velocity = glm::vec3(throwDir.x * 20.f, 30.f, throwDir.z * 20.f);
-		this->scene->setScriptComponent(entity, "scripts/spin.lua");
 	}
 
 	void spawnPerk(Perks& perk)
