@@ -1,17 +1,36 @@
 #include "TankFSM.hpp"
 #include "../../../Components/Combat.h"
-#define getTankComponent() FSM::sceneHandler->getScene()->getComponent<TankComponent>(entityID)
-#define getPlayerID(playerID) std::string playerId_str = "playerID";FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerId_str)
-#define getPlayerTrans(playerID) FSM::sceneHandler->getScene()->getComponent<Transform>(playerID) 
-#define getPlayerCombat(playerID) FSM::sceneHandler->getScene()->getComponent<Combat>(playerID) 
-#define getTankTrans() FSM::sceneHandler->getScene()->getComponent<Transform>(entityID) 
-#define falseIfDead() TankComponent& tankComp_____macro = getTankComponent();if(tankComp_____macro.isDead()) {return false;}if(!getTheScene()->isActive(entityID)){return false;}
-#define getTheScene() FSM::sceneHandler->getScene()
-#define get_dt() FSM::sceneHandler->getAIHandler()->getDeltaTime()
+
+bool TankFSM::falseIfDead(Entity entityID)
+{
+    TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+    if(tankComp.isDead())
+    {return false;}
+    if(!getTheScene()->isActive(entityID))
+    {return false;}
+}
+
+Scene* TankFSM::getTheScene()
+{
+    return FSM::sceneHandler->getScene();
+}
+
+float TankFSM::get_dt()
+{
+    return FSM::sceneHandler->getAIHandler()->getDeltaTime();
+}
+
+int TankFSM::getPlayerID()
+{
+    int playerID = -1;
+    std::string playerId_str = "playerID";
+    FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerId_str);
+    return playerID;
+}
 
 void TankFSM::resetTimers(Entity entityID)
 {
-    TankComponent& tankComp = getTankComponent();
+    TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
     
 
@@ -87,11 +106,10 @@ void TankFSM::updateFriendsInSight(Entity entityID)
 
 bool TankFSM::playerInSight(Entity entityID)
 {
-    TankComponent& tankComp = getTankComponent();
-    int playerID = -1;
-    getPlayerID(playerID);
-    Transform& playerTrans  = getPlayerTrans(playerID);
-    Transform& tankTrans    = getTankTrans();
+    TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+    int playerID = getPlayerID();
+    Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
+    Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
     float tank_player_dist = glm::length(playerTrans.position - tankTrans.position);
     if(tank_player_dist <= tankComp.sightRadius)
     {
@@ -105,7 +123,7 @@ bool TankFSM::friendlysInFight(Entity entityID)
     bool ret = false;
 
     updateFriendsInSight(entityID);
-    TankComponent& tankComp = getTankComponent();
+    TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     Scene* theScene = getTheScene();
     for(auto f: tankComp.friendsInSight)
     {
@@ -130,17 +148,13 @@ bool TankFSM::friendlysInFight(Entity entityID)
     return false;
 }
 
-
-
-
-
 bool TankFSM::idleToAler(Entity entityID)
 {
-    falseIfDead();
+    falseIfDead(entityID);
     bool ret = false;
     
         
-    TankComponent& tankComp = getTankComponent();
+    TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 
     updateFriendsInSight(entityID);
     if(playerInSight(entityID) || friendlysInFight(entityID))
@@ -161,10 +175,10 @@ bool TankFSM::idleToAler(Entity entityID)
 
 bool TankFSM::alertToCombat(Entity entityID)
 {
-    falseIfDead();
+    falseIfDead(entityID);
     bool ret = false;
     updateFriendsInSight(entityID);  
-    TankComponent& tankComp = getTankComponent();
+    TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 
     if(tankComp.alertDone && tankComp.friendsInSight.size() <= 0)
 	{
@@ -177,30 +191,15 @@ bool TankFSM::alertToCombat(Entity entityID)
         resetTimers(entityID);
     }
 
-    /*if (tankComp.alertTimer <= 0 && tankComp.friendsInSight.size() <= 0)
-    {
-        tankComp.alertTimer = tankComp.alertTimerOrig;
-        ret = true;
-    }
-    else
-    {
-        tankComp.alertTimer -= get_dt();
-    }
-
-
-    if(ret)
-    {
-        tankComp.inCombat = true;
-    }*/
     return ret;
 }
 
 bool TankFSM::alertToShield(Entity entityID)
 {
-    falseIfDead();
+    falseIfDead(entityID);
     bool ret = false;
     updateFriendsInSight(entityID);  
-    TankComponent& tankComp = getTankComponent();
+    TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     if(tankComp.alertDone && tankComp.friendsInSight.size() > 0)
 	{
 		tankComp.alertDone = false;
@@ -213,24 +212,15 @@ bool TankFSM::alertToShield(Entity entityID)
         resetTimers(entityID);
     }
 
-    /*if (tankComp.alertTimer <= 0 && tankComp.allFriends.size() > 0)
-    {
-        tankComp.alertTimer = tankComp.alertTimerOrig;
-        ret = true;
-    }
-    else
-    {
-        tankComp.alertTimer -= get_dt();
-    }*/
     return ret;
 }
 
 bool TankFSM::combatToIdel(Entity entityID)
 {
-    falseIfDead();
+    falseIfDead(entityID);
     bool ret = false;
     updateFriendsInSight(entityID);
-    TankComponent& tankComp = getTankComponent();
+    TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     if(!playerInSight(entityID) && tankComp.huntTimer <= 0 && tankComp.friendsInSight.size() <= 0)
     {
         tankComp.huntTimer = tankComp.huntTimerOrig;
@@ -254,10 +244,10 @@ bool TankFSM::combatToIdel(Entity entityID)
 
 bool TankFSM::combatToShield(Entity entityID)
 {
-    falseIfDead();
+    falseIfDead(entityID);
     bool ret = false;
     updateFriendsInSight(entityID);
-    TankComponent& tankComp = getTankComponent();
+    TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     if((playerInSight(entityID) && tankComp.friendsInSight.size() > 0) || friendlysInFight(entityID))
     {
         ret = true;
@@ -275,10 +265,10 @@ bool TankFSM::combatToShield(Entity entityID)
 
 bool TankFSM::shieldToCombat(Entity entityID)
 {
-    falseIfDead();
+    falseIfDead(entityID);
     bool ret = false;
     updateFriendsInSight(entityID);
-    TankComponent& tankComp = getTankComponent();
+    TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     if(playerInSight(entityID) && tankComp.friendsInSight.size() <= 0)
     {
         ret = true;
@@ -308,10 +298,10 @@ bool TankFSM::shieldToCombat(Entity entityID)
 
 bool TankFSM::shieldToIdle(Entity entityID)
 {
-    falseIfDead();
+    falseIfDead(entityID);
     bool ret = false;
     updateFriendsInSight(entityID);
-    TankComponent& tankComp = getTankComponent();
+    TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     if(!playerInSight(entityID) && !friendlysInFight(entityID))
     {
         ret = true;
@@ -339,7 +329,7 @@ bool TankFSM::shieldToIdle(Entity entityID)
 bool TankFSM::toDead(Entity entityID)
 {
     bool ret = false;
-    TankComponent& tankComp = getTankComponent();
+    TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     if(tankComp.life <= 0)
     {
         ret = true;

@@ -1,5 +1,7 @@
 #include "LichFSM.hpp"
 #include "../../../Components/Combat.h"
+
+//TODO: Change this to funtions!!!!
 #define getLichComponent() FSM::sceneHandler->getScene()->getComponent<LichComponent>(entityID)
 #define getPlayerID(playerID) std::string playerId_str = "playerID";FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerId_str)
 #define getPlayerTrans(playerID) FSM::sceneHandler->getScene()->getComponent<Transform>(playerID) 

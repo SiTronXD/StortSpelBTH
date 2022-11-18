@@ -1,18 +1,28 @@
 #include "TankBTs.hpp"
 #include "TankFSM.hpp"
 
-#define getTankComponent() BehaviorTree::sceneHandler->getScene()->getComponent<TankComponent>(entityID)
-#define getPlayerID(playerID) std::string playerId_str = "playerID";BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(playerID, playerId_str)
-#define getPlayerTrans(playerID) BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(playerID) 
-#define getPlayerCombat(playerID) BehaviorTree::sceneHandler->getScene()->getComponent<Combat>(playerID) 
-#define getTankTrans() BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID) 
-#define getTheScene() BehaviorTree::sceneHandler->getScene()
-#define get_dt() BehaviorTree::sceneHandler->getAIHandler()->getDeltaTime()
+Scene* TankBT::getTheScene()
+{
+    return BehaviorTree::sceneHandler->getScene();
+}
+
+float TankBT::get_dt()
+{
+    return BehaviorTree::sceneHandler->getAIHandler()->getDeltaTime();
+}
+
+int TankBT::getPlayerID()
+{
+    int playerID = -1;
+    std::string playerId_str = "playerID";
+    BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(playerID, playerId_str);
+    return playerID;
+}
 
 void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 {
-	TankComponent& tankComp = getTankComponent();
-	Transform& tankTrans = getTankTrans();
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	if(tankComp.firendTarget.id == entityID)
 	{
 		return;
@@ -59,8 +69,8 @@ void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 }
 void TankBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision)
 {
-	TankComponent& tankComp = getTankComponent();
-	Transform& tankTrans = getTankTrans();
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	//Rotate towards target start
 	tankTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
@@ -104,7 +114,7 @@ void TankBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 
 bool TankBT::rotationDone(Entity entityID, glm::vec3 target, float rotSpeed, float precision)
 {
-	Transform& tankTrans = getTankTrans();
+	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	tankTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
 	glm::vec2 tankPos			= glm::vec2(tankTrans.position.x, tankTrans.position.z);
@@ -130,7 +140,7 @@ void TankBT::registerEntityComponents(Entity entityId)
 BTStatus TankBT::HasFreindsTarget(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	TankComponent& tankComp = getTankComponent();
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	if(tankComp.firendTarget.id != -1)
 	{
 		ret = BTStatus::Success;
@@ -141,38 +151,11 @@ BTStatus TankBT::HasFreindsTarget(Entity entityID)
 BTStatus TankBT::AreFriendsAlive(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	TankComponent& tankComp = getTankComponent();
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	if( tankComp.allFriends.size() > 0)
 	{
 		ret = BTStatus::Success;
 	}
-	/*for(auto f: tankComp.allFriends)
-	{
-		int health = 0;
-		if(f.second == "Swarm")
-		{
-			SwarmGroup* swarmGroup = getTheScene()->getComponent<SwarmComponent>(f.first).group;
-			for(auto g: swarmGroup->members)
-			{
-				health = getTheScene()->getComponent<SwarmComponent>(g).life;
-				if(health > 0)
-				{
-					break;
-				}
-			}
-			
-		}
-		else if(f.second == "Lich")
-		{
-			health = getTheScene()->getComponent<LichComponent>(f.first).life;
-		}
-		if(health > 0)
-		{
-			ret = BTStatus::Success;
-			break;
-		}
-		
-	}*/
 	return ret;
 }
 
@@ -183,9 +166,9 @@ BTStatus TankBT::PickNewFreinds(Entity entityID)
 	float minDist = 10000.0f;
 	int minDistID = -1;
 	std::string minDistType = "";
-	Transform& tankTrans = getTankTrans();
+	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	//Get all unvisited freinds
-	TankComponent& tankComp = getTankComponent();
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	for(auto& f: tankComp.allFriends)
 	{
 		//Pick nearest unvisited friends
@@ -230,8 +213,8 @@ BTStatus TankBT::PickNewFreinds(Entity entityID)
 BTStatus TankBT::PickNewRandomTarget(Entity entityID)
 {
 	BTStatus ret = BTStatus::Success;
-	TankComponent& tankComp	= getTankComponent();
-	Transform& tankTrans	= getTankTrans();
+	TankComponent& tankComp	= getTheScene()->getComponent<TankComponent>(entityID);
+	Transform& tankTrans	= getTheScene()->getComponent<Transform>(entityID);
 	tankComp.firendTarget	= {entityID, tankTrans.position};
 	return ret;
 }
@@ -240,13 +223,13 @@ BTStatus TankBT::MoveAround(Entity entityID)
 {
 	BTStatus ret = BTStatus::Running;
 
-	TankComponent& tankComp = getTankComponent();
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	if(tankComp.firendTarget.id == entityID)
 	{
 		tankComp.firendTarget.id = -1;
 		return ret;
 	}
-	Transform& tankTrans	= getTankTrans();
+	Transform& tankTrans	= getTheScene()->getComponent<Transform>(entityID);
 	glm::vec3 moveDir		= pathFindingManager.getDirTo(tankTrans.position, tankComp.firendTarget.pos);
 	moveDir = glm::normalize(moveDir);
 
@@ -287,11 +270,10 @@ BTStatus TankBT::playerInPersonalSpace(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
 
-	TankComponent& tankComp = getTankComponent();
-    int playerID			= -1;
-    getPlayerID(playerID);
-    Transform& playerTrans  = getPlayerTrans(playerID);
-    Transform& tankTrans    = getTankTrans();
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+    int playerID = getPlayerID();
+    Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
+    Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
     float tank_player_dist	= glm::length(playerTrans.position - tankTrans.position);
     if(tank_player_dist <= tankComp.peronalSpaceRadius)
     {
@@ -305,7 +287,7 @@ BTStatus TankBT::GroundHump(Entity entityID)
 {
 	BTStatus ret = BTStatus::Running;
 
-	TankComponent& tankComp = getTankComponent();
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	tankComp.chargeTimer = tankComp.chargeTimerOrig;
 	tankComp.hasRunTarget = false;
 
@@ -320,15 +302,15 @@ BTStatus TankBT::GroundHump(Entity entityID)
 		tankComp.groundHumpTimer -= get_dt();
 	}
 
-	int playerID = -1;
-	getPlayerID(playerID);
+	int playerID = getPlayerID();
+	
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	Collider& playerCol = getTheScene()->getComponent<Collider>(playerID);
 	Rigidbody& playerRB = getTheScene()->getComponent<Rigidbody>(playerID);
 	Script& playerScript = getTheScene()->getComponent<Script>(playerID);
 	bool playerGrounded = false;
 	BehaviorTree::sceneHandler->getScriptHandler()->getScriptComponentValue(playerScript, playerGrounded, "onGround");
-	Transform& tankTrans = getTankTrans();
+	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	std::vector<int> toRemove;
 
 
@@ -377,11 +359,10 @@ BTStatus TankBT::GroundHump(Entity entityID)
 BTStatus TankBT::playerOutsidePersonalSpace(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	TankComponent& tankComp = getTankComponent();
-    int playerID			= -1;
-    getPlayerID(playerID);
-    Transform& playerTrans  = getPlayerTrans(playerID);
-    Transform& tankTrans    = getTankTrans();
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+    int playerID = getPlayerID();
+    Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
+    Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
     float tank_player_dist	= glm::length(playerTrans.position - tankTrans.position);
     if(tank_player_dist > tankComp.peronalSpaceRadius)
     {
@@ -393,11 +374,10 @@ BTStatus TankBT::playerOutsidePersonalSpace(Entity entityID)
 BTStatus TankBT::ChargeAndRun(Entity entityID)
 {
 	BTStatus ret = BTStatus::Running;
-	TankComponent& tankComp = getTankComponent();
-	int playerID			= -1;
-    getPlayerID(playerID);
-    Transform& playerTrans  = getPlayerTrans(playerID);
-    Transform& tankTrans    = getTankTrans();
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	int playerID			= getPlayerID();
+    Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
+    Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
 	Collider& tankCol = getTheScene()->getComponent<Collider>(entityID);
 	Rigidbody& rb = getTheScene()->getComponent<Rigidbody>(entityID);
 
@@ -505,7 +485,7 @@ BTStatus TankBT::getNearestGroupToPlayer(Entity entityID)
 
 	glm::vec3 average		= glm::vec3(0.0f, 0.0f, 0.0f);
 	int num					= 0;
-	TankComponent& tankComp = getTankComponent();
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	for(auto f: tankComp.friendsInSight)
 	{
 		if(f.second.type == "Swarm")
@@ -532,7 +512,7 @@ BTStatus TankBT::getNearestGroupToPlayer(Entity entityID)
 	}
 	if(num == 0)
 	{
-		average = getTankTrans().position;
+		average = getTheScene()->getComponent<Transform>(entityID).position;
 	}
 	else
 	{
@@ -547,8 +527,8 @@ BTStatus TankBT::getNearestGroupToPlayer(Entity entityID)
 BTStatus TankBT::groupInPersonalSpece(Entity entityID)
 {
 	BTStatus ret			= BTStatus::Failure;
-	TankComponent& tankComp = getTankComponent();
-	Transform& tankTrans	= getTankTrans();
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	Transform& tankTrans	= getTheScene()->getComponent<Transform>(entityID);
 	float len				= glm::length(tankComp.shieldTargetPos - tankTrans.position);
 	if(len <= tankComp.peronalSpaceRadius)
 	{
@@ -561,8 +541,8 @@ BTStatus TankBT::groupInPersonalSpece(Entity entityID)
 BTStatus TankBT::moveTowardsGroup(Entity entityID)
 {
 	BTStatus ret			= BTStatus::Success;
-	TankComponent& tankComp = getTankComponent();
-	Transform& tankTrans	= getTankTrans();
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	Transform& tankTrans	= getTheScene()->getComponent<Transform>(entityID);
 	Rigidbody& tankRb		= getTheScene()->getComponent<Rigidbody>(entityID);
 	glm::vec3 moveDir		= pathFindingManager.getDirTo(tankTrans.position, tankComp.shieldTargetPos);
 	moveDir					= glm::normalize(moveDir);
@@ -573,9 +553,9 @@ BTStatus TankBT::moveTowardsGroup(Entity entityID)
 BTStatus TankBT::HoldShield(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
-	TankComponent& tankComp = getTankComponent();
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 
-	Transform& tankTrans = getTankTrans();
+	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	if(tankComp.friendHealTimer <= 0)
 	{
 		tankComp.friendHealTimer = tankComp.friendHealTimerOrig;
@@ -620,9 +600,8 @@ BTStatus TankBT::HoldShield(Entity entityID)
 	}
 	
 
-	int playerID = -1;
-	getPlayerID(playerID);
-	Transform& playerTrans = getPlayerTrans(playerID);
+	int playerID = getPlayerID();
+	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	rotateTowards(entityID, playerTrans.position, tankComp.shildRotSpeed, 5.0f);
 
 	glm::vec3 tank_player_vec = playerTrans.position - tankTrans.position;
@@ -649,10 +628,9 @@ BTStatus TankBT::playAlertAnim(Entity entityID)
 {
 	BTStatus ret = BTStatus::Running;
 
-	TankComponent& tankComp = getTankComponent();
-	int playerID = 0;
-	getPlayerID(playerID);
-	Transform& playerTransform = getPlayerTrans(playerID);
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	int playerID = getPlayerID();
+	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 	Transform& tankTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Collider& tankCol = sceneHandler->getScene()->getComponent<Collider>(entityID);
 	float toMove = (tankCol.radius*2) * (1.0f - tankComp.origScaleY + tankComp.alertScale);
@@ -707,7 +685,7 @@ BTStatus TankBT::playDeathAnim(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
 
-	TankComponent& tankComp = getTankComponent();
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	Transform& tankTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 	if(tankTrans.scale.y <= 0.0f)
 	{
@@ -726,8 +704,7 @@ BTStatus TankBT::die(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
 
-	int playerID = -1;
-	getPlayerID(playerID);
+	int playerID = getPlayerID();
 	Combat& playerCombat = sceneHandler->getScene()->getComponent<Combat>(playerID);
 	if (playerCombat.health <= (playerCombat.maxHealth - 10))
 	{

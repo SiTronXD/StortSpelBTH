@@ -157,10 +157,14 @@ private:
 
 private:
 	//Helper functions
-	static void updateFriendsInSight(Entity entityID);
-	static bool playerInSight(Entity entityID);
-	static bool friendlysInFight(Entity entityID);
-	static void resetTimers(Entity entityID);
+	static void		updateFriendsInSight(Entity entityID);
+	static bool		playerInSight(Entity entityID);
+	static bool		friendlysInFight(Entity entityID);
+	static void		resetTimers(Entity entityID);
+	static int		getPlayerID();
+	static float	get_dt();
+	static Scene*	getTheScene();
+	static bool		falseIfDead(Entity entityID);
 protected:
 	// Inherited via FSM
 	virtual void registerEntityComponents(Entity entityId) override
