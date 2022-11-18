@@ -39,6 +39,7 @@ private:
     static bool combatToHunt(Entity entityID);
 
     static bool toDead(Entity entityID);
+    static bool revive(Entity entityID);
 
 	EntityEvent idle_to_creep{   "idle to creep",      idleToCreep};
 	EntityEvent creep_to_alerted{"creep to alerted",   creepToAlerted};
@@ -57,6 +58,8 @@ private:
     EntityEvent combat_to_dead{  "combat to dead",  toDead};
     EntityEvent escape_to_dead{  "escape to dead",  toDead};
     EntityEvent creep_to_dead{   "creep to dead",   toDead};
+
+    EntityEvent dead_to_idle{   "dead to idle",   revive};
 
 
 public:
@@ -97,6 +100,8 @@ protected:
         addEntityTransition("combat",   LichFSM::combat_to_dead,       "dead");
         addEntityTransition("escape",   LichFSM::escape_to_dead,       "dead");
         addEntityTransition("creep",    LichFSM::creep_to_dead,        "dead");
+
+        addEntityTransition("dead",    LichFSM::dead_to_idle,        "idle");
 
 
 		setInitialNode("idle");
