@@ -13,8 +13,8 @@ function script:init()
 
 	self.moveDir = vector()
 	self.currentSpeed = vector()
-	self.maxSpeed = 50
-    self.sprintSpeed = 100
+	self.maxSpeed = 30
+    self.sprintSpeed = 60
     self.isSprinting = false
 	self.speedIncrease = 200
 	self.turnSpeed = 200
@@ -23,17 +23,17 @@ function script:init()
     self.transform.position = vector(0, 12, 0)
     self.transform.rotation = vector(0, 0, 0)
 
-    self.maxStamina = 100.0
-    self.currentStamina = 100.0
+    self.maxStamina = 100
+    self.currentStamina = 100
     self.sprintStamDrain = 20.0
     self.staminaRegen = 20.0
     self.staminaRegenCd = 2.0
     self.staminaTimer = 0.0
     self.useStamina = true
 
-    self.dodgeSpeed = 300
+    self.dodgeSpeed = 100
     self.dodgeTimer = 0.0
-    self.dodgeTime = 0.2
+    self.dodgeTime = 0.6
     self.currentMoveDir = 0
     self.isDodging = false
 
@@ -42,8 +42,12 @@ function script:init()
     self.jumpTimer = 0
     self.active = true
 
-    self.activeAnimation = {idle = 0, run = 1, sprint = 2, dodge = 3}
-    self.currentAnimation = 0
+    self.activeAnimation = {idle = 1, run = 2, sprint = 3, dodge = 3}
+    self.currentAnimation = 1
+    self.idleAnimTime = 1.0
+    self.runAnimTime = 0.7
+    self.sprintAnimTime = 1.2
+    self.dodgeAnimTime = 2.5
 end
 
 function script:update(dt)
@@ -73,13 +77,16 @@ function script:update(dt)
     right.y = 0
 
     -- Input vector
-    self.moveDir = vector(core.btoi(input.isKeyDown(Keys.A)) - core.btoi(input.isKeyDown(Keys.D)), core.btoi(input.isKeyDown(Keys.W)) - core.btoi(input.isKeyDown(Keys.S)), 0)
+    if not self.isDodging
+    then
+        self.moveDir = vector(core.btoi(input.isKeyDown(Keys.A)) - core.btoi(input.isKeyDown(Keys.D)), core.btoi(input.isKeyDown(Keys.W)) - core.btoi(input.isKeyDown(Keys.S)), 0)
+    end
     -- Local vector with speed applied with or without sprint (using stamina)
-    if (self.staminaTimer > 0)
+    if (self.staminaTimer >= 0)
     then
         self.staminaTimer = self.staminaTimer - dt
     else
-        if (self.currentStamina < 100)
+        if (self.currentStamina < self.maxStamina)
         then
             self.currentStamina = self.currentStamina + self.staminaRegen * dt
             if (self.currentStamina < 10)
@@ -95,7 +102,6 @@ function script:update(dt)
         if (self.currentStamina > 0 and self.useStamina == true and self.moveDir ~= vector(0))
         then
             self.isSprinting = true
-            self.currentAnimation = self.activeAnimation.sprint
             self.currentSpeed = self.moveDir:normalize() * self.sprintSpeed
             self.currentStamina = self.currentStamina - (self.sprintStamDrain * dt)
             self.staminaTimer = self.staminaRegenCd
@@ -117,7 +123,6 @@ function script:update(dt)
         if (self.currentStamina > 20.0 and self.currentMoveDir ~= vector(0))
         then
             self.isDodging = true
-            self.currentAnimation = self.activeAnimation.dodge
             self.currentStamina = self.currentStamina - 20.0
             self.staminaTimer = self.staminaRegenCd
             self.currentSpeed = self.currentMoveDir * self.dodgeSpeed
@@ -162,52 +167,66 @@ function script:update(dt)
     local curMoveSqrd = self.moveDir * self.moveDir
     local curMoveSum = curMoveSqrd.x + curMoveSqrd.y + curMoveSqrd.z
 
-    if (self.animTimer > 0)
+    if (self.animTimer > 0.0)
     then
         self.animTimer = self.animTimer - dt
     end
     
-    if (input.isKeyDown(Keys.CTRL))
+    if (input.isKeyPressed(Keys.CTRL))
     then
-        if (self.isDodging and self.moveDir ~= vector(0))
+        if (self.animTimer <= 0.0)
         then
-            local anim = scene.getComponent(self.ID, CompType.Animation)
-            anim.timeScale = 3.0
-            scene.setComponent(self.ID, CompType.Animation, anim)
+            if self.isDodging and self.currentSpeed ~= vector(0) and self.currentAnimation ~= self.activeAnimation.dodge
+            then
+                local anim = scene.getComponent(self.ID, CompType.Animation)
+                self.currentAnimation = self.activeAnimation.dodge
+                anim.timeScale = 2.5
+                scene.setComponent(self.ID, CompType.Animation, anim)
+                scene.setAnimation(self.ID, "dodge")
+                self.animTimer = 0.8
+            end
         end
     end
     
     if (input.isKeyDown(Keys.SHIFT))
     then
-        if (self.isSprinting and self.moveDir ~= vector(0))
+        if (self.animTimer < 0.0)
         then
-            local anim = scene.getComponent(self.ID, CompType.Animation)
-            anim.timeScale = 2.0
-            scene.setComponent(self.ID, CompType.Animation, anim)
+            if (self.isSprinting and self.moveDir ~= vector(0))
+            then
+                if self.currentAnimation ~= self.activeAnimation.sprint
+                then
+                    local anim = scene.getComponent(self.ID, CompType.Animation)
+                    self.currentAnimation = self.activeAnimation.sprint
+                    anim.timeScale = 1.2
+                    scene.setComponent(self.ID, CompType.Animation, anim)
+                    scene.setAnimation(self.ID, "run")
+                end
+            end
         end
     end
     
     if (not self.isSprinting and not self.isDodging)
     then
-        
-        local curSpdSqrd = self.currentSpeed * self.currentSpeed
-        local curSpdSum = curSpdSqrd.x + curSpdSqrd.y + curSpdSqrd.z
-        if curMoveSum > 0.1 and self.currentAnimation ~= self.activeAnimation.run 
+        if (self.animTimer < 0.0)
         then
-            local anim = scene.getComponent(self.ID, CompType.Animation)
-            self.currentAnimation = self.activeAnimation.run
-            anim.timeScale = 1.0
-            anim.timer = 0.0
-            scene.setComponent(self.ID, CompType.Animation, anim)
-            scene.setAnimation(self.ID, "run", false)
-        elseif curMoveSum < 0.1 and self.currentAnimation ~= self.activeAnimation.idle
-        then
-            local anim = scene.getComponent(self.ID, CompType.Animation)
-            self.currentAnimation = self.activeAnimation.idle
-            anim.timeScale = 1.0
-            anim.timer = 0.0
-            scene.setComponent(self.ID, CompType.Animation, anim)
-            scene.setAnimation(self.ID, "idle", false)
+            local curSpdSqrd = self.currentSpeed * self.currentSpeed
+            local curSpdSum = curSpdSqrd.x + curSpdSqrd.y + curSpdSqrd.z
+            if curMoveSum > 0.1 and self.currentAnimation ~= self.activeAnimation.run 
+            then
+                local anim = scene.getComponent(self.ID, CompType.Animation)
+                self.currentAnimation = self.activeAnimation.run
+                anim.timeScale = 0.7
+                scene.setComponent(self.ID, CompType.Animation, anim)
+                scene.setAnimation(self.ID, "run")
+            elseif curMoveSum < 0.1 and self.currentAnimation ~= self.activeAnimation.idle
+            then
+                local anim = scene.getComponent(self.ID, CompType.Animation)
+                self.currentAnimation = self.activeAnimation.idle
+                anim.timeScale = 1.0
+                scene.setComponent(self.ID, CompType.Animation, anim)
+                scene.setAnimation(self.ID, "idle")
+            end
         end
     end
 
