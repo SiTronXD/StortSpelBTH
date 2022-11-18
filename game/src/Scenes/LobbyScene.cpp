@@ -35,7 +35,6 @@ void LobbyScene::init()
              "slashAttack"}
         )
     );
-  this->getNetworkHandler()->setMeshes("PlayerMesh", playerModel);
    
   TextureSamplerSettings samplerSettings{};
   samplerSettings.filterMode = vk::Filter::eNearest;
@@ -88,6 +87,18 @@ void LobbyScene::init()
   this->setAnimation(mainPlayer, "idle", true);
   this->getComponent<Transform>(mainPlayer).position = playerPositions[0];
   this->getComponent<Transform>(mainPlayer).rotation = glm::vec3(0,180,0);
+
+  activePlayers.reserve(MAXNUMBEROFPLAYERS - 1);
+  for (int i = 0; i < MAXNUMBEROFPLAYERS - 1; i++)
+  {
+      int e = this->createEntity(); 
+      players[i] = e;
+      this->setComponent<MeshComponent>(e, playerModel);
+      this->setComponent<AnimationComponent>(e);
+      this->getComponent<Transform>(e).position = glm::vec3(0, 10000, 0);
+      this->getComponent<Transform>(e).rotation = glm::vec3(0, 180, 0);
+      this->setAnimation(e, "idle", true);
+  }
 }
 
 void LobbyScene::start() {
@@ -113,31 +124,18 @@ void LobbyScene::start() {
 void LobbyScene::update()
 {
   //set model position and player names
-  if (this->getNetworkHandler()->getPlayers().size() > players.size())
+  if (this->getNetworkHandler()->getPlayers().size() > activePlayers.size())
     {
-      for (int i = players.size();
+      for (int i = activePlayers.size();
            i < this->getNetworkHandler()->getPlayers().size();
            i++)
         {
-          int e = this->getNetworkHandler()->getPlayers()[i].first;
-          this->players.push_back(e);
-          this->getComponent<Transform>(e).position = playerPositions[i + 1];
-          this->getComponent<Transform>(e).rotation = glm::vec3(0,180,0);
-          this->setComponent<MeshComponent>(e, playerModel);
-          this->setComponent<AnimationComponent>(e);
-          this->setAnimation(e, "idle", true);
+          activePlayers.push_back(players[i]);
+          this->getNetworkHandler()->getPlayers()[i].first = activePlayers[i];
+          this->getComponent<Transform>(activePlayers[i]).position = playerPositions[i + 1];
           this->playersNames.push_back(this->getNetworkHandler()->getPlayers()[i].second);
         }
     }
-  if (Input::isKeyPressed(Keys::A))
-  {
-      int fuckboii = this->createEntity();
-      this->setComponent<MeshComponent>(fuckboii, playerModel);
-      this->setComponent<AnimationComponent>(fuckboii);
-      this->setAnimation(fuckboii, "idle", true);
-      this->getComponent<Transform>(fuckboii).position = playerPositions[1];
-      this->getComponent<Transform>(fuckboii).rotation = glm::vec3(0, 180, 0);
-  }
   //write player names in lobby
   Scene::getUIRenderer()->setTexture(this->fontTextureId);
   this->getUIRenderer()->renderString(

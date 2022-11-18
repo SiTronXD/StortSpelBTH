@@ -116,6 +116,15 @@ void GameSceneNetwork::start()
 
   //spawn other players
   this->getNetworkHandler()->createPlayers();
+  //for (int i = 0; i < this->getNetworkHandler()->getPlayers().size(); i++)
+  //{
+  //    int e = this->createEntity();
+  //    this->setComponent<MeshComponent>(e, playerModel);
+  //    this->setComponent<AnimationComponent>(e);
+  //    this->getComponent<Transform>(e).position = glm::vec3(0, 10000, 0);
+  //    this->getComponent<Transform>(e).rotation = glm::vec3(0, 180, 0);
+  //    this->setAnimation(e, "idle", true);
+  //}
 
   this->setComponent<Combat>(playerID);
   this->createSystem<CombatSystem>(
