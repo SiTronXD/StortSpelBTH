@@ -306,6 +306,7 @@ BTStatus TankBT::GroundHump(Entity entityID)
 
 	TankComponent& tankComp = getTankComponent();
 	tankComp.chargeTimer = tankComp.chargeTimerOrig;
+	tankComp.hasRunTarget = false;
 
 	if(tankComp.groundHumpTimer <= 0)
 	{
@@ -318,13 +319,14 @@ BTStatus TankBT::GroundHump(Entity entityID)
 		tankComp.groundHumpTimer -= Time::getDT();
 	}
 
-
 	int playerID = -1;
 	getPlayerID(playerID);
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	Collider& playerCol = getTheScene()->getComponent<Collider>(playerID);
 	Rigidbody& playerRB = getTheScene()->getComponent<Rigidbody>(playerID);
-	Combat& combat =  getTheScene()->getComponent<Combat>(playerID);
+	Script& playerScript = getTheScene()->getComponent<Script>(playerID);
+	bool playerGrounded = false;
+	BehaviorTree::sceneHandler->getScriptHandler()->getScriptComponentValue(playerScript, playerGrounded, "onGround");
 	Transform& tankTrans = getTankTrans();
 	std::vector<int> toRemove;
 
@@ -342,7 +344,7 @@ BTStatus TankBT::GroundHump(Entity entityID)
 		{
 			toRemove.push_back(i);
 		}
-		else if(tankComp.humps[i] >= minHitDist && tankComp.humps[i] <= maxHitDist && combat.grounded)
+		else if(tankComp.humps[i] >= minHitDist && tankComp.humps[i] <= maxHitDist && playerGrounded)
 		{
 			//PlayerHit!
 			std::cout<<"Player humped!\n";

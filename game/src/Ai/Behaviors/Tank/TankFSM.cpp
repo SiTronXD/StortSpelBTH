@@ -141,11 +141,7 @@ bool TankFSM::idleToAler(Entity entityID)
     TankComponent& tankComp = getTankComponent();
 
     updateFriendsInSight(entityID);
-    if(playerInSight(entityID))
-    {
-        ret = true;
-    }
-    else if(friendlysInFight(entityID))
+    if(playerInSight(entityID) || friendlysInFight(entityID))
     {
         ret = true;
     }
@@ -201,9 +197,9 @@ bool TankFSM::alertToShield(Entity entityID)
 {
     falseIfDead();
     bool ret = false;
-    //updateFriendsInSight(entityID);  
+    updateFriendsInSight(entityID);  
     TankComponent& tankComp = getTankComponent();
-    if(tankComp.alertDone && tankComp.allFriends.size() > 0)
+    if(tankComp.alertDone && tankComp.friendsInSight.size() > 0)
 	{
 		tankComp.alertDone = false;
 		ret = true;
@@ -233,7 +229,7 @@ bool TankFSM::combatToIdel(Entity entityID)
     bool ret = false;
     updateFriendsInSight(entityID);
     TankComponent& tankComp = getTankComponent();
-    if(!playerInSight(entityID) && tankComp.huntTimer <= 0)
+    if(!playerInSight(entityID) && tankComp.huntTimer <= 0 && tankComp.friendsInSight.size() <= 0)
     {
         tankComp.huntTimer = tankComp.huntTimerOrig;
         ret = true;
@@ -260,7 +256,7 @@ bool TankFSM::combatToShield(Entity entityID)
     bool ret = false;
     updateFriendsInSight(entityID);
     TankComponent& tankComp = getTankComponent();
-    if((playerInSight(entityID) || tankComp.inCombat) && tankComp.friendsInSight.size() > 0)
+    if((playerInSight(entityID) && tankComp.friendsInSight.size() > 0) || friendlysInFight(entityID))
     {
         ret = true;
     }
@@ -281,7 +277,7 @@ bool TankFSM::shieldToCombat(Entity entityID)
     bool ret = false;
     updateFriendsInSight(entityID);
     TankComponent& tankComp = getTankComponent();
-    if((playerInSight(entityID) || tankComp.inCombat) && tankComp.allFriends.size() <= 0)
+    if(playerInSight(entityID) && tankComp.friendsInSight.size() <= 0)
     {
         ret = true;
     }
@@ -314,7 +310,7 @@ bool TankFSM::shieldToIdle(Entity entityID)
     bool ret = false;
     updateFriendsInSight(entityID);
     TankComponent& tankComp = getTankComponent();
-    if(!playerInSight(entityID) && !tankComp.inCombat && tankComp.allFriends.size() <= 0)
+    if(!playerInSight(entityID) && !friendlysInFight(entityID))
     {
         ret = true;
     }

@@ -14,8 +14,6 @@ struct Combat
 	int maxHealth = 100;
 	int health = 100;
 	
-
-	bool grounded = false;
 	// Damage for each kind of hit
 	// 0 = Light Hit
 	// 1 = Heavy Hit

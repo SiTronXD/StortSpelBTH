@@ -585,7 +585,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
             //Num to spawn
             int numTanks        = 1;
             int numLich         = 0;
-            int numSwarm        = 0;
+            int numSwarm        = 6;
 
 			int swarmIdx        = 0;
 			int lichIdx         = 0;
@@ -775,19 +775,11 @@ void GameScene::onCollisionEnter(Entity e1, Entity e2)
 {
   if (this->hasComponents<SwarmComponent>(e1) &&
       this->hasComponents<SwarmComponent>(e2))
-    {
-      this->getComponent<SwarmComponent>(e1).touchedFriend = true;
-      this->getComponent<SwarmComponent>(e2).touchedFriend = true;
-    }
-
-
-  if(e1 == this->roomHandler.getFloor() || e2 == this->roomHandler.getFloor())
   {
-      if(e1 == playerID || e2 == playerID)
-      {
-          this->getComponent<Combat>(playerID).grounded = true;
-      }
+    this->getComponent<SwarmComponent>(e1).touchedFriend = true;
+    this->getComponent<SwarmComponent>(e2).touchedFriend = true;
   }
+
 }
 
 void GameScene::onCollisionStay(Entity e1, Entity e2)
@@ -795,50 +787,42 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
   Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
 
   if (player == playerID)  // player triggered a trigger :]
+  {
+    Entity other = e1 == player ? e2 : e1;
+    if (this->hasComponents<SwarmComponent>(other))
     {
-      Entity other = e1 == player ? e2 : e1;
-      if (this->hasComponents<SwarmComponent>(other))
-      {
-        auto& swarmComp = this->getComponent<SwarmComponent>(other);
-        if (swarmComp.inAttack)
-          {
-            auto& aiCombat = this->getComponent<AiCombatSwarm>(other);
-            swarmComp.inAttack = false;
-            swarmComp.touchedPlayer = true;
-            //aiCombat.timer = aiCombat.lightAttackTime;
-            this->getComponent<Combat>(player).health -=
-                (int)aiCombat.lightHit;
-            std::cout << "WAS HIT\n";
-          }
-      }
-      else if (this->hasComponents<TankComponent>(other))
-      {
-        auto& tankComp = this->getComponent<TankComponent>(other);
-        if (tankComp.canAttack)
+      auto& swarmComp = this->getComponent<SwarmComponent>(other);
+      if (swarmComp.inAttack)
         {
-          auto& aiCombat = this->getComponent<AiCombatTank>(other);
-          tankComp.canAttack = false;
+          auto& aiCombat = this->getComponent<AiCombatSwarm>(other);
+          swarmComp.inAttack = false;
+          swarmComp.touchedPlayer = true;
+          //aiCombat.timer = aiCombat.lightAttackTime;
           this->getComponent<Combat>(player).health -=
-              (int)aiCombat.directHit;
+              (int)aiCombat.lightHit;
           std::cout << "WAS HIT\n";
         }
+    }
+    else if (this->hasComponents<TankComponent>(other))
+    {
+      auto& tankComp = this->getComponent<TankComponent>(other);
+      if (tankComp.canAttack)
+      {
+        auto& aiCombat = this->getComponent<AiCombatTank>(other);
+        tankComp.canAttack = false;
+        this->getComponent<Combat>(player).health -=
+            (int)aiCombat.directHit;
+        std::cout << "WAS HIT\n";
       }
     }
-
-  if(e1 == this->roomHandler.getFloor() || e2 == this->roomHandler.getFloor())
-  {
-      if(e1 == playerID || e2 == playerID)
-      {
-          this->getComponent<Combat>(playerID).grounded = true;
-      }
   }
 
   if (this->hasComponents<SwarmComponent>(e1) &&
       this->hasComponents<SwarmComponent>(e2))
-    {
-      this->getComponent<SwarmComponent>(e1).touchedFriend = true;
-      this->getComponent<SwarmComponent>(e2).touchedFriend = true;
-    }
+  {
+    this->getComponent<SwarmComponent>(e1).touchedFriend = true;
+    this->getComponent<SwarmComponent>(e2).touchedFriend = true;
+  }
 }
 
 void GameScene::onCollisionExit(Entity e1, Entity e2)
@@ -846,18 +830,11 @@ void GameScene::onCollisionExit(Entity e1, Entity e2)
 
   if (this->hasComponents<SwarmComponent>(e1) &&
       this->hasComponents<SwarmComponent>(e2))
-    {
-      this->getComponent<SwarmComponent>(e1).touchedFriend = false;
-      this->getComponent<SwarmComponent>(e2).touchedFriend = false;
-    }
-
-  if(e1 == this->roomHandler.getFloor() || e2 == this->roomHandler.getFloor())
   {
-      if(e1 == playerID || e2 == playerID)
-      {
-          this->getComponent<Combat>(playerID).grounded = false;
-      }
+    this->getComponent<SwarmComponent>(e1).touchedFriend = false;
+    this->getComponent<SwarmComponent>(e2).touchedFriend = false;
   }
+
 }
 
 void GameScene::createPortal()
