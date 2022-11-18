@@ -101,4 +101,11 @@ protected:
 
 		setInitialNode("idle");
 	}
+
+
+    //Helper functions
+    static int		getPlayerID();
+	static float	get_dt();
+	static Scene*	getTheScene();
+	static bool		falseIfDead(Entity entityID);
 };

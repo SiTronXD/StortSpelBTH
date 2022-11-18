@@ -60,9 +60,9 @@ struct TankComponent
 	}
 
 	//Ints
-    int FULL_HEALTH					= 300;  
+    int FULL_HEALTH					= 500;  
     int life						= FULL_HEALTH;
-	int friendHealthRegen			= 10;
+	int friendHealthRegen			= 40;
 
 	//Floats
 	float idleSpeed					= 10.0f;
@@ -80,7 +80,8 @@ struct TankComponent
 	float humpForce					= 75.0f;
 	float humpYForce				= 150.0f;
 	float humpShockwaveSpeed		= 30.0f;
-	float humpShockwaveMaxRadius	= sightRadius;
+	float humpShockwaveShieldRadius	= sightRadius +30.0f;
+	float humpShockwaveAttackRadius	= sightRadius;
 	float deathAnimSpeed			= 3.0f;
 	float origScaleY				= 1.0f;
 	float alertScale				= 1.5f;

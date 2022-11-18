@@ -6,8 +6,10 @@ bool TankFSM::falseIfDead(Entity entityID)
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     if(tankComp.isDead())
     {return false;}
-    if(!getTheScene()->isActive(entityID))
+    else if(!getTheScene()->isActive(entityID))
     {return false;}
+    else
+    {return true;}
 }
 
 Scene* TankFSM::getTheScene()
@@ -150,7 +152,7 @@ bool TankFSM::friendlysInFight(Entity entityID)
 
 bool TankFSM::idleToAler(Entity entityID)
 {
-    falseIfDead(entityID);
+    if(!falseIfDead(entityID)){return false;}
     bool ret = false;
     
         
@@ -175,7 +177,7 @@ bool TankFSM::idleToAler(Entity entityID)
 
 bool TankFSM::alertToCombat(Entity entityID)
 {
-    falseIfDead(entityID);
+    if(!falseIfDead(entityID)){return false;}
     bool ret = false;
     updateFriendsInSight(entityID);  
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
@@ -189,6 +191,7 @@ bool TankFSM::alertToCombat(Entity entityID)
     if(ret)
     {
         resetTimers(entityID);
+        //tankComp.canBeHit = true;
     }
 
     return ret;
@@ -196,7 +199,7 @@ bool TankFSM::alertToCombat(Entity entityID)
 
 bool TankFSM::alertToShield(Entity entityID)
 {
-    falseIfDead(entityID);
+    if(!falseIfDead(entityID)){return false;}
     bool ret = false;
     updateFriendsInSight(entityID);  
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
@@ -217,7 +220,7 @@ bool TankFSM::alertToShield(Entity entityID)
 
 bool TankFSM::combatToIdel(Entity entityID)
 {
-    falseIfDead(entityID);
+    if(!falseIfDead(entityID)){return false;}
     bool ret = false;
     updateFriendsInSight(entityID);
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
@@ -244,7 +247,7 @@ bool TankFSM::combatToIdel(Entity entityID)
 
 bool TankFSM::combatToShield(Entity entityID)
 {
-    falseIfDead(entityID);
+    if(!falseIfDead(entityID)){return false;}
     bool ret = false;
     updateFriendsInSight(entityID);
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
@@ -265,7 +268,7 @@ bool TankFSM::combatToShield(Entity entityID)
 
 bool TankFSM::shieldToCombat(Entity entityID)
 {
-    falseIfDead(entityID);
+    if(!falseIfDead(entityID)){return false;}
     bool ret = false;
     updateFriendsInSight(entityID);
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
@@ -289,7 +292,7 @@ bool TankFSM::shieldToCombat(Entity entityID)
             }
         }
         tankComp.inCombat = true;
-        tankComp.canBeHit = true;
+        //tankComp.canBeHit = true;
 
         resetTimers(entityID);
     }
@@ -298,7 +301,7 @@ bool TankFSM::shieldToCombat(Entity entityID)
 
 bool TankFSM::shieldToIdle(Entity entityID)
 {
-    falseIfDead(entityID);
+    if(!falseIfDead(entityID)){return false;}
     bool ret = false;
     updateFriendsInSight(entityID);
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
