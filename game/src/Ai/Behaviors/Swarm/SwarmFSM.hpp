@@ -1,50 +1,56 @@
 #pragma once
 #include "vengine.h"
 #include "SwarmBTs.hpp"
-#include "../../../Components/AiCombat.h"
+#include "../../../Components/AiCombatSwarm.h"
 
 
 struct SwarmComponent
 {
-	int LOW_HEALTH = 30;
-	int FULL_HEALTH = 100;
-	int life = FULL_HEALTH;
-	float speed = 17.0f;
-	float idleSpeed = 10.0f;
-	float jumpForce = 70.0f;
-	float jumpY = 10.0f;
 
+	//Ints
+	int LOW_HEALTH			= 30;
+	int FULL_HEALTH			= 100;
+	int life				= FULL_HEALTH;
+	//Floats
+	float speed				= 17.0f;
+	float jumpForce			= 70.0f;
+	float idleSpeed			= 10.0f;
+	float jumpY				= 10.0f;
 	float deathAnimSpeed	= 1.0f;
 	float alertAnimSpeed	= 2.0f;
 	float chargeAnimSpeed	= 1.0f;
 	float escapeAnimSpeed	= 2.0f;
-	float alertScale	 = 1.5f;
-	float alertTempYpos	= 0.0f;
-	bool alertAtTop = false;
-
-    float sightRadius	= 70;
-	float attackRange	= 40;
-	bool inCombat		= false;
-	bool forcedToAttack = false;
-	bool alertDone		= false;
-    bool inAttack		= false;
-	bool touchedPlayer	= false;
-	bool touchedFriend	= false;
-	bool grounded		= true;
-	float groundTimer	= 0.0f;
+	float alertScale		= 1.5f;
+	float alertTempYpos		= 0.0f;
+    float sightRadius		= 70;
+	float attackRange		= 40;
+    float alert_top;
+	//Bools
+    bool alert_go_up		= true;
+	bool alertAtTop			= false;
+	bool inCombat			= false;
+	bool forcedToAttack		= false;
+	bool alertDone			= false;
+    bool inAttack			= false;
+	bool touchedPlayer		= false;
+	bool touchedFriend		= false;
+	bool grounded			= true;
+	bool shieldedByTank		= false;
+	//Timers				
+	float groundTimer		= 0.0f;
 	float groundTimerOrig	= 0.5f;
+	float lonelyTime		= 3.0f;
+	float lonelyTimer		= 0.0f;
 
+
+	glm::vec3 friendTouched = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 idleMoveTo = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 lonelyDir = glm::vec3(0.0f, 0.0f, 0.0f);
-	float lonelyTime = 3.0f;
-	float lonelyTimer = 0.0f;
+	glm::vec3 lonelyDir = glm::vec3(0.0f, 0.0f, 1.0f);
 
 
 	SwarmGroup* group;
 	std::vector<SwarmGroup*> groupsInSight;
 
-    bool alert_go_up = true;
-    float alert_top;
 
 	SwarmComponent() {};
 
@@ -92,9 +98,6 @@ private:
 	static bool escape_idle(Entity entityID);
 	static bool escape_combat(Entity entityID);
 
-    // static bool notisPlayer(Entity entityID);
-	// static bool playerDissapeared(Entity entityID);
-
 	static bool dead(Entity entityID);
 	static bool revive(Entity entityID);
 
@@ -106,10 +109,6 @@ private:
 	EntityEvent combat_to_escape{"combat to escape", combat_escape};
 	EntityEvent escape_to_idle{"escape to idle", escape_idle};
 	EntityEvent escape_to_combat{"escape to combat", escape_combat};
-
-    // EntityEvent notisPlayer_event{notisPlayer};
-	// EntityEvent playerDissapeared_event{playerDissapeared};
-
 	EntityEvent to_dead{"to Dead",dead};
 	EntityEvent to_living{"to Living" ,revive};
 
@@ -119,7 +118,7 @@ protected:
 	virtual void registerEntityComponents(Entity entityId) override
 	{
 		addRequiredComponent<SwarmComponent>(entityId);
-		addRequiredComponent<AiCombat>(entityId);
+		addRequiredComponent<AiCombatSwarm>(entityId);
 	}
 
 	virtual void real_init() override

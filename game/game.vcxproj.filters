@@ -18,6 +18,10 @@
     <ClCompile Include="src\Scenes\LobbyScene.cpp" />
     <ClCompile Include="src\Scenes\logInScene.cpp" />
     <ClCompile Include="src\Scenes\GameSceneNetwork.cpp" />
+    <ClCompile Include="src\Ai\Behaviors\Lich\LichBTs.cpp" />
+    <ClCompile Include="src\Ai\Behaviors\Lich\LichFSM.cpp" />
+    <ClCompile Include="src\Ai\Behaviors\Tank\TankFSM.cpp" />
+    <ClCompile Include="src\Ai\Behaviors\Tank\TankBTs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -51,6 +55,13 @@
     <ClInclude Include="src\Scenes\LobbyScene.h" />
     <ClInclude Include="src\Scenes\logInScene.h" />
     <ClInclude Include="src\Scenes\GameSceneNetwork.h" />
+    <ClInclude Include="src\Ai\Behaviors\Lich\LichBTs.hpp" />
+    <ClInclude Include="src\Ai\Behaviors\Lich\LichFSM.hpp" />
+    <ClInclude Include="src\Ai\Behaviors\Tank\TankFSM.hpp" />
+    <ClInclude Include="src\Components\AiCombatLich.hpp" />
+    <ClInclude Include="src\Components\AiCombatSwarm.h" />
+    <ClInclude Include="src\Components\AICombatTank.hpp" />
+    <ClInclude Include="src\Ai\Behaviors\Tank\TankBTs.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

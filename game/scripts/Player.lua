@@ -11,6 +11,7 @@ script.perkProperties =
 function script:init()
 	print("init with ID: " .. self.ID)
 
+    
 	self.moveDir = vector()
 	self.currentSpeed = vector()
 	self.maxSpeed = 30
@@ -37,12 +38,17 @@ function script:init()
     self.currentMoveDir = 0
     self.isDodging = false
 
+    self.isPushed = false;
+    self.pushTimer = 0.0
+
     self.animTimer = -1
     self.onGround = false
     self.jumpTimer = 0
     self.active = true
 
-    self.activeAnimation = {idle = 1, run = 2, sprint = 3, dodge = 3}
+    self.activeAnimation = {idle = 1, run = 2, sprint = 3, dodge = 3, 
+    lightAttack = 4, heavyAttack = 5, spinCombo = 6, mixCombo = 7, 
+    heavyCombo = 8, knockback = 9}
     self.currentAnimation = 1
     self.idleAnimTime = 1.0
     self.runAnimTime = 0.7
@@ -75,6 +81,14 @@ function script:update(dt)
     forward.y = 0
     local right = camTransform:right()
     right.y = 0
+
+    --push timer countdown
+    if self.pushTimer > 0.0 then
+        self.pushTimer = self.pushTimer - dt
+        self.isPushed = true
+    else
+        self.isPushed = false
+    end
 
     -- Input vector
     if not self.isDodging
@@ -146,7 +160,9 @@ function script:update(dt)
     -- Apply to rigidbody velocity
     local rb = scene.getComponent(self.ID, CompType.Rigidbody)
     local y = rb.velocity.y
-    rb.velocity = self.currentSpeed
+    if not self.isPushed then
+        rb.velocity = self.currentSpeed
+    end
 
     -- Apply jump via acceleration
     local jump = self.jumpTimer > 0 and input.isKeyDown(Keys.SPACE)
