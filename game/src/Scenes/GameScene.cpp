@@ -89,10 +89,10 @@ void GameScene::init()
         glm::vec3(0.6f)
         );
     DirectionalLight& dirLight = this->getComponent<DirectionalLight>(this->dirLightEntity);
-    dirLight.cascadeSizes[0] = 0.034f;
-    dirLight.cascadeSizes[1] = 0.092f;
+    dirLight.cascadeSizes[0] = 0.044f;
+    dirLight.cascadeSizes[1] = 0.149f;
     dirLight.cascadeSizes[2] = 1.0f;
-    dirLight.cascadeDepthScale = 24.352f;
+    dirLight.cascadeDepthScale = 36.952f;
     dirLight.shadowMapMinBias = 0.00001f;
     dirLight.shadowMapAngleBias = 0.0004f;
 
@@ -296,7 +296,7 @@ void GameScene::update()
 #ifdef _CONSOLE
 
     // Cascades
-   /*DirectionalLight& dirLight = this->getComponent<DirectionalLight>(this->dirLightEntity);
+   DirectionalLight& dirLight = this->getComponent<DirectionalLight>(this->dirLightEntity);
    ImGui::Begin("Shadows");
    ImGui::SliderFloat("Cascade size 0", &dirLight.cascadeSizes[0], 0.0f, 1.0f);
    ImGui::SliderFloat("Cascade size 1", &dirLight.cascadeSizes[1], 0.0f, 1.0f);
@@ -304,7 +304,7 @@ void GameScene::update()
    ImGui::SliderFloat("Cascade depth", &dirLight.cascadeDepthScale, 1.0f, 50.0f);
    ImGui::Checkbox("Visualize cascades", &dirLight.cascadeVisualization);
    ImGui::SliderFloat("Shadow map angle bias", &dirLight.shadowMapAngleBias, 0.0f, 0.005f);
-   ImGui::End();*/
+   ImGui::End();
 
     static bool renderDebug = false;
     if (ImGui::Begin("Debug"))
