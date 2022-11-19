@@ -176,11 +176,11 @@ void RoomGen::setExits(bool* doors)
 
 	glm::ivec2 doorsPos[4] = 
 	{
-		{ minMaxPos[LEFT_P].x, middle.y + rRand2(size.y / 3) },
-		{ minMaxPos[RIGHT_P].x, middle.y + rRand2(size.y / 3) },
+		{ minMaxPos[LEFT_P].x, middle.y + rRand2(size.y / 2) },
+		{ minMaxPos[RIGHT_P].x, middle.y + rRand2(size.y / 2) },
 
-		{ middle.x + rRand2(size.x / 3), minMaxPos[UPPER_P].y },
-		{ middle.x + rRand2(size.x / 3), minMaxPos[LOWER_P].y }
+		{ middle.x + rRand2(size.x / 2), minMaxPos[UPPER_P].y },
+		{ middle.x + rRand2(size.x / 2), minMaxPos[LOWER_P].y }
 	};
 
 	const glm::ivec2 offsets[4] =

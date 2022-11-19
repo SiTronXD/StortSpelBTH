@@ -11,8 +11,8 @@ RoomTesting::~RoomTesting()
 
 void RoomTesting::init()
 {
-	srand(123);
-
+	//srand(123);
+	
 	this->roomHandler.init(this, this->getResourceManager(), 15, this->getConfigValue<int>("tile_types"));
 	this->roomHandler.generate2();
 

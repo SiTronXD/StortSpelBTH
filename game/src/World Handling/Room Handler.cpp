@@ -360,6 +360,10 @@ void RoomHandler::generate2()
 	this->roomExitPoints.clear();
 	this->verticalConnection.clear();
 
+	printf("Num: %zd\n", pathEntities.size());
+
+	return;
+
 #ifdef _CONSOLE
 	if (this->showAllRooms) 
 	{ 
@@ -610,6 +614,9 @@ void RoomHandler::generatePathways()
 	glm::vec3 curPos{};
 	Entity entity = -1;
 
+	std::vector<glm::vec3> pathPositions;
+	pathPositions.reserve(size_t(TILES_BETWEEN_ROOMS * 2u));
+
 	// For each exit pair (the points which to make a path between)
 	for (size_t i = 0; i < this->exitPairs.size(); i++)
 	{
@@ -633,11 +640,9 @@ void RoomHandler::generatePathways()
 		float e2 = 0.f;
 
 		// Calcuate the path, place tiles and save startIndex
-		size_t startIndex = this->pathIds.size();
 		while(true)
 		{
-			this->pathIds.emplace_back(this->createFloorDecoEntity({curPos.x, curPos.z}, false));
-			ööö fix paths so work without the floor entities?
+			pathPositions.emplace_back(curPos);
 
 			if (glm::length(curPos - p0) >= glm::length(delta))
 			{
@@ -658,21 +663,19 @@ void RoomHandler::generatePathways()
 			}
 		}
 
-		const size_t endIndex = this->pathIds.size();
-		
 
 		// Go through the placed path and generate a border around it
-
 		const int ThiccNessMonster = 3;
 		for (int l = 1; l <= ThiccNessMonster; l++) // ThiccNess off borders around paths
 		{
-			surroundPaths(startIndex, endIndex, p0, p1, (float)l, this->verticalConnection[i], l == 1);
+			surroundPaths(pathPositions, p0, p1, (float)l, this->verticalConnection[i], l == 1);
 		}
-	}
 
+		pathPositions.clear();
+	}
 }
 
-void RoomHandler::surroundPaths(size_t start, size_t end, glm::vec3 p0, glm::vec3 p1, float distFactor, bool vertical, bool colliders)
+void RoomHandler::surroundPaths(const std::vector<glm::vec3>& pathPos, glm::vec3 p0, glm::vec3 p1, float distFactor, bool vertical, bool colliders)
 {
 	const glm::vec3 OFFSETS[] =
 	{
@@ -691,9 +694,10 @@ void RoomHandler::surroundPaths(size_t start, size_t end, glm::vec3 p0, glm::vec
 	glm::vec3 rightP = p0.x > p1.x ? p0 : p1;
 	glm::vec3 leftP = rightP == p0 ? p1 : p0;
 
-	for (size_t j = start; j < end; j++)
+	for (size_t i = 0; i < pathPos.size(); i++)
 	{
-		const glm::vec3& pos = this->scene->getComponent<Transform>(this->pathIds[j]).position;
+		const glm::vec3& pos = pathPos[i];
+
 		for (int k = 0; k < NUM_OFFSETS; k++)
 		{
 			const glm::vec3 offsetPos = pos + OFFSETS[k] * distFactor;
@@ -710,11 +714,11 @@ void RoomHandler::surroundPaths(size_t start, size_t end, glm::vec3 p0, glm::vec
 			}
 
 			// Search through the path to see if offsetPos is on a tile
-			for (size_t m = start; m < this->pathIds.size() && canPlace; m++)
+			for (size_t j = 0; j < pathPos.size() && canPlace; j++)
 			{
-				if (m != j)
+				if (j != i)
 				{
-					glm::vec3 mPosToOffset = offsetPos - this->scene->getComponent<Transform>(this->pathIds[m]).position;
+					glm::vec3 mPosToOffset = offsetPos - pathPos[j];
 					mPosToOffset.y = 0.f;
 
 					if (glm::dot(mPosToOffset, mPosToOffset) < (TILE_WIDTH * TILE_WIDTH))
@@ -724,11 +728,11 @@ void RoomHandler::surroundPaths(size_t start, size_t end, glm::vec3 p0, glm::vec
 				}
 			}
 
-			for (size_t m = 0; m < this->innerBorderPaths.size() && canPlace; m++)
+			for (size_t j = 0; j < pathEntities.size() && canPlace; j++)
 			{
-				//if (m != j)
+				//if (j != i)
 				{
-					glm::vec3 mPosToOffset = offsetPos - this->scene->getComponent<Transform>(this->innerBorderPaths[m]).position;
+					glm::vec3 mPosToOffset = offsetPos - this->scene->getComponent<Transform>(this->pathEntities[j]).position;
 					mPosToOffset.y = 0.f;
 
 					if (glm::dot(mPosToOffset, mPosToOffset) < (TILE_WIDTH * TILE_WIDTH))
@@ -742,15 +746,14 @@ void RoomHandler::surroundPaths(size_t start, size_t end, glm::vec3 p0, glm::vec
 			{
 				Entity entity = createBorderEntity({offsetPos.x, offsetPos.z}, false);
 
-				if (colliders)
+				this->scene->getComponent<MeshComponent>(entity).meshID = oneXOneMeshIds[1];
+				this->scene->getComponent<Transform>(entity).rotation = glm::vec3(0.f);
+				if (colliders) // switch mesh and create collider for inner-layer borders
 				{
-					this->innerBorderPaths.emplace_back(entity);
-					this->scene->getComponent<MeshComponent>(entity).meshID = innerBorderMesh;
+					this->scene->setComponent<Collider>(entity, Collider::createBox(
+							glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH * 3.f, TILE_WIDTH * 0.5f), glm::vec3(0.f, TILE_WIDTH * 3.f, 0.f)));
 				}
-				else
-				{
-					pathIds.emplace_back(entity);
-				}
+				this->pathEntities.emplace_back(entity);
 			}
 			
 		}
@@ -831,9 +834,6 @@ void RoomHandler::createColliders()
 		{
 			if (room.doors[i] != -1)
 			{
-				// Not creating a collider for the doors, all doors are open when the game starts
-
-				// Trigger
 				room.doorTriggers[i] = this->scene->createEntity();
 				
 				Transform& doorTra = this->scene->getComponent<Transform>(room.doors[i]);
@@ -844,7 +844,7 @@ void RoomHandler::createColliders()
 				
 				this->scene->setComponent<Collider>(
                     room.doorTriggers[i],
-                    Collider::createBox(doorTrigCol, glm::vec3(0, 0, 0), true)
+                    Collider::createBox(doorTrigCol, glm::vec3(0.f), true)
                 );
 
 			}
@@ -855,12 +855,6 @@ void RoomHandler::createColliders()
 			this->scene->setComponent<Collider>(room.rockFence, 
 				Collider::createBox(glm::vec3(TILE_WIDTH), glm::vec3(0.f, TILE_WIDTH, 0.f)));
 		}
-	}
-
-	// TODO: SEPERATE PATH BORDERS FROM PATHIDS
-	for (Entity entity : this->innerBorderPaths)
-	{
-		this->scene->setComponent<Collider>(entity, Collider::createBox(borderColDims));
 	}
 
 	float minX = 10000000.f;
@@ -1092,23 +1086,14 @@ void RoomHandler::showPaths(bool show)
 {
 	if (show)
 	{
-		for (Entity tile : this->pathIds)
+		for (Entity tile : this->pathEntities)
 		{
 			this->scene->setActive(tile);
 		}
-		for (Entity tile : this->innerBorderPaths)
-		{
-			this->scene->setActive(tile);
-		}
-
 	}
 	else
 	{
-		for (Entity tile : this->pathIds)
-		{
-			this->scene->setInactive(tile);
-		}
-		for (Entity tile : this->innerBorderPaths)
+		for (Entity tile : this->pathEntities)
 		{
 			this->scene->setInactive(tile);
 		}
@@ -1166,16 +1151,11 @@ void RoomHandler::reset()
 		this->scene->removeEntity(room.rockFence);
 	}				  
 
-	for (const Entity& entity : this->pathIds)
+	for (const Entity& entity : this->pathEntities)
 	{
 		this->scene->removeEntity(entity);
 	}
-	this->pathIds.clear();
-	for (const Entity& entity : this->innerBorderPaths)
-	{
-		this->scene->removeEntity(entity);
-	}
-	this->innerBorderPaths.clear();
+	this->pathEntities.clear();
 	
 	this->scene->removeEntity(this->floor);
 	this->floor = -1;

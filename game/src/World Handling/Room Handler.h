@@ -95,12 +95,11 @@ private:
 	void createDoors(int roomIndex);
 	void setConnections();
 	void generatePathways();
-	void surroundPaths(size_t start, size_t end, glm::vec3 p0, glm::vec3 p1, float distFactor, bool vertical, bool colliders);
+	void surroundPaths(const std::vector<glm::vec3>& pathPos, glm::vec3 p0, glm::vec3 p1, float distFactor, bool vertical, bool colliders);
 
 	// IDs
 	std::vector<Room> rooms;
-	std::vector<Entity> pathIds;
-	std::vector<Entity> innerBorderPaths;
+	std::vector<Entity> pathEntities;
 	Entity floor;
 
 	// Room Updating
