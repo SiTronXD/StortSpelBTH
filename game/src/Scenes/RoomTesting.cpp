@@ -24,11 +24,12 @@ void RoomTesting::init()
 	this->setComponent<DirectionalLight>(cam,
 		{glm::vec3(0.f, -1.f, 0.f), glm::vec3(1.f)});
 	DirectionalLight& light = this->getComponent<DirectionalLight>(cam);
-	light.shadowMapFrustumHalfWidth = 1000.0f;
-	light.shadowMapFrustumHalfHeight = 1000.0f;
-	light.shadowMapFrustumDepth = 2000.0f;
-	light.shadowMapMinBias = 0.0001f;
-	light.shadowMapAngleBias = 0.001f;
+	light.cascadeSizes[0] = 0.044f;
+	light.cascadeSizes[1] = 0.149f;
+	light.cascadeSizes[2] = 1.0f;
+	light.cascadeDepthScale = 36.952f;
+	light.shadowMapMinBias = 0.00001f;
+	light.shadowMapAngleBias = 0.0004f;
 
 
 	int playerMesh = this->getResourceManager()->addMesh("assets/models/Character/CharRun.fbx");

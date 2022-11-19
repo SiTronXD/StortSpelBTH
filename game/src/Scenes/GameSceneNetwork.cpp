@@ -596,8 +596,8 @@ Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
 			int tankIdx = 0;
 			int randNumEnemies = 10;
 			int counter = 0;
-			const std::vector<Entity>& tiles = roomHandler.getFreeTiles();
-			for (Entity tile : tiles)
+			const std::vector<glm::vec3>& tiles = roomHandler.getFreeTiles();
+			for (const glm::vec3& tilePos : tiles)
 			{
 				if (randNumEnemies - counter != 0)
 				{
@@ -606,9 +606,8 @@ Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
 					{
 						this->setActive(this->tankIDs[tankIdx]);
 						Transform& transform = this->getComponent<Transform>(this->tankIDs[tankIdx]);
-						Transform& tileTrans = this->getComponent<Transform>(tile);
 						float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
-						transform.position = tileTrans.position;
+						transform.position = tilePos;
 						transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
 
 						tankIdx++;
@@ -617,9 +616,8 @@ Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
 					{
 						this->setActive(this->lichIDs[lichIdx]);
 						Transform& transform = this->getComponent<Transform>(this->lichIDs[lichIdx]);
-						Transform& tileTrans = this->getComponent<Transform>(tile);
 						float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
-						transform.position = tileTrans.position;
+						transform.position = tilePos;
 						transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
 
 						lichIdx++;
@@ -628,9 +626,8 @@ Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
 					{
 						this->setActive(this->swarmIDs[swarmIdx]);
 						Transform& transform = this->getComponent<Transform>(this->swarmIDs[swarmIdx]);
-						Transform& tileTrans = this->getComponent<Transform>(tile);
 						float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
-						transform.position = tileTrans.position;
+						transform.position = tilePos;
 						transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
 
 						//Temporary enemie reset

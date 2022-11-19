@@ -636,7 +636,7 @@ void RoomHandler::surroundPaths(const std::vector<glm::vec3>& pathPos, glm::vec3
 void RoomHandler::createColliders()
 {
 	const float halfTile = TILE_WIDTH * 0.5f;
-	const float offset = TILE_WIDTH * 0.6f;
+	const float offset = TILE_WIDTH * 0.7f;
 	const glm::vec3 offsets[4] =
 	{
 		glm::vec3(-offset, halfTile, 0.f),
@@ -905,12 +905,10 @@ void RoomHandler::reset()
 			if (room.doors[i] != -1)
 			{
 				this->scene->removeEntity(room.doors[i]);
-				room.doors[i] = -1;
-
 				this->scene->removeEntity(room.doorTriggers[i]);
-				room.doorTriggers[i] = -1;
 			}
-
+			room.doors[i] = -1;
+			room.doorTriggers[i] = -1;
 			room.connectingIndex[i] = -1;
 			room.extents[i] = 0.f;
 		}
@@ -920,6 +918,7 @@ void RoomHandler::reset()
 		this->scene->removeEntity(room.rock);
 		this->scene->removeEntity(room.rockFence);
 	}
+	rooms.clear();
 
 	for (const Entity& entity : this->pathEntities)
 	{
@@ -932,7 +931,6 @@ void RoomHandler::reset()
 
 	this->exitPairs.clear();
 	this->roomExitPoints.clear();
-
 
 	this->activeIndex = 0;
 	this->nextIndex = -1;
