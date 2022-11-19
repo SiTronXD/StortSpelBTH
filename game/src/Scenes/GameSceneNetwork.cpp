@@ -35,11 +35,9 @@ void GameSceneNetwork::init()
 
   roomHandler.init(
       this,
-      this->getResourceManager(),
-      this->getConfigValue<int>("room_size"),
-      this->getConfigValue<int>("tile_types")
+      this->getResourceManager()
   );
-  roomHandler.generate();
+  roomHandler.generate2();
   createPortal();
 
   ResourceManager* resourceMng = this->getResourceManager();
@@ -529,18 +527,17 @@ void GameSceneNetwork::onTriggerStay(Entity e1, Entity e2)
           int idx = 0;
           int randNumEnemies = rand() % 8 + 3;
           int counter = 0;
-          const std::vector<Entity>& entites = roomHandler.getFreeTiles();
-          for (Entity entity : entites)
+          const std::vector<glm::vec3>& tiles = roomHandler.getFreeTiles();
+          for (const glm::vec3& position : tiles)
             {
               if (idx != 10 && randNumEnemies - counter != 0)
                 {
                   this->setActive(this->enemyIDs[idx]);
                   Transform& transform =
                       this->getComponent<Transform>(this->enemyIDs[idx]);
-                  Transform& tileTrans = this->getComponent<Transform>(entity);
                   float tileWidth =
                       rand() % ((int)RoomHandler::TILE_WIDTH / 2) + 0.01f;
-                  transform.position = tileTrans.position;
+                  transform.position = position;
                   transform.position =
                       transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
 

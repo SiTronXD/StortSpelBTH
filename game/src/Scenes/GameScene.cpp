@@ -53,9 +53,7 @@ void GameScene::init()
 
     roomHandler.init(
         this,
-        this->getResourceManager(),
-        this->getConfigValue<int>("room_size"),
-        this->getConfigValue<int>("tile_types"));
+        this->getResourceManager());
     roomHandler.generate2();
     createPortal();
     // simon
@@ -112,7 +110,7 @@ void GameScene::start()
 
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
-    this->getAudioHandler()->setMusicVolume(1.f);
+    this->getAudioHandler()->setMusicVolume(0.2f);
     this->getAudioHandler()->playMusic();
 
     this->setComponent<Combat>(playerID);
@@ -540,18 +538,17 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
             int idx = 0;
             int randNumEnemies = rand() % 8 + 3;
             int counter = 0;
-            const std::vector<Entity>& entites = roomHandler.getFreeTiles();
-            for (Entity entity : entites)
+            const std::vector<glm::vec3>& tiles = roomHandler.getFreeTiles();
+            for (const glm::vec3& position : tiles)
             {
                 if (idx != 10 && randNumEnemies - counter != 0)
                 {
                     this->setActive(this->enemyIDs[idx]);
                     Transform& transform =
                         this->getComponent<Transform>(this->enemyIDs[idx]);
-                    Transform& tileTrans = this->getComponent<Transform>(entity);
                     float tileWidth =
                         rand() % ((int)RoomHandler::TILE_WIDTH / 2) + 0.01f;
-                    transform.position = tileTrans.position;
+                    transform.position = position;
                     transform.position =
                         transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
 
@@ -694,7 +691,6 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
                 //aiCombat.timer = aiCombat.lightAttackTime;
                 this->getComponent<Combat>(player).health -=
                     (int)aiCombat.lightHit;
-                std::cout << "WAS HIT\n";
             }
         }
     }

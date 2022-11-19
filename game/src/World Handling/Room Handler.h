@@ -1,5 +1,5 @@
 #pragma once
-#include "Room Generator.h"
+
 #include "Room Layout.h"
 #include "Room Generator2.h"
 
@@ -20,9 +20,8 @@ public:
 	static const uint32_t NUM_ONE_X_ONE;
 	static const uint32_t NUM_ONE_X_TWO;
 	static const uint32_t NUM_TWO_X_TWO;
+	static const uint32_t DECO_ENTITY_CHANCE;
 private:
-
-	enum TileUsage { Default, Border, Exit };
 
 	// Helper structs
 	struct RoomExitPoint
@@ -30,6 +29,10 @@ private:
 		RoomExitPoint() = default;
 		glm::vec3 positions[4]{};
 	};
+
+	// CHANGE roomTiles.emplace_back() to roomTiles[i] = ()
+	// CHANGE roomTiles.emplace_back() to roomTiles[i] = ()
+	// CHANGE roomTiles.emplace_back() to roomTiles[i] = ()
 
 	struct Room
 	{
@@ -45,11 +48,8 @@ private:
 		float extents[4];
 		RoomData::Type type;
 
-		std::vector<Entity> mainTiles; // "Playable" tiles
-		std::vector<Entity> objects; // Occupied tiles + their floors
-		std::vector<Entity> borders; // Borders
-		std::vector<Entity> innerBorders; // Inner borders (has colliders)
-		std::vector<Entity> exitPaths; // Tiles leading to path
+		std::vector<glm::vec3> mainTiles; // "Playable" tiles (used for spawning enemies)
+		std::vector<Entity> objects;	  // Objects inside room (borders, rocks etc)
 
 		Entity doors[4];
 		Entity doorTriggers[4];
@@ -65,35 +65,26 @@ private:
 	ResourceManager* resourceMan;
 
 	// Layout generation
-	RoomLayout roomLayout;
 	std::vector<bool> verticalConnection;
 	std::vector<std::pair<glm::vec3, glm::vec3>> exitPairs;
 
-	// Room generation
-	RoomGenerator roomGenerator;
-	std::vector<RoomExitPoint> roomExitPoints;
-	bool hasDoor[4];
-	void setExitPoints(int roomIndex);
-	void roomToWorldSpace(int roomIndex);
 
-	// Room generation 2
-	RoomGen roomGen;
-	int tileFlorMeshId;
+	// Room generation
+	int tileFloorMeshId;
 	void placeBranch(int index, int left, int right);
 	void moveRoom(int roomIndex, const glm::vec3& offset);
+	std::vector<RoomExitPoint> roomExitPoints;
+	bool hasDoor[4]; // remove?
 	
-	// New Create Entities
+	// Create Entities
 	Entity createFloorDecoEntity(const glm::vec2& pos, bool scalePos);
 	Entity createBorderEntity(const glm::vec2& position, bool scalePos);
 	Entity createObjectEntity(const Tile2& tile);
-
-	// Create Entities
-	Entity createTileEntity(int tileIndex, TileUsage usage);
 	Entity createDoorEntity(float yRotation);
-	
+
 	// Tile creation
-	void createDoors(int roomIndex);
-	void setConnections();
+	void createDoors(int roomIndex, const glm::ivec2* doorTilePos);
+	void setConnections(int numMainRooms, const std::vector<glm::ivec2>& connections);
 	void generatePathways();
 	void surroundPaths(const std::vector<glm::vec3>& pathPos, glm::vec3 p0, glm::vec3 p1, float distFactor, bool vertical, bool colliders);
 
@@ -116,28 +107,27 @@ private:
 
 	// Mesh IDs
 	std::vector<uint32_t> oneXOneMeshIds;
-	std::vector<uint32_t> borderMeshIds;
 	std::vector<std::pair<uint32_t, uint32_t>> oneXTwoMeshIds;
 	std::vector<std::pair<uint32_t, uint32_t>> twoXTwoMeshIds;
+	std::vector<uint32_t> borderMeshIds;
 	uint32_t innerBorderMesh;
 	uint32_t rockMeshId;
 	uint32_t rockFenceMeshId;
 	uint32_t doorMeshID;
 
 	// Other
-	void reset();
 	void createColliders();
 
 #ifdef _CONSOLE
+	void reset();
 	bool showAllRooms = false;
 #endif
-
+	
 public:
 	RoomHandler();
 	~RoomHandler();
 
-	void init(Scene* scene, ResourceManager* resourceMan, int roomSize, int tileTypes);
-	void generate();
+	void init(Scene* scene, ResourceManager* resourceMan);
 	void generate2();
 
 #ifdef  _CONSOLE
@@ -147,8 +137,7 @@ public:
 	void roomCompleted();
 	bool onPlayerTrigger(Entity otherEntity);
 
-	const std::vector<Entity>& getFreeTiles();
-	const RoomData::Type& getActiveRoomType() const;
+	const std::vector<glm::vec3>& getFreeTiles();
 	const Room& getExitRoom() const;
 	int getNumRooms() const;
 

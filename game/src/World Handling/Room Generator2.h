@@ -1,5 +1,7 @@
 #pragma once
-#include "vengine.h"
+#include <vector>
+#include <glm/vec3.hpp>
+#include <glm/vec2.hpp>
 
 #define LEFT_P 0
 #define RIGHT_P  1

@@ -1,6 +1,8 @@
 #include "Room Generator2.h"
 #include "../deps/glm/src/glm/gtx/rotate_vector.hpp"
-#include <cmath>
+
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 RoomGen::RoomGen()
 	:tiles2D{}
@@ -269,7 +271,7 @@ void RoomGen::setBorders()
 						{
 							const Tile2::Type& adj = this->getType(adjacent);
 							if (adj == Tile2::OneXOne || adj == Tile2::TwoXTwo ||
-								currTile == Tile2::Exit || currTile == Tile2::OneXTwo || currTile == Tile2::TwoXOne)
+								adj == Tile2::OneXTwo || adj == Tile2::TwoXOne)
 							{
 								currTile = Tile2::Border; 
 								i = NUM;

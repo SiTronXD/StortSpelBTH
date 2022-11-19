@@ -11,16 +11,16 @@ RoomTesting::~RoomTesting()
 
 void RoomTesting::init()
 {
-	//srand(123);
+	srand(123);
 	
-	this->roomHandler.init(this, this->getResourceManager(), 15, this->getConfigValue<int>("tile_types"));
+	this->roomHandler.init(this, this->getResourceManager());
 	this->roomHandler.generate2();
 
 	Entity cam = this->createEntity();
 	this->setComponent<Camera>(cam);
 	this->setMainCamera(cam);
 	this->getComponent<Transform>(cam).rotation.x = 90.f;
-	this->getComponent<Transform>(cam).position.y = 400.f;
+	this->getComponent<Transform>(cam).position.y = 120.f;
 	this->setComponent<DirectionalLight>(cam,
 		{glm::vec3(0.f, -1.f, 0.f), glm::vec3(1.f)});
 	DirectionalLight& light = this->getComponent<DirectionalLight>(cam);
@@ -47,8 +47,7 @@ void RoomTesting::update()
 	roomHandler.imgui(this->getPhysicsEngine());
 #endif // _CONSOLE
 
-
-	static float speed = 10.f;
+	const float speed = 15.f;
 	const float frameSpeed = speed * Time::getDT() * Input::isKeyDown(Keys::CTRL) ? 0.1f : Input::isKeyDown(Keys::SHIFT) ? 3.f : 1.f;
 
 	Entity cam = this->getMainCameraID();
@@ -72,8 +71,6 @@ void RoomTesting::update()
 		static bool colls = false;
 		ImGui::Checkbox("Show colliders", &colls);
 		this->getPhysicsEngine()->renderDebugShapes(colls);
-
-		ImGui::DragFloat("Speed", &speed, 0.1f, 0.f, 100.f);
 	}ImGui::End();
 
 	Transform& plaTra = this->getComponent<Transform>(player);
