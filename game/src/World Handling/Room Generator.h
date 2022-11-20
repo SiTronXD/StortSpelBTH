@@ -1,70 +1,113 @@
 #pragma once
+#include <vector>
+#include <glm/vec3.hpp>
+#include <glm/vec2.hpp>
 
-#include "vengine.h"
-#include <random>
+class VRandom;
+
+#define LEFT_P  0
+#define RIGHT_P 1
+#define UPPER_P 2
+#define LOWER_P 3
 
 struct Tile
 {
     enum Type : int
     {
-        // values are currently dependant on obj names
-        Invalid = -1,
-        Border = 0,
-        OneXOne = 1,
-        OneXTwo = 2, // one tree
-        TwoXOne = 3, // two trees
-        TwoXTwo = 4
+        Unused = -1,
+        Border,
+        InnerBorder,
+        OneXOne,
+        TwoXOne,
+        OneXTwo,
+        TwoXTwo,
+        Reserved,
+        Exit
     };
 
-    Type type = Type::Border;
-    glm::vec2 position;
+    Tile() = default;
+    Tile(Type type, const glm::vec2& pos)
+        :type(type), position(pos)
+    {
+    }
+
+    Type type = Type::Unused;
+    glm::vec2 position = glm::vec2(0.f);
 };
+
+// TODO: Fix room when it generates to edges (can't happen with these settings)
 
 class RoomGenerator
 {
 public:
-    static const float DEFAULT_TILE_SCALE;
+    static const uint32_t TWO_X_TWO_CHANCE = 20u; // Percentage
+    static const uint32_t MAX_TWO_X_TWO = 3u;
 
+    static const uint32_t ONE_X_TWO_CHANCE = 20u; // Percentage
+    static const uint32_t MAX_ONE_X_TWO = 4u;
+
+    static const uint32_t BIG_TILE_MIN_DIST = 1u;
+
+    static const uint32_t WIDTH_HEIGHT = 40u;
+    static const uint32_t BORDER_SIZE = 3u;
+    static const uint32_t RADIUS = 3u;
+    static const uint32_t NUM_BRANCHES = 3u;
+    static const uint32_t BRANCH_DEPTH = 2u;
+    static const uint32_t BRANCH_DIST = 2u;
+    static const uint32_t MAX_ANGLE = 60u;
 private:
-    int TILE_TYPES;
-    int ROOM_SIZE;
-    int HALF_ROOM = ROOM_SIZE / 2;
+    VRandom& random;
 
-    Tile::Type* room;
-    std::vector<Tile> tiles;
+    Tile::Type** tiles2D;
+    std::vector<Tile> mainTiles;
+    std::vector<Tile> bigTiles;
     std::vector<Tile> borders;
+    std::vector<Tile> innerBorders;
     std::vector<Tile> exitPathsTiles;
-    glm::vec2 minMaxPos[4]; // x, -x, z, -z
-    glm::vec2 exitTilesPos[4];
 
-    int getArrayIndexFromPosition(int x, int y) const;
-    void getIJIndex(int index, int* output) const;
+    glm::ivec2 minMaxPos[4]; // x, -x, z, -z
+    glm::ivec2 exitTilesPos[4];
+    glm::ivec2 middle;
+    glm::ivec2 size;
 
-    void addPiece(glm::vec2 position, int depth);
-    void placeTile(Tile::Type tileType, glm::vec2 gridPosition, glm::vec2 worldPosition);
-    glm::vec2 getFreeLarge(glm::vec2 position);
-    glm::vec2 getFreeAdjacent(glm::vec2 position, glm::vec2 dir);
+    void drawCircle(const glm::ivec2& center, uint32_t radius);
 
+    void setBorders();
+    void findMinMax();
+    void setExits(bool* doors);
+    void setBigTiles();
+    void finalize();
+
+    // Helpers
+    Tile::Type& getType(const glm::ivec2& pos);
+    bool isValid(const glm::ivec2& pos);
+    bool onEdge(const glm::ivec2& pos);
+
+    bool canPlaceOneXTwo(const glm::ivec2& pos, bool vertical);
+    bool canPlaceTwoXTwo(const glm::ivec2& pos);
+
+    void placeTwoXTwo(const glm::ivec2& pos);
+    void placeOneXTwo(const glm::ivec2& pos, bool vertical);
 public:
-    RoomGenerator();
+    RoomGenerator(VRandom& random);
     ~RoomGenerator();
-    void init(int roomSize, int tileTypes);
 
-    void generateRoom();
-    void generateBorders(const bool* hasDoors);
-    
-    int getRoomSize() const;
-    int getNrTiles() const;
-    int getNrBorders() const;
-    int getNrExitTiles() const;
+    void clear();
+    void generate(bool* doors);
 
-    int getRoomTile(int index) const;
-    const Tile& getTile(int index) const;
-    const Tile& getBorder(int index) const;
-    const Tile& getExitTiles(int index) const;
-    
-    const glm::vec2* getExitTilesPos() const;
-    const glm::vec2* getMinMaxPos() const;
+    const glm::ivec2* getMinMax() const;
+    const glm::ivec2* getExits() const;
+    const glm::ivec2& getMiddle() const;
 
-    void reset();
+    uint32_t getNumMainTiles() const;
+    uint32_t getNumBigTiles() const;
+    uint32_t getNumBorders() const;
+    uint32_t getNumInnerBorders() const;
+    uint32_t getNumExitTiles() const;
+
+    const Tile& getMainTile(uint32_t index) const;
+    const Tile& getBigTile(uint32_t index) const;
+    const Tile& getBorder(uint32_t index) const;
+    const Tile& getInnerBorder(uint32_t index) const;
+    const Tile& getExitTile(uint32_t index) const;
 };

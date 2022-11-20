@@ -35,9 +35,9 @@ void GameSceneNetwork::init()
 
   roomHandler.init(
       this,
-      this->getResourceManager()
+      this->getResourceManager(), false
   );
-  roomHandler.generate2();
+  roomHandler.generate(123);
   createPortal();
 
   ResourceManager* resourceMng = this->getResourceManager();

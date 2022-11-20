@@ -11,10 +11,8 @@ RoomTesting::~RoomTesting()
 
 void RoomTesting::init()
 {
-	srand(123);
-	
-	this->roomHandler.init(this, this->getResourceManager());
-	this->roomHandler.generate2();
+	this->roomHandler.init(this, this->getResourceManager(), true);
+	this->roomHandler.generate(123);
 
 	Entity cam = this->createEntity();
 	this->setComponent<Camera>(cam);
@@ -48,7 +46,7 @@ void RoomTesting::update()
 	roomHandler.imgui(this->getPhysicsEngine());
 #endif // _CONSOLE
 
-	const float speed = 15.f;
+	const float speed = 100.f;
 	const float frameSpeed = speed * Time::getDT() * Input::isKeyDown(Keys::CTRL) ? 0.1f : Input::isKeyDown(Keys::SHIFT) ? 3.f : 1.f;
 
 	Entity cam = this->getMainCameraID();

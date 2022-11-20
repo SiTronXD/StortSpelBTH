@@ -1,10 +1,9 @@
 #include "Room Layout.h"
 #include "vengine/dev/Log.hpp"
+#include "vengine/dev/Random.hpp"
 
-#include <ctime>
-
-RoomLayout::RoomLayout()
-	:distance(0.f), numMainRooms(0), NUM_BRANCHES(0), largestBranchSize(0)
+RoomLayout::RoomLayout(VRandom& random)
+	:numMainRooms(0), numBranches(0), largestBranchSize(0), random(random)
 {
 }
 
@@ -12,15 +11,10 @@ RoomLayout::~RoomLayout()
 {
 }
 
-void RoomLayout::setRoomDistance(float distance)
-{
-	this->distance = distance;
-}
-
 void RoomLayout::clear()
 {
 	this->numMainRooms = 0;
-	this->NUM_BRANCHES = 0;
+	this->numBranches = 0;
 	this->largestBranchSize = 0;
 
 	this->rooms.clear();
@@ -29,13 +23,13 @@ void RoomLayout::clear()
 
 void RoomLayout::generate()
 {
-	this->numMainRooms = rand() % ((MAX_MAIN_ROOMS - MIN_MAIN_ROOMS) + 1) + MIN_MAIN_ROOMS;
-	this->NUM_BRANCHES = rand() % ((MAX_NUM_BRANCHES - MIN_NUM_BRANCHES) + 1) + MIN_NUM_BRANCHES;
+	this->numMainRooms = this->random.rand() % ((MAX_MAIN_ROOMS - MIN_MAIN_ROOMS) + 1) + MIN_MAIN_ROOMS;
+	this->numBranches = this->random.rand() % ((MAX_NUM_BRANCHES - MIN_NUM_BRANCHES) + 1) + MIN_NUM_BRANCHES;
 
-	this->connections.reserve(size_t(this->numMainRooms + this->NUM_BRANCHES) - 1ull);
+	this->connections.reserve(size_t(this->numMainRooms + this->numBranches) - 1ull);
 
 	this->setUpRooms(this->numMainRooms);
-	for (int i = 0; i < this->NUM_BRANCHES; i++)
+	for (int i = 0; i < this->numBranches; i++)
 	{
 		if (!this->setRandomBranch(this->numMainRooms)) 
 		{
@@ -51,16 +45,11 @@ void RoomLayout::generate()
 
 void RoomLayout::setUpRooms(int numRooms)
 {
-	glm::vec3 offset = glm::vec3(0.0f, 0.0f, 0.0f);
-
 	for (int i = 0; i < numRooms; i++)
 	{
 		this->rooms.emplace_back();
 
 		RoomData& curRoom = this->rooms[i];
-		glm::vec3& curPosition = curRoom.position;
-
-		curPosition.z = i * this->distance;
 
 		//First room is always the start room
 		if (i == 0)
@@ -78,7 +67,7 @@ void RoomLayout::setUpRooms(int numRooms)
 			}
 
 			//one in five to become a hard room
-			if (rand() % 5 == 0)
+			if (this->random.rand() % 5 == 0)
 			{
 				curRoom.type = RoomData::Type::HARD_ROOM;
 			}
@@ -92,7 +81,7 @@ void RoomLayout::setUpRooms(int numRooms)
 
 bool RoomLayout::setRandomBranch(int numRooms)
 {
-	int branchSize = rand() % ((MAX_BRANCH_SIZE - MIN_BRANCH_SIZE) + 1) + MIN_BRANCH_SIZE;
+	int branchSize = this->random.rand() % ((MAX_BRANCH_SIZE - MIN_BRANCH_SIZE) + 1) + MIN_BRANCH_SIZE;
 
 	if (branchSize > this->largestBranchSize)
 	{
@@ -102,7 +91,7 @@ bool RoomLayout::setRandomBranch(int numRooms)
 	int spot = 0;
 	if (numRooms > 1)
 	{
-		spot = rand() % (numRooms - 1);
+		spot = this->random.rand() % (numRooms - 1);
 	}
 
 	bool foundSpot = false;
@@ -129,7 +118,7 @@ bool RoomLayout::setRandomBranch(int numRooms)
 	}
 	if (this->rooms[spot].left == -1 && this->rooms[spot].right == -1)
 	{
-		if (rand() % 2 == 0)
+		if (this->random.rand() % 2 == 0)
 		{
 			this->setBranch(spot, true, branchSize);
 		}
@@ -154,9 +143,7 @@ void RoomLayout::setBranch(int index, bool left, int size)
 {
 	RoomData::Type roomType = RoomData::Type::NORMAL_ROOM;
 
-	glm::vec3 position = this->rooms[index].position;
-
-	if (rand() % 5 == 0)
+	if (this->random.rand() % 5 == 0)
 	{
 		roomType = RoomData::Type::HARD_ROOM;
 	}
@@ -167,14 +154,11 @@ void RoomLayout::setBranch(int index, bool left, int size)
 
 	for (int i = 0; i < size; i++)
 	{
-		position.x += left ? this->distance : -this->distance;
-		rooms.emplace_back();
+		this->rooms.emplace_back();
 
 		RoomData& roomRef = this->rooms[this->rooms.size() - 1];
-		glm::vec3& posRef = this->rooms[this->rooms.size() - 1].position;
 
 		roomRef.type = roomType;
-		posRef = position;
 
 		int curRoomIndex;
 		int sideIndex = (int)this->rooms.size() - 1;
@@ -217,7 +201,7 @@ void RoomLayout::setBranch(int index, bool left, int size)
 
 bool RoomLayout::setExit()
 {
-	int exitIndex = rand() % (this->rooms.size() - 1) + 1;
+	int exitIndex = this->random.rand() % (this->rooms.size() - 1) + 1;
 	int numTests = 0;
 	while (this->rooms[exitIndex].type == RoomData::Type::BOSS_ROOM || this->rooms[exitIndex].type == RoomData::Type::START_ROOM)
 	{

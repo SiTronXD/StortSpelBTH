@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Room Layout.h"
-#include "Room Generator2.h"
+#include "Room Generator.h"
 
+class VRandom;
 class Scene;
 class ResourceManager;
 typedef int Entity;
@@ -68,25 +69,22 @@ private:
 	std::vector<bool> verticalConnection;
 	std::vector<std::pair<glm::vec3, glm::vec3>> exitPairs;
 
-
 	// Room generation
-	int tileFloorMeshId;
 	void placeBranch(int index, int left, int right);
 	void moveRoom(int roomIndex, const glm::vec3& offset);
 	std::vector<RoomExitPoint> roomExitPoints;
-	bool hasDoor[4]; // remove?
 	
 	// Create Entities
 	Entity createFloorDecoEntity(const glm::vec2& pos, bool scalePos);
 	Entity createBorderEntity(const glm::vec2& position, bool scalePos);
-	Entity createObjectEntity(const Tile2& tile);
+	void createObjectEntities(const Tile& tile, Room& room);
 	Entity createDoorEntity(float yRotation);
 
-	// Tile creation
+	// Doors and paths
 	void createDoors(int roomIndex, const glm::ivec2* doorTilePos);
 	void setConnections(int numMainRooms, const std::vector<glm::ivec2>& connections);
 	void generatePathways();
-	void surroundPaths(const std::vector<glm::vec3>& pathPos, glm::vec3 p0, glm::vec3 p1, float distFactor, bool vertical, bool colliders);
+	void surroundPaths(size_t startIdx, const std::vector<glm::vec3>& pathPos, glm::vec3 p0, glm::vec3 p1, float distFactor, bool vertical, bool colliders);
 
 	// IDs
 	std::vector<Room> rooms;
@@ -100,7 +98,6 @@ private:
 	bool checkRoom(int index, Entity entity);
 
 	void showPaths(bool show);
-	void openDoors(int index);
 	void closeDoors(int index);
 	void activateRoom(int index);
 	void deactivateRoom(int index);
@@ -114,6 +111,7 @@ private:
 	uint32_t rockMeshId;
 	uint32_t rockFenceMeshId;
 	uint32_t doorMeshID;
+	uint32_t tileFloorMeshId;
 
 	// Other
 	void createColliders();
@@ -123,14 +121,19 @@ private:
 	bool showAllRooms = false;
 #endif
 	
+	// Created and deleted in generate()
+	VRandom* random;
+
+	// Required by server
+	bool useMeshes;
 public:
 	RoomHandler();
 	~RoomHandler();
 
-	void init(Scene* scene, ResourceManager* resourceMan);
-	void generate2();
+	void init(Scene* scene, ResourceManager* resourceMan, bool useMeshes);
+	void generate(uint32_t seed);
 
-#ifdef  _CONSOLE
+#ifdef _CONSOLE
 	void imgui(PhysicsEngine* physicsEngine = nullptr);
 #endif //  _CONSOLE
 
