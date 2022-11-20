@@ -147,7 +147,7 @@ void GameScene::start()
     Perks& perkSetting = this->getComponent<Perks>(this->perk);
     perkSetting.multiplier = 0.5f;
     perkSetting.perkType = hpUpPerk;
-    this->setScriptComponent(this->perk, "scripts/spin.lua");
+    //this->setScriptComponent(this->perk, "scripts/spin.lua");
 
     this->perk1 = this->createEntity();
     this->setComponent<MeshComponent>(this->perk1, this->perkMeshes[dmgUpPerk]);
@@ -161,7 +161,7 @@ void GameScene::start()
     Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
     perkSetting1.multiplier = 0.5f;
     perkSetting1.perkType = dmgUpPerk;
-    this->setScriptComponent(this->perk1, "scripts/spin.lua");
+    //this->setScriptComponent(this->perk1, "scripts/spin.lua");
 
     this->perk2 = this->createEntity();
     this->setComponent<MeshComponent>(this->perk2, this->perkMeshes[attackSpeedUpPerk]);
@@ -175,7 +175,7 @@ void GameScene::start()
     Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
     perkSetting2.multiplier = 0.5f;
     perkSetting2.perkType = attackSpeedUpPerk;
-    this->setScriptComponent(this->perk2, "scripts/spin.lua");
+    //this->setScriptComponent(this->perk2, "scripts/spin.lua");
 
     this->perk3 = this->createEntity();
     this->setComponent<MeshComponent>(this->perk3, this->perkMeshes[movementUpPerk]);
@@ -189,7 +189,7 @@ void GameScene::start()
     Perks& perkSetting3 = this->getComponent<Perks>(this->perk3);
     perkSetting3.multiplier = 1.f;
     perkSetting3.perkType = movementUpPerk;
-    this->setScriptComponent(this->perk3, "scripts/spin.lua");
+    //this->setScriptComponent(this->perk3, "scripts/spin.lua");
 
     this->perk4 = this->createEntity();
     this->setComponent<MeshComponent>(this->perk4, this->perkMeshes[staminaUpPerk]);
@@ -203,7 +203,7 @@ void GameScene::start()
     Perks& perkSetting4 = this->getComponent<Perks>(this->perk4);
     perkSetting4.multiplier = 0.5f;
     perkSetting4.perkType = staminaUpPerk;
-    this->setScriptComponent(this->perk4, "scripts/spin.lua");
+    //this->setScriptComponent(this->perk4, "scripts/spin.lua");
 
     // Ai management
     this->aiHandler = this->getAIHandler();
