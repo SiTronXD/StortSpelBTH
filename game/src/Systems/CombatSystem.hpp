@@ -3,7 +3,7 @@
 #include <vengine.h>
 #include "../Components/Combat.h"
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
-#include <string>
+#include "../Network/NetworkHandlerGame.h"
 
 class CombatSystem : public System
 {
@@ -14,6 +14,7 @@ private:
 	PhysicsEngine* physics;
 	UIRenderer* uiRenderer;
 	ScriptHandler* script;
+	NetworkHandlerGame* networkHandler;
 	Entity playerID;
 	Entity swordID;
 	Entity heal;
@@ -27,10 +28,11 @@ private:
 public:
 
 	CombatSystem(Scene* scene, ResourceManager* resourceMng, Entity playerID, 
-		PhysicsEngine* physics, UIRenderer* uiRenderer, ScriptHandler* script)
+		PhysicsEngine* physics, UIRenderer* uiRenderer, ScriptHandler* script, NetworkHandlerGame* networkHandler)
 		: scene(scene), resourceMng(resourceMng), playerID(playerID), heal(-1),
-		swordID(-1), physics(physics), uiRenderer(uiRenderer), script(script)
+		swordID(-1), physics(physics), uiRenderer(uiRenderer), script(script), networkHandler(networkHandler)
 	{
+		this->networkHandler->setCombatSystem(this);
 		if (scene->hasComponents<Combat>(playerID))
 		{
 			Combat& combat = scene->getComponent<Combat>(playerID);
@@ -633,7 +635,11 @@ public:
 
 	void spawnPerk(Perks& perk)
 	{
-		switch (perk.perkType)
+		Entity newPerk = this->scene->createEntity();
+		this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[perk.perkType]);
+		setupPerkSpawn(newPerk, perk);
+
+		/*switch (perk.perkType)
 		{
 		case hpUpPerk:
 		{
@@ -670,46 +676,45 @@ public:
 			setupPerkSpawn(newPerk, perk);
 		}
 		break;
-		}
+		}*/
 	}
 
 	void removePerk(Combat& combat, Perks& perk)
 	{
 		if (perk.perkType != emptyPerk)
 		{
+			Transform& t = this->scene->getComponent<Transform>(this->playerID);
+			t.updateMatrix();
+			this->networkHandler->spawnItemRequest(perk.perkType, perk.multiplier, t.position + glm::vec3(0.0f, 8.0f, 0.0f), t.forward());
 			switch (perk.perkType)
 			{
 			case hpUpPerk:
 				setDefaultHp(combat);
 				combat.hpMultiplier -= perk.multiplier;
 				updateHealth(combat, perk, false);
-				spawnPerk(perk);
 				break;
 			case dmgUpPerk:
 				setDefaultDmg(combat);
 				combat.dmgMultiplier -= perk.multiplier;
 				updateDmg(combat, perk, false);
-				spawnPerk(perk);
 				break;
 			case attackSpeedUpPerk:
 				setDefaultAtttackSpeed(combat);
 				combat.attackSpeedMultiplier += perk.multiplier;
 				updateAttackSpeed(combat, perk, false);
-				spawnPerk(perk);
 				break;
 			case movementUpPerk:
 				setDefaultMovementSpeed(combat);
 				combat.movementMultiplier -= perk.multiplier;
 				updateMovementSpeed(combat, perk, false);
-				spawnPerk(perk);
 				break;
 			case staminaUpPerk:
 				setDefaultStamina(combat);
 				combat.staminaMultiplier -= perk.multiplier;
 				updateStamina(combat, perk, false);
-				spawnPerk(perk);
 				break;
 			}
+			//spawnPerk(perk);
 			perk.multiplier = 0;
 			perk.perkType = emptyPerk;
 		}
@@ -795,10 +800,10 @@ public:
 						glm::vec3 pos = this->scene->getComponent<Transform>(hitID[i]).position;
 						Perks& perk = this->scene->getComponent<Perks>(hitID[i]);
 
-						this->uiRenderer->renderString(
+						/*this->uiRenderer->renderString(
 							PERK_NAMES[perk.perkType] + " boost of " + std::to_string((int)((perk.multiplier + 1) * 100.0f)) + "%",
 							pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f));
-						this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f));
+						this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f));*/
 
 						for (size_t j = 0; j < 4; j++)
 						{

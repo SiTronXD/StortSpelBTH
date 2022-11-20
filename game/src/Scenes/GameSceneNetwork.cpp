@@ -103,7 +103,8 @@ void GameSceneNetwork::start()
       this->playerID,
       this->getPhysicsEngine(),
       this->getUIRenderer(),
-      this->getScriptHandler()
+      this->getScriptHandler(),
+      nullptr
   );
 
   this->ability = this->createEntity();

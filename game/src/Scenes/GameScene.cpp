@@ -3,9 +3,10 @@
 #include "../Systems/AiCombatSystem.hpp"
 #include "../Systems/AiMovementSystem.hpp"
 #include "../Systems/CameraMovementSystem.hpp"
-#include "../Systems/CombatSystem.hpp"
+//#include "../Systems/CombatSystem.hpp"
 #include "../Systems/HealthBarSystem.hpp"
 #include "../Systems/MovementSystem.hpp"
+#include "../Network/NetworkHandlerGame.h"
 #include "GameOverScene.h"
 
 #ifdef _CONSOLE
@@ -56,7 +57,7 @@ void GameScene::init()
         this->getConfigValue<int>("tile_types"));
     roomHandler.generate();
     createPortal();
-    // simon
+    
     ResourceManager* resourceMng = this->getResourceManager();
     this->perkMeshes[0] = resourceMng->addMesh("assets/models/Perk_Hp.obj");
     this->perkMeshes[1] = resourceMng->addMesh("assets/models/Perk_Dmg.obj");
@@ -64,10 +65,8 @@ void GameScene::init()
     this->perkMeshes[3] = resourceMng->addMesh("assets/models/Perk_Movement.obj");
     this->perkMeshes[4] = resourceMng->addMesh("assets/models/Perk_Stamina.obj");
 
-    this->abilityTextures[0] =
-        resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
-    this->abilityTextures[1] =
-        resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
+    this->abilityTextures[0] = resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
+    this->abilityTextures[1] = resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
     this->abilityTextures[2] = resourceMng->addTexture("assets/textures/UI/empty.png");
     this->perkTextures[0] = resourceMng->addTexture("assets/textures/UI/hpUp.png");
     this->perkTextures[1] = resourceMng->addTexture("assets/textures/UI/dmgUp.png");
@@ -75,10 +74,8 @@ void GameScene::init()
     this->perkTextures[3] = resourceMng->addTexture("assets/textures/UI/moveUp.png");
     this->perkTextures[4] = resourceMng->addTexture("assets/textures/UI/staminaUp.png");
     this->perkTextures[5] = resourceMng->addTexture("assets/textures/UI/empty.png");
-    this->hpBarBackgroundTextureID =
-        resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
-    this->hpBarTextureID =
-        resourceMng->addTexture("assets/textures/UI/hpBar.png");
+    this->hpBarBackgroundTextureID = resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
+    this->hpBarTextureID = resourceMng->addTexture("assets/textures/UI/hpBar.png");
 
   // Temporary light
   Entity directionalLightEntity = this->createEntity();
@@ -104,13 +101,17 @@ void GameScene::init()
 
 void GameScene::start()
 {
-    std::string playerName = "playerID";
-    this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+    this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, "playerID");
 
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
     this->getAudioHandler()->setMusicVolume(1.f);
     this->getAudioHandler()->playMusic();
+
+    this->networkHandler = dynamic_cast<NetworkHandlerGame*>(this->getNetworkHandler());
+    this->networkHandler->init();
+    this->networkHandler->setPlayerEntity(playerID);
+    this->networkHandler->createOtherPlayers(this->getComponent<MeshComponent>(playerID).meshID);
 
     this->setComponent<Combat>(playerID);
     this->createSystem<CombatSystem>(
@@ -119,7 +120,8 @@ void GameScene::start()
         this->playerID,
         this->getPhysicsEngine(),
         this->getUIRenderer(),
-        this->getScriptHandler());
+        this->getScriptHandler(),
+        this->networkHandler);
 
     this->ability = this->createEntity();
     int knockback =
@@ -132,6 +134,7 @@ void GameScene::start()
         this->ability, Collider::createSphere(4.f, glm::vec3(0), true));
     this->setComponent<Abilities>(this->ability, healAbility);
     this->setComponent<PointLight>(this->ability, { glm::vec3(0.f), glm::vec3(7.f, 9.f, 5.f) });
+    this->setScriptComponent(this->ability, "scripts/spin.lua");
 
     this->perk = this->createEntity();
     this->setComponent<MeshComponent>(this->perk, this->perkMeshes[hpUpPerk]);
@@ -145,6 +148,7 @@ void GameScene::start()
     Perks& perkSetting = this->getComponent<Perks>(this->perk);
     perkSetting.multiplier = 0.5f;
     perkSetting.perkType = hpUpPerk;
+    this->setScriptComponent(this->perk, "scripts/spin.lua");
 
     this->perk1 = this->createEntity();
     this->setComponent<MeshComponent>(this->perk1, this->perkMeshes[dmgUpPerk]);
@@ -289,6 +293,16 @@ void GameScene::update()
         glm::vec2(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos + 20.f),
         glm::vec2(xSize * hpPercent, ySize)
     );
+
+    // Network
+    this->networkHandler->updatePlayer();
+    this->networkHandler->interpolatePositions();
+    if (Input::isKeyPressed(Keys::B))
+    {
+        sf::Packet packet;
+        packet << (int)NetworkEvent::ECHO << "Test";
+        this->networkHandler->sendDataToServerTCP(packet);
+    }
 
 #ifdef _CONSOLE
 

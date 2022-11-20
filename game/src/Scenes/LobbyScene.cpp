@@ -8,8 +8,6 @@ LobbyScene::~LobbyScene() {}
 void LobbyScene::init()
 {
     this->networkHandler = dynamic_cast<NetworkHandlerGame*>(this->getNetworkHandler());
-  
-    //TODO : FIX THIS!
     int playerModel = this->getResourceManager()->addAnimations({ "assets/models/Character/Emotes/CharDance.fbx" }, "assets/textures/playerMesh");
     this->getNetworkHandler()->setMeshes("PlayerMesh", playerModel);
 

@@ -501,7 +501,7 @@ BTStatus SwarmBT::die(Entity entityID)
 	if (spawnLoot < 2)
 	{
 		// Spawn Perk
-		PerkType perkType = (PerkType)(rand() % 3);
+		PerkType perkType = (PerkType)(rand() % PerkType::emptyPerk);
 		Perks perk{ .multiplier = 0.2f, .perkType = perkType };
 		Entity perkEnt = sceneHandler->getScene()->createEntity();
 		sceneHandler->getScene()->setComponent<MeshComponent>(perkEnt, SwarmBT::perkMeshes[perkType]);

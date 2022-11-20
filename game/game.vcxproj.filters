@@ -17,6 +17,7 @@
     <ClCompile Include="src\Scenes\GameSceneNetwork.cpp" />
     <ClCompile Include="..\deps\vengine\src\demos\basic_demo\src\network\NetworkHandlerTest.cpp" />
     <ClCompile Include="src\Network\NetworkHandlerGame.cpp" />
+    <ClCompile Include="src\Network\ServerGameMode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -49,6 +50,7 @@
     <ClInclude Include="src\Scenes\GameSceneNetwork.h" />
     <ClInclude Include="..\deps\vengine\src\demos\basic_demo\src\network\NetworkHandlerTest.h" />
     <ClInclude Include="src\Network\NetworkHandlerGame.h" />
+    <ClInclude Include="src\Network\ServerGameMode.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

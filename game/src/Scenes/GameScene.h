@@ -4,13 +4,17 @@
 
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../World Handling/Room Handler.h"
+#include "../Systems/CombatSystem.hpp"
 #include "vengine.h"
+
+class NetworkHandlerGame;
 
 class GameScene : public Scene
 {
 private:
   RoomHandler roomHandler;
   AIHandler* aiHandler = nullptr;
+  NetworkHandlerGame* networkHandler;
 
   Entity playerID;
   Entity portal;
