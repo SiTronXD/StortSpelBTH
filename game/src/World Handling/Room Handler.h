@@ -116,8 +116,8 @@ private:
 	// Other
 	void createColliders();
 
-#ifdef _CONSOLE
 	void reset();
+#ifdef _CONSOLE
 	bool showAllRooms = false;
 #endif
 	
