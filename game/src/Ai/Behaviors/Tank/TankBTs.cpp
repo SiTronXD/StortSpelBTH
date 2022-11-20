@@ -38,7 +38,7 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 
 	if(tankComp.groundHumpTimer <= 0)
 	{
-		std::cout<<"Stomp!\n";
+        Log::write("Stomp!", BT_FILTER);
 		tankComp.humps.push_back(0.0f);
 		tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
 	}
@@ -659,7 +659,6 @@ BTStatus TankBT::playAlertAnim(Entity entityID)
 
 	if(!tankComp.alertAtTop)
 	{
-        std::cout << tankTrans.scale.y << std::endl;
 		if(tankTrans.scale.y >= tankComp.origScaleY + tankComp.alertScale &&
 		tankTrans.position.y >= (tankComp.alertTempYpos + toMove))
 		{
@@ -686,7 +685,6 @@ BTStatus TankBT::playAlertAnim(Entity entityID)
 			tankComp.alertAtTop = false;
 			tankComp.alertDone = true;
 			ret = BTStatus::Success;
-            std::cout << "succ" << std::endl;
 		}
 		else
 		{

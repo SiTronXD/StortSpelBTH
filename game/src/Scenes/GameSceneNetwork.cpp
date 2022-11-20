@@ -753,7 +753,7 @@ void GameSceneNetwork::onCollisionStay(Entity e1, Entity e2)
               //aiCombat.timer = aiCombat.lightAttackTime;
               this->getComponent<Combat>(player).health -=
                   (int)aiCombat.lightHit;
-              std::cout << "WAS HIT\n";
+              Log::write("WAS HIT", BT_FILTER);
             }
         }
     }

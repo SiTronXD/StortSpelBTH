@@ -845,7 +845,8 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
           //aiCombat.timer = aiCombat.lightAttackTime;
           this->getComponent<Combat>(player).health -=
               (int)aiCombat.lightHit;
-          std::cout << "WAS HIT\n";
+            
+          Log::write("WAS HIT", BT_FILTER);
         }
     }
     else if (this->hasComponents<TankComponent>(other))
@@ -857,7 +858,8 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
         tankComp.canAttack = false;
         this->getComponent<Combat>(player).health -=
             (int)aiCombat.directHit;
-        std::cout << "WAS HIT\n";
+            
+        Log::write("WAS HIT", BT_FILTER);
       }
     }
   }
