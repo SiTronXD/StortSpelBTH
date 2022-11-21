@@ -530,7 +530,7 @@ void RoomHandler::generatePathways()
 		float err = delta.x + delta.z;
 		float e2 = 0.f;
 
-		// Calcuate the path, place tiles and save startIndex
+		// Calcuate the path and save the positions
 		numIterations = 0;
 		while (numIterations++ < maxIterations)
 		{
@@ -555,7 +555,7 @@ void RoomHandler::generatePathways()
 			}
 		}
 
-		// Go through the placed path and generate a border around it
+		// Go through the path and generate a border around it
 		const size_t startIdx = this->pathEntities.size();
 		for (int l = 1; l <= 3; l++) // Thiccness off border around paths
 		{
@@ -628,6 +628,7 @@ void RoomHandler::surroundPaths(size_t startIdx, const std::vector<glm::vec3>& p
 				}
 			}
 
+			// Search through the borders so no duplicates are made
 			for (size_t j = startIdx; j < this->pathEntities.size() && canPlace; j++)
 			{
 				glm::vec3 mPosToOffset = offsetPos - this->scene->getComponent<Transform>(this->pathEntities[j]).position;
