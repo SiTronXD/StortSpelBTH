@@ -210,26 +210,37 @@ void RoomHandler::generate(uint32_t seed)
 		for (uint32_t j = 0; j < numInnerBorders; j++)
 		{
 			Entity entity = this->createBorderEntity(roomGen.getInnerBorder(j).position, true);
-			this->scene->getComponent<MeshComponent>(entity).meshID = this->innerBorderMesh;
+			curRoom.objects.emplace_back(entity);
 			this->scene->setComponent<Collider>(entity, Collider::createBox(
 				glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH * 3.f, TILE_WIDTH * 0.5f), glm::vec3(0.f, TILE_WIDTH * 3.f, 0.f)));
-			curRoom.objects.emplace_back(entity);
+
+			if (this->useMeshes)
+			{
+				this->scene->getComponent<MeshComponent>(entity).meshID = this->innerBorderMesh;
+			}
 		}
 
 		if (curRoom.type != RoomData::START_ROOM && curRoom.type != RoomData::EXIT_ROOM)
 		{
 			Entity entity = this->scene->createEntity();
-			this->scene->setComponent<MeshComponent>(entity, (int)this->rockFenceMeshId);
 			this->scene->getComponent<Transform>(entity).position += glm::vec3(TILE_WIDTH * 0.5f, 0.f, TILE_WIDTH * 0.5f);
 			curRoom.rockFence = entity;
+			if (this->useMeshes)
+			{
+				this->scene->setComponent<MeshComponent>(entity, (int)this->rockFenceMeshId);
+			}
 
 			entity = this->scene->createEntity();
 			Transform& rockTra = this->scene->getComponent<Transform>(entity);
 			rockTra.position = glm::vec3(8.15f, -36.5f, -7.2f);
 			rockTra.position += glm::vec3(TILE_WIDTH * 0.5f, 0.f, TILE_WIDTH * 0.5f);
 			rockTra.rotation = glm::vec3(11.0f, 0.5f, 12.7f);
-			this->scene->setComponent<MeshComponent>(entity, (int)rockMeshId);
 			curRoom.rock = entity;
+			if (this->useMeshes)
+			{
+				this->scene->setComponent<MeshComponent>(entity, (int)rockMeshId);
+			}
+
 		}
 		roomGen.clear();
 	}
@@ -765,7 +776,6 @@ void RoomHandler::createObjectEntities(const Tile& tile, Room& room)
 	room.objects.emplace_back(mainEntity);
 
 	Transform& transform = this->scene->getComponent<Transform>(mainEntity);
-
 	transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
 	transform.position *= TILE_WIDTH;
 	transform.position.x += float((int)this->random->rand() % 10 - 5);
