@@ -102,6 +102,7 @@ void RoomGenerator::generate(bool* doors)
 
 void RoomGenerator::findMinMax()
 {
+
 	glm::ivec2 position(0);
 	for (position.x = 0; position.x < WIDTH_HEIGHT; position.x++)
 	{
@@ -207,6 +208,7 @@ void RoomGenerator::setExits(bool* doors)
 	glm::ivec2 adjacent(0);
 	for (int i = 0; i < 4; i++)
 	{
+		this->exitTilesPos[i] = doorsPos[i];
 		if (doors[i])
 		{
 			doorsPos[i] += offsets[i];

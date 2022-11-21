@@ -6,6 +6,7 @@
 
 class VRandom;
 class DebugRenderer;
+class PhysicsEngine;
 class Scene;
 class ResourceManager;
 typedef int Entity;
@@ -50,7 +51,7 @@ private:
 		std::vector<glm::vec3> mainTiles; // "Playable" tiles (used for spawning enemies)
 		std::vector<Entity> objects;	  // Objects inside room (borders, rocks etc)
 
-		Entity boxEntityTemp; // debug draw
+		glm::vec3 colliderPos;
 		Collider box;
 		Entity doors[4];
 		int connectingIndex[4];
@@ -113,7 +114,7 @@ private:
 	uint32_t tileFloorMeshId;
 
 	// Other
-	void createColliders();
+	void createFloor();
 
 	void reset();
 #ifdef _CONSOLE
@@ -137,7 +138,7 @@ public:
 #endif //  _CONSOLE
 
 	void roomCompleted();
-	bool onPlayerTrigger(Entity otherEntity);
+	bool onPlayerTrigger(Entity player, PhysicsEngine* physicsEngine);
 
 	const std::vector<glm::vec3>& getFreeTiles();
 	const Room& getExitRoom() const;
