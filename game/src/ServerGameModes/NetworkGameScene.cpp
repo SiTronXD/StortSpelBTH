@@ -103,7 +103,7 @@ void NetworkGameScene::aiExample()
         {
 
           this->enemyIDs.push_back(this->createEnemy(0));
-          this->setComponent<AiCombat>(this->enemyIDs.back());
+          this->setComponent<AiCombatSwarm>(this->enemyIDs.back());
           this->setComponent<Collider>(
               this->enemyIDs.back(), Collider::createSphere(4.0f)
           );
@@ -124,6 +124,54 @@ void NetworkGameScene::aiExample()
           swarmComp.life = 0;
         }
     }
+  static TankFSM tankFSM;
+  this->aiHandler->addFSM(&tankFSM, "tankFSM");
+  for (int i = 0; i < 1; i++)
+      {
+          this->tankIDs.push_back(this->createEntity());
+          this->setComponent<AiCombatTank>(this->tankIDs.back());
+          this->setComponent<Rigidbody>(this->tankIDs.back());
+          Rigidbody& rb = this->getComponent<Rigidbody>(this->tankIDs.back());
+          rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+          rb.gravityMult = 5.0f;
+          rb.friction = 3.0f;
+          rb.mass = 10.0f;
+          Transform& transform =
+              this->getComponent<Transform>(this->tankIDs.back());
+          transform.scale = glm::vec3(3.0f, 3.0f, 3.0f);
+          this->setComponent<Collider>(
+              this->tankIDs.back(),
+              Collider::createSphere(4.0f * transform.scale.x)
+          );
+          this->aiHandler->createAIEntity(this->tankIDs.back(), "tankFSM");
+          TankComponent& tankComp =
+              this->getComponent<TankComponent>(this->tankIDs.back());
+          tankComp.origScaleY = transform.scale.y;
+          this->setInactive(this->tankIDs.back());
+      }
+  //stnky LICH
+  static LichFSM lichFSM;
+  this->aiHandler->addFSM(&lichFSM, "lichFSM");
+  for (int i = 0; i < 1; i++)
+      {
+          this->lichIDs.push_back(this->createEntity());
+          this->setComponent<AiCombatLich>(this->lichIDs.back());
+          this->setComponent<Rigidbody>(this->lichIDs.back());
+          Rigidbody& rb = this->getComponent<Rigidbody>(this->lichIDs.back());
+          rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+          rb.gravityMult = 5.0f;
+          rb.friction = 3.0f;
+          rb.mass = 10.0f;
+          Transform& transform =
+              this->getComponent<Transform>(this->lichIDs.back());
+          transform.scale = glm::vec3(1.0f, 3.0f, 1.0f);
+          this->setComponent<Collider>(
+              this->lichIDs.back(),
+              Collider::createCapsule(4.0f, 4.0f * transform.scale.y)
+          );
+          this->aiHandler->createAIEntity(this->lichIDs.back(), "lichFSM");
+          this->setInactive(this->lichIDs.back());
+      }
 }
 
 bool NetworkGameScene::allDead()
@@ -142,112 +190,136 @@ bool NetworkGameScene::allDead()
 
 void NetworkGameScene::onTriggerStay(Entity e1, Entity e2)
 {
+    Entity player = isAPlayer(e1) ? e1 : isAPlayer(e2) ? e2 : -1;
 
-  //TODO : this is going to be sent by player to make this
-  Entity player = isAPlayer(e1) ? e1 : isAPlayer(e2) ? e2 : -1;
+	if (player != -1) // player triggered a trigger :]
+	{
+		Entity other = e1 == player ? e2 : e1;
+		if (roomHandler.onPlayerTrigger(other))
+		{
+			this->newRoomFrame = true;
 
-  if (isAPlayer(player))  // player triggered a trigger :]
-    {
-      Entity other = e1 == player ? e2 : e1;
-      if (roomHandler.onPlayerTrigger(other))
-        {
-          this->newRoomFrame = true;
+            //Num to spawn
+            int numTanks        = 1;
+            int numLich         = 0;
+            int numSwarm        = 3;
 
-          std::cout << "walked in new room" << std::endl;
+			int swarmIdx        = 0;
+			int lichIdx         = 0;
+			int tankIdx         = 0;
+			int randNumEnemies  = 10;
+			int counter         = 0;
+			const std::vector<Entity>& tiles = roomHandler.getFreeTiles();
+			for (Entity tile : tiles)
+			{
+				if (randNumEnemies - counter != 0)
+				{
+					
+					if(tankIdx < numTanks)
+					{
+						this->setActive(this->tankIDs[tankIdx]);
+						Transform& transform = this->getComponent<Transform>(this->tankIDs[tankIdx]);
+						Transform& tileTrans = this->getComponent<Transform>(tile);
+						float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
+						transform.position = tileTrans.position;
+						transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
 
-          int idx = 0;
-          int randNumEnemies = rand() % 8 + 3;
-          int counter = 0;
-          const std::vector<Entity>& entites = roomHandler.getFreeTiles();
-          for (Entity entity : entites)
-            {
-              if (idx != 10 && randNumEnemies - counter != 0)
-                {
-                  this->setActive(this->enemyIDs[idx]);
-                  Transform& transform =
-                      this->getComponent<Transform>(this->enemyIDs[idx]);
-                  Transform& tileTrans = this->getComponent<Transform>(entity);
-                  float tileWidth =
-                      rand() % ((int)RoomHandler::TILE_WIDTH / 2) + 0.01f;
-                  transform.position = tileTrans.position;
-                  transform.position =
-                      transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
+                        //Reset
+                        TankComponent& tankComp = this->getComponent<TankComponent>(this->tankIDs[tankIdx]);
+                        tankComp.life = tankComp.FULL_HEALTH;
+                        transform.scale.y = tankComp.origScaleY;
 
-                  std::cout << "spawn enemy at: " << transform.position.x
-                            << ", " << transform.position.y << ", "
-                            << transform.position.z << std::endl;
+						tankIdx++;
+					}
+					else if(lichIdx < numLich)
+					{
+						this->setActive(this->lichIDs[lichIdx]);
+						Transform& transform = this->getComponent<Transform>(this->lichIDs[lichIdx]);
+						Transform& tileTrans = this->getComponent<Transform>(tile);
+						float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
+						transform.position = tileTrans.position;
+						transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
 
-                  //Temporary enemie reset
-                  SwarmComponent& swarmComp =
-                      this->getComponent<SwarmComponent>(this->enemyIDs[idx]);
-                  transform.scale.y = 1.0f;
-                  swarmComp.life = swarmComp.FULL_HEALTH;
-                  swarmComp.group->inCombat = false;
+                        //Reset
+                        LichComponent& lichComp = this->getComponent<LichComponent>(this->lichIDs[tankIdx]);
+                        lichComp.life = lichComp.FULL_HEALTH;
 
-                  swarmComp.group->aliveMembers.push(0
-                  );  // TODO: This should be done somewhere else... Like in SwarmFSM/BT
+						lichIdx++;
+					}
+					else if(swarmIdx < numSwarm)
+					{
+						this->setActive(this->swarmIDs[swarmIdx]);
+						Transform& transform = this->getComponent<Transform>(this->swarmIDs[swarmIdx]);
+						Transform& tileTrans = this->getComponent<Transform>(tile);
+						float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
+						transform.position = tileTrans.position;
+						transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
 
-                  idx++;
-                  counter++;
-                }
-            }
-          for (SwarmGroup* group : this->swarmGroups)
-            {
-              //Set idle mid pos
-              group->idleMidBos = glm::vec3(0.0f, 0.0f, 0.0f);
-              int numAlive = 0;
-              for (auto b : group->members)
-                {
-                  if (isActive(b) &&
-                      this->getComponent<SwarmComponent>(b).life > 0)
-                    {
-                      group->idleMidBos +=
-                          this->getComponent<Transform>(b).position;
-                      numAlive++;
-                    }
-                }
-              group->idleMidBos /= numAlive;
-              //Set ilde radius
-              for (auto b : group->members)
-                {
-                  if (isActive(b) &&
-                      this->getComponent<SwarmComponent>(b).life > 0)
-                    {
-                      float len = glm::length(
-                          group->idleMidBos -
-                          this->getComponent<Transform>(b).position
-                      );
-                      if (len > group->idleRadius)
-                        {
-                          group->idleRadius = len;
-                        }
-                    }
-                }
-              //Set move to
-              for (auto b : group->members)
-                {
-                  SwarmComponent& swarmComp =
-                      this->getComponent<SwarmComponent>(b);
-                  swarmComp.idleMoveTo = group->idleMidBos;
-                  glm::vec3 dir = glm::normalize(glm::vec3(
-                      rand() * (rand() % 2 == 0 ? -1 : 1),
-                      0.0f,
-                      rand() * (rand() % 2 == 0 ? -1 : 1)
-                  ));
-                  swarmComp.idleMoveTo = swarmComp.group->idleMidBos +
-                                         dir * swarmComp.group->idleRadius;
-                }
-            }
+						//Temporary enemie reset
+						SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->swarmIDs[swarmIdx]);
+						transform.scale.y = 1.0f;
+						swarmComp.life = swarmComp.FULL_HEALTH;
+						swarmComp.group->inCombat = false;
+					
+						swarmComp.group->aliveMembers.push(0); 
+
+						swarmIdx++;
+					}
+					
+					counter++;
+				
+				}
+			}
+
+			for(SwarmGroup* group: this->swarmGroups)
+			{
+					//Set idle mid pos
+					group->idleMidPos = glm::vec3(0.0f, 0.0f, 0.0f);
+					int numAlive = 0;
+					for(auto b: group->members)
+					{
+						if(isActive(b) && this->getComponent<SwarmComponent>(b).life > 0)
+						{
+							group->idleMidPos += this->getComponent<Transform>(b).position;
+							numAlive++;
+						}
+					}
+					group->idleMidPos /= numAlive;
+					//Set ilde radius
+					for(auto b: group->members)
+					{
+						if(isActive(b) && this->getComponent<SwarmComponent>(b).life > 0)
+						{
+							float len = glm::length(group->idleMidPos - this->getComponent<Transform>(b).position);
+							if(len > group->idleRadius)
+							{
+								group->idleRadius = len;
+							}
+						}
+					}
+					//Set move to
+					for(auto b: group->members)
+					{
+						SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(b);
+						swarmComp.idleMoveTo = group->idleMidPos;
+						glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
+						swarmComp.idleMoveTo = swarmComp.group->idleMidPos + dir * swarmComp.group->idleRadius;
+					}
+					for(auto t: tankIDs)
+			        {
+			        	TankComponent& tankComp = this->getComponent<TankComponent>(t);
+			        	tankComp.setFriends(this, t);
+			        }
+			}
+		}        
+
+            //if (other == portal &&
+            //    numRoomsCleared >= this->roomHandler.getNumRooms() -
+            //                           1)  // -1 not counting start room
+            //    {
+            //        this->switchScene(new GameScene(), "scripts/gamescene.lua");
+            //    }
         }
-
-      //TODO : ?
-      //if (other == portal &&
-      //    numRoomsCleared >= this->roomHandler.getNumRooms() -
-      //                           1)  // -1 not counting start room
-      //  {
-      //    this->switchScene(new GameSceneNetwork(), "scripts/gamescene.lua");
-      //  }
-    }
 }
 
 void NetworkGameScene::onTriggerEnter(Entity e1, Entity e2)
@@ -301,7 +373,7 @@ void NetworkGameScene::onCollisionStay(Entity e1, Entity e2)
           auto& swarmComp = this->getComponent<SwarmComponent>(other);
           if (swarmComp.inAttack)
             {
-              auto& aiCombat = this->getComponent<AiCombat>(other);
+              auto& aiCombat = this->getComponent<AiCombatSwarm>(other);
               swarmComp.inAttack = false;
               swarmComp.touchedPlayer = true;
               aiCombat.timer = aiCombat.lightAttackTime;

@@ -21,6 +21,10 @@ private:
   uint8_t numRoomsCleared;
   bool newRoomFrame;
 
+  std::vector<int> swarmIDs;
+  std::vector<int> lichIDs;
+  std::vector<int> tankIDs;
+
 public:
   NetworkGameScene();
   virtual ~NetworkGameScene();

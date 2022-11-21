@@ -34,8 +34,6 @@ private:
 
   int perkMeshes[5];
 
-  int perkMeshes[5];
-
   uint32_t abilityTextures[3];
   uint32_t perkTextures[6];
   uint32_t fontTextureIndex;
