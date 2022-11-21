@@ -1,7 +1,6 @@
 #include "LichBTs.hpp"
 #include "LichFSM.hpp"
 //#include "../../../Components/Combat.h"
-#include "../../../Components/AiCombatLich.hpp"
 //#include "../../../Components/Perks.h" //TODO: Adam, add the perk stuff to Lich... ? 
 #include <limits>
 
@@ -28,7 +27,6 @@ int LichBT::getPlayerID()
 void LichBT::registerEntityComponents(Entity entityId)
 {
     this->addRequiredComponent<LichComponent>(entityId);
-    addRequiredComponent<AiCombatLich>(entityId);
 }
 
 BTStatus LichBT::plunder(Entity entityID)

@@ -335,8 +335,8 @@ void GameScene::aiExample()
 {
 
 
-
-	auto a = [&](FSM* fsm, uint32_t entityId) -> void {
+    // Imgui Swarm 
+	auto swarmImgui = [&](FSM* fsm, uint32_t entityId) -> void {
 		SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
     
         auto entityImguiWindow = [&](SwarmFSM* swarmFsm, uint32_t entityId)->void 
@@ -441,7 +441,30 @@ void GameScene::aiExample()
         }       
         
 	};
-	auto b = [&](FSM* fsm, uint32_t entityId) -> void {
+
+    // Imgui Lich 
+    auto lichImgui = [&](FSM* FSM, uint32_t entityId)->void 
+    {
+        LichFSM* swarmFsm = (LichFSM*)FSM;
+
+        auto& lichComponent = this->getSceneHandler()->getScene()->getComponent<LichComponent>(entityId);
+        auto& entiyFSMAgentComp = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId);
+        auto& entityRigidBody = this->getSceneHandler()->getScene()->getComponent<Rigidbody>(entityId);
+        int& health            = lichComponent.life;
+        float& speed           = lichComponent.speed;
+        float& attackRange     = lichComponent.attackRadius;
+        float& sightRange      = lichComponent.sightRadius;
+        float& gravity 		   = entityRigidBody.gravityMult;
+        std::string& status    = entiyFSMAgentComp.currentNode->status;
+        ImGui::Text(status.c_str());
+        ImGui::SliderInt("health", &health, 0, 100);
+        ImGui::SliderFloat("speed", &speed, 0, 100);
+        ImGui::SliderFloat("gravity", &gravity, 0, 10);
+        ImGui::SliderFloat("attackRange", &attackRange, 0, 100);
+        ImGui::SliderFloat("sightRange", &sightRange, 0, 100);
+    };
+	
+	auto tankImgui = [&](FSM* fsm, uint32_t entityId) -> void {
 		TankFSM* tankFSM = (TankFSM*)fsm;
     
         auto entityImguiWindow = [&](TankFSM* tankFsm, uint32_t entityId)->void 
@@ -496,13 +519,22 @@ void GameScene::aiExample()
 	//SWARM
 	static SwarmFSM swarmFSM;
 	this->aiHandler->addFSM(&swarmFSM, "swarmFSM");
+
+    static LichFSM lichFSM;
+    this->aiHandler->addFSM(&lichFSM, "lichFSM");
+    
+    static TankFSM tankFSM;
+    this->aiHandler->addFSM(&tankFSM, "tankFSM");
 	
 //TODO: Cause crash on second run, therefore disabled in distribution... 
 #ifdef _CONSOLE 
-    this->aiHandler->addImguiToFSM("swarmFSM", a);
+    this->aiHandler->addImguiToFSM("swarmFSM", swarmImgui);
+    this->aiHandler->addImguiToFSM("lichFSM", lichImgui);
+    this->aiHandler->addImguiToFSM("tankFSM", tankImgui);
 #endif 
 
-	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+    // Swarm
+	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");    
     int numOfGroups = 4;
 	int group_size = 3;
     for(size_t j = 0; j < numOfGroups; j++)
@@ -528,12 +560,7 @@ void GameScene::aiExample()
         }
     }
 
-	//TANK
-	static TankFSM tankFSM;
-	this->aiHandler->addFSM(&tankFSM, "tankFSM");
-#ifdef _CONSOLE 
-    this->aiHandler->addImguiToFSM("tankFSM", b);
-#endif 
+    // Tank
 	for(int i = 0; i < 1; i++)
 	{
 		int tank = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
@@ -554,15 +581,13 @@ void GameScene::aiExample()
         tankComp.origScaleY = transform.scale.y;
 		this->setInactive(this->tankIDs.back());
 	}
-	//stnky LICH
-	static LichFSM lichFSM;
-	this->aiHandler->addFSM(&lichFSM, "lichFSM");
+
+    // Lich
 	for(int i = 0; i < 1; i++)
 	{
 		int lich = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 		this->lichIDs.push_back(this->createEntity());
 		this->setComponent<MeshComponent>(this->lichIDs.back(), lich);
-		this->setComponent<AiCombatLich>(this->lichIDs.back());
 		this->setComponent<Rigidbody>(this->lichIDs.back());
 		Rigidbody& rb = this->getComponent<Rigidbody>(this->lichIDs.back());
 		rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);

@@ -528,7 +528,6 @@ void GameSceneNetwork::aiExample()
 		int lich = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 		this->lichIDs.push_back(this->createEntity());
 		this->setComponent<MeshComponent>(this->lichIDs.back(), lich);
-		this->setComponent<AiCombatLich>(this->lichIDs.back());
 		this->setComponent<Rigidbody>(this->lichIDs.back());
 		Rigidbody& rb = this->getComponent<Rigidbody>(this->lichIDs.back());
 		rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);

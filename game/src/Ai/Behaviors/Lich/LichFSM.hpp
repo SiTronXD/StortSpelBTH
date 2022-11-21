@@ -1,7 +1,6 @@
 #pragma once
 #include "vengine.h"
 #include "LichBTs.hpp"
-#include "../../../Components/AiCombatLich.hpp"
 
 
 struct LichComponent
@@ -22,6 +21,8 @@ struct LichComponent
     float nonoRadius            = 40 ; // Too close, I will back away from you! (while shooting) 
         //Stats
     float mana                  = 100;
+    float speed                 = 20 ; // Too close, I will back away from you! (while shooting) 
+
 
     //Bools
     bool inCombat               = false;
@@ -74,7 +75,6 @@ protected:
 	virtual void registerEntityComponents(Entity entityId) override
 	{
 		addRequiredComponent<LichComponent>(entityId);
-		addRequiredComponent<AiCombatLich>(entityId);
 	}
 
 	virtual void real_init() override
