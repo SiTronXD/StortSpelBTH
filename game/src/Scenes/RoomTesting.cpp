@@ -17,7 +17,7 @@ void RoomTesting::init()
 	Entity cam = this->createEntity();
 	this->setComponent<Camera>(cam);
 	this->setMainCamera(cam);
-	this->getComponent<Transform>(cam).rotation.x = 90.f;
+	//this->getComponent<Transform>(cam).rotation.x = 90.f;
 	this->getComponent<Transform>(cam).position.y = 120.f;
 	this->setComponent<DirectionalLight>(cam,
 		{glm::vec3(0.f, -1.f, 0.f), glm::vec3(1.f)});
@@ -43,7 +43,7 @@ void RoomTesting::start()
 void RoomTesting::update()
 {
 #ifdef _CONSOLE
-	roomHandler.imgui(this->getPhysicsEngine());
+	roomHandler.imgui(getDebugRenderer());
 #endif // _CONSOLE
 
 	const float speed = 100.f;
@@ -68,8 +68,11 @@ void RoomTesting::update()
 	{
 		ImGui::Text("Cam pos: (%d, %d, %d)", (int)camTra.position.x,(int)camTra.position.y,(int)camTra.position.z);
 		static bool colls = false;
-		ImGui::Checkbox("Show colliders", &colls);
-		this->getPhysicsEngine()->renderDebugShapes(colls);
+		if (ImGui::Checkbox("Show colliders", &colls))
+		{
+			this->getPhysicsEngine()->renderDebugShapes(colls);
+		}
+
 	}ImGui::End();
 
 	Transform& plaTra = this->getComponent<Transform>(player);

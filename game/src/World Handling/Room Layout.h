@@ -33,13 +33,13 @@ class RoomLayout
 {
 public:
 
-	static const int MIN_MAIN_ROOMS = 2;
+	static const int MIN_MAIN_ROOMS = 3;
 	static const int MAX_MAIN_ROOMS = 3;
 
-	static const int MIN_NUM_BRANCHES = 2;
+	static const int MIN_NUM_BRANCHES = 3;
 	static const int MAX_NUM_BRANCHES = 3; // Will cap at numMainRooms * 2
 
-	static const int MIN_BRANCH_SIZE = 1;
+	static const int MIN_BRANCH_SIZE = 2;
 	static const int MAX_BRANCH_SIZE = 2;
 
 	// Total minimum rooms: 

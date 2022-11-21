@@ -1,6 +1,7 @@
 #include "Room Handler.h"
 #include "vengine/application/Scene.hpp"
 #include "vengine/dev/Random.hpp"
+#include "vengine/graphics/DebugRenderer.hpp"
 
 const float RoomHandler::TILE_WIDTH = 25.f;
 const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 5;
@@ -162,6 +163,16 @@ void RoomHandler::generate(uint32_t seed)
 		curRoom.extents[UPPER_P] = std::abs((float)exits[UPPER_P].y) * TILE_WIDTH - TILE_WIDTH * 0.5f;
 		curRoom.extents[LOWER_P] = std::abs((float)exits[LOWER_P].y) * TILE_WIDTH - TILE_WIDTH * 0.5f;
 
+		const glm::ivec2& size = roomGen.getSize();
+		curRoom.box.extents.x = size.x * TILE_WIDTH;
+		curRoom.box.extents.y = TILE_WIDTH * 1.f;
+		curRoom.box.extents.z = size.y * TILE_WIDTH;
+
+		printf("(%d, %d, %d)\n", (int)curRoom.box.extents.x, (int)curRoom.box.extents.y, (int)curRoom.box.extents.z);
+		curRoom.box.offset.y = TILE_WIDTH * 1.f;
+		curRoom.box = Collider::createBox(curRoom.box.extents, curRoom.box.offset, true);
+
+
 		this->createDoors(i, exits);
 
 		for (int j = 0; j < 4; j++)
@@ -211,8 +222,8 @@ void RoomHandler::generate(uint32_t seed)
 		{
 			Entity entity = this->createBorderEntity(roomGen.getInnerBorder(j).position, true);
 			curRoom.objects.emplace_back(entity);
-			this->scene->setComponent<Collider>(entity, Collider::createBox(
-				glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH * 3.f, TILE_WIDTH * 0.5f), glm::vec3(0.f, TILE_WIDTH * 3.f, 0.f)));
+			//this->scene->setComponent<Collider>(entity, Collider::createBox(
+			//	glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH * 3.f, TILE_WIDTH * 0.5f), glm::vec3(0.f, TILE_WIDTH * 3.f, 0.f)));
 
 			if (this->useMeshes)
 			{
@@ -274,6 +285,10 @@ void RoomHandler::generate(uint32_t seed)
 		this->rooms[i].mainTiles.shrink_to_fit();
 		this->rooms[i].objects.shrink_to_fit();
 
+		this->rooms[i].boxEntityTemp = scene->createEntity();
+		scene->getComponent<Transform>(this->rooms[i].boxEntityTemp).position = this->rooms[i].position;
+		scene->setComponent<Collider>(this->rooms[i].boxEntityTemp, this->rooms[i].box);
+
 		// Don't remove until server and clients always generate identical rooms
 		//printf("Room: %d\n", i);
 		//printf("Num mainTiles: %zd | numObjects: %zd\n", rooms[i].mainTiles.size(), rooms[i].objects.size());
@@ -292,6 +307,7 @@ void RoomHandler::generate(uint32_t seed)
 	this->verticalConnection.shrink_to_fit();
 
 	delete this->random;
+	return;
 
 #ifdef _CONSOLE
 	if (this->showAllRooms)
@@ -352,10 +368,6 @@ void RoomHandler::moveRoom(int roomIndex, const glm::vec3& offset)
 			this->roomExitPoints[roomIndex].positions[i] += offset;
 
 			this->scene->getComponent<Transform>(curRoom.doors[i]).position += offset;
-			if (curRoom.doorTriggers[i] != -1)
-			{
-				this->scene->getComponent<Transform>(curRoom.doorTriggers[i]).position += offset;
-			}
 		}
 	}
 
@@ -658,8 +670,8 @@ void RoomHandler::surroundPaths(size_t startIdx, const std::vector<glm::vec3>& p
 
 				if (colliders) // switch mesh and create collider for inner-layer borders
 				{
-					this->scene->setComponent<Collider>(entity, Collider::createBox(
-						glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH * 3.f, TILE_WIDTH * 0.5f), glm::vec3(0.f, TILE_WIDTH * 3.f, 0.f)));
+					//this->scene->setComponent<Collider>(entity, Collider::createBox(
+					//	glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH * 3.f, TILE_WIDTH * 0.5f), glm::vec3(0.f, TILE_WIDTH * 3.f, 0.f)));
 
 					if (this->useMeshes)
 					{
@@ -693,7 +705,7 @@ void RoomHandler::createColliders()
 		{
 			if (room.doors[i] != -1)
 			{
-				room.doorTriggers[i] = this->scene->createEntity();
+				/*room.doorTriggers[i] = this->scene->createEntity();
 
 				Transform& doorTra = this->scene->getComponent<Transform>(room.doors[i]);
 				Transform& triggerTra = this->scene->getComponent<Transform>(room.doorTriggers[i]);
@@ -702,7 +714,7 @@ void RoomHandler::createColliders()
 				triggerTra.rotation = doorTra.rotation;
 
 				this->scene->setComponent<Collider>(room.doorTriggers[i],
-					Collider::createBox(doorTrigCol, glm::vec3(0.f), true));
+					Collider::createBox(doorTrigCol, glm::vec3(0.f), true));*/
 			}
 		}
 
@@ -826,12 +838,14 @@ void RoomHandler::createObjectEntities(const Tile& tile, Room& room)
 
 bool RoomHandler::checkRoom(int index, Entity otherEntity)
 {
+	return false;
+
 	bool newUnfinshedRoom = false;
 	Room& curRoom = this->rooms[index];
 
 	for (int i = 0; i < 4; i++)
 	{
-		Entity entity = curRoom.doorTriggers[i];
+		Entity entity;// = curRoom.doorTriggers[i];
 
 		// Will also skip invalid doors (-1)
 		if (otherEntity == entity)
@@ -927,10 +941,10 @@ void RoomHandler::reset()
 			if (room.doors[i] != -1)
 			{
 				this->scene->removeEntity(room.doors[i]);
-				this->scene->removeEntity(room.doorTriggers[i]);
+				//this->scene->removeEntity(room.doorTriggers[i]);
 			}
 			room.doors[i] = -1;
-			room.doorTriggers[i] = -1;
+			//room.doorTriggers[i] = -1;
 			room.connectingIndex[i] = -1;
 			room.extents[i] = 0.f;
 		}
@@ -939,6 +953,7 @@ void RoomHandler::reset()
 		room.finished = false;
 		this->scene->removeEntity(room.rock);
 		this->scene->removeEntity(room.rockFence);
+		this->scene->removeEntity(room.boxEntityTemp);
 	}
 	this->rooms.clear();
 
@@ -997,7 +1012,7 @@ void RoomHandler::activateRoom(int index)
 		if (curRoom.doors[i] != -1)
 		{
 			this->scene->setActive(curRoom.doors[i]);
-			this->scene->setActive(curRoom.doorTriggers[i]);
+			//this->scene->setActive(curRoom.doorTriggers[i]);
 			this->scene->getComponent<Transform>(curRoom.doors[i]).position.y = -25;
 		}
 	}
@@ -1027,7 +1042,7 @@ void RoomHandler::deactivateRoom(int index)
 		if (curRoom.doors[i] != -1)
 		{
 			this->scene->setInactive(curRoom.doors[i]);
-			this->scene->setInactive(curRoom.doorTriggers[i]);
+			//this->scene->setInactive(curRoom.doorTriggers[i]);
 		}
 	}
 	if (curRoom.type != RoomData::START_ROOM && curRoom.type != RoomData::EXIT_ROOM)
@@ -1038,7 +1053,7 @@ void RoomHandler::deactivateRoom(int index)
 }
 
 #ifdef _CONSOLE
-void RoomHandler::imgui(PhysicsEngine* physicsEngine)
+void RoomHandler::imgui(DebugRenderer* dr)
 {
 #if 0
 	if (ImGui::Begin("Debug"))
@@ -1092,6 +1107,29 @@ void RoomHandler::imgui(PhysicsEngine* physicsEngine)
 		{
 			this->generate(rand());
 		}
+
+		static bool drawExtents = false;
+		ImGui::Checkbox("extents", &drawExtents);
+
+		if (drawExtents)
+		{
+			glm::vec3 endPos;
+			for (auto& room : rooms)
+			{
+				endPos = room.position + glm::vec3(room.extents[0], 0.f, 0.f);
+				dr->renderLine(room.position, endPos, glm::vec3(1.f, 0.f, 0.f));
+
+				endPos = room.position + glm::vec3(-room.extents[1], 0.f, 0.f);
+				dr->renderLine(room.position, endPos, glm::vec3(1.f, 1.f, 0.f));
+
+				endPos = room.position + glm::vec3(0.f, 0.f, room.extents[2]);
+				dr->renderLine(room.position, endPos, glm::vec3(0.f, 0.f, 1.f));
+
+				endPos = room.position + glm::vec3(0.f, 0.f, -room.extents[3]);
+				dr->renderLine(room.position, endPos, glm::vec3(0.f, 1.f, 1.f));
+			}
+		}
+
 	}
 	ImGui::End();
 #endif

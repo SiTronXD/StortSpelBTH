@@ -371,6 +371,7 @@ void RoomGenerator::finalize()
 	for (int i = 0; i < 4; i++)
 	{
 		this->exitTilesPos[i] -= this->middle;
+		this->minMaxPos[i] -= this->middle;
 	}
 }
 
@@ -498,6 +499,11 @@ const glm::ivec2* RoomGenerator::getExits() const
 const glm::ivec2& RoomGenerator::getMiddle() const
 {
 	return this->middle;
+}
+
+const glm::ivec2& RoomGenerator::getSize() const
+{
+	return this->size;
 }
 
 Tile::Type& RoomGenerator::getType(const glm::ivec2& pos)

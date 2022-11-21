@@ -98,6 +98,7 @@ public:
     const glm::ivec2* getMinMax() const;
     const glm::ivec2* getExits() const;
     const glm::ivec2& getMiddle() const;
+    const glm::ivec2& getSize() const;
 
     uint32_t getNumMainTiles() const;
     uint32_t getNumBigTiles() const;

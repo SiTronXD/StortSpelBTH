@@ -2,15 +2,13 @@
 
 #include "Room Layout.h"
 #include "Room Generator.h"
+#include "vengine/components/Collider.h"
 
 class VRandom;
+class DebugRenderer;
 class Scene;
 class ResourceManager;
 typedef int Entity;
-
-#ifdef _CONSOLE
-class PhysicsEngine;
-#endif
 
 class RoomHandler
 {
@@ -38,7 +36,7 @@ private:
 	struct Room
 	{
 		Room()
-			:doors{-1,-1,-1,-1}, doorTriggers{-1,-1,-1,-1},
+			:doors{-1,-1,-1,-1},
 			connectingIndex{-1,-1,-1,-1}, finished(false), 
 			type(RoomData::INVALID), position(0.f)
 			, extents{}, rock(-1), rockFence(-1)
@@ -52,8 +50,9 @@ private:
 		std::vector<glm::vec3> mainTiles; // "Playable" tiles (used for spawning enemies)
 		std::vector<Entity> objects;	  // Objects inside room (borders, rocks etc)
 
+		Entity boxEntityTemp; // debug draw
+		Collider box;
 		Entity doors[4];
-		Entity doorTriggers[4];
 		int connectingIndex[4];
 
 		bool finished;
@@ -134,7 +133,7 @@ public:
 	void generate(uint32_t seed);
 
 #ifdef _CONSOLE
-	void imgui(PhysicsEngine* physicsEngine = nullptr);
+	void imgui(DebugRenderer* dr);
 #endif //  _CONSOLE
 
 	void roomCompleted();

@@ -322,7 +322,7 @@ void GameScene::update()
     }
     ImGui::End();
 
-    roomHandler.imgui();
+    roomHandler.imgui(getDebugRenderer());
 
     decreaseFps();
 #endif
