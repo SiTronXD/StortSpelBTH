@@ -6,7 +6,6 @@
 RoomLayout::RoomLayout()
 	:distance(0.f), numMainRooms(0), numBranches(0), largestBranchSize(0)
 {
-	std::srand((unsigned)time(0));	
 }
 
 RoomLayout::~RoomLayout()

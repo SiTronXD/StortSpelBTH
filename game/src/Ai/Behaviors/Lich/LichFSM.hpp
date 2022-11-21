@@ -7,22 +7,28 @@ struct LichComponent
 {
 	LichComponent() {};
 
+    //Ints
     int LOW_HEALTH = 30;
     int FULL_HEALTH = 100;  
     int ESCAPE_HEALTH = 100 / 4;
     int life = FULL_HEALTH;    
-    bool isDead(){return life<=0;}
 
+    //Floats
+        //Radius
     float sightRadius           = 100; // I'll just look at you
     float peronalSpaceRadius    = 90 ; // To close! I will initiate hunt!
     float attackRadius          = 70 ; // I'm actually able to shoot at you!
     float nonoRadius            = 40 ; // Too close, I will back away from you! (while shooting) 
-    
-    
-    float speed     = 20 ; // Too close, I will back away from you! (while shooting) 
+        //Stats
+    float mana                  = 100;
+    float speed                 = 20 ; // Too close, I will back away from you! (while shooting) 
 
 
+    //Bools
+    bool inCombat               = false;
+    bool shieldedByTank         = false;
 
+    bool isDead(){return life<=0;}
 };
 
 
@@ -40,6 +46,7 @@ private:
     static bool combatToHunt(Entity entityID);
 
     static bool toDead(Entity entityID);
+    static bool revive(Entity entityID);
 
 	EntityEvent idle_to_creep{   "idle to creep",      idleToCreep};
 	EntityEvent creep_to_alerted{"creep to alerted",   creepToAlerted};
@@ -58,6 +65,8 @@ private:
     EntityEvent combat_to_dead{  "combat to dead",  toDead};
     EntityEvent escape_to_dead{  "escape to dead",  toDead};
     EntityEvent creep_to_dead{   "creep to dead",   toDead};
+
+    EntityEvent dead_to_idle{   "dead to idle",   revive};
 
 
 public:
@@ -98,7 +107,16 @@ protected:
         addEntityTransition("escape",   LichFSM::escape_to_dead,       "dead");
         addEntityTransition("creep",    LichFSM::creep_to_dead,        "dead");
 
+        addEntityTransition("dead",    LichFSM::dead_to_idle,        "idle");
+
 
 		setInitialNode("idle");
 	}
+
+
+    //Helper functions
+    static int		getPlayerID();
+	static float	get_dt();
+	static Scene*	getTheScene();
+	static bool		falseIfDead(Entity entityID);
 };
