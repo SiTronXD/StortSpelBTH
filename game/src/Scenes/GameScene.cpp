@@ -233,8 +233,8 @@ void GameScene::aiExample()
 {
 
 
-
-	auto a = [&](FSM* fsm, uint32_t entityId) -> void {
+    // Imgui Swarm 
+	auto swarmImgui = [&](FSM* fsm, uint32_t entityId) -> void {
 		SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
     
         auto entityImguiWindow = [&](SwarmFSM* swarmFsm, uint32_t entityId)->void 
@@ -337,18 +337,48 @@ void GameScene::aiExample()
         }       
         
 	};
+
+    // Imgui Lich 
+    auto lichImgui = [&](FSM* FSM, uint32_t entityId)->void 
+    {
+        LichFSM* swarmFsm = (LichFSM*)FSM;
+
+        auto& lichComponent = this->getSceneHandler()->getScene()->getComponent<LichComponent>(entityId);
+        auto& entiyFSMAgentComp = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId);
+        auto& entityRigidBody = this->getSceneHandler()->getScene()->getComponent<Rigidbody>(entityId);
+        int& health            = lichComponent.life;
+        float& speed           = lichComponent.speed;
+        float& attackRange     = lichComponent.attackRadius;
+        float& sightRange      = lichComponent.sightRadius;
+        float& gravity 		   = entityRigidBody.gravityMult;
+        std::string& status    = entiyFSMAgentComp.currentNode->status;
+        ImGui::Text(status.c_str());
+        ImGui::SliderInt("health", &health, 0, 100);
+        ImGui::SliderFloat("speed", &speed, 0, 100);
+        ImGui::SliderFloat("gravity", &gravity, 0, 10);
+        ImGui::SliderFloat("attackRange", &attackRange, 0, 100);
+        ImGui::SliderFloat("sightRange", &sightRange, 0, 100);
+    };
 	
 
 	//SWARM
 	static SwarmFSM swarmFSM;
 	this->aiHandler->addFSM(&swarmFSM, "swarmFSM");
+
+    static LichFSM lichFSM;
+    this->aiHandler->addFSM(&lichFSM, "lichFSM");
+    
+    static TankFSM tankFSM;
+    this->aiHandler->addFSM(&tankFSM, "tankFSM");
 //TODO: Cause crash on second run, therefore disabled in distribution... 
 #ifdef _CONSOLE 
-    this->aiHandler->addImguiToFSM("swarmFSM", a);
+    this->aiHandler->addImguiToFSM("swarmFSM", swarmImgui);
+    this->aiHandler->addImguiToFSM("lichFSM", lichImgui);
 #endif 
 
 	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
-    int numOfGroups = 4;
+    //int numOfGroups = 4;
+    int numOfGroups = 4; //TODO: REMOVE THIS AND USE LINE ABOVE
 	int group_size = 3;
     for(size_t j = 0; j < numOfGroups; j++)
     {
@@ -376,7 +406,7 @@ void GameScene::aiExample()
 	//TANK
 	for(int i = 0; i < 1; i++)
 	{
-		/*static TankFSM tankFSM;
+		static TankFSM tankFSM;
 		this->aiHandler->addFSM(&tankFSM, "tankFSM");
 		int tank = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 		this->tankIDs.push_back(this->createEntity());
@@ -392,17 +422,16 @@ void GameScene::aiExample()
 		transform.scale = glm::vec3(3.0f, 3.0f, 3.0f);
 		this->setComponent<Collider>(this->tankIDs.back(), Collider::createSphere(4.0f*transform.scale.x));
 		this->aiHandler->createAIEntity(this->tankIDs.back(), "tankFSM");
-		this->setInactive(this->tankIDs.back());*/
+		this->setInactive(this->tankIDs.back());
 	}
+
+
 	//stnky LICH
 	for(int i = 0; i < 1; i++)
-	{
-		static LichFSM lichFSM;
-		this->aiHandler->addFSM(&lichFSM, "lichFSM");
+	{		
 		int lich = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
 		this->lichIDs.push_back(this->createEntity());
 		this->setComponent<MeshComponent>(this->lichIDs.back(), lich);
-		this->setComponent<AiCombatLich>(this->lichIDs.back());
 		this->setComponent<Rigidbody>(this->lichIDs.back());
 		Rigidbody& rb = this->getComponent<Rigidbody>(this->lichIDs.back());
 		rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -443,40 +472,10 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 		{
 			this->newRoomFrame = true;
 
-			/*int idx = 0;
-			int randNumEnemies = rand() % 8 + 3;
-			int counter = 0;
-			const std::vector<Entity>& entites = roomHandler.getFreeTiles();
-			for (Entity entity : entites)
-			{
-				if (idx != 10 && randNumEnemies - counter != 0)
-				{
-					this->setActive(this->enemyIDs[idx]);
-					Transform& transform = this->getComponent<Transform>(this->enemyIDs[idx]);
-					Transform& tileTrans = this->getComponent<Transform>(entity);
-					float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
-					transform.position = tileTrans.position;
-					transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
-                
-
-					//Temporary enemie reset
-					SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->enemyIDs[idx]);
-					transform.scale.y = 1.0f;
-					swarmComp.life = swarmComp.FULL_HEALTH;
-					swarmComp.group->inCombat = false;
-					
-					swarmComp.group->aliveMembers.push(0); // TODO: This should be done somewhere else... Like in SwarmFSM/BT
-
-					idx++;
-					counter++;
-				
-				}
-			}*/
-
 			int swarmIdx = 0;
 			int lichIdx = 0;
 			int tankIdx = 0;
-			int randNumEnemies = 10;
+			int randNumEnemies = 1;
 			int counter = 0;
 			const std::vector<Entity>& tiles = roomHandler.getFreeTiles();
 			for (Entity tile : tiles)

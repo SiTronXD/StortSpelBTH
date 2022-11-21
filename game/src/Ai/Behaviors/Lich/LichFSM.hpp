@@ -1,7 +1,6 @@
 #pragma once
 #include "vengine.h"
 #include "LichBTs.hpp"
-#include "../../../Components/AiCombatLich.hpp"
 
 
 struct LichComponent
@@ -18,6 +17,10 @@ struct LichComponent
     float peronalSpaceRadius    = 90 ; // To close! I will initiate hunt!
     float attackRadius          = 70 ; // I'm actually able to shoot at you!
     float nonoRadius            = 40 ; // Too close, I will back away from you! (while shooting) 
+    
+    
+    float speed     = 20 ; // Too close, I will back away from you! (while shooting) 
+
 
 
 };
@@ -63,7 +66,6 @@ protected:
 	virtual void registerEntityComponents(Entity entityId) override
 	{
 		addRequiredComponent<LichComponent>(entityId);
-		addRequiredComponent<AiCombatLich>(entityId);
 	}
 
 	virtual void real_init() override
