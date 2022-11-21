@@ -53,7 +53,7 @@ class LichBT : public BehaviorTree
 	static int		getPlayerID();
 	static float	get_dt();
 	static Scene*	getTheScene();
-
+	static void rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision = 5.0f);
 };
 
 class Lich_idle : public LichBT

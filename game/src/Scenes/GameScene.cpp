@@ -598,6 +598,8 @@ void GameScene::aiExample()
 		transform.scale = glm::vec3(1.0f, 3.0f, 1.0f);
 		this->setComponent<Collider>(this->lichIDs.back(), Collider::createCapsule(4.0f, 4.0f*transform.scale.y));
 		this->aiHandler->createAIEntity(this->lichIDs.back(), "lichFSM");
+        LichComponent& lichComp = this->getComponent<LichComponent>(this->lichIDs.back());
+        lichComp.origScaleY = transform.scale.y;
 		this->setInactive(this->lichIDs.back());
 	}
 	
@@ -653,9 +655,9 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 			this->newRoomFrame = true;
 
             //Num to spawn
-            int numTanks        = 1;
-            int numLich         = 0;
-            int numSwarm        = 3;
+            int numTanks        = 0;
+            int numLich         = 1;
+            int numSwarm        = 0;
 
 			int swarmIdx        = 0;
 			int lichIdx         = 0;

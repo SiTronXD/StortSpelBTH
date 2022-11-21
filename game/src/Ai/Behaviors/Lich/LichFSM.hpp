@@ -8,14 +8,21 @@ struct LichComponent
 	LichComponent() {};
 
     //Ints
-    int LOW_HEALTH = 30;
-    int FULL_HEALTH = 100;  
-    int ESCAPE_HEALTH = 100 / 4;
-    int life = FULL_HEALTH;    
+    int LOW_HEALTH              = 30;            
+    int FULL_HEALTH             = 100;  
+    int ESCAPE_HEALTH           = 100 / 4; 
+    int life                    = FULL_HEALTH;    
 
     //Floats
+    float tempRotAngle			= 0.0f;//Dont touch!
+    float creepRotSpeed         = 60.0f;
+        //Alert
+    float origScaleY			= 1.0f;
+	float alertScale			= 1.5f;
+	float alertAnimSpeed		= 3.0f;
+	float alertTempYpos			= 0.0f;
         //Radius
-    float sightRadius           = 100; // I'll just look at you
+    float sightRadius           = 150; // I'll just look at you
     float peronalSpaceRadius    = 90 ; // To close! I will initiate hunt!
     float attackRadius          = 70 ; // I'm actually able to shoot at you!
     float nonoRadius            = 40 ; // Too close, I will back away from you! (while shooting) 
@@ -24,9 +31,13 @@ struct LichComponent
     float speed                 = 20 ; // Too close, I will back away from you! (while shooting) 
 
 
+
     //Bools
+    bool rotateLeft				= true;
     bool inCombat               = false;
     bool shieldedByTank         = false;
+    bool alertAtTop				= false;
+	bool alertDone				= false;
 
     bool isDead(){return life<=0;}
 };

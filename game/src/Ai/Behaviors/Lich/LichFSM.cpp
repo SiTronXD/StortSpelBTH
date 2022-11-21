@@ -56,30 +56,38 @@ bool LichFSM::idleToCreep(Entity entityID)
 bool LichFSM::creepToAlerted(Entity entityID)
 {
     if(!falseIfDead(entityID)){return false;}
+    bool ret = false;
     int playerID = getPlayerID();  
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     Transform& lichTrans   = getTheScene()->getComponent<Transform>(entityID);
     auto lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-
-    if( glm::length(playerTrans.position - lichTrans.position) < lichComp.peronalSpaceRadius)
+    float dist = glm::length(playerTrans.position - lichTrans.position);
+    if(dist < lichComp.peronalSpaceRadius)
     {
-        return true;
+        ret = true;
     }    
 
-    return false;
+    return ret;
 }
 
 bool LichFSM::alertToHunt(Entity entityID)
 {
-   if(!falseIfDead(entityID)){return false;}
+    if(!falseIfDead(entityID)){return false;}
+
+    bool ret = false;
+
     int playerID = getPlayerID();     
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     Transform& lichTrans   = getTheScene()->getComponent<Transform>(entityID);
-    
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
 
     //TODO: Add animation
+    if(lichComp.alertDone)
+    {
+        ret = true;
+    }
 
-    return true;
+    return ret;
     
 }
 

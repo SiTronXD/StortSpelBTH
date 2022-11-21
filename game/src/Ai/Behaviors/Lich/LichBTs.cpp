@@ -23,6 +23,50 @@ int LichBT::getPlayerID()
     return playerID;
 }
 
+void LichBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision)
+{
+	LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+	Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
+	//Rotate towards target start
+	lichTrans.updateMatrix();
+	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
+	glm::vec2 lichPos			= glm::vec2(lichTrans.position.x, lichTrans.position.z);
+	glm::vec2 curRot			= -glm::normalize(glm::vec2(lichTrans.forward().x, lichTrans.forward().z));
+	glm::vec2 lich_to_friend	= glm::normalize(targetPos - lichPos);
+
+	float angle_between			= glm::degrees(glm::acos(glm::dot(lich_to_friend, curRot)));
+	lichComp.tempRotAngle       = angle_between;
+
+	if(lichComp.rotateLeft && angle_between >= precision)
+	{
+		lichTrans.rotation.y += rotSpeed * get_dt();
+	}
+	else if(angle_between >= precision)
+	{
+		lichTrans.rotation.y -= rotSpeed * get_dt();
+	}
+
+	//Check if we rotated in correct direction
+	lichTrans.updateMatrix();
+	targetPos			= glm::vec2(target.x, target.z);
+	lichPos				= glm::vec2(lichTrans.position.x, lichTrans.position.z);
+	curRot				= -glm::normalize(glm::vec2(lichTrans.forward().x, lichTrans.forward().z));
+	lich_to_friend		= glm::normalize(targetPos - lichPos);
+	angle_between		= glm::degrees(glm::acos(glm::dot(lich_to_friend, curRot)));
+	//If angle got bigger, then change direction
+	if(lichComp.tempRotAngle < angle_between)
+	{
+		if(lichComp.rotateLeft)
+		{
+			lichComp.rotateLeft = false;
+		}
+		else
+		{
+			lichComp.rotateLeft = true;
+		}
+	}
+	//Rotate towards target end
+}
 
 void LichBT::registerEntityComponents(Entity entityId)
 {
@@ -56,7 +100,12 @@ BTStatus LichBT::carryingBones(Entity entityID)
 
 BTStatus LichBT::creepyLook(Entity entityID)
 {
-    return BTStatus::Failure;
+    BTStatus ret = BTStatus::Running;
+    int playerID = getPlayerID();
+    Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    rotateTowards(entityID, playerTrans.position, lichComp.creepRotSpeed);
+    return ret;
 }
 
 BTStatus LichBT::huntingPlayer(Entity entityID)
@@ -66,7 +115,17 @@ BTStatus LichBT::huntingPlayer(Entity entityID)
 
 BTStatus LichBT::playerInNoNoZone(Entity entityID)
 {
-    return BTStatus::Failure;
+    BTStatus ret = BTStatus::Failure;
+    int playerID = getPlayerID();
+    Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+    Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    float dist = glm::length(playerTrans.position -  lichTrans.position);
+    if(dist < lichComp.nonoRadius)
+    {
+        ret = BTStatus::Success;
+    }
+    return ret;
 }
 
 BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
@@ -108,7 +167,18 @@ BTStatus LichBT::selfHeal(Entity entityID)
 
 BTStatus LichBT::playerNotVisible(Entity entityID)
 {
-    return BTStatus::Failure;
+    BTStatus ret = BTStatus::Failure;
+    int playerID = getPlayerID();
+    Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+    Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
+    LichComponent lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    float dist = glm::length(playerTrans.position -  lichTrans.position);
+    if(dist > lichComp.sightRadius)
+    {
+        ret = BTStatus::Success;
+    }
+
+    return ret;
 }
 
 BTStatus LichBT::runAwayFromPlayer(Entity entityID)
@@ -144,7 +214,57 @@ BTStatus LichBT::die(Entity entityID)
 
 BTStatus LichBT::alerted(Entity entityID)
 {
-    return BTStatus::Failure;
+    BTStatus ret = BTStatus::Running;
+
+	LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+	int playerID = getPlayerID();
+	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
+	Transform& tankTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+	Collider& tankCol = sceneHandler->getScene()->getComponent<Collider>(entityID);
+	float toMove = (tankCol.radius*2) * (1.0f - lichComp.origScaleY + lichComp.alertScale);
+	
+	tankTrans.rotation.y = lookAtY(tankTrans, playerTransform);
+	tankTrans.updateMatrix();
+
+	if(!lichComp.alertAtTop)
+	{
+		if(tankTrans.scale.y >= lichComp.origScaleY + lichComp.alertScale &&
+		tankTrans.position.y >= (lichComp.alertTempYpos + toMove))
+		{
+			lichComp.alertAtTop = true;
+		}
+		else
+		{
+			if (tankTrans.scale.y < lichComp.origScaleY + lichComp.alertScale)
+			{
+				tankTrans.scale.y += lichComp.alertAnimSpeed * get_dt();
+			}
+			if (tankTrans.position.y < (lichComp.alertTempYpos + toMove))
+			{
+				tankTrans.position.y += lichComp.alertAnimSpeed * get_dt();
+			}
+		}
+	}
+	else
+	{
+		if(tankTrans.scale.y <= lichComp.origScaleY)
+		{
+			tankTrans.scale.y = lichComp.origScaleY;
+			tankTrans.position.y = lichComp.alertTempYpos;
+			lichComp.alertAtTop = false;
+			lichComp.alertDone = true;
+			ret = BTStatus::Success;
+		}
+		else
+		{
+			if(tankTrans.scale.y > 1.0)
+			{
+				tankTrans.scale.y -= lichComp.alertAnimSpeed * get_dt();
+			}
+		}
+	}
+
+	return ret;
 }
 
 void Lich_idle::start()
