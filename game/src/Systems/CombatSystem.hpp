@@ -10,7 +10,7 @@ class CombatSystem : public System
 {
 private:
 
-	Scene* scene; // TEST LOWE HEST
+	Scene* scene;
 	ResourceManager* resourceMng;
 	PhysicsEngine* physics;
 	UIRenderer* uiRenderer;
