@@ -62,7 +62,7 @@ struct TankComponent
 	//Ints
     int FULL_HEALTH					= 500;  
     int life						= FULL_HEALTH;
-	int friendHealthRegen			= 40;
+	int friendHealthRegen			= 15;
 
 	//Floats
 	float idleSpeed					= 10.0f;

@@ -382,7 +382,7 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
             }
 			if(++safetyBreak2>150)
 			{
-				Log::warning("Swarm ray check running too many times,this is bad");
+				Log::warning("Swarm ray check running too many times,this is bad", BT_FILTER);
 				break;
 			}
         }
@@ -390,7 +390,7 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 		{
 			if(++safetyBreak>25)
 			{
-				Log::warning("Swarm ray check running too many times,this is bad");
+				Log::warning("Swarm ray check running too many times,this is bad", BT_FILTER);
 				break;
 			}
 		}
@@ -486,7 +486,7 @@ BTStatus SwarmBT::attack(Entity entityID)
 		swarmComp.inAttack = true; 
 		rigidbody.friction = 0.0f;
 	
-		std::cout<<"ATTACK!!!!\n";
+		Log::write("ATTACK!!!!", BT_FILTER);
 		ret = BTStatus::Success;
 	}
 	else if (swarmComp.grounded)
@@ -595,7 +595,6 @@ BTStatus SwarmBT::alerted(Entity entityID)
 
 	if(!swarmComp.alertAtTop)
 	{
-        std::cout << swarmTrans.scale.y << std::endl;
 		if(swarmTrans.scale.y >= swarmComp.alertScale &&
 		swarmTrans.position.y >= (swarmComp.alertTempYpos + toMove))
 		{
