@@ -2,6 +2,8 @@
 
 #include <glm/glm.hpp>
 #include <stack>
+#include <algorithm>
+#include <vector>
 #include "vengine.h"
 
 #include "../HelperFuncs.hpp"
@@ -19,11 +21,13 @@ struct SwarmGroup
 	bool inCombat = false;
 	float huntTimer;
 	float huntTimerOrig = 2.0f;
-	glm::vec3 idleMidBos = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 idleMidPos = glm::vec3(0.0f, 0.0f, 0.0f);
 	float idleRadius = 0.0f;
 	glm::vec3 lastKnownPlayerPos = glm::vec3(0.0f, 0.0f, 0.0f);
 	std::vector<uint32_t> members;
 	std::stack<uint32_t> aliveMembers;
+
+	bool isInGroup(Entity entityID){if(std::find(members.begin(), members.end(), entityID) != members.end()){return true;}return false;}
 };
 
 
@@ -36,8 +40,6 @@ class SwarmBT : public BehaviorTree
     void registerEntityComponents(Entity entityId) override;
 
   public:
-	virtual void initEntityData(Entity entityID) = 0;
-	virtual void update(Entity entityID) = 0;
 
    protected:
 	static BTStatus hasFriends(Entity entityID);
@@ -66,8 +68,7 @@ class Swarm_idle : public SwarmBT
    protected:
 	void start();
   public:
-	void initEntityData(Entity entityID){};
-	void update(Entity entityID){};
+
 };
 
 class Swarm_alerted : public SwarmBT
@@ -75,8 +76,7 @@ class Swarm_alerted : public SwarmBT
    protected:
 	void start();
   public:
-	void initEntityData(Entity entityID){};
-	void update(Entity entityID){};
+
 };
 
 class Swarm_combat : public SwarmBT
@@ -85,8 +85,7 @@ class Swarm_combat : public SwarmBT
 	void start();
 
   public:
-	void initEntityData(Entity entityID){};
-	void update(Entity entityID){};
+
 };
 
 class Swarm_escape : public SwarmBT
@@ -94,8 +93,7 @@ class Swarm_escape : public SwarmBT
    protected:
 	void start();
   public:
-	void initEntityData(Entity entityID){};
-	void update(Entity entityID){};
+
 };
 
 class Swarm_dead: public SwarmBT
@@ -103,6 +101,4 @@ class Swarm_dead: public SwarmBT
 protected:
 	void start();
 public:
-	void initEntityData(Entity entityID){};
-	void update(Entity entityID){};
 };

@@ -12,7 +12,7 @@ function script:init()
     self.camHeight     = 15
     self.sens          = 25
     self.distAcc       = 0
-    self.distMargin    = 1
+    self.distMargin    = 2
 
     self.shaking       = false
     self.shakeTimer    = 0

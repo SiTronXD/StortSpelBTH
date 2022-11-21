@@ -3,6 +3,7 @@
 #include <vengine.h>
 #include "../Components/Combat.h"
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
+#include "../Ai/Behaviors/Tank/TankFSM.hpp"
 #include <string>
 
 class CombatSystem : public System
@@ -11,16 +12,16 @@ private:
 
 	Scene* scene;
 	ResourceManager* resourceMng;
-	Entity playerID;
-	Entity swordID;
 	PhysicsEngine* physics;
 	UIRenderer* uiRenderer;
 	ScriptHandler* script;
+	Entity playerID;
+	Entity swordID;
+	Entity heal;
 
+	int swordMesh;
 	int perkMeshes[5];
-	int abilityMeshes[1];
-	int healingMesh;
-	Entity heal = -1;
+	int abilityMeshes[2];
 
 	std::vector<Entity> hitEnemies;
 	bool canHit = true;
@@ -29,8 +30,8 @@ public:
 
 	CombatSystem(Scene* scene, ResourceManager* resourceMng, Entity playerID, 
 		PhysicsEngine* physics, UIRenderer* uiRenderer, ScriptHandler* script)
-		: scene(scene), resourceMng(resourceMng), playerID(playerID), 
-		physics(physics), uiRenderer(uiRenderer), script(script)
+		: scene(scene), resourceMng(resourceMng), playerID(playerID), heal(-1),
+		swordID(-1), physics(physics), uiRenderer(uiRenderer), script(script)
 	{
 		if (scene->hasComponents<Combat>(playerID))
 		{
@@ -40,6 +41,8 @@ public:
 			combat.combos.emplace_back("Heavy Light Heavy ");
 
 			this->swordID = this->scene->createEntity();
+			this->swordMesh = this->resourceMng->addMesh("assets/models/MainSword.fbx", "assets/textures");
+			this->scene->setComponent<MeshComponent>(this->swordID, this->swordMesh);
 			combat.ability.abilityType = emptyAbility;
 			for (size_t i = 0; i < 4; i++)
 			{
@@ -52,7 +55,7 @@ public:
 			this->perkMeshes[3] = this->resourceMng->addMesh("assets/models/Perk_Movement.obj");
 			this->perkMeshes[4] = this->resourceMng->addMesh("assets/models/Perk_Stamina.obj");
 			this->abilityMeshes[0] = this->resourceMng->addMesh("assets/models/KnockbackAbility.obj");
-			this->healingMesh = this->resourceMng->addMesh("assets/models/HealingAbility.obj");
+			this->abilityMeshes[1] = this->resourceMng->addMesh("assets/models/HealingAbility.obj");
 		}
 	}
 
@@ -69,6 +72,15 @@ public:
 			{
 				dealDamage(combat);
 			}
+
+			// Put sword in characters hand and keep updating it
+			this->scene->getComponent<Transform>(this->swordID).setMatrix(
+				this->resourceMng->getJointTransform(
+					this->scene->getComponent<Transform>(this->playerID),
+					this->scene->getComponent<MeshComponent>(this->playerID),
+					this->scene->getComponent<AnimationComponent>(this->playerID),
+					"mixamorig:RightHand") * glm::translate(glm::mat4(1.f), glm::vec3(0.f, 1.f, 0.f)) * 
+				glm::rotate(glm::mat4(1.f), glm::radians(-90.f), glm::vec3(0.f, 0.f, 1.f)));
 
 			if (combat.isHealing)
 			{
@@ -191,56 +203,14 @@ public:
 	{
 		if (this->scene->hasComponents<Collider>(this->swordID))
 		{
-			Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
-			playerTrans.updateMatrix();
+			Transform& swordTrans = scene->getComponent<Transform>(this->swordID);
+			swordTrans.updateMatrix();
 			std::vector<int> hitID = physics->testContact(this->scene->getComponent<Collider>(this->swordID),
-			playerTrans.position + playerTrans.forward() * 6.f, glm::vec3(90.f, playerTrans.rotation.y, 0.f));
+				swordTrans.position);
 
-			//check for multiPlayer
-            if (scene->getNetworkHandler()->getClient()->hasStarted())
-            {
-                for (size_t i = 0; i < hitID.size(); i++)//gå igenom alla enemies
-				{
-                    bool done = false;
-					for (int m = 0; m < scene->getNetworkHandler()->getMonsters().size() && !done; m++)
-					{
-					    if (hitID[i] == scene->getNetworkHandler()->getMonsters()[m].first)
-					    {
-                            done = true;
-							for (size_t j = 0; j < this->hitEnemies.size(); j++)
-							{
-							    if (this->hitEnemies[j] == hitID[i])
-							    {
-							        this->canHit = false;
-							    }
-							    else
-							    {
-							        this->canHit = true;
-							    }
-							}
-							if (canHit)
-							{
-								TCPPacketEvent hitMonsterEvent;
-                                hitMonsterEvent.gameEvent = GameEvents::HitMonster;
-                                hitMonsterEvent.nrOfInts = 2;
-                                hitMonsterEvent.ints[0] = scene->getNetworkHandler()->getMonsters()[m].second;
-                                hitMonsterEvent.ints[1] = (int)combat.dmgArr[combat.activeAttack];
-                                hitMonsterEvent.floats.push_back(combat.knockbackArr[combat.activeAttack]);
-
-                                std::cout << "sent hit" << std::endl;
-								scene->getNetworkHandler()->sendTCPDataToClient(hitMonsterEvent);
-								this->hitEnemies.emplace_back(hitID[i]);
-							}
-						}
-					}
-				}
-			}
-            else
-            {
-				for (size_t i = 0; i < hitID.size(); i++)
-				{
-				//check for singlePlayer
-				if (scene->hasComponents<SwarmComponent>(hitID[i]))//kolla så det är en enemy
+			for (size_t i = 0; i < hitID.size(); i++)
+			{
+				if (scene->hasComponents<SwarmComponent>(hitID[i]))
 				{
 					for (size_t j = 0; j < this->hitEnemies.size(); j++)
 					{
@@ -259,14 +229,41 @@ public:
 						enemy.life -= (int)combat.dmgArr[combat.activeAttack];
 						Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(hitID[i]);
 						Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
+						Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
 						glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
 						enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * combat.knockbackArr[combat.activeAttack];
 						this->hitEnemies.emplace_back(hitID[i]);
 					}
 				}
+				else if (scene->hasComponents<TankComponent>(hitID[i]))
+				{
+					for (size_t j = 0; j < this->hitEnemies.size(); j++)
+					{
+						if (this->hitEnemies[j] == hitID[i])
+						{
+							this->canHit = false;
+						}
+						else
+						{
+							this->canHit = true;
+						}
+					}
+					if (this->canHit == true)
+					{
+						TankComponent& enemy = this->scene->getComponent<TankComponent>(hitID[i]);
+						if (enemy.canBeHit)
+						{
+							enemy.life -= (int)combat.dmgArr[combat.activeAttack];
+							Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(hitID[i]);
+							Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
+							Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
+							glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+							enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * combat.knockbackArr[combat.activeAttack];
+							this->hitEnemies.emplace_back(hitID[i]);
+						}
+					}
 				}
-            }
-			
+			}
 		}
 	}
 
@@ -293,14 +290,12 @@ public:
 			else
 			{
 				this->scene->setAnimation(this->playerID, "lightAttack");
+				Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+				this->script->setScriptComponentValue(playerScript, 4, "currentAnimation");
+				this->script->setScriptComponentValue(playerScript, combat.lightAttackCd, "animTimer");
 				this->scene->getComponent<AnimationComponent>(this->playerID).timeScale = combat.animationMultiplier[lightActive];
 
-				this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 6.f, glm::vec3(0), true));
-				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
-				playerTrans.updateMatrix();
-				Transform& swordTrans = this->scene->getComponent<Transform>(this->swordID);
-				swordTrans.position = playerTrans.position + playerTrans.forward() * 6.f;
-				swordTrans.rotation = glm::vec3(90.f, playerTrans.rotation.y, 0.f);
+				this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 12.f, glm::vec3(0.f, 0.f, 4.f), true));
 				return true;
 			}
 		}
@@ -327,14 +322,12 @@ public:
 			else
 			{
 				this->scene->setAnimation(this->playerID, "heavyAttack");
+				Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+				this->script->setScriptComponentValue(playerScript, 5, "currentAnimation");
+				this->script->setScriptComponentValue(playerScript, combat.heavyAttackCd, "animTimer");
 				this->scene->getComponent<AnimationComponent>(this->playerID).timeScale = combat.animationMultiplier[heavyActive];
 
-				this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 6.f, glm::vec3(0), true));
-				Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
-				playerTrans.updateMatrix();
-				Transform& swordTrans = this->scene->getComponent<Transform>(this->swordID);
-				swordTrans.position = playerTrans.position + playerTrans.forward() * 6.f;
-				swordTrans.rotation = glm::vec3(90.f, playerTrans.rotation.y, 0.f);
+				this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 12.f, glm::vec3(0.f, 0.f, 4.f), true));
 				return true;
 			}
 		}
@@ -370,14 +363,12 @@ public:
 				else
 				{
 					this->scene->setAnimation(this->playerID, "knockback");
+					Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+					this->script->setScriptComponentValue(playerScript, 9, "currentAnimation");
+					this->script->setScriptComponentValue(playerScript, combat.knockbackCd, "animTimer");
 					this->scene->getComponent<AnimationComponent>(this->playerID).timeScale = combat.animationMultiplier[knockbackActive];
 
-					this->scene->setComponent<Collider>(this->swordID, Collider::createSphere(8.f, glm::vec3(0), true));
-					Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
-					playerTrans.updateMatrix();
-					Transform& swordTrans = this->scene->getComponent<Transform>(this->swordID);
-					swordTrans.position = playerTrans.position + playerTrans.forward() * 6.f;
-					swordTrans.rotation = glm::vec3(90.f, playerTrans.rotation.y, 0.f);
+					this->scene->setComponent<Collider>(this->swordID, Collider::createSphere(10.f, glm::vec3(0), true));
 					return true;
 				}
 			}
@@ -396,7 +387,7 @@ public:
 				combat.ability.abilityType = emptyAbility;
 
 				this->heal = this->scene->createEntity();
-				this->scene->setComponent<MeshComponent>(this->heal, this->healingMesh);
+				this->scene->setComponent<MeshComponent>(this->heal, this->abilityMeshes[healAbility]);
 				this->scene->setComponent<PointLight>(this->heal, { glm::vec3(0.f, 10.f, 0.f), glm::vec3(9.f, 7.f, 9.f) });
 				Transform& healTrans = this->scene->getComponent<Transform>(this->heal);
 				Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
@@ -417,13 +408,12 @@ public:
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive1;
 			this->scene->setAnimation(this->playerID, "spinAttack");
+			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+			this->script->setScriptComponentValue(playerScript, 6, "currentAnimation");
+			this->script->setScriptComponentValue(playerScript, combat.comboLightCd, "animTimer");
 			this->scene->getComponent<AnimationComponent>(this->playerID).timeScale = combat.animationMultiplier[comboActive1];
 
-			this->scene->setComponent<Collider>(this->swordID, Collider::createSphere(8.f, glm::vec3(0), true));
-			Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
-			playerTrans.updateMatrix();
-			Transform& swordTrans = this->scene->getComponent<Transform>(this->swordID);
-			swordTrans.position = playerTrans.position;
+			this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 12.f, glm::vec3(0.f, 0.f, 4.f), true));
 		}
 		else if (idx == 1)
 		{
@@ -432,14 +422,12 @@ public:
 			combat.activeAttack = comboActive2;
 
 			this->scene->setAnimation(this->playerID, "mixAttack");
+			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+			this->script->setScriptComponentValue(playerScript, 7, "currentAnimation");
+			this->script->setScriptComponentValue(playerScript, combat.comboMixCd, "animTimer");
 			this->scene->getComponent<AnimationComponent>(this->playerID).timeScale = combat.animationMultiplier[comboActive2];
 
-			this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 6.f, glm::vec3(0), true));
-			Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
-			playerTrans.updateMatrix();
-			Transform& swordTrans = this->scene->getComponent<Transform>(this->swordID);
-			swordTrans.position = playerTrans.position + playerTrans.forward() * 6.f;
-			swordTrans.rotation = glm::vec3(90.f, playerTrans.rotation.y, 0.f);
+			this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 12.f, glm::vec3(0.f, 0.f, 4.f), true));
 		}
 		else if (idx == 2)
 		{
@@ -448,14 +436,12 @@ public:
 			combat.activeAttack = comboActive3;
 
 			this->scene->setAnimation(this->playerID, "slashAttack");
+			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+			this->script->setScriptComponentValue(playerScript, 8, "currentAnimation");
+			this->script->setScriptComponentValue(playerScript, combat.comboHeavyCd, "animTimer");
 			this->scene->getComponent<AnimationComponent>(this->playerID).timeScale = combat.animationMultiplier[comboActive3];
 
-			this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 6.f, glm::vec3(0), true));
-			Transform& playerTrans = scene->getComponent<Transform>(this->playerID);
-			playerTrans.updateMatrix();
-			Transform& swordTrans = this->scene->getComponent<Transform>(this->swordID);
-			swordTrans.position = playerTrans.position + playerTrans.forward() * 6.f;
-			swordTrans.rotation = glm::vec3(90.f, playerTrans.rotation.y, 0.f);
+			this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 12.f, glm::vec3(0.f, 0.f, 4.f), true));
 		}
 	};
 
@@ -533,13 +519,50 @@ public:
 		{
 			setDefaultMovementSpeed(combat);
 			combat.movementMultiplier += perk.multiplier;
+			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+
+			float moveTimers[4] = { 0.f, 0.f, 0.f, 0.f };
+			this->script->getScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
+			this->script->getScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
+			this->script->getScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
+			this->script->getScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
+			for (size_t i = 0; i < 4; i++)
+			{
+				moveTimers[i] += perk.multiplier;
+			}
+			this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
+			this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
+			this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
+			this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
+			if (combat.movementMultiplier < 0.3f)
+			{
+				combat.movementMultiplier = 0.3f;
+				moveTimers[0] = 1.7f;
+				moveTimers[1] = 1.4f;
+				moveTimers[2] = 1.9f;
+				moveTimers[3] = 3.2f;
+				this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
+				this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
+				this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
+				this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
+			}
 		}
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 		int maxSpeed = 0;
+		int sprintSpeed = 0;
+		int dodgeSpeed = 0;
 		this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
-		float tempSpeed = (float)maxSpeed * combat.movementMultiplier;
-		maxSpeed = (int)tempSpeed;
+		this->script->getScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
+		this->script->getScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
+		float tempMaxSpeed = (float)maxSpeed * combat.movementMultiplier;
+		float tempSprintSpeed = (float)sprintSpeed * combat.movementMultiplier;
+		float tempDodgeSpeed = (float)dodgeSpeed * combat.movementMultiplier;
+		maxSpeed = (int)tempMaxSpeed;
+		sprintSpeed = (int)tempSprintSpeed;
+		dodgeSpeed = (int)tempDodgeSpeed;
 		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
+		this->script->setScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
+		this->script->setScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
 	}
 
 	void updateStamina(Combat& combat, Perks& perk, bool doUpgrade = true)
@@ -595,10 +618,20 @@ public:
 	{
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 		int maxSpeed = 0;
+		int sprintSpeed = 0;
+		int dodgeSpeed = 0;
 		this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
-		float tempSpeed = (float)maxSpeed / combat.movementMultiplier;
-		maxSpeed = (int)tempSpeed;
+		this->script->getScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
+		this->script->getScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
+		float tempMaxSpeed = (float)maxSpeed / combat.movementMultiplier;
+		float tempSprintSpeed = (float)sprintSpeed / combat.movementMultiplier;
+		float tempDodgeSpeed = (float)dodgeSpeed / combat.movementMultiplier;
+		maxSpeed = (int)tempMaxSpeed;
+		sprintSpeed = (int)tempSprintSpeed;
+		dodgeSpeed = (int)tempDodgeSpeed;
 		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
+		this->script->setScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
+		this->script->setScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
 	}
 
 	void setDefaultStamina(Combat& combat)
