@@ -50,6 +50,8 @@ scene.getComponent(uiID, CompType.Script).perkSlotTextureID =
 	resources.addTexture("assets/textures/UI/perkSlot.png", pixelArtSettings)
 scene.getComponent(uiID, CompType.Script).crosshairTextureID = 
 	resources.addTexture("assets/textures/UI/crosshair.png", pixelArtSettings)
+scene.getComponent(uiID, CompType.Script).uiTextureID = 
+	resources.addTexture("assets/textures/UI/UIBorder.png")
 
 --[[local p = scene.createPrefab("scripts/prefabs/prefab.lua")
 

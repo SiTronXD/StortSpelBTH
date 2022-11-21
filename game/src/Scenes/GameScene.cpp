@@ -253,7 +253,7 @@ void GameScene::update()
         abilityTextures[playerCombat.ability.abilityType]
     );
     this->getUIRenderer()->renderTexture(
-        glm::vec2(890.f, -390.f), glm::vec2(100.0f)
+        glm::vec2(-875.f, -455.f), glm::vec2(110.0f)
     );
 
     float perkXPos = -720.f;
@@ -264,8 +264,8 @@ void GameScene::update()
             this->perkTextures[playerCombat.perks[i].perkType]
         );
         this->getUIRenderer()->renderTexture(
-            glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f),
-            glm::vec2(70.0f)
+            glm::vec2(-perkXPos - 142.f + i * 83.f, perkYPos + 25.f),
+            glm::vec2(75.0f)
         );
     }
 
@@ -277,9 +277,9 @@ void GameScene::update()
         hpPercent = playerCombat.health * 0.01f;
         maxHpPercent = playerCombat.maxHealth * 0.01f;
     }
-    float xPos = -720.f;
-    float yPos = -500.f;
-    float xSize = 1024.f * 0.35f;
+    float xPos = -600.f;
+    float yPos = -472.f;
+    float xSize = 1200.f * 0.35f;
     float ySize = 64.f * 0.35f;
 
     this->getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
