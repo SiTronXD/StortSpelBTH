@@ -4,6 +4,8 @@
 #include <cmath>
 
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
+#include "../Ai/Behaviors/Tank/TankFSM.hpp"
+#include "../Ai/Behaviors/Lich/LichFSM.hpp"
 #include "../World Handling/Room Handler.h"
 #include "vengine.h"
 
@@ -23,8 +25,10 @@ private:
   int numRoomsCleared;
   bool newRoomFrame;
 
-  std::vector<int> enemyIDs;
   std::vector<SwarmGroup*> swarmGroups;
+  std::vector<int> swarmIDs;
+  std::vector<int> lichIDs;
+  std::vector<int> tankIDs;
 
   uint32_t abilityTextures[3];
   uint32_t perkTextures[4];

@@ -20,7 +20,8 @@ void ObjectHandler::addNewMesh(Scene* scene, ResourceManager* resourceManager, c
     mat.diffuseTextureIndex = resourceManager->addTexture("assets/textures/defaultMaterial.png");
     mat.specularTextureIndex = 0;
     mat.descriptorIndex = ~0u;
-    meshData.submeshes[0].materialIndex = resourceManager->addMaterial("lambert1", mat);
+    uint32_t materialIndex = resourceManager->addMaterial("lambert1", mat);
+    meshData.submeshes[0].materialIndex = materialIndex;
 
     this->mayaObjects.insert({mesh.name, scene->createEntity()});
     scene->setComponent<MeshComponent>(
@@ -50,14 +51,16 @@ void ObjectHandler::updateMeshTransform(Scene* scene, char* data)
 
 void ObjectHandler::updateMeshTopology(Scene* scene, ResourceManager* resourceManager, char* data) 
 {
-    MeshHeader mesh;
-    memcpy(&mesh, data, sizeof(MeshHeader));
+    MeshHeader meshHeader;
+    memcpy(&meshHeader, data, sizeof(MeshHeader));
    
-    //get current mesh data
-    MeshData meshData = resourceManager->getMesh(resourceManager->addMesh(mesh.name)).getMeshData();
-    //update mesh data and replace old
+    //get current mesh data and save previous submeshdata for material info
+    MeshData meshData = resourceManager->getMesh(scene->getComponent<MeshComponent>(this->mayaObjects[meshHeader.name]).meshID).getMeshData();
+    std::vector<SubmeshData> submeshData = resourceManager->getMesh(scene->getComponent<MeshComponent>(this->mayaObjects[meshHeader.name]).meshID).getSubmeshData();
+    //update mesh data and set correct material
     updateMeshData(&meshData, data);
-    (int)resourceManager->addMesh(mesh.name, meshData);
+    meshData.submeshes[0].materialIndex = submeshData[0].materialIndex;
+    (int)resourceManager->addMesh(meshHeader.name, meshData);
 }
 
 void ObjectHandler::addOrUpdateMaterial(Scene* scene, ResourceManager* resourceManager, char* data)
@@ -75,14 +78,9 @@ void ObjectHandler::setMeshMaterial(Scene* scene, ResourceManager* resourceManag
 {
     MeshMaterialConnectionHeader connectionHeader;
     memcpy(&connectionHeader, data, sizeof(MeshMaterialConnectionHeader));
-    //get mesh component!!
     Mesh& mesh = resourceManager->getMesh(scene->getComponent<MeshComponent>(this->mayaObjects[connectionHeader.meshName]).meshID);
     mesh.getSubmesh(0).materialIndex = resourceManager->addMaterial(connectionHeader.materialName);
-    //resourceManager->getMesh(resourceManager->addMesh(connectionHeader.meshName)).getSubmeshData()[0].materialIndex = resourceManager->addMaterial(connectionHeader.materialName);
-    //for (int i = 0; i < submeshes.size(); i++)
-    //{
-    //    submeshes[i].materialIndex = resourceManager->addMaterial(connectionHeader.materialName);
-    //}
+
 }
 MeshData ObjectHandler::createMeshData(char* data)
 {
@@ -123,6 +121,11 @@ MeshData ObjectHandler::createMeshData(char* data)
         .numIndicies = static_cast<uint32_t>(mesh.indexCount),
     });
 
+    if (vertices)
+        delete[] vertices;
+    if (indices)
+        delete[] indices;
+
     return meshData;
 }
 
@@ -162,4 +165,9 @@ void ObjectHandler::updateMeshData(MeshData* meshData, char* data)
       meshData->indicies.push_back(static_cast<uint32_t>(indices[i]));
 
     meshData->submeshes[0].numIndicies = mesh.indexCount;
+
+    if (vertices)
+        delete[] vertices;
+    if (indices)
+        delete[] indices;
 }

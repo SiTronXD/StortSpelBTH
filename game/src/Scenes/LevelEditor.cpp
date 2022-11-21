@@ -6,20 +6,21 @@ LevelEditor::~LevelEditor()
 {
   if (comlib)
     delete comlib;
-  if (data)
-    delete data;
-  if (header)
-    delete header;
+  //if (data)
+  //  delete[] data;
 }
 
 void LevelEditor::init() 
 {
   comlib = new Comlib(L"MayaBuffer", 150 * (1 << 20), Consumer);
-  Entity floor = this->createEntity();
-  this->setComponent<MeshComponent>(floor, 0);
-  this->getComponent<Transform>(floor).scale = glm::vec3(100.0f, 1.0f, 100.0f);
-  this->getComponent<Transform>(floor).position = glm::vec3(0.0f, -1.0f, 0.0f);
-  this->setComponent<Collider>(floor, Collider::createBox((glm::vec3(100.0f, 1.0f, 100.0f))));
+
+  roomHandler.init(
+      this,
+      this->getResourceManager(),
+      this->getConfigValue<int>("room_size"),
+      this->getConfigValue<int>("tile_types")
+  );
+  roomHandler.generate();
 
   Entity sun = this->createEntity();
   this->setComponent<DirectionalLight>(sun);
@@ -73,27 +74,29 @@ void LevelEditor::readBuffer()
               this, this->getResourceManager(), data
           );
         }
-      else if (header->messageType == MATERIAL_DATA)
-        {
-          objectHandler.addOrUpdateMaterial(
-              this, this->getResourceManager(), data
-          );
-        }
-      else if (header->messageType == MESH_MATERIAL_CONNECTION)
-        {
-          objectHandler.setMeshMaterial(this, this->getResourceManager(), data);
-        }
-      else if (header->messageType == CAMERA_UPDATE)
-        {
-          CameraUpdateHeader camera;
-          memcpy(&camera, data, sizeof(CameraUpdateHeader));
-
-          Transform& t = this->getComponent<Transform>(mayaCamera);
-          t.position = glm::vec3(camera.position[0], camera.position[1], camera.position[2]);
-          t.rotation = glm::vec3(camera.rotation[0], camera.rotation[1], camera.rotation[2]);
-          t.updateMatrix();
-          //Camera& c = this->getComponent<Camera>(mayaCamera);
-          //c.updateMatrices(t);
-      }
+     else if (header->messageType == MATERIAL_DATA)
+       {
+         objectHandler.addOrUpdateMaterial(
+             this, this->getResourceManager(), data
+         );
+       }
+     else if (header->messageType == MESH_MATERIAL_CONNECTION)
+       {
+         objectHandler.setMeshMaterial(this, this->getResourceManager(), data);
+       }
+     else if (header->messageType == CAMERA_UPDATE)
+       {
+         CameraUpdateHeader camera;
+         memcpy(&camera, data, sizeof(CameraUpdateHeader));
+     
+         Transform& t = this->getComponent<Transform>(mayaCamera);
+         t.position = glm::vec3(camera.position[0], camera.position[1], camera.position[2]);
+         t.rotation = glm::vec3(camera.rotation[0], camera.rotation[1], camera.rotation[2]);
+         t.updateMatrix();
+         //Camera& c = this->getComponent<Camera>(mayaCamera);
+         //c.updateMatrices(t);
+     }
+      if (data)
+          delete[] data;
     }
 }
