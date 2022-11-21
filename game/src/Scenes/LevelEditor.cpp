@@ -6,8 +6,6 @@ LevelEditor::~LevelEditor()
 {
   if (comlib)
     delete comlib;
-  //if (data)
-  //  delete[] data;
 }
 
 void LevelEditor::init() 
@@ -37,7 +35,6 @@ void LevelEditor::start()
   playerCamera = this->getMainCameraID();
   mayaCamera = this->createEntity();
   this->setComponent<Camera>(this->mayaCamera);
-  //this->setMainCamera(mayaCamera);
 }
 
 void LevelEditor::update() 
@@ -93,8 +90,6 @@ void LevelEditor::readBuffer()
          t.position = glm::vec3(camera.position[0], camera.position[1], camera.position[2]);
          t.rotation = glm::vec3(camera.rotation[0], camera.rotation[1], camera.rotation[2]);
          t.updateMatrix();
-         //Camera& c = this->getComponent<Camera>(mayaCamera);
-         //c.updateMatrices(t);
      }
       if (data)
           delete[] data;

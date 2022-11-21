@@ -25,8 +25,8 @@ int main(int argc, char* argv[])
     srand((unsigned int)time(0));
     {
         Engine engine;
-        //engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
-        engine.run("Presumed Dead", "scripts/levelEditor.lua", new LevelEditor());
+        engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
+        //engine.run("Presumed Dead", "scripts/levelEditor.lua", new LevelEditor());
     }
 
     return EXIT_SUCCESS;
