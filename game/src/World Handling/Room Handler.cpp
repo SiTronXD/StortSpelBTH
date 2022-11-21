@@ -518,7 +518,7 @@ void RoomHandler::createColliders()
 				
 				this->scene->setComponent<Collider>(
                     room.doorTriggers[i],
-                    Collider::createBox(doorTrigCol, glm::vec3(0), true)
+                    Collider::createBox(doorTrigCol, glm::vec3(0, 0, 0), true)
                 );
 
 			}
