@@ -58,6 +58,7 @@
     <ClInclude Include="src\Components\AiCombatSwarm.h" />
     <ClInclude Include="src\Components\AICombatTank.hpp" />
     <ClInclude Include="src\Ai\Behaviors\Tank\TankBTs.hpp" />
+    <ClInclude Include="src\Network\NetworkDataFetcher.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
