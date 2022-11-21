@@ -25,7 +25,7 @@ public:
 
 	// Returns itemID
 	int spawnItem(ItemType type, int otherType, float multiplier);
-	bool deleteItem(int playerID, Entity ID);
+	void deleteItem(int playerID, Entity ID);
 	void setEntityID(int itemID, int playerID, Entity ID);
 	Entity getEntityID(int itemID, int playerID);
 };

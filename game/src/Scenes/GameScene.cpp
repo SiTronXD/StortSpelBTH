@@ -136,7 +136,16 @@ void GameScene::start()
     this->setComponent<PointLight>(this->ability, { glm::vec3(0.f), glm::vec3(7.f, 9.f, 5.f) });
     this->setScriptComponent(this->ability, "scripts/spin.lua");
 
-    this->perk = this->createEntity();
+    if (this->networkHandler->hasServer())
+    {
+        this->networkHandler->spawnItemRequest(hpUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 20.0f));
+        this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f));
+        this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 0.0f));
+        this->networkHandler->spawnItemRequest(movementUpPerk, 1.0f, glm::vec3(30.0f, 5.0f, -40.0f));
+        this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f));
+    }
+
+    /*this->perk = this->createEntity();
     this->setComponent<MeshComponent>(this->perk, this->perkMeshes[hpUpPerk]);
     Transform& perkTrans = this->getComponent<Transform>(this->perk);
     perkTrans.position = glm::vec3(30.f, 7.f, 20.f);
@@ -204,7 +213,7 @@ void GameScene::start()
     Perks& perkSetting4 = this->getComponent<Perks>(this->perk4);
     perkSetting4.multiplier = 0.5f;
     perkSetting4.perkType = staminaUpPerk;
-    this->setScriptComponent(this->perk4, "scripts/spin.lua");
+    this->setScriptComponent(this->perk4, "scripts/spin.lua");*/
 
     // Ai management
     this->aiHandler = this->getAIHandler();

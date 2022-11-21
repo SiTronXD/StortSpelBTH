@@ -15,7 +15,7 @@ int ServerGameMode::spawnItem(ItemType type, int otherType, float multiplier)
 	return this->curItems.size() - 1;
 }
 
-bool ServerGameMode::deleteItem(int playerID, Entity ID)
+void ServerGameMode::deleteItem(int playerID, Entity ID)
 {
 	int index = -1;
 	int size = this->curItems.size();
@@ -29,13 +29,12 @@ bool ServerGameMode::deleteItem(int playerID, Entity ID)
 	}
 	if (index != -1)
 	{
+		sf::Packet packet;
 		for (int i = 0; i < this->server->getClientCount(); i++)
 		{
-			sf::Packet packet;
-			packet << (int)GameEvent::DELETE_ITEM << itemIDs[index][i] <<
-				(int)this->curItems[index].type <<
-				this->curItems[index].otherType <<
-				this->curItems[index].multiplier;
+			packet.clear();
+			int gameEvent = i == playerID ? (int)GameEvent::PICKUP_ITEM : (int)GameEvent::DELETE_ITEM;
+			packet << (int)gameEvent << itemIDs[index][i] << (int)this->curItems[index].type;
 			this->server->sendToClientTCP(packet, i);
 		}
 
@@ -44,8 +43,6 @@ bool ServerGameMode::deleteItem(int playerID, Entity ID)
 		this->curItems.pop_back();
 		this->itemIDs.pop_back();
 	}
-
-	return index;
 }
 
 void ServerGameMode::setEntityID(int itemID, int playerID, Entity ID)

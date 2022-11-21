@@ -22,8 +22,8 @@ Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 
 	{
 		scene->setComponent<Rigidbody>(perkEnt);
 		Rigidbody& perkRb = sceneHandler->getScene()->getComponent<Rigidbody>(perkEnt);
-		perkRb.gravityMult = 6.f;
-		perkRb.velocity = spawnDir * 20.f;
+		perkRb.gravityMult = 6.0f;
+		perkRb.velocity = spawnDir * 20.0f;
 	}
 
 	scene->setComponent<Perks>(perkEnt, perk);
@@ -67,6 +67,23 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 
 		packet << (int)GameEvent::SET_ITEM_ID << i0 << e;
 		this->sendDataToServerTCP(packet);
+		break;
+	case GameEvent::PICKUP_ITEM:
+		// EntityID -> ItemType
+		tcpPacket >> i0 >> i1;
+		if (i1 == (int)ItemType::PERK)
+		{
+			this->combatSystem->pickupPerk(i0);
+		}
+		/*else
+		{
+
+		}*/
+		break;
+	case GameEvent::DELETE_ITEM:
+		// EntityID -> ItemType
+		tcpPacket >> i0 >> i1;
+		this->sceneHandler->getScene()->removeEntity(i0);
 		break;
 	default:
 		break;
@@ -142,6 +159,11 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 		serverScene = server->getScene<ServerGameMode>();
 		tcpPacket >> i0 >> i1;
 		serverScene->setEntityID(i0, clientID, i1);
+		break;
+	case GameEvent::PICKUP_ITEM:
+		serverScene = server->getScene<ServerGameMode>();
+		tcpPacket >> i0;
+		serverScene->deleteItem(clientID, i0);
 		break;
 	default:
 		packet << event;
@@ -236,7 +258,7 @@ void NetworkHandlerGame::pickUpItem(PerkType type, float multiplier)
 
 void NetworkHandlerGame::spawnItemRequest(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 spawnDir)
 {
-	if (!this->playerEntities.empty()) // Multiplayer (send to server)
+	if (/*!this->playerEntities.empty()*/true) // Multiplayer (send to server)
 	{
 		sf::Packet packet;
 		packet << (int)GameEvent::SPAWN_ITEM << (int)ItemType::PERK << type << multiplier;
@@ -252,4 +274,14 @@ void NetworkHandlerGame::spawnItemRequest(PerkType type, float multiplier, glm::
 
 void NetworkHandlerGame::pickUpItemRequest(Entity itemEntity)
 {
+	if (/*!this->playerEntities.empty()*/true) // Multiplayer (send to server)
+	{
+		sf::Packet packet;
+		packet << (int)GameEvent::PICKUP_ITEM << itemEntity;
+		this->sendDataToServerTCP(packet);
+	}
+	else // Singleplayer
+	{
+		this->combatSystem->pickupPerk(itemEntity);
+	}
 }

@@ -780,6 +780,7 @@ public:
 	{
 		Collider& playerColl = this->scene->getComponent<Collider>(this->playerID);
 		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
+		glm::vec3 up = playerTrans.up();
 		std::vector<int> hitID = this->physics->testContact(playerColl, playerTrans.position, playerTrans.rotation);
 		for (size_t i = 0; i < hitID.size(); i++)
 		{
@@ -793,51 +794,62 @@ public:
 					this->uiRenderer->renderString(
 						PERK_NAMES[perk.perkType] + " boost of " + std::to_string((int)((perk.multiplier) * 100.0f)) + "%",
 						pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f), 1.0f);
-					this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f), 1.0f);
+					this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 7.5f, 0.0f) - up * 2.5f, glm::vec2(100.0f), 1.0f);
 
 					if (Input::isKeyPressed(Keys::E))
 					{
-						glm::vec3 pos = this->scene->getComponent<Transform>(hitID[i]).position;
-						Perks& perk = this->scene->getComponent<Perks>(hitID[i]);
-
-						/*this->uiRenderer->renderString(
-							PERK_NAMES[perk.perkType] + " boost of " + std::to_string((int)((perk.multiplier + 1) * 100.0f)) + "%",
-							pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f));
-						this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f));*/
-
-						for (size_t j = 0; j < 4; j++)
+						if (canPickupPerk()) // Another check instead of checking every frame (only when E is pressed)
 						{
-							if (combat.perks[j].perkType == emptyPerk)
-							{
-								combat.perks[j] = perk;
-								switch (combat.perks[j].perkType)
-								{
-								case hpUpPerk:
-									updateHealth(combat, combat.perks[j]);
-									this->scene->removeEntity(hitID[i]);
-									break;
-								case dmgUpPerk:
-									updateDmg(combat, combat.perks[j]);
-									this->scene->removeEntity(hitID[i]);
-									break;
-								case attackSpeedUpPerk:
-									updateAttackSpeed(combat, combat.perks[j]);
-									this->scene->removeEntity(hitID[i]);
-									break;
-								case movementUpPerk:
-									updateMovementSpeed(combat, combat.perks[j]);
-									this->scene->removeEntity(hitID[i]);
-									break;
-								case staminaUpPerk:
-									updateStamina(combat, combat.perks[j]);
-									this->scene->removeEntity(hitID[i]);
-									break;
-								}
-								j = 4;
-							}
+							this->networkHandler->pickUpItemRequest(hitID[i]);
 						}
 					}
 				}
+			}
+		}
+	}
+
+	bool canPickupPerk()
+	{
+		Combat& combat = this->scene->getComponent<Combat>(this->playerID);
+		for (size_t i = 0; i < 4; i++)
+		{
+			if (combat.perks[i].perkType == emptyPerk)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void pickupPerk(Entity entity)
+	{
+		Combat& combat = this->scene->getComponent<Combat>(this->playerID);
+		Perks& perk = this->scene->getComponent<Perks>(entity);
+		for (size_t j = 0; j < 4; j++)
+		{
+			if (combat.perks[j].perkType == emptyPerk)
+			{
+				combat.perks[j] = perk;
+				switch (combat.perks[j].perkType)
+				{
+				case hpUpPerk:
+					updateHealth(combat, combat.perks[j]);
+					break;
+				case dmgUpPerk:
+					updateDmg(combat, combat.perks[j]);
+					break;
+				case attackSpeedUpPerk:
+					updateAttackSpeed(combat, combat.perks[j]);
+					break;
+				case movementUpPerk:
+					updateMovementSpeed(combat, combat.perks[j]);
+					break;
+				case staminaUpPerk:
+					updateStamina(combat, combat.perks[j]);
+					break;
+				}
+				this->scene->removeEntity(entity);
+				j = 4;
 			}
 		}
 	}

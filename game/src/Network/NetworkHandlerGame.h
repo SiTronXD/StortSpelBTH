@@ -12,7 +12,7 @@ enum class GameEvent
 	UPDATE_PLAYER, // Positions and animations
 	SPAWN_ITEM, // Client -> Server: Want to spawn item. Server -> Client: Spawn item in scene
 	DELETE_ITEM, // Server -> Client: Remove item from scene
-	PICK_ITEM, // Client -> Server: Want to pick up item. Server -> Client: Pick up the item
+	PICKUP_ITEM, // Client -> Server: Want to pick up item. Server -> Client: Pick up the item
 	SET_ITEM_ID, // Client -> Server: Set entity ID to store in server scene
 };
 
