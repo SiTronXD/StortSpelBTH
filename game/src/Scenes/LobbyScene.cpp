@@ -1,5 +1,4 @@
 #include "LobbyScene.h"
-#include "vengine/network/ServerGameModes/NetworkLobbyScene.h"
 #include "GameSceneNetwork.h"
 #include "MainMenu.h"
 
