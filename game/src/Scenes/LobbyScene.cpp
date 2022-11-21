@@ -7,14 +7,35 @@ LobbyScene::~LobbyScene() {}
 
 void LobbyScene::init()
 {
-    //TODO : FIX THIS!
-  
-  int playerModel = this->getResourceManager()->addAnimations(
-      std::vector<std::string>({"assets/models/Character/CharRun.fbx"}), 
+  this->playerModel = this->getResourceManager()->addAnimations(
+        std::vector<std::string>(
+            {"assets/models/Character/CharIdle.fbx",
+             "assets/models/Character/CharRun.fbx",
+             "assets/models/Character/CharDodge.fbx",
+             "assets/models/Character/CharOutwardAttack.fbx",
+             "assets/models/Character/CharHeavyAttack.fbx",
+             "assets/models/Character/CharSpinAttack.fbx",
+             "assets/models/Character/CharKnockbackAttack.fbx",
+             "assets/models/Character/CharInwardAttack.fbx",
+             "assets/models/Character/CharSlashAttack.fbx"}
+        ), 
       "assets/textures/playerMesh"
   );
-  this->getNetworkHandler()->setMeshes("PlayerMesh", playerModel);
-
+    this->getResourceManager()->mapAnimations(
+        playerModel,
+        std::vector<std::string>(
+            {"idle",
+             "run",
+             "dodge",
+             "lightAttack",
+             "heavyAttack",
+             "spinAttack",
+             "knockback",
+             "mixAttack",
+             "slashAttack"}
+        )
+    );
+   
   TextureSamplerSettings samplerSettings{};
   samplerSettings.filterMode = vk::Filter::eNearest;
   samplerSettings.unnormalizedCoordinates = VK_TRUE;
@@ -61,8 +82,23 @@ void LobbyScene::init()
   this->setComponent<UIArea>(this->disconnectButton, area);
 
   int mainPlayer = this->createEntity();
-  this->setComponent<MeshComponent>(mainPlayer, playerModel);  //TODO : change to player model
+  this->setComponent<MeshComponent>(mainPlayer, playerModel);
+  this->setComponent<AnimationComponent>(mainPlayer);
+  this->setAnimation(mainPlayer, "idle", true);
   this->getComponent<Transform>(mainPlayer).position = playerPositions[0];
+  this->getComponent<Transform>(mainPlayer).rotation = glm::vec3(0,180,0);
+
+  activePlayers.reserve(MAXNUMBEROFPLAYERS - 1);
+  for (int i = 0; i < MAXNUMBEROFPLAYERS - 1; i++)
+  {
+      int e = this->createEntity(); 
+      players[i] = e;
+      this->setComponent<MeshComponent>(e, playerModel);
+      this->setComponent<AnimationComponent>(e);
+      this->getComponent<Transform>(e).position = glm::vec3(0, 10000, 0);
+      this->getComponent<Transform>(e).rotation = glm::vec3(0, 180, 0);
+      this->setAnimation(e, "idle", true);
+  }
 }
 
 void LobbyScene::start() {
@@ -81,28 +117,25 @@ void LobbyScene::start() {
 
   int light = this->createEntity();
   this->setComponent<PointLight>(light);
-  this->getComponent<PointLight>(light).color = glm::vec3(255, 200, 200);
+  this->getComponent<PointLight>(light).color = glm::vec3(20, 10, 10);
   this->getComponent<Transform>(light).position = glm::vec3(0, 0, 0);
 }
 
 void LobbyScene::update()
 {
   //set model position and player names
-  if (this->getNetworkHandler()->getPlayers().size() > players.size())
+  if (this->getNetworkHandler()->getPlayers().size() > activePlayers.size())
     {
-      for (int i = players.size();
+      for (int i = activePlayers.size();
            i < this->getNetworkHandler()->getPlayers().size();
            i++)
         {
-          int e = this->getNetworkHandler()->getPlayers()[i].first;
-          this->players.push_back(e);
-          this->getComponent<Transform>(e).position = playerPositions[i + 1];
-          this->playersNames.push_back(
-              this->getNetworkHandler()->getPlayers()[i].second
-          );
+          activePlayers.push_back(players[i]);
+          this->getNetworkHandler()->getPlayers()[i].first = activePlayers[i];
+          this->getComponent<Transform>(activePlayers[i]).position = playerPositions[i + 1];
+          this->playersNames.push_back(this->getNetworkHandler()->getPlayers()[i].second);
         }
     }
-
   //write player names in lobby
   Scene::getUIRenderer()->setTexture(this->fontTextureId);
   this->getUIRenderer()->renderString(
@@ -137,21 +170,15 @@ void LobbyScene::update()
           //send two
           std::cout << "pressed start" << std::endl;
           this->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent{GameEvents::START});
-          this->getSceneHandler()->setScene(
-              new GameSceneNetwork(), "scripts/gamescene.lua"
-          );
         }
       
     }
-  else
+  if (this->getNetworkHandler()->getClient() != nullptr &&
+      this->getNetworkHandler()->getClient()->hasStarted())
     {
-      if (this->getNetworkHandler()->getClient() != nullptr &&
-          this->getNetworkHandler()->getClient()->hasStarted())
-        {
-          this->getSceneHandler()->setScene(
-              new GameSceneNetwork(), "scripts/gamescene.lua"
-          );
-      }
+      this->getSceneHandler()->setScene(
+          new GameSceneNetwork(), "scripts/gamescene.lua"
+      );
   }
 
   if (this->getNetworkHandler()->getClient() != nullptr && this->getNetworkHandler()->getClient()->isConnected())

@@ -78,6 +78,7 @@ private:
 	// IDs
 	std::vector<Room> rooms;
 	std::vector<Entity> pathIds;
+	std::vector<Entity> pathBordersIds;
 	Entity floor;
 
 	// Room Updating
@@ -98,6 +99,7 @@ private:
 	//std::vector<uint32_t> oneXTwoMeshIds;
 	//std::vector<uint32_t> twoXTwoMeshIds;
 	uint32_t doorMeshID;
+    bool generateMeshes;
 
 	// Other
 	void reset();
@@ -112,6 +114,7 @@ public:
 	~RoomHandler();
 
 	void init(Scene* scene, ResourceManager* resourceMan, int roomSize, int tileTypes);
+    void serverInit(Scene* scene, int roomSize, int tileTypes);
 	void generate();
 
 #ifdef  _CONSOLE

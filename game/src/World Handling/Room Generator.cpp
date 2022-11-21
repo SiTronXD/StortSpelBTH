@@ -111,17 +111,17 @@ void RoomGenerator::addPiece(glm::vec2 position, int depth)
     //add piece only if tile is within room bounds
     if (abs(x) < this->HALF_ROOM - 1 && abs(y) < this->HALF_ROOM - 1)
     {
-        std::random_device rd; //obtain random number from hardware
-        std::mt19937       gen(rd()); //seed generator
+        //std::random_device rd; //obtain random number from hardware
+        //std::mt19937 gen(rand());  //seed generator
 
         if (this->room[index] < 1) 
         {
-            std::uniform_int_distribution<> tileTypeRange(1, 10); //TODO: Update when more pieces exists
-            Tile::Type tileType = Tile::Type(tileTypeRange(gen));
+            //std::uniform_int_distribution<> tileTypeRange(1, 10); //TODO: Update when more pieces exists
+            //Tile::Type tileType = Tile::Type(tileTypeRange(gen));
 
             // Temp
             //if (tileType == Tile::TwoXTwo)
-            tileType = Tile::OneXOne;
+            Tile::Type tileType = Tile::OneXOne;
 
 
             //TODO: clean up code
@@ -170,7 +170,7 @@ void RoomGenerator::addPiece(glm::vec2 position, int depth)
             }
         }
 
-        std::uniform_int_distribution<> distr(0, depth * 1); //smaller chance of creating new piece the deeper we are in the tree
+       // std::uniform_int_distribution<> distr(0, depth * 1); //smaller chance of creating new piece the deeper we are in the tree
 
         //check if should place tiles above, below, right and left
         for (int i = 0; i < 4; i++)
@@ -179,7 +179,7 @@ void RoomGenerator::addPiece(glm::vec2 position, int depth)
             int dirX = sin(i * M_PI / 2);
             int dirY = cos(i * M_PI / 2);
 
-            int       newPiece = (distr(gen));
+            int       newPiece = (rand() % (depth + 1));
             glm::vec2 nextPos = position + glm::vec2(dirX, dirY);
             if (newPiece <= 1)
             {

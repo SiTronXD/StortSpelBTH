@@ -124,14 +124,12 @@ void GameScene::start()
         this->getScriptHandler());
 
     this->ability = this->createEntity();
-    int knockback =
-        this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
+    int knockback = this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
     this->setComponent<MeshComponent>(this->ability, knockback);
     Transform& abilityTrans = this->getComponent<Transform>(this->ability);
     abilityTrans.position = glm::vec3(50.f, 10.f, 0.f);
     abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
-    this->setComponent<Collider>(
-        this->ability, Collider::createSphere(4.f, glm::vec3(0), true));
+    this->setComponent<Collider>(this->ability, Collider::createSphere(4.f, glm::vec3(0), true));
     this->setComponent<Abilities>(this->ability, healAbility);
     this->setComponent<PointLight>(this->ability, { glm::vec3(0.f), glm::vec3(7.f, 9.f, 5.f) });
 

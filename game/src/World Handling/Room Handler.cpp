@@ -9,9 +9,8 @@ const uint32_t RoomHandler::NUM_ONE_X_TWO = 0;
 const uint32_t RoomHandler::NUM_TWO_X_TWO = 0;
 
 RoomHandler::RoomHandler()
-	:scene(nullptr), hasDoor{false, false, false, false},
-	activeIndex(0), nextIndex(-1), floor(-1),
-	doorMeshID(0)
+	:scene(nullptr), hasDoor{false, false, false, false}, activeIndex(0),
+    nextIndex(-1), floor(-1), doorMeshID(0), generateMeshes(true)
 {
 }
 
@@ -44,6 +43,19 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, int roomSize,
 	// TwoXTwo
 
 	this->doorMeshID = resourceMan->addMesh("assets/models/door.obj");
+}
+
+void RoomHandler::serverInit(Scene* scene, int roomSize, int tileTypes)
+{
+  roomSize = 15;
+  generateMeshes = false;
+
+  this->scene = scene;
+
+  this->roomGenerator.init(roomSize, tileTypes);
+  this->roomLayout.setRoomDistance(
+      TILE_WIDTH * roomSize + TILE_WIDTH * TILES_BETWEEN_ROOMS
+  );
 }
 
 void RoomHandler::roomCompleted()
@@ -416,15 +428,25 @@ void RoomHandler::generatePathways()
 						if (glm::dot(mPosToOffset, mPosToOffset) < (TILE_WIDTH * TILE_WIDTH))
 						{
 							canPlace = false;
-							m = this->pathIds.size();
 						}
+					}
+				}
+
+				for (size_t k = 0; k < this->pathBordersIds.size() && canPlace; k++)
+				{
+					glm::vec3 mPosToOffset = offsetPos - this->scene->getComponent<Transform>(this->pathBordersIds[k]).position;
+					mPosToOffset.y = 0.f;
+
+					if (glm::dot(mPosToOffset, mPosToOffset) < (TILE_WIDTH * TILE_WIDTH))
+					{
+						canPlace = false;
 					}
 				}
 
 				if (canPlace)
 				{
 					entity = createPathBorderEntity(offsetPos);
-					this->pathIds.emplace_back(entity);
+					this->pathBordersIds.emplace_back(entity);
 				}
 			}
 		}
@@ -525,17 +547,9 @@ void RoomHandler::createColliders()
 		}
 	}
 
-	for (Entity entity : this->pathIds)
+	for (Entity entity : this->pathBordersIds)
 	{
-		const int meshID = this->scene->getComponent<MeshComponent>(entity).meshID;
-		for (int i = 0; i < (int)borderMeshIds.size(); i++)
-		{
-			if (meshID == (int)borderMeshIds[i])
-			{
-				this->scene->setComponent<Collider>(entity, Collider::createBox(borderColDims));
-				i = (int)borderMeshIds.size();
-			}
-		}
+		this->scene->setComponent<Collider>(entity, Collider::createBox(borderColDims));
 	}
 
 	float minX = 10000000.f;
@@ -574,25 +588,37 @@ Entity RoomHandler::createTileEntity(int tileIndex, TileUsage usage)
 	{
 	case RoomHandler::Default:
 		tile = this->roomGenerator.getTile(tileIndex);
-		if (rand() % 3 < 2) {meshId = (int)this->oneXOneMeshIds[0]; }
-		else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }
+		if (generateMeshes)
+        {
+			if (rand() % 3 < 2) {meshId = (int)this->oneXOneMeshIds[0]; }
+			else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }
+		}
 		break;
 	case RoomHandler::Border:
 		tile = this->roomGenerator.getBorder(tileIndex);
-		meshId = (int)this->borderMeshIds[rand() % NUM_BORDER];
+		if (generateMeshes)
+		{ 
+			meshId = (int)this->borderMeshIds[rand() % NUM_BORDER];
+		}
 		break;
 	case RoomHandler::Exit:
 		tile = this->roomGenerator.getExitTiles(tileIndex);
-		meshId = (int)this->oneXOneMeshIds[rand() % NUM_ONE_X_ONE];
+		if (generateMeshes)
+        {
+          meshId = (int)this->oneXOneMeshIds[rand() % NUM_ONE_X_ONE];
+        }
 		break;
 
 	default:
 		break;
-	}
+	}		
 
 	Entity pieceID = this->scene->createEntity();
-	this->scene->setComponent<MeshComponent>(pieceID);
-	this->scene->getComponent<MeshComponent>(pieceID).meshID = meshId;
+    if (generateMeshes)
+      {
+        this->scene->setComponent<MeshComponent>(pieceID);
+        this->scene->getComponent<MeshComponent>(pieceID).meshID = meshId;
+      }
 
 	Transform& transform = this->scene->getComponent<Transform>(pieceID);
 	transform.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE);
@@ -605,9 +631,11 @@ Entity RoomHandler::createTileEntity(int tileIndex, TileUsage usage)
 Entity RoomHandler::createDoorEntity(float yRotation)
 {
 	Entity entity = scene->createEntity();
-
-	this->scene->setComponent<MeshComponent>(entity);
-	this->scene->getComponent<MeshComponent>(entity).meshID = this->doorMeshID;
+  if (generateMeshes)
+  {
+      this->scene->setComponent<MeshComponent>(entity);
+      this->scene->getComponent<MeshComponent>(entity).meshID =this->doorMeshID;
+  }
 
 	Transform& transform = this->scene->getComponent<Transform>(entity);
 	transform.rotation.y = yRotation;
@@ -620,11 +648,14 @@ Entity RoomHandler::createPathEntity()
 	Entity entity = this->scene->createEntity();
 	this->scene->setComponent<MeshComponent>(entity);
 
-	int meshId;
-	if (rand() % 3 < 2) { meshId = (int)this->oneXOneMeshIds[0]; }
-	else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }
+	if (this->generateMeshes)
+    {
+      	int meshId;
+		if (rand() % 3 < 2) { meshId = (int)this->oneXOneMeshIds[0]; }
+		else { meshId = (int)this->oneXOneMeshIds[rand() % (NUM_ONE_X_ONE - 1) + 1]; }
+		this->scene->getComponent<MeshComponent>(entity).meshID = meshId;
+	}
 
-	this->scene->getComponent<MeshComponent>(entity).meshID = meshId;
 	
 	Transform& transform = this->scene->getComponent<Transform>(entity);
 	transform.scale = glm::vec3(RoomGenerator::DEFAULT_TILE_SCALE) * TILE_WIDTH;
@@ -636,8 +667,11 @@ Entity RoomHandler::createPathEntity()
 Entity RoomHandler::createPathBorderEntity(const glm::vec3& position)
 {
 	Entity entity = this->scene->createEntity();
-	this->scene->setComponent<MeshComponent>(entity);
-	this->scene->getComponent<MeshComponent>(entity).meshID = (int)this->borderMeshIds[rand() % NUM_BORDER];
+  if (generateMeshes)
+    {
+      this->scene->setComponent<MeshComponent>(entity);
+      this->scene->getComponent<MeshComponent>(entity).meshID = (int)this->borderMeshIds[rand() % NUM_BORDER];
+    }
 
 	Transform& transform = this->scene->getComponent<Transform>(entity);
 	transform.position = position;
@@ -769,12 +803,18 @@ void RoomHandler::reset()
 		room.finished = false;
 	}																				  
 
-	for (int& id : this->pathIds)
+	for (Entity& id : this->pathIds)
 	{
 		this->scene->removeEntity(id);
 		id = -1;
 	}
 	this->pathIds.clear();
+	for (Entity& id : this->pathBordersIds)
+	{
+		this->scene->removeEntity(id);
+		id = -1;
+	}
+	this->pathBordersIds.clear();
 	
 	this->scene->removeEntity(this->floor);
 	this->floor = -1;

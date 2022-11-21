@@ -20,6 +20,8 @@
     <ClCompile Include="src\Ai\Behaviors\Lich\LichFSM.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Tank\TankFSM.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Tank\TankBTs.cpp" />
+    <ClCompile Include="src\ServerGameModes\NetworkLobbyScene.cpp" />
+    <ClCompile Include="src\ServerGameModes\NetworkGameScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -58,12 +60,13 @@
     <ClInclude Include="src\Components\AiCombatSwarm.h" />
     <ClInclude Include="src\Components\AICombatTank.hpp" />
     <ClInclude Include="src\Ai\Behaviors\Tank\TankBTs.hpp" />
+    <ClInclude Include="src\ServerGameModes\NetworkLobbyScene.h" />
+    <ClInclude Include="src\ServerGameModes\NetworkGameScene.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
     <None Include="src\Scripts\Prefab.lua" />
     <None Include="src\Scripts\Prefabs.lua" />
-    <None Include="src\Scripts\PuzzleCreatorLua.lua" />
-    <None Include="src\Scripts\PuzzleLoader.lua" />
+    <None Include="scripts\loadBlob.lua" />
   </ItemGroup>
 </Project>

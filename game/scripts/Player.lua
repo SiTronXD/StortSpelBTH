@@ -116,6 +116,7 @@ function script:update(dt)
         if (self.currentStamina > 0 and self.useStamina == true and self.moveDir ~= vector(0))
         then
             self.isSprinting = true
+            self.currentAnimation = self.activeAnimation.sprint
             self.currentSpeed = self.moveDir:normalize() * self.sprintSpeed
             self.currentStamina = self.currentStamina - (self.sprintStamDrain * dt)
             self.staminaTimer = self.staminaRegenCd

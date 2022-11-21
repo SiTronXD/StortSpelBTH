@@ -284,6 +284,8 @@ SET ERRORLEVEL=0</Command>
     <ClCompile Include="src\Scenes\GameSceneNetwork.cpp" />
     <ClCompile Include="src\Scenes\LobbyScene.cpp" />
     <ClCompile Include="src\Scenes\logInScene.cpp" />
+    <ClCompile Include="src\ServerGameModes\NetworkGameScene.cpp" />
+    <ClCompile Include="src\ServerGameModes\NetworkLobbyScene.cpp" />
     <ClCompile Include="src\World Handling\Room Generator.cpp" />
     <ClCompile Include="src\World Handling\Room Handler.cpp" />
     <ClCompile Include="src\World Handling\Room Layout.cpp" />
@@ -316,6 +318,8 @@ SET ERRORLEVEL=0</Command>
     <ClInclude Include="src\Scenes\GameSceneNetwork.h" />
     <ClInclude Include="src\Scenes\LobbyScene.h" />
     <ClInclude Include="src\Scenes\logInScene.h" />
+    <ClInclude Include="src\ServerGameModes\NetworkGameScene.h" />
+    <ClInclude Include="src\ServerGameModes\NetworkLobbyScene.h" />
     <ClInclude Include="src\Systems\AiCombatSystem.hpp" />
     <ClInclude Include="src\Systems\AiMovementSystem.hpp" />
     <ClInclude Include="src\Scenes\NetworkAI.h" />
@@ -336,10 +340,9 @@ SET ERRORLEVEL=0</Command>
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
+    <None Include="scripts\loadBlob.lua" />
     <None Include="src\Scripts\Prefab.lua" />
     <None Include="src\Scripts\Prefabs.lua" />
-    <None Include="src\Scripts\PuzzleCreatorLua.lua" />
-    <None Include="src\Scripts\PuzzleLoader.lua" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

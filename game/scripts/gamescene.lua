@@ -6,7 +6,6 @@ local playerMesh = resources.addAnimations({ "assets/models/Character/CharIdle.f
 resources.mapAnimations(playerMesh, {"idle", "run", "dodge", "lightAttack", "heavyAttack", 
 "spinAttack", "knockback", "mixAttack", "slashAttack"})
 --local playerAttackMesh = resources.addMesh("assets/models/Hurricane Kick.fbx", "assets/textures/playerMesh")
-print(playerMesh)
 
 -- Camera
 local cam = scene.createPrefab("scripts/prefabs/CameraPrefab.lua")
