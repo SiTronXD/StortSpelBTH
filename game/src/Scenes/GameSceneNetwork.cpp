@@ -118,9 +118,6 @@ void GameSceneNetwork::init()
   );
   DirectionalLight& dirLight =
       this->getComponent<DirectionalLight>(directionalLightEntity);
-  dirLight.shadowMapFrustumHalfWidth = 200.0f;
-  dirLight.shadowMapFrustumHalfHeight = 200.0f;
-  dirLight.shadowMapFrustumDepth = 800.0f;
   dirLight.shadowMapMinBias = 0.0001f;
   dirLight.shadowMapAngleBias = 0.001f;
 
