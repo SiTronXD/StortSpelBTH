@@ -7,6 +7,7 @@
 #include "../HelperFuncs.hpp"
 #include "vengine/ai/PathFinding.h"
 #include "../../../Components/AICombatTank.hpp"
+#include "../../../Components/Combat.h"
 
 class TankBT : public BehaviorTree
 {
@@ -20,7 +21,7 @@ class TankBT : public BehaviorTree
    protected:
 
 	//Idle
-	static BTStatus HasFreindsInSight(Entity entityID);
+	static BTStatus HasFreindsTarget(Entity entityID);
 	static BTStatus AreFriendsAlive(Entity entityID);
 	static BTStatus PickNewFreinds(Entity entityID);
 	static BTStatus PickNewRandomTarget(Entity entityID);
@@ -44,6 +45,19 @@ class TankBT : public BehaviorTree
 	//Dead
 	static BTStatus playDeathAnim(Entity entityID);
 	static BTStatus die(Entity entityID);
+
+
+	//Helper functions
+	static void rotateTowardsTarget(Entity entityID, float precision);
+	static void rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision);
+	static bool rotationDone(Entity entityID, glm::vec3 target, float rotSpeed, float precision);
+
+	static int		getPlayerID();
+	static float	get_dt();
+	static Scene*	getTheScene();
+	static void		updateCanBeHit(Entity entityID);
+	static void		groundHumpShortcut(Entity entityID, float maxRad);
+
 };
 
 

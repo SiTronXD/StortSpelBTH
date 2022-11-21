@@ -1,20 +1,48 @@
 #include "LichFSM.hpp"
 #include "../../../Components/Combat.h"
-#define getLichComponent() FSM::sceneHandler->getScene()->getComponent<LichComponent>(entityID)
-#define getPlayerID(playerID) std::string playerId_str = "playerID";FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerId_str)
-#define getPlayerTrans(playerID) FSM::sceneHandler->getScene()->getComponent<Transform>(playerID) 
-#define getPlayerCombat(playerID) FSM::sceneHandler->getScene()->getComponent<Combat>(playerID) 
-#define getLichTrans() FSM::sceneHandler->getScene()->getComponent<Transform>(entityID) 
-#define falseIfDead() LichComponent& lichComp_____macro = getLichComponent();if(lichComp_____macro.isDead()) {return false;}
+
+//TODO: Change this to funtions!!!!
+//#define getLichComponent() FSM::sceneHandler->getScene()->getComponent<LichComponent>(entityID)
+//#define getPlayerID(playerID) std::string playerId_str = "playerID";FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerId_str)
+//#define getPlayerTrans(playerID) FSM::sceneHandler->getScene()->getComponent<Transform>(playerID) 
+//#define getPlayerCombat(playerID) FSM::sceneHandler->getScene()->getComponent<Combat>(playerID) 
+//#define getLichTrans() FSM::sceneHandler->getScene()->getComponent<Transform>(entityID) 
+//#define falseIfDead() LichComponent& lichComp_____macro = getLichComponent();if(lichComp_____macro.isDead()) {return false;}
+
+
+int	LichFSM::getPlayerID()
+{
+    int playerID = -1;
+    std::string playerId_str = "playerID";
+    FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerId_str);
+    return playerID;
+}
+float LichFSM::get_dt()
+{
+    return FSM::sceneHandler->getAIHandler()->getDeltaTime();
+}
+Scene* LichFSM::getTheScene()
+{
+     return FSM::sceneHandler->getScene();
+}
+bool LichFSM::falseIfDead(Entity entityID)
+{
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    if(lichComp.isDead())
+    {return false;}
+    else if(!getTheScene()->isActive(entityID))
+    {return false;}
+    else
+    {return true;}
+}
 
 bool LichFSM::idleToCreep(Entity entityID)
 {
-    falseIfDead();
-    int playerID = -1;
-    getPlayerID(playerID);    
-    Transform& playerTrans = getPlayerTrans(playerID);
-    Transform& lichTrans   = getLichTrans();
-    auto lichComp = getLichComponent();
+    if(!falseIfDead(entityID)){return false;}
+    int playerID = getPlayerID();    
+    Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+    Transform& lichTrans   = getTheScene()->getComponent<Transform>(entityID);
+    auto lichComp = getTheScene()->getComponent<LichComponent>(entityID);
 
     if( glm::length(playerTrans.position - lichTrans.position) < lichComp.sightRadius)
     {
@@ -27,12 +55,11 @@ bool LichFSM::idleToCreep(Entity entityID)
 
 bool LichFSM::creepToAlerted(Entity entityID)
 {
-    falseIfDead();
-    int playerID = -1;
-    getPlayerID(playerID);    
-    Transform& playerTrans = getPlayerTrans(playerID);
-    Transform& lichTrans   = getLichTrans();
-    auto lichComp = getLichComponent();
+    if(!falseIfDead(entityID)){return false;}
+    int playerID = getPlayerID();  
+    Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+    Transform& lichTrans   = getTheScene()->getComponent<Transform>(entityID);
+    auto lichComp = getTheScene()->getComponent<LichComponent>(entityID);
 
     if( glm::length(playerTrans.position - lichTrans.position) < lichComp.peronalSpaceRadius)
     {
@@ -44,11 +71,10 @@ bool LichFSM::creepToAlerted(Entity entityID)
 
 bool LichFSM::alertToHunt(Entity entityID)
 {
-    falseIfDead();
-    int playerID = -1;
-    getPlayerID(playerID);    
-    Transform& playerTrans = getPlayerTrans(playerID);
-    Transform& lichTrans   = getLichTrans();
+   if(!falseIfDead(entityID)){return false;}
+    int playerID = getPlayerID();     
+    Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+    Transform& lichTrans   = getTheScene()->getComponent<Transform>(entityID);
     
 
     //TODO: Add animation
@@ -60,10 +86,9 @@ bool LichFSM::alertToHunt(Entity entityID)
 
 bool LichFSM::huntToIdle(Entity entityID)
 {
-    falseIfDead();
-    int playerID = -1;
-    getPlayerID(playerID);        
-    auto playerCombat = getPlayerCombat(playerID);
+    if(!falseIfDead(entityID)){return false;}
+    int playerID = getPlayerID();         
+    auto playerCombat = getTheScene()->getComponent<Combat>(playerID);
     if(playerCombat.health <= 0){return true;}
 
     
@@ -72,11 +97,10 @@ bool LichFSM::huntToIdle(Entity entityID)
 
 bool LichFSM::huntToCombat(Entity entityID)
 {
-    falseIfDead();
+   if(!falseIfDead(entityID)){return false;}
 
-    int playerID = -1;
-    getPlayerID(playerID); 
-    auto playerCombat = getPlayerCombat(playerID);
+   int playerID = getPlayerID();  
+    auto playerCombat = getTheScene()->getComponent<Combat>(playerID);
     if(playerCombat.health > 0){return true;}
 
     return false;
@@ -84,14 +108,13 @@ bool LichFSM::huntToCombat(Entity entityID)
 
 bool LichFSM::escapeToCombat(Entity entityID)
 {
-    falseIfDead();
+   if(!falseIfDead(entityID)){return false;}
 
-    int playerID = -1;
-    getPlayerID(playerID); 
-    auto playerCombat = getPlayerCombat(playerID);
-    auto lichComp = getLichComponent();
-    auto playerTrans = getPlayerTrans(playerID);
-    auto lichTrans = getLichTrans();
+    int playerID = getPlayerID();  
+    auto playerCombat = getTheScene()->getComponent<Combat>(playerID);
+    auto lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    auto playerTrans = getTheScene()->getComponent<Transform>(playerID);
+    auto lichTrans = getTheScene()->getComponent<Transform>(entityID);
 
     
     if( playerCombat.health >= lichComp.life &&
@@ -104,13 +127,12 @@ bool LichFSM::escapeToCombat(Entity entityID)
 
 bool LichFSM::escapeToIdle(Entity entityID)
 {
-    falseIfDead();
+   if(!falseIfDead(entityID)){return false;}
 
-    int playerID = -1;
-    getPlayerID(playerID); 
-    auto lichComp       = getLichComponent();
-    auto playerTrans    = getPlayerTrans(playerID);
-    auto lichTrans      = getLichTrans();
+    int playerID = getPlayerID();  
+    auto lichComp       = getTheScene()->getComponent<LichComponent>(entityID);
+    auto playerTrans    = getTheScene()->getComponent<Transform>(playerID);
+    auto lichTrans      = getTheScene()->getComponent<Transform>(entityID);
     
     if( lichComp.life == lichComp.FULL_HEALTH &&
         glm::length(playerTrans.position - lichTrans.position) > lichComp.sightRadius)
@@ -121,11 +143,10 @@ bool LichFSM::escapeToIdle(Entity entityID)
 
 bool LichFSM::combatToIdle(Entity entityID)
 {
-    falseIfDead();
+   if(!falseIfDead(entityID)){return false;}
 
-    int playerID = -1;
-    getPlayerID(playerID); 
-    auto playerCombat   = getPlayerCombat(playerID);    
+    int playerID = getPlayerID();  
+    auto playerCombat   = getTheScene()->getComponent<Combat>(playerID);   
     
     if( playerCombat.health <= 0)
     {return true;}
@@ -135,14 +156,13 @@ bool LichFSM::combatToIdle(Entity entityID)
 
 bool LichFSM::combatToHunt(Entity entityID)
 {
-    falseIfDead();
+    if(!falseIfDead(entityID)){return false;}
 
-    int playerID = -1;
-    getPlayerID(playerID); 
-    auto playerCombat   = getPlayerCombat(playerID);
-    auto lichComp       = getLichComponent();
-    auto playerTrans    = getPlayerTrans(playerID);
-    auto lichTrans      = getLichTrans();
+    int playerID = getPlayerID();  
+    auto playerCombat   = getTheScene()->getComponent<Combat>(playerID);
+    auto lichComp       = getTheScene()->getComponent<LichComponent>(entityID);
+    auto playerTrans    = getTheScene()->getComponent<Transform>(playerID);
+    auto lichTrans      = getTheScene()->getComponent<Transform>(entityID);
 
     if( glm::length(playerTrans.position - lichTrans.position) <= lichComp.sightRadius)
     {return true;}
@@ -152,11 +172,24 @@ bool LichFSM::combatToHunt(Entity entityID)
 
 bool LichFSM::toDead(Entity entityID)
 {
-    falseIfDead();
+    if(!falseIfDead(entityID)){return false;}
 
-    auto lichComp       = getLichComponent();
+    auto lichComp       = getTheScene()->getComponent<LichComponent>(entityID);
     if(lichComp.isDead())
     {return true;}
 
     return false;
+}
+
+bool LichFSM::revive(Entity entityID)
+{
+     bool ret = false;
+
+	LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+	if(lichComp.life > 0)
+	{
+		ret = true;
+	}
+
+	return ret;
 }

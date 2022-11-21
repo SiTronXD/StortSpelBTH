@@ -19,3 +19,9 @@ float lookAtY(const glm::vec3& from, const glm::vec3& to)
   
     return angle; 
 }
+
+float getAngleBetween(const glm::vec3 one, const glm::vec3 two)
+{
+    float angle_between			= glm::degrees(glm::acos(glm::dot(one, two)));
+    return angle_between;
+}

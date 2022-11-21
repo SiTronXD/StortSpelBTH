@@ -5,8 +5,9 @@
 #include <chrono>
 #include "glm/glm.hpp"
 #include "../Components/Perks.h"
+#include "../Components/Abilities.h"
 
-enum ActiveAttack { noActive, lightActive, heavyActive, comboActive, knockbackActive };
+enum ActiveAttack { lightActive, heavyActive, comboActive1, comboActive2, comboActive3, knockbackActive, noActive };
 
 struct Combat
 {
@@ -14,20 +15,22 @@ struct Combat
 	int health = 100;
 	
 	// Damage for each kind of hit
-	float lightHit = 50.f;
-	float heavyHit = 75.f;
-	float comboLightHit = 50.f;
-	float comboMixHit = 125.f;
-	float comboHeavyHit = 150.f;
-	float knockbackHit = 25.f;
+	// 0 = Light Hit
+	// 1 = Heavy Hit
+	// 2 = Light Combo Hit
+	// 3 = Mix Combo Hit
+	// 4 = Heavy Combo Hit
+	// 5 = Knockback Ability Hit
+	float dmgArr[6] = { 50.f, 75.f, 50.f, 125.f, 150.f, 25.f };
 
 	// Amount of time each attack takes
-	float lightAttackCd = 0.5f;
-	float heavyAttackCd = 1.f;
-	float comboLightCd = 1.5f;
-	float comboHeavyCd = 2.f;
-	float comboMixCd = 2.f;
-	float knockbackCd = 5.f;
+	float lightAttackCd = 1.f;
+	float heavyAttackCd = 1.5f;
+	float comboLightCd = 1.f;
+	float comboHeavyCd = 1.f;
+	float comboMixCd = 1.f;
+	float knockbackCd = 2.f;
+	float healCd = 10.f;
 
 	// Different types of combos aviable
 	std::string comboOrder;
@@ -36,20 +39,37 @@ struct Combat
 	// Timers to clear combo. Too long time between attacks = Combo cleared
 	float attackTimer = 0.f;
 	float knockbackTimer = 0.f;
+	float healTimer = 0.f;
 	float comboClearTimer = 0.f;
 	float comboClearDelay = 2.f;
 
 	// Perks and their default multipliers.
-	Perks perks[3];
+	Perks perks[4];
 	float hpMultiplier = 1.f;
+	float staminaMultiplier = 1.f;
+	float movementMultiplier = 1.f;
 	float dmgMultiplier = 1.f;
 	float attackSpeedMultiplier = 1.f;
+	float animationMultiplier[6] = { 1.2f, 1.f, 2.1f, 2.1f, 2.1f, 1.f };
+
+	// Abilities
+	Abilities ability;
+
+	// Healing Values
+	bool isHealing = false;
+	float healRadius = 28.f;
+	float hpRegen = 10.f;
+	float hpRegenConverter = 0.f;
 
 	// Knockback values for each attack
-	float lightKnockback = 50.f;
-	float heavyKnockback = 80.f;
-	float comboKnockback = 120.f;
-	float specialKnockback = 100.f;
+	// Starting with:
+	// 0 = Light Attack
+	// 1 = Heavy Attack
+	// 2 = Light Combo Attack
+	// 3 = Mix Combo Attack
+	// 4 = Heavy Combo Attack
+	// 5 = Knockback Ability
+	float knockbackArr[6] = { 50.f, 80.f, 120.f, 50.f, 50.f, 100.f };
 
 	ActiveAttack activeAttack = noActive;
 };
