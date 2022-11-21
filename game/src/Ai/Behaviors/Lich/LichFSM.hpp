@@ -2,16 +2,63 @@
 #include "vengine.h"
 #include "LichBTs.hpp"
 
+enum ATTACK_STRATEGY
+{
+    NONE    = 0,  
+    LIGHT   = 1,
+    FIRE    = 2,
+    ICE     = 3,
+    _LAST
+};
+
+struct LichAttack
+{
+    ATTACK_STRATEGY type;
+    int damage;
+    float cooldownTimer;
+    float cooldownTimerOrig;
+    float castTimeTimer;
+    float castTimeTimerOrig;
+    
+    void setStats(ATTACK_STRATEGY type)
+    {
+        this->type = type;
+        switch (type)
+        {
+        case LIGHT:
+            this->damage = 10;
+            this->cooldownTimer = this->cooldownTimerOrig = 0.5f;
+            this->castTimeTimer = this->castTimeTimerOrig = 0.0f;
+            break;
+        case FIRE:
+            this->damage = 65;
+            this->cooldownTimer = this->cooldownTimerOrig = 7.0f;
+            this->castTimeTimer = this->castTimeTimerOrig = 2.0f;
+            break;
+        case ICE:
+            this->damage = 25;
+            this->cooldownTimer = this->cooldownTimerOrig = 3.0f;
+            this->castTimeTimer = this->castTimeTimerOrig = 1.0f;
+            break;
+        }
+    };
+};
 
 struct LichComponent
 {
-	LichComponent() {};
+	LichComponent() 
+    {
+        lightning.setStats(ATTACK_STRATEGY::LIGHT);  
+        fire.setStats(ATTACK_STRATEGY::FIRE);
+        ice.setStats(ATTACK_STRATEGY::ICE);
+    };
 
     //Ints
     int LOW_HEALTH              = 30;            
-    int FULL_HEALTH             = 100;  
-    int ESCAPE_HEALTH           = 100 / 4; 
+    int FULL_HEALTH             = 300;  
+    int ESCAPE_HEALTH           = FULL_HEALTH / 4; 
     int life                    = FULL_HEALTH;    
+    int numBones                = 0;
 
     //Floats
     float tempRotAngle			= 0.0f;//Dont touch!
@@ -30,7 +77,7 @@ struct LichComponent
     float mana                  = 100;
     float speed                 = 20 ; // Too close, I will back away from you! (while shooting) 
 
-
+    ATTACK_STRATEGY strat       = ATTACK_STRATEGY::NONE;
 
     //Bools
     bool rotateLeft				= true;
@@ -40,6 +87,11 @@ struct LichComponent
 	bool alertDone				= false;
 
     bool isDead(){return life<=0;}
+
+    //Combat stuff
+    LichAttack lightning;
+    LichAttack fire;
+    LichAttack ice;
 };
 
 

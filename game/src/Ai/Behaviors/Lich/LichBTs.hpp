@@ -33,16 +33,15 @@ class LichBT : public BehaviorTree
 	static BTStatus playerInNoNoZone(Entity entityID);    
 	static BTStatus moveAwayFromPlayer(Entity entityID);    
 	static BTStatus hasMana(Entity entityID);    
+    static BTStatus hasStrategy(Entity entityID);
 	static BTStatus regenerateMana(Entity entityID);    
 	static BTStatus pickBestStrategy(Entity entityID);    
 	static BTStatus pickRandomStrategy(Entity entityID);    
-    
+    static BTStatus attack(Entity entityID);
 
 	static BTStatus selfHeal(Entity entityID);    
 	static BTStatus playerNotVisible(Entity entityID);    
-	static BTStatus runAwayFromPlayer(Entity entityID);    
-
-	static BTStatus attack(Entity entityID);    
+	static BTStatus runAwayFromPlayer(Entity entityID);      
 
 	static BTStatus playDeathAnim(Entity entityID);
 	static BTStatus die(Entity entityID);

@@ -90,12 +90,22 @@ BTStatus LichBT::goToAlter(Entity entityID)
 
 BTStatus LichBT::dropOffBones(Entity entityID)
 {
-    return BTStatus::Failure;
+    BTStatus ret = BTStatus::Success;
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    lichComp.numBones = 0;
+    //TODO: Visualise the boes dropping
+    return ret;
 }
 
 BTStatus LichBT::carryingBones(Entity entityID)
 {
-    return BTStatus::Failure;
+    BTStatus ret = BTStatus::Failure;
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    if(lichComp.numBones > 0)
+    {
+        ret = BTStatus::Success;
+    }
+    return ret;
 }
 
 BTStatus LichBT::creepyLook(Entity entityID)
@@ -145,6 +155,18 @@ BTStatus LichBT::hasMana(Entity entityID)
     return BTStatus::Failure;
 }
 
+BTStatus LichBT::hasStrategy(Entity entityID)
+{
+    BTStatus ret = BTStatus::Success;
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    if(lichComp.strat == ATTACK_STRATEGY::NONE)
+    {
+        ret = BTStatus::Failure;
+    }
+
+    return ret;
+}
+
 BTStatus LichBT::regenerateMana(Entity entityID)
 {
     return BTStatus::Failure;
@@ -152,12 +174,88 @@ BTStatus LichBT::regenerateMana(Entity entityID)
 
 BTStatus LichBT::pickBestStrategy(Entity entityID)
 {
-    return BTStatus::Failure;
+    BTStatus ret = BTStatus::Success;
+
+    float lightningPoints = 0.0f; 
+    float icePoints = 0.0f;
+    float firePoints = 0.0f;
+
+    int playerID = getPlayerID();
+    int playerHealth = 0;
+    NetworkScene *a = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+    if(a != nullptr){
+    //multiplayer
+    // Do some wierd stuff here
+        //we sending events to client, making events in networkEnumandDefines.h
+        a->addEvent({(int)GameEvents::GetPlayerHP, playerID});
+    }
+    else{
+    //singleplayer
+        Combat& playerCombat = getTheScene()->getComponent<Combat>(playerID);
+        playerHealth = playerCombat.health;
+    }
+
+    Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+    Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
+    float dist = glm::length(playerTrans.position - lichTrans.position);
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+
+    int numTests = 3;
+    //Points based on player health
+    float pointsForPlayerHealth = 1.5f;
+    if(playerHealth <= lichComp.lightning.damage){lightningPoints+=pointsForPlayerHealth;}//Player low health
+    else if(playerHealth > lichComp.lightning.damage && playerHealth <= lichComp.ice.damage){icePoints+=pointsForPlayerHealth;}//Player medium health
+    else if(playerHealth > lichComp.ice.damage){firePoints+=pointsForPlayerHealth;}//Player high health
+
+    //Points based on own health
+    //Player damage 50-150
+    float pointsForLichHealth = 1.5f;
+    if(lichComp.life <= 50){lightningPoints+=pointsForLichHealth;}//Lich low health
+    else if(lichComp.life > 50 && lichComp.life <= 150) {icePoints+=pointsForLichHealth;}//Lich medium health
+    else if(lichComp.life > 150){firePoints+=pointsForLichHealth;}//Lich high health
+
+    //points baes on distance from player
+    float pointsForDistance = 1.0f;
+    if(dist <= lichComp.nonoRadius){lightningPoints+=pointsForDistance;}//Close to player
+    else if(dist > lichComp.nonoRadius && dist <= lichComp.peronalSpaceRadius) {icePoints+=pointsForDistance;}//
+    else if(dist > lichComp.peronalSpaceRadius){firePoints+=pointsForDistance;}//Far away from player
+
+
+
+    if(lightningPoints > icePoints && lightningPoints > firePoints)
+    {
+        //Lightning attack!
+        lichComp.strat = ATTACK_STRATEGY::LIGHT;
+    }
+    else  if(icePoints > lightningPoints && icePoints > firePoints)
+    {
+        //ice attack!
+        lichComp.strat = ATTACK_STRATEGY::ICE;
+    }
+    else  if(firePoints > lightningPoints && firePoints > icePoints)
+    {
+        //fire attack!
+        lichComp.strat = ATTACK_STRATEGY::FIRE;
+    }
+    else
+    {
+        pickRandomStrategy(entityID);
+    }
+    
+    return ret;
 }
 
 BTStatus LichBT::pickRandomStrategy(Entity entityID)
 {
-    return BTStatus::Failure;
+    BTStatus ret = BTStatus::Success;
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    lichComp.strat = ATTACK_STRATEGY(rand()%(ATTACK_STRATEGY::_LAST-1)+1);
+    return ret;
+}
+
+BTStatus LichBT::attack(Entity entityID)
+{
+    return BTStatus();
 }
 
 BTStatus LichBT::selfHeal(Entity entityID)
@@ -182,11 +280,6 @@ BTStatus LichBT::playerNotVisible(Entity entityID)
 }
 
 BTStatus LichBT::runAwayFromPlayer(Entity entityID)
-{
-    return BTStatus::Failure;
-}
-
-BTStatus LichBT::attack(Entity entityID)
 {
     return BTStatus::Failure;
 }
@@ -320,17 +413,25 @@ void Lich_combat::start()
     ForceSuccess*  alwaysTrue           = c.d.forceSuccess();    
     Selector*   attackIfManaExists      = c.c.selector();
 
-    Selector*   avoidPlayerInNoNoZone   = c.c.selector();
-    Selector*   regenerateManaIfNeeded  = c.c.selector();
-    Random*     pickChoice              = c.d.random();
+
+    Sequence*   avoidPlayerInNoNoZone   = c.c.sequence();
+    Sequence*   regenerateManaIfNeeded  = c.c.sequence();
+    Sequence*   attackSeq               = c.c.sequence();
+
+
+    Condition*  playerInNoNoZone        = c.l.condition("player in NoNo zone",  LichBT::playerInNoNoZone);
+    Task*       moveAwayFromPlayer      = c.l.task("moving away from player",   LichBT::moveAwayFromPlayer);
+    Condition*  noManaToAttack          = c.l.condition("must generte mana",    LichBT::hasMana);
+    Task*       regenerateMana          = c.l.task("generating mana",           LichBT::regenerateMana);
+    Selector*   shouldPickNewStrat      = c.c.selector();
+    Task*       doTheAttack             = c.l.task("Do the attack",         LichBT::attack);
         
 
-    Condition*  playerInNoNoZone      = c.l.condition("player in NoNo zone", LichBT::playerInNoNoZone);
-    Task*       moveAwayFromPlayer    = c.l.task("moving away from player",  LichBT::moveAwayFromPlayer);
-    Condition*  noManaToAttack        = c.l.condition("must generte mana",   LichBT::hasMana);
-    Task*       regenerateMana        = c.l.task("generating mana",          LichBT::regenerateMana);
-    Task*       smartStrategy         = c.l.task("picked strategy smart",    LichBT::pickBestStrategy);
-    Task*       randomStrategy        = c.l.task("picket strategy random",   LichBT::pickRandomStrategy);
+    Condition*  hasStrat                = c.l.condition("must generte mana",    LichBT::hasStrategy);
+    Random*     pickChoice              = c.d.random();
+
+    Task*       smartStrategy           = c.l.task("picked strategy smart",       LichBT::pickBestStrategy);
+    Task*       randomStrategy          = c.l.task("picket strategy random",      LichBT::pickRandomStrategy);
 
 
     root->addDecorator(alwaysTrue);
@@ -338,10 +439,17 @@ void Lich_combat::start()
 
     alwaysTrue->addCompositor(avoidPlayerInNoNoZone);
     attackIfManaExists->addCompositor(regenerateManaIfNeeded);
-    attackIfManaExists->addDecorator(pickChoice);
+    attackIfManaExists->addCompositor(attackSeq);
+
 
     avoidPlayerInNoNoZone->addLeafs({playerInNoNoZone,moveAwayFromPlayer});
     regenerateManaIfNeeded->addLeafs({noManaToAttack,regenerateMana});
+    attackSeq->addCompositor(shouldPickNewStrat);
+    attackSeq->addLeaf(doTheAttack);
+
+    shouldPickNewStrat->addLeaf(hasStrat);
+    shouldPickNewStrat->addDecorator(pickChoice);
+
     pickChoice->addLeafs({smartStrategy, randomStrategy});
 
     this->setRoot(root);
