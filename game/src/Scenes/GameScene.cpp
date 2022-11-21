@@ -464,7 +464,7 @@ void GameScene::aiExample()
         ImGui::SliderFloat("sightRange", &sightRange, 0, 100);
     };
 	
-	auto b = [&](FSM* fsm, uint32_t entityId) -> void {
+	auto tankImgui = [&](FSM* fsm, uint32_t entityId) -> void {
 		TankFSM* tankFSM = (TankFSM*)fsm;
     
         auto entityImguiWindow = [&](TankFSM* tankFsm, uint32_t entityId)->void 
@@ -530,11 +530,12 @@ void GameScene::aiExample()
 #ifdef _CONSOLE 
     this->aiHandler->addImguiToFSM("swarmFSM", swarmImgui);
     this->aiHandler->addImguiToFSM("lichFSM", lichImgui);
+    this->aiHandler->addImguiToFSM("tankFSM", tankImgui);
 #endif 
 
-	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
-    //int numOfGroups = 4;
-    int numOfGroups = 4; //TODO: REMOVE THIS AND USE LINE ABOVE
+    // Swarm
+	int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");    
+    int numOfGroups = 4;
 	int group_size = 3;
     for(size_t j = 0; j < numOfGroups; j++)
     {
@@ -559,12 +560,7 @@ void GameScene::aiExample()
         }
     }
 
-	//TANK
-	static TankFSM tankFSM;
-	this->aiHandler->addFSM(&tankFSM, "tankFSM");
-#ifdef _CONSOLE 
-    this->aiHandler->addImguiToFSM("tankFSM", b);
-#endif 
+    // Tank
 	for(int i = 0; i < 1; i++)
 	{
 		int tank = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
@@ -586,10 +582,7 @@ void GameScene::aiExample()
 		this->setInactive(this->tankIDs.back());
 	}
 
-
-	//stnky LICH
-	static LichFSM lichFSM;
-	this->aiHandler->addFSM(&lichFSM, "lichFSM");
+    // Lich
 	for(int i = 0; i < 1; i++)
 	{
 		int lich = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
