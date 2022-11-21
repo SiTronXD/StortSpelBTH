@@ -180,3 +180,16 @@ bool LichFSM::toDead(Entity entityID)
 
     return false;
 }
+
+bool LichFSM::revive(Entity entityID)
+{
+     bool ret = false;
+
+	LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+	if(lichComp.life > 0)
+	{
+		ret = true;
+	}
+
+	return ret;
+}

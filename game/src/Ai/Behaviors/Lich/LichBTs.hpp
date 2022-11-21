@@ -4,6 +4,7 @@
 #include <stack>
 #include "vengine.h"
 
+#include "../../../Components/Combat.h"
 #include "../HelperFuncs.hpp"
 //#include "ai/PathFinding.h"
 
@@ -46,6 +47,12 @@ class LichBT : public BehaviorTree
 	static BTStatus playDeathAnim(Entity entityID);
 	static BTStatus die(Entity entityID);
     static BTStatus alerted(Entity entityID);
+
+
+	//Helper funcs
+	static int		getPlayerID();
+	static float	get_dt();
+	static Scene*	getTheScene();
 
 };
 
