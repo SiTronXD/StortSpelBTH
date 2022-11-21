@@ -202,9 +202,9 @@ public:
                 for (size_t i = 0; i < hitID.size(); i++)//gå igenom alla enemies
 				{
                     bool done = false;
-					for (int i = 0; i < scene->getNetworkHandler()->getMonsters().size() && !done; i++)
+					for (int m = 0; m < scene->getNetworkHandler()->getMonsters().size() && !done; m++)
 					{
-					    if (hitID[i] == scene->getNetworkHandler()->getMonsters()[i].first)
+					    if (hitID[i] == scene->getNetworkHandler()->getMonsters()[m].first)
 					    {
                             done = true;
 							for (size_t j = 0; j < this->hitEnemies.size(); j++)
@@ -220,14 +220,15 @@ public:
 							}
 							if (canHit)
 							{
+								TCPPacketEvent hitMonsterEvent;
+                                hitMonsterEvent.gameEvent = GameEvents::HitMonster;
+                                hitMonsterEvent.nrOfInts = 2;
+                                hitMonsterEvent.ints[0] = scene->getNetworkHandler()->getMonsters()[m].second;
+                                hitMonsterEvent.ints[1] = (int)combat.dmgArr[combat.activeAttack];
+                                hitMonsterEvent.floats.push_back(combat.knockbackArr[combat.activeAttack]);
+
                                 std::cout << "sent hit" << std::endl;
-								scene->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent({
-									GameEvents::HitMonster,
-									2,
-									scene->getNetworkHandler()->getMonsters()[i].second,
-									(int)combat.dmgArr[combat.activeAttack]
-									})
-								);
+								scene->getNetworkHandler()->sendTCPDataToClient(hitMonsterEvent);
 								this->hitEnemies.emplace_back(hitID[i]);
 							}
 						}

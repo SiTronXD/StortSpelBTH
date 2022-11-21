@@ -39,7 +39,7 @@ void TheServerGame::update(float dt)
   //    this->getComponent<Transform>(this->getEnemies(i)).rotation.y +=
   //        dt * 50 * (i + 1);
   //  }
-  aiHandler->update();
+  aiHandler->update(dt);
   //Transform& t = this->getComponent<Transform>(this->enemyIDs[0]);
   //glm::vec3 enemyToPlayer = pt.position - t.position;
   //Ray rayToPlayer{t.position, enemyToPlayer};
