@@ -1,14 +1,16 @@
 #pragma once 
 #include "Room Handler.h"
-#include "../application/SceneHandler.hpp"
-#include "SpawnHandler.hpp"
-#include "../ai/AIHandler.hpp"
+#include "vengine/application/SceneHandler.hpp"
+//#include "../application/SceneHandler.hpp"
+//#include "vengine/application/SceneHandler.hpp"
+//#include "SpawnHandler.hpp"
+#include "vengine/ai/AIHandler.hpp"
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
 
 
-class GameScene;
+class Scene;
 
 using ImguiLambda = std::function<void(FSM* fsm, uint32_t entityId)>;
 
@@ -16,7 +18,7 @@ class SpawnHandler
 {
 private:
     RoomHandler*     roomHandler;
-    GameScene*       currScene;
+    Scene*       currScene;
     SceneHandler*    sceneHandler;
     AIHandler*       aiHandler;
     ResourceManager* resourceManager;
@@ -59,7 +61,8 @@ public:
     }
 
     void init(RoomHandler* roomHandler, 
-             GameScene* currentGameScene, 
+             //GameScene* currentGameScene, 
+             Scene* currentGameScene, 
              SceneHandler* sceneHandler, 
              AIHandler* aiHandler,
              ResourceManager* resourceManager,

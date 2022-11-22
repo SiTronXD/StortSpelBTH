@@ -1,5 +1,4 @@
 #include "SpawnHandler.hpp"
-#include "../Scenes/GameScene.h"
 #include <functional>
 
 void SpawnHandler::spawnEnemiesIntoRoom()
@@ -94,10 +93,13 @@ void SpawnHandler::createEntities()
 
     //TODO: Cause crash on second run, therefore disabled in distribution... 
 #ifdef _CONSOLE 
+    if (dynamic_cast<NetworkScene*>(currScene) == nullptr)
+    {
+        this->aiHandler->addImguiToFSM("swarmFSM", this->SwarmImgui());
+        this->aiHandler->addImguiToFSM("lichFSM", this->LichImgui());
+        this->aiHandler->addImguiToFSM("tankFSM", this->TankImgui());
+    }
 
-    this->aiHandler->addImguiToFSM("swarmFSM", this->SwarmImgui());
-    this->aiHandler->addImguiToFSM("lichFSM",  this->LichImgui());
-    this->aiHandler->addImguiToFSM("tankFSM",  this->TankImgui());
 #endif 
 
     // Swarm        
@@ -122,10 +124,13 @@ void SpawnHandler::createEntities()
 
 void SpawnHandler::createTank()
 {
-    static int tank = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
     this->tankIDs.push_back(this->currScene->createEntity());
     this->allEntityIDs.push_back(this->tankIDs.back());
-    this->currScene->setComponent<MeshComponent>(this->tankIDs.back(), tank);
+    if (dynamic_cast<NetworkScene*>(currScene) == nullptr)
+    {
+        static int tank = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
+        this->currScene->setComponent<MeshComponent>(this->tankIDs.back(), tank);
+    }
     this->currScene->setComponent<AiCombatTank>(this->tankIDs.back());
     this->currScene->setComponent<Rigidbody>(this->tankIDs.back());
     Rigidbody& rb = this->currScene->getComponent<Rigidbody>(this->tankIDs.back());
@@ -144,10 +149,14 @@ void SpawnHandler::createTank()
 
 void SpawnHandler::createLich()
 {
-    static int lich = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
+    
     this->lichIDs.push_back(this->currScene->createEntity());
     this->allEntityIDs.push_back(this->lichIDs.back());
-    this->currScene->setComponent<MeshComponent>(this->lichIDs.back(), lich);
+    if (dynamic_cast<NetworkScene*>(currScene) == nullptr)
+    {
+        static int lich = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
+        this->currScene->setComponent<MeshComponent>(this->lichIDs.back(), lich);
+    }
     this->currScene->setComponent<Rigidbody>(this->lichIDs.back());
     Rigidbody& rb = this->currScene->getComponent<Rigidbody>(this->lichIDs.back());
     rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -163,13 +172,18 @@ void SpawnHandler::createLich()
 
 void SpawnHandler::createSwarmGroup()
 {
-    static int swarm = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
+    
+    
     this->swarmGroups.push_back(new SwarmGroup); //TODO: Does this work as expected? Do we need to clear (delete contents) this on every init? 
     for (size_t i = 0; i < this->group_size; i++)
     {
         this->swarmIDs.push_back(this->currScene->createEntity());
         this->allEntityIDs.push_back(this->swarmIDs.back());
-        this->currScene->setComponent<MeshComponent>(this->swarmIDs.back(), swarm);
+        if (dynamic_cast<NetworkScene*>(currScene) == nullptr)
+        {
+            static int swarm = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
+            this->currScene->setComponent<MeshComponent>(this->swarmIDs.back(), swarm);
+        }
         this->currScene->setComponent<AiCombatSwarm>(this->swarmIDs.back());
         this->currScene->setComponent<Collider>(this->swarmIDs.back(), Collider::createSphere(4.0f));
         this->currScene->setComponent<Rigidbody>(this->swarmIDs.back());

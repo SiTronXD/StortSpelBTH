@@ -3,6 +3,7 @@
 #include "../World Handling/Room Handler.h"
 #include "../vengine/vengine/ai/PathFinding.h"
 #include "vengine/ai/AIHandler.hpp"
+#include "../World Handling/SpawnHandler.hpp"
 #include "vengine/network/ServerEngine/NetworkScene.h"
 
 //SERVER SIDE!!!
@@ -11,9 +12,7 @@ class NetworkGameScene : public NetworkScene
 private:
   uint32_t					fontTextureIndex;
   AIHandler*				aiHandler = nullptr;
-  std::vector<int>			enemyIDs;
-  std::vector<SwarmGroup*>	swarmGroups;
-  SwarmFSM					swarmFSM;
+  SpawnHandler spawnHandler;
 
   //room handler
   int roomSeed;
@@ -21,9 +20,6 @@ private:
   uint8_t numRoomsCleared;
   bool newRoomFrame;
 
-  std::vector<int> swarmIDs;
-  std::vector<int> lichIDs;
-  std::vector<int> tankIDs;
 
 public:
   NetworkGameScene();

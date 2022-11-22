@@ -115,7 +115,7 @@ protected:
 
 
     //Helper functions
-    static int		getPlayerID();
+    static int      getPlayerID(Entity entityID);
 	static float	get_dt();
 	static Scene*	getTheScene();
 	static bool		falseIfDead(Entity entityID);

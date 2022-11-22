@@ -22,6 +22,7 @@
     <ClCompile Include="src\Ai\Behaviors\Tank\TankBTs.cpp" />
     <ClCompile Include="src\ServerGameModes\NetworkLobbyScene.cpp" />
     <ClCompile Include="src\ServerGameModes\NetworkGameScene.cpp" />
+    <ClCompile Include="src\World Handling\SpawnHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -62,6 +63,7 @@
     <ClInclude Include="src\Ai\Behaviors\Tank\TankBTs.hpp" />
     <ClInclude Include="src\ServerGameModes\NetworkLobbyScene.h" />
     <ClInclude Include="src\ServerGameModes\NetworkGameScene.h" />
+    <ClInclude Include="src\World Handling\SpawnHandler.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
