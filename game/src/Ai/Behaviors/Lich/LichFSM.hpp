@@ -1,6 +1,7 @@
 #pragma once
 #include "vengine.h"
 #include "LichBTs.hpp"
+#include <string>
 
 enum ATTACK_STRATEGY
 {
@@ -9,11 +10,13 @@ enum ATTACK_STRATEGY
     FIRE    = 2,
     ICE     = 3,
     _LAST
+
 };
 
 struct LichAttack
 {
     ATTACK_STRATEGY type;
+    float manaCost;
     int damage;
     float cooldownTimer;
     float cooldownTimerOrig;
@@ -27,21 +30,26 @@ struct LichAttack
         {
         case LIGHT:
             this->damage = 10;
+            this->manaCost = 5.0f;
             this->cooldownTimer = this->cooldownTimerOrig = 0.5f;
             this->castTimeTimer = this->castTimeTimerOrig = 0.0f;
             break;
         case FIRE:
             this->damage = 65;
+            this->manaCost = 30.0f;
             this->cooldownTimer = this->cooldownTimerOrig = 7.0f;
             this->castTimeTimer = this->castTimeTimerOrig = 2.0f;
             break;
         case ICE:
             this->damage = 25;
+            this->manaCost = 10.0f;
             this->cooldownTimer = this->cooldownTimerOrig = 3.0f;
             this->castTimeTimer = this->castTimeTimerOrig = 1.0f;
             break;
         }
-    };
+    }
+
+
 };
 
 struct LichComponent
@@ -85,6 +93,7 @@ struct LichComponent
     bool shieldedByTank         = false;
     bool alertAtTop				= false;
 	bool alertDone				= false;
+    bool tempAttack             = false;//For testing strategy picker
 
     bool isDead(){return life<=0;}
 
@@ -92,6 +101,30 @@ struct LichComponent
     LichAttack lightning;
     LichAttack fire;
     LichAttack ice;
+
+    std::string getStrat()
+    {
+        std::string ret = "";
+        switch(this->strat)
+        {
+        case ATTACK_STRATEGY::NONE:
+            ret = "none";
+            break;
+        case ATTACK_STRATEGY::LIGHT:
+            ret = "light";
+            break;
+        case ATTACK_STRATEGY::FIRE:
+            ret = "fire";
+            break;
+        case ATTACK_STRATEGY::ICE:
+            ret = "ice";
+            break;
+        default:
+            ret = "invalid";
+            break;
+        }
+        return ret;
+    }
 };
 
 

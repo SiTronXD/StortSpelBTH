@@ -120,7 +120,7 @@ BTStatus LichBT::creepyLook(Entity entityID)
 
 BTStatus LichBT::huntingPlayer(Entity entityID)
 {
-    return BTStatus::Failure;
+    return BTStatus::Success;
 }
 
 BTStatus LichBT::playerInNoNoZone(Entity entityID)
@@ -140,7 +140,7 @@ BTStatus LichBT::playerInNoNoZone(Entity entityID)
 
 BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
 {
-    return BTStatus::Failure;
+    return BTStatus::Success;
 }
 
 BTStatus LichBT::hasMana(Entity entityID)
@@ -169,7 +169,7 @@ BTStatus LichBT::hasStrategy(Entity entityID)
 
 BTStatus LichBT::regenerateMana(Entity entityID)
 {
-    return BTStatus::Failure;
+    return BTStatus::Success;
 }
 
 BTStatus LichBT::pickBestStrategy(Entity entityID)
@@ -200,39 +200,38 @@ BTStatus LichBT::pickBestStrategy(Entity entityID)
     float dist = glm::length(playerTrans.position - lichTrans.position);
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
 
-    int numTests = 3;
     //Points based on player health
-    float pointsForPlayerHealth = 1.5f;
+    static const float pointsForPlayerHealth = 1.5f;
     if(playerHealth <= lichComp.lightning.damage){lightningPoints+=pointsForPlayerHealth;}//Player low health
     else if(playerHealth > lichComp.lightning.damage && playerHealth <= lichComp.ice.damage){icePoints+=pointsForPlayerHealth;}//Player medium health
     else if(playerHealth > lichComp.ice.damage){firePoints+=pointsForPlayerHealth;}//Player high health
 
     //Points based on own health
     //Player damage 50-150
-    float pointsForLichHealth = 1.5f;
+    static const float pointsForLichHealth = 1.5f;
     if(lichComp.life <= 50){lightningPoints+=pointsForLichHealth;}//Lich low health
     else if(lichComp.life > 50 && lichComp.life <= 150) {icePoints+=pointsForLichHealth;}//Lich medium health
     else if(lichComp.life > 150){firePoints+=pointsForLichHealth;}//Lich high health
 
     //points baes on distance from player
-    float pointsForDistance = 1.0f;
+    static const float pointsForDistance = 1.0f;
     if(dist <= lichComp.nonoRadius){lightningPoints+=pointsForDistance;}//Close to player
-    else if(dist > lichComp.nonoRadius && dist <= lichComp.peronalSpaceRadius) {icePoints+=pointsForDistance;}//
+    else if(dist > lichComp.nonoRadius && dist <= lichComp.peronalSpaceRadius) {icePoints+=pointsForDistance;}//Medium distance to player
     else if(dist > lichComp.peronalSpaceRadius){firePoints+=pointsForDistance;}//Far away from player
 
 
 
-    if(lightningPoints > icePoints && lightningPoints > firePoints)
+    if(lightningPoints > icePoints && lightningPoints > firePoints && lichComp.lightning.manaCost <= lichComp.mana)
     {
         //Lightning attack!
         lichComp.strat = ATTACK_STRATEGY::LIGHT;
     }
-    else  if(icePoints > lightningPoints && icePoints > firePoints)
+    else  if(icePoints > lightningPoints && icePoints > firePoints && lichComp.ice.manaCost <= lichComp.mana)
     {
         //ice attack!
         lichComp.strat = ATTACK_STRATEGY::ICE;
     }
-    else  if(firePoints > lightningPoints && firePoints > icePoints)
+    else  if(firePoints > lightningPoints && firePoints > icePoints && lichComp.fire.manaCost <= lichComp.mana)
     {
         //fire attack!
         lichComp.strat = ATTACK_STRATEGY::FIRE;
@@ -249,12 +248,49 @@ BTStatus LichBT::pickRandomStrategy(Entity entityID)
 {
     BTStatus ret = BTStatus::Success;
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-    lichComp.strat = ATTACK_STRATEGY(rand()%(ATTACK_STRATEGY::_LAST-1)+1);
+    if (lichComp.mana >= lichComp.lightning.manaCost && lichComp.mana < lichComp.ice.manaCost)
+    {
+         lichComp.strat =  ATTACK_STRATEGY::LIGHT;
+    }
+    else if(lichComp.mana >= lichComp.lightning.manaCost && lichComp.mana < lichComp.fire.manaCost)
+    {
+        //Select ligh or ice
+        lichComp.strat = ATTACK_STRATEGY(rand()%(ATTACK_STRATEGY::_LAST-2)+1);
+    }
+    else if(lichComp.mana >= lichComp.lightning.manaCost && lichComp.mana >= lichComp.fire.manaCost)
+    {
+        //Select ligh or ice or fire
+        lichComp.strat = ATTACK_STRATEGY(rand()%(ATTACK_STRATEGY::_LAST-1)+1);
+    }
+    else
+    {
+        lichComp.strat = ATTACK_STRATEGY::NONE;
+    }
     return ret;
 }
 
 BTStatus LichBT::attack(Entity entityID)
 {
+    BTStatus ret = BTStatus::Failure;
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    if(lichComp.tempAttack)
+    {
+        lichComp.tempAttack = false;
+        switch (lichComp.strat)
+        {
+        case ATTACK_STRATEGY::LIGHT:
+            lichComp.mana -= lichComp.lightning.manaCost;
+            break;
+        case ATTACK_STRATEGY::ICE:
+            lichComp.mana -= lichComp.ice.manaCost;
+            break;
+        case ATTACK_STRATEGY::FIRE:
+            lichComp.mana -= lichComp.fire.manaCost;
+            break;
+        }
+        lichComp.strat = ATTACK_STRATEGY::NONE;
+        ret = BTStatus::Success;
+    }
     return BTStatus();
 }
 
@@ -312,47 +348,47 @@ BTStatus LichBT::alerted(Entity entityID)
 	LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
 	int playerID = getPlayerID();
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
-	Transform& tankTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
-	Collider& tankCol = sceneHandler->getScene()->getComponent<Collider>(entityID);
-	float toMove = (tankCol.radius*2) * (1.0f - lichComp.origScaleY + lichComp.alertScale);
+	Transform& lichTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+	Collider& lichCol = sceneHandler->getScene()->getComponent<Collider>(entityID);
+	float toMove = (lichCol.radius*2) * (1.0f - lichComp.origScaleY + lichComp.alertScale);
 	
-	tankTrans.rotation.y = lookAtY(tankTrans, playerTransform);
-	tankTrans.updateMatrix();
+	lichTrans.rotation.y = lookAtY(lichTrans, playerTransform);
+	lichTrans.updateMatrix();
 
 	if(!lichComp.alertAtTop)
 	{
-		if(tankTrans.scale.y >= lichComp.origScaleY + lichComp.alertScale &&
-		tankTrans.position.y >= (lichComp.alertTempYpos + toMove))
+		if(lichTrans.scale.y >= lichComp.origScaleY + lichComp.alertScale &&
+		lichTrans.position.y >= (lichComp.alertTempYpos + toMove))
 		{
 			lichComp.alertAtTop = true;
 		}
 		else
 		{
-			if (tankTrans.scale.y < lichComp.origScaleY + lichComp.alertScale)
+			if (lichTrans.scale.y < lichComp.origScaleY + lichComp.alertScale)
 			{
-				tankTrans.scale.y += lichComp.alertAnimSpeed * get_dt();
+				lichTrans.scale.y += lichComp.alertAnimSpeed * get_dt();
 			}
-			if (tankTrans.position.y < (lichComp.alertTempYpos + toMove))
+			if (lichTrans.position.y < (lichComp.alertTempYpos + toMove))
 			{
-				tankTrans.position.y += lichComp.alertAnimSpeed * get_dt();
+				lichTrans.position.y += lichComp.alertAnimSpeed * get_dt();
 			}
 		}
 	}
 	else
 	{
-		if(tankTrans.scale.y <= lichComp.origScaleY)
+		if(lichTrans.scale.y <= lichComp.origScaleY)
 		{
-			tankTrans.scale.y = lichComp.origScaleY;
-			tankTrans.position.y = lichComp.alertTempYpos;
+			lichTrans.scale.y = lichComp.origScaleY;
+			lichTrans.position.y = lichComp.alertTempYpos;
 			lichComp.alertAtTop = false;
 			lichComp.alertDone = true;
 			ret = BTStatus::Success;
 		}
 		else
 		{
-			if(tankTrans.scale.y > 1.0)
+			if(lichTrans.scale.y > 1.0)
 			{
-				tankTrans.scale.y -= lichComp.alertAnimSpeed * get_dt();
+				lichTrans.scale.y -= lichComp.alertAnimSpeed * get_dt();
 			}
 		}
 	}
@@ -450,7 +486,8 @@ void Lich_combat::start()
     shouldPickNewStrat->addLeaf(hasStrat);
     shouldPickNewStrat->addDecorator(pickChoice);
 
-    pickChoice->addLeafs({smartStrategy, randomStrategy});
+    //TODO: add child back: Memory leaks
+    pickChoice->addLeafs({smartStrategy, /*randomStrategy*/});
 
     this->setRoot(root);
 }

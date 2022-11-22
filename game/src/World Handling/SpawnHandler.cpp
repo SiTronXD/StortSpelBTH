@@ -60,6 +60,7 @@ void SpawnHandler::spawnLich(int lichIdx, const glm::vec3& pos)
     //Reset
     LichComponent& lichComp = currScene->getComponent<LichComponent>(this->lichIDs[lichIdx]);
     lichComp.life = lichComp.FULL_HEALTH;
+    transform.scale.y = lichComp.origScaleY;
 }
 
 void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
@@ -158,6 +159,8 @@ void SpawnHandler::createLich()
     transform.scale = glm::vec3(1.0f, 3.0f, 1.0f);
     this->currScene->setComponent<Collider>(this->lichIDs.back(), Collider::createCapsule(4.0f, 4.0f*transform.scale.y));
     this->aiHandler->createAIEntity(this->lichIDs.back(), "lichFSM");
+    LichComponent& lichComp = this->currScene->getComponent<LichComponent>(this->lichIDs.back());
+    lichComp.origScaleY = transform.scale.y;
     this->currScene->setInactive(this->lichIDs.back());
 }
 
@@ -272,14 +275,20 @@ ImguiLambda SpawnHandler::LichImgui()
         auto& lichComponent     = this->sceneHandler->getScene()->getComponent<LichComponent>(entityId);
         auto& entiyFSMAgentComp = this->sceneHandler->getScene()->getComponent<FSMAgentComponent>(entityId);
         auto& entityRigidBody   = this->sceneHandler->getScene()->getComponent<Rigidbody>(entityId);
-        int& health            = lichComponent.life;
-        float& speed           = lichComponent.speed;
-        float& attackRange     = lichComponent.attackRadius;
-        float& sightRange      = lichComponent.sightRadius;
-        float& gravity 		   = entityRigidBody.gravityMult;
-        std::string& status    = entiyFSMAgentComp.currentNode->status;
+        int& health             = lichComponent.life;
+        float& mana             = lichComponent.mana;
+        float& speed            = lichComponent.speed;
+        float& attackRange      = lichComponent.attackRadius;
+        float& sightRange       = lichComponent.sightRadius;
+        float& gravity 		    = entityRigidBody.gravityMult;
+        bool& tempAttack        = lichComponent.tempAttack;
+        std::string tempStrat   = lichComponent.getStrat();
+        std::string& status     = entiyFSMAgentComp.currentNode->status;
         ImGui::Text(status.c_str());
-        ImGui::SliderInt("health", &health, 0, 100);
+        ImGui::Text(tempStrat.c_str());
+        ImGui::Checkbox("Attack", &tempAttack);
+        ImGui::SliderFloat("mana", &mana, 0, 100);
+        ImGui::SliderInt("health", &health, 0, lichComponent.FULL_HEALTH);
         ImGui::SliderFloat("speed", &speed, 0, 100);
         ImGui::SliderFloat("gravity", &gravity, 0, 10);
         ImGui::SliderFloat("attackRange", &attackRange, 0, 100);

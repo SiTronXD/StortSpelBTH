@@ -105,11 +105,19 @@ bool LichFSM::huntToIdle(Entity entityID)
 
 bool LichFSM::huntToCombat(Entity entityID)
 {
-   if(!falseIfDead(entityID)){return false;}
+    if(!falseIfDead(entityID)){return false;}
 
-   int playerID = getPlayerID();  
-    auto playerCombat = getTheScene()->getComponent<Combat>(playerID);
-    if(playerCombat.health > 0){return true;}
+    int playerID        = getPlayerID();  
+    auto playerCombat   = getTheScene()->getComponent<Combat>(playerID);
+    auto playerTrans    = getTheScene()->getComponent<Transform>(playerID);
+    auto lichTrans      = getTheScene()->getComponent<Transform>(entityID);
+    auto lichComp       = getTheScene()->getComponent<LichComponent>(entityID);
+
+    float dist = glm::length(playerTrans.position - lichTrans.position);
+    if(playerCombat.health > 0 &&   dist <= lichComp.sightRadius)
+    {
+        return true;
+    }
 
     return false;
 }
@@ -172,7 +180,7 @@ bool LichFSM::combatToHunt(Entity entityID)
     auto playerTrans    = getTheScene()->getComponent<Transform>(playerID);
     auto lichTrans      = getTheScene()->getComponent<Transform>(entityID);
 
-    if( glm::length(playerTrans.position - lichTrans.position) <= lichComp.sightRadius)
+    if( glm::length(playerTrans.position - lichTrans.position) > lichComp.sightRadius)
     {return true;}
 
     return false;

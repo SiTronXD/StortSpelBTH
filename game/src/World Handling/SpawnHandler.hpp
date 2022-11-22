@@ -26,7 +26,7 @@ private:
 
     int nrOfTanks  = 0;
     int nrOfLichs  = 1;
-    int nrOfSwarms = 3;
+    int nrOfSwarms = 0;
 
     int numOfGroups = 4;
     int group_size = 3;
