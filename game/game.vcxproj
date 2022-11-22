@@ -281,6 +281,7 @@ SET ERRORLEVEL=0</Command>
     <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmBTs.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmFSM.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
+    <ClCompile Include="src\Scenes\RoomTesting.cpp" />
     <ClCompile Include="src\Scenes\GameSceneNetwork.cpp" />
     <ClCompile Include="src\Scenes\LobbyScene.cpp" />
     <ClCompile Include="src\Scenes\logInScene.cpp" />
@@ -317,6 +318,7 @@ SET ERRORLEVEL=0</Command>
     <ClInclude Include="src\Components\Combat.h" />
     <ClInclude Include="src\Components\Movement.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
+    <ClInclude Include="src\Scenes\RoomTesting.h" />
     <ClInclude Include="src\Scenes\GameSceneNetwork.h" />
     <ClInclude Include="src\Scenes\LobbyScene.h" />
     <ClInclude Include="src\Scenes\logInScene.h" />
@@ -343,6 +345,11 @@ SET ERRORLEVEL=0</Command>
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
+    <None Include="scripts\moveRock.lua">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
     <None Include="scripts\loadBlob.lua" />
     <None Include="src\Scripts\Prefab.lua" />
     <None Include="src\Scripts\Prefabs.lua" />

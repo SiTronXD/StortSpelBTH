@@ -86,13 +86,9 @@ void GameSceneNetwork::init()
 
   roomHandler.init(
       this,
-      this->getResourceManager(),
-      this->getConfigValue<int>("room_size"),
-      this->getConfigValue<int>("tile_types")
+      this->getResourceManager(), false
   );
-
-  roomHandler.generate();
-
+  roomHandler.generate(123);
   createPortal();
 
   ResourceManager* resourceMng = this->getResourceManager();
@@ -208,6 +204,7 @@ void GameSceneNetwork::update()
     int gameEvents;
     sf::Packet &p = this->getNetworkHandler()->getScenePacket();
     while (!p.endOfPacket())
+
     {
       p >> gameEvents;
       if (gameEvents == GameEvents::ROOM_CLEAR)
@@ -225,13 +222,19 @@ void GameSceneNetwork::update()
     }
 
 
-    if (alldead)
+    if (allDead() && this->newRoomFrame)
       {
         this->newRoomFrame = false;
-
-        // Call when a room is cleared
+            // Call when a room is cleared
         roomHandler.roomCompleted();
         this->numRoomsCleared++;
+
+      if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+        {
+          this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
+        }
+    }
+
 
         if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
           {
@@ -358,7 +361,7 @@ void GameSceneNetwork::update()
     }
   ImGui::End();
 
-  roomHandler.imgui();
+  this->roomHandler.imgui(this->getDebugRenderer());
 
 #endif
 }
@@ -403,7 +406,7 @@ bool GameSceneNetwork::allDead()
 
 void GameSceneNetwork::onTriggerStay(Entity e1, Entity e2)
 {
-    Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
+Entity player = e1 == this->playerID ? e1 : e2 == this->playerID ? e2 : -1;
 	
     if (player == playerID)  // player triggered a trigger :]
     {
