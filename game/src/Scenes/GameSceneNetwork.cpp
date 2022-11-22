@@ -172,7 +172,8 @@ void GameSceneNetwork::start()
 
 void GameSceneNetwork::update()
 {
-    if (this->roomHandler.onPlayerTrigger(this->playerID, this->getPhysicsEngine()))
+    // TODO: Move to SpawnHandler ---- 
+    if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
     {
         this->newRoomFrame = true;
 
@@ -285,6 +286,7 @@ void GameSceneNetwork::update()
 		    }
 		}
     }
+    // ---- TODO: Move to SpawnHandler ^^^^
 
   if (allDead() && this->newRoomFrame)
     {

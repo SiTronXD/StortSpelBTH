@@ -211,7 +211,8 @@ void GameScene::start()
 
 void GameScene::update()
 {
-    if (this->roomHandler.onPlayerTrigger(this->playerID, this->getPhysicsEngine()))
+    // TODO: Move to SpawnHandler ---- 
+    if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
     {
         this->newRoomFrame = true;
 
@@ -324,6 +325,7 @@ void GameScene::update()
 		    }
 		}
     }
+    // ---- TODO: Move to SpawnHandler ^^^^
 
     this->aiHandler->update(Time::getDT());
 
