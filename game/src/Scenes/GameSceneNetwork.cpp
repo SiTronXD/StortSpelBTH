@@ -82,11 +82,10 @@ void GameSceneNetwork::init()
 
   int seed = this->getNetworkHandler()->getServerSeed();
   std::cout << "Client: got seed " << seed << std::endl;
-  srand(seed);
 
   roomHandler.init(
       this,
-      this->getResourceManager(), false
+      this->getResourceManager(), true
   );
   roomHandler.generate(123);
   createPortal();
@@ -208,6 +207,9 @@ void GameSceneNetwork::update()
       if (gameEvents == GameEvents::ROOM_CLEAR)
       {
           alldead = true;
+          // Call when a room is cleared
+          roomHandler.roomCompleted();
+          this->numRoomsCleared++;
       }
       else if (gameEvents == GameEvents::MONSTER_HIT)
       {
@@ -229,121 +231,59 @@ void GameSceneNetwork::update()
               );
       }
     }
-
-
-      if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+            // TODO: Move to SpawnHandler ---- 
+    if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
+    {
+        this->newRoomFrame = true;
+    }
+    if (this->hasComponents<Combat>(this->playerID))
+    {
+        if (this->getComponent<Combat>(this->playerID).health <= 0.0f)
         {
-          this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
+            this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
         }
     }
+    Combat& playerCombat = this->getComponent<Combat>(this->playerID);
+    this->getUIRenderer()->setTexture(abilityTextures[playerCombat.ability.abilityType]);
+    this->getUIRenderer()->renderTexture(glm::vec2(890.f, -390.f), glm::vec2(100.0f));
 
-        // Call when a room is cleared
-        roomHandler.roomCompleted();
-        this->numRoomsCleared++;
+    float perkXPos = -720.f;
+    float perkYPos = -500.f;
+    for (size_t i = 0; i < 4; i++)
+      {
 
-        if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
-          {
-            this->getComponent<MeshComponent>(portal).meshID = portalOnMesh;
-          }
+        this->getUIRenderer()->setTexture(
+            perkTextures[playerCombat.perks[i].perkType]
+        );
+        this->getUIRenderer()->renderTexture(
+            glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f),
+            glm::vec2(70.0f)
+        );
       }
 
-  /*if (this->hasComponents<Collider, Rigidbody>(this->playerID))
-	{
-		Rigidbody& rb = this->getComponent<Rigidbody>(this->playerID);
-		glm::vec3 vec = glm::vec3(Input::isKeyDown(Keys::LEFT) - Input::isKeyDown(Keys::RIGHT), 0.0f, Input::isKeyDown(Keys::UP) - Input::isKeyDown(Keys::DOWN));
-		float y = rb.velocity.y;
-		rb.velocity = vec * 10.0f;
-		rb.velocity.y = y + Input::isKeyPressed(Keys::SPACE) * 5.0f;
-	}*/
+    // Render HP bar UI
+    float hpPercent = 1.0f;
+    float maxHpPercent = 1.0f;
+    if (this->hasComponents<Combat>(this->playerID))
+      {
+        hpPercent = playerCombat.health * 0.01f;
+        maxHpPercent = playerCombat.maxHealth * 0.01f;
+      }
+    float xPos = -720.f;
+    float yPos = -500.f;
+    float xSize = 1024.f * 0.35f;
+    float ySize = 64.f * 0.35f;
 
-  //TODO : must check if all players are dead
-  // Switch scene if the player is dead
-  if (this->hasComponents<Combat>(this->playerID))
-    {
-      if (this->getComponent<Combat>(this->playerID).health <= 0.0f)
-        {
-          this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
-          this->getNetworkHandler()->setPlayerNetworkHandler(-1);
-          this->getNetworkHandler()->deleteServer();
-          
-        }
-    }
-
-  Combat& playerCombat = this->getComponent<Combat>(this->playerID);
-  /*switch (playerCombat.ability.abilityType)
-	{
-	case knockbackAbility:
-		this->getUIRenderer()->setTexture(abilityTextures[knockbackAbility]);
-		break;
-	case healAbility:
-		this->getUIRenderer()->setTexture(abilityTextures[healAbility]);
-		break;
-	case emptyAbility:
-		this->getUIRenderer()->setTexture(abilityTextures[emptyAbility]);
-		break;
-	}*/
-  this->getUIRenderer()->setTexture(
-      abilityTextures[playerCombat.ability.abilityType]
-  );
-  this->getUIRenderer()->renderTexture(
-      glm::vec2(890.f, -390.f), glm::vec2(100.0f)
-  );
-
-  float perkXPos = -720.f;
-  float perkYPos = -500.f;
-  for (size_t i = 0; i < 4; i++)
-    {
-      /*switch (playerCombat.perks[i].perkType)
-		{
-		case hpUpPerk:
-			this->getUIRenderer()->setTexture(perkTextures[hpUpPerk]);
-			this->getUIRenderer()->renderTexture(glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f), glm::vec2(70.0f));
-			break;
-		case dmgUpPerk:
-			this->getUIRenderer()->setTexture(perkTextures[dmgUpPerk]);
-			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
-			break;
-		case attackSpeedUpPerk:
-			this->getUIRenderer()->setTexture(perkTextures[attackSpeedUpPerk]);
-			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
-			break;
-		case emptyPerk:
-			this->getUIRenderer()->setTexture(perkTextures[emptyPerk]);
-			this->getUIRenderer()->renderTexture(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f, 70.f, 70.f);
-			break;
-		}*/
-      this->getUIRenderer()->setTexture(
-          perkTextures[playerCombat.perks[i].perkType]
-      );
-      this->getUIRenderer()->renderTexture(
-          glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f),
-          glm::vec2(70.0f)
-      );
-    }
-
-  // Render HP bar UI
-  float hpPercent = 1.0f;
-  float maxHpPercent = 1.0f;
-  if (this->hasComponents<Combat>(this->playerID))
-    {
-      hpPercent = playerCombat.health * 0.01f;
-      maxHpPercent = playerCombat.maxHealth * 0.01f;
-    }
-  float xPos = -720.f;
-  float yPos = -500.f;
-  float xSize = 1024.f * 0.35f;
-  float ySize = 64.f * 0.35f;
-
-  this->getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
-  this->getUIRenderer()->renderTexture(
-      glm::vec2(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos),
-      glm::vec2((xSize * maxHpPercent) + 10, ySize + 10)
-  );
-  this->getUIRenderer()->setTexture(this->hpBarTextureID);
-  this->getUIRenderer()->renderTexture(
-      glm::vec2(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos),
-      glm::vec2(xSize * hpPercent, ySize)
-  );
+    this->getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
+    this->getUIRenderer()->renderTexture(
+        glm::vec2(xPos - (1.0f - maxHpPercent) * xSize * 0.5f, yPos),
+        glm::vec2((xSize * maxHpPercent) + 10, ySize + 10)
+    );
+    this->getUIRenderer()->setTexture(this->hpBarTextureID);
+    this->getUIRenderer()->renderTexture(
+        glm::vec2(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos),
+        glm::vec2(xSize * hpPercent, ySize)
+    );
 
 #ifdef _CONSOLE
 

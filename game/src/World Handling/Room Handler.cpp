@@ -81,19 +81,6 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, bool useMeshe
 	}
 }
 
-void RoomHandler::serverInit(Scene* scene, int roomSize, int tileTypes)
-{
-  roomSize = 15;
-  generateMeshes = false;
-
-  this->scene = scene;
-
-  this->roomGenerator.init(roomSize, tileTypes);
-  this->roomLayout.setRoomDistance(
-      TILE_WIDTH * roomSize + TILE_WIDTH * TILES_BETWEEN_ROOMS
-  );
-}
-
 void RoomHandler::roomCompleted()
 {
 	Room& curRoom = this->rooms[this->activeIndex];

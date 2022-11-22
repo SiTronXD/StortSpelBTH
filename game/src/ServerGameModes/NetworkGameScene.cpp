@@ -32,9 +32,8 @@ void NetworkGameScene::start()
   //send seed to players
   std::cout << "SERVER: seed is: " << roomSeed << std::endl;
   this->addEvent({(int)GameEvents::GetLevelSeed, this->roomSeed});
-  srand(roomSeed);
-  this->roomHandler.serverInit(this, 15, 15);
-  this->roomHandler.generate();
+  this->roomHandler.init(this, this->getResourceManager(), false);
+  this->roomHandler.generate(123);
   
   // Ai management
   this->aiHandler = new AIHandler();
@@ -111,21 +110,7 @@ void NetworkGameScene::onTriggerStay(Entity e1, Entity e2)
 
 	if (player != -1) // player triggered a trigger :]
 	{
-		Entity other = e1 == player ? e2 : e1;
-		if (roomHandler.onPlayerTrigger(other))
-		{
-			this->newRoomFrame = true;
-
-            this->spawnHandler.spawnEnemiesIntoRoom();
-		}
-	}        
-
-            //if (other == portal &&
-            //    numRoomsCleared >= this->roomHandler.getNumRooms() -
-            //                           1)  // -1 not counting start room
-            //    {
-            //        this->switchScene(new GameScene(), "scripts/gamescene.lua");
-            //    }
+    }
 }
 
 void NetworkGameScene::onTriggerEnter(Entity e1, Entity e2)
