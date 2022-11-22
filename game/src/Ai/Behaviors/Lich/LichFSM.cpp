@@ -64,6 +64,7 @@ bool LichFSM::idleToCreep(Entity entityID)
 bool LichFSM::creepToAlerted(Entity entityID)
 {
     if(!falseIfDead(entityID)){return false;}
+    bool ret = false; 
     int playerID = getPlayerID(entityID);  
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     Transform& lichTrans   = getTheScene()->getComponent<Transform>(entityID);

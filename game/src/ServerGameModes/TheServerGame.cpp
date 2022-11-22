@@ -41,17 +41,6 @@ void TheServerGame::update(float dt)
   //  }
   aiHandler->update(dt);
   
-  sf::Packet &packet = ((NetworkSceneHandler*)this->getSceneHandler())->getCallFromClient();
-  int gameEvent;
-  while(!packet.endOfPacket()){
-    packet >> gameEvent;
-    if(gameEvent == GameEvents::GetPlayerHP){
-        int playerhp;
-        packet >> playerhp;
-        //litch.sendplayehp(playerhp);
-
-    }
-  }
 
   //Transform& t = this->getComponent<Transform>(this->enemyIDs[0]);
   //glm::vec3 enemyToPlayer = pt.position - t.position;
