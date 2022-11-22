@@ -15,7 +15,8 @@ public:
 	static const uint32_t NUM_ONE_X_ONE;
 	static const uint32_t NUM_ONE_X_TWO;
 	static const uint32_t NUM_TWO_X_TWO;
-private:
+//private:
+  public:
 
 	enum TileUsage { Default, Border, Exit };
 
