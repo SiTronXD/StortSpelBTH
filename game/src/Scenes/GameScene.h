@@ -16,6 +16,10 @@ private:
   AIHandler* aiHandler = nullptr;
   NetworkHandlerGame* networkHandler;
 
+  bool paused = false;
+  UIArea resumeButton;
+  UIArea exitButton;
+
   Entity playerID;
   Entity portal;
   Entity perk;
@@ -36,6 +40,7 @@ private:
   uint32_t abilityTextures[3];
   uint32_t perkTextures[6];
   uint32_t fontTextureIndex;
+  uint32_t blackTextureIndex;
 
   uint32_t hpBarBackgroundTextureID;
   uint32_t hpBarTextureID;

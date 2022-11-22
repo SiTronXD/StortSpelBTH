@@ -271,7 +271,6 @@ SET ERRORLEVEL=0</Command>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\deps\vengine\src\demos\basic_demo\src\network\NetworkHandlerTest.cpp" />
     <ClCompile Include="src\Network\ServerGameMode.cpp" />
     <ClCompile Include="src\Ai\Behaviors\HelperFuncs.cpp" />
     <ClCompile Include="src\Network\NetworkHandlerGame.cpp" />
@@ -290,7 +289,6 @@ SET ERRORLEVEL=0</Command>
     <ClCompile Include="src\Scenes\MainMenu.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\deps\vengine\src\demos\basic_demo\src\network\NetworkHandlerTest.h" />
     <ClInclude Include="Components\Combat.h" />
     <ClInclude Include="Components\Movement.h" />
     <ClInclude Include="src\Network\ServerGameMode.h" />

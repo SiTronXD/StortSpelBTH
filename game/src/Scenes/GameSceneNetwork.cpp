@@ -96,11 +96,13 @@ void GameSceneNetwork::start()
   std::string playerName = "playerID";
   this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 
+  bool paused = false;
   this->setComponent<Combat>(playerID);
   this->createSystem<CombatSystem>(
       this,
       this->getResourceManager(),
       this->playerID,
+      paused,
       this->getPhysicsEngine(),
       this->getUIRenderer(),
       this->getScriptHandler(),

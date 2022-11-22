@@ -18,6 +18,7 @@ private:
 	Entity playerID;
 	Entity swordID;
 	Entity heal;
+	const bool& paused;
 
 	int perkMeshes[5];
 	int abilityMeshes[2];
@@ -27,9 +28,9 @@ private:
 
 public:
 
-	CombatSystem(Scene* scene, ResourceManager* resourceMng, Entity playerID, 
+	CombatSystem(Scene* scene, ResourceManager* resourceMng, Entity playerID, const bool& paused,
 		PhysicsEngine* physics, UIRenderer* uiRenderer, ScriptHandler* script, NetworkHandlerGame* networkHandler)
-		: scene(scene), resourceMng(resourceMng), playerID(playerID), heal(-1),
+		: scene(scene), resourceMng(resourceMng), playerID(playerID), heal(-1), paused(paused),
 		swordID(-1), physics(physics), uiRenderer(uiRenderer), script(script), networkHandler(networkHandler)
 	{
 		this->networkHandler->setCombatSystem(this);
@@ -91,39 +92,42 @@ public:
 				}
 			}
 
-			// Check if player is trying to attack
-			if (Input::isMouseButtonPressed(Mouse::LEFT))
+			if (!this->paused)
 			{
-				lightAttack(combat);
-			}
-			else if (Input::isMouseButtonPressed(Mouse::RIGHT))
-			{
-				heavyAttack(combat);
-			}
-			else if (Input::isKeyPressed(Keys::F))
-			{
-				useAbility(combat);
-			}
-			// Check if player wants to drop a perk
-			if (Input::isKeyPressed(Keys::ONE))
-			{
-				removePerk(combat, combat.perks[0]);
-			}
-			if (Input::isKeyPressed(Keys::TWO))
-			{
-				removePerk(combat, combat.perks[1]);
-			}
-			if (Input::isKeyPressed(Keys::THREE))
-			{
-				removePerk(combat, combat.perks[2]);
-			}
-			if (Input::isKeyPressed(Keys::FOUR))
-			{
-				removePerk(combat, combat.perks[3]);
-			}
-			if (Input::isKeyPressed(Keys::FIVE))
-			{
-				removeAbility(combat, combat.ability);
+				// Check if player is trying to attack
+				if (Input::isMouseButtonPressed(Mouse::LEFT))
+				{
+					lightAttack(combat);
+				}
+				else if (Input::isMouseButtonPressed(Mouse::RIGHT))
+				{
+					heavyAttack(combat);
+				}
+				else if (Input::isKeyPressed(Keys::F))
+				{
+					useAbility(combat);
+				}
+				// Check if player wants to drop a perk
+				if (Input::isKeyPressed(Keys::ONE))
+				{
+					removePerk(combat, combat.perks[0]);
+				}
+				if (Input::isKeyPressed(Keys::TWO))
+				{
+					removePerk(combat, combat.perks[1]);
+				}
+				if (Input::isKeyPressed(Keys::THREE))
+				{
+					removePerk(combat, combat.perks[2]);
+				}
+				if (Input::isKeyPressed(Keys::FOUR))
+				{
+					removePerk(combat, combat.perks[3]);
+				}
+				if (Input::isKeyPressed(Keys::FIVE))
+				{
+					removeAbility(combat, combat.ability);
+				}
 			}
 		};
 		view.each(foo);

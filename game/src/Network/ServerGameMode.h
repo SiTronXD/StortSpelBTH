@@ -22,6 +22,7 @@ private:
 public:
 	virtual void init() override;
 	void update(float dt) override;
+	virtual void onDisconnect(int index) override;
 
 	// Returns itemID
 	int spawnItem(ItemType type, int otherType, float multiplier = 0.0f);

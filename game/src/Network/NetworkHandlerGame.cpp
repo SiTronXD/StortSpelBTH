@@ -230,6 +230,13 @@ void NetworkHandlerGame::handleUDPEventServer(Server* server, int clientID, sf::
 	}
 }
 
+void NetworkHandlerGame::onDisconnect(int index)
+{
+	Entity ID = this->playerEntities[index];
+	this->playerEntities.erase(this->playerEntities.begin() + index);
+	this->sceneHandler->getScene()->removeEntity(ID);
+}
+
 void NetworkHandlerGame::setPlayerEntity(Entity player)
 {
 	this->player = player;

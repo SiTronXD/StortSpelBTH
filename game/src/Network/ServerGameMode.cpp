@@ -8,6 +8,14 @@ void ServerGameMode::update(float dt)
 {
 }
 
+void ServerGameMode::onDisconnect(int index)
+{
+	for (int i = 0; i < this->itemIDs.size(); i++)
+	{
+		this->itemIDs[i].erase(this->itemIDs[i].begin() + index);
+	}
+}
+
 int ServerGameMode::spawnItem(ItemType type, int otherType, float multiplier)
 {
 	this->curItems.push_back({ type, otherType, multiplier });

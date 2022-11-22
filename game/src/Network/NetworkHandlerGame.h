@@ -14,6 +14,7 @@ enum class GameEvent
 	DELETE_ITEM, // Server -> Client: Remove item from scene
 	PICKUP_ITEM, // Client -> Server: Want to pick up item. Server -> Client: Pick up the item
 	SET_ITEM_ID, // Client -> Server: Set entity ID to store in server scene
+	USE_HEAL, // Client -> Server: Want to use heal. Server -> Client: Spawn heal entity
 };
 
 enum class ItemType
@@ -61,6 +62,7 @@ public:
 	virtual void handleUDPEventClient(sf::Packet& udpPacket, int event) override;
 	virtual void handleTCPEventServer(Server* server, int clientID, sf::Packet& tcpPacket, int event) override;
 	virtual void handleUDPEventServer(Server* server, int clientID, sf::Packet& udpPacket, int event) override;
+	virtual void onDisconnect(int index) override;
 
 	void setPlayerEntity(Entity player);
 	void createOtherPlayers(int playerMesh);
