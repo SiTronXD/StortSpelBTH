@@ -5,6 +5,7 @@
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
 #include "../World Handling/Room Handler.h"
+#include "../World Handling/SpawnHandler.hpp"
 #include "vengine.h"
 
 //THIS IS ON THE CLIENT SIDE!!!
@@ -12,6 +13,7 @@ class GameSceneNetwork : public Scene
 {
 private:
   RoomHandler roomHandler;
+  SpawnHandler spawnHandler;
   AIHandler* aiHandler = nullptr;
 
   Entity playerID;

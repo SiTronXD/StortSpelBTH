@@ -29,30 +29,36 @@ NetworkGameScene::~NetworkGameScene()
 
 void NetworkGameScene::start()
 {
-  //send seed to players
-  std::cout << "SERVER: seed is: " << roomSeed << std::endl;
-  this->addEvent({(int)GameEvents::GetLevelSeed, this->roomSeed});
-  srand(roomSeed);
-  this->roomHandler.serverInit(this, 15, 15);
-  this->roomHandler.generate();
-  
-  // Ai management
-  this->aiHandler = new AIHandler();
-  this->aiHandler->init(this->getSceneHandler());
-  spawnHandler.init(
-      &this->roomHandler,
-      this,
-      this->getSceneHandler(),
-      this->aiHandler,
-      this->getResourceManager(),
-      this->getUIRenderer()
-  );
+    //send seed to players
+    std::cout << "SERVER: seed is: " << roomSeed << std::endl;
+    this->addEvent({(int)GameEvents::GetLevelSeed, this->roomSeed});
+    //srand(roomSeed);
+    //   this->roomHandler.serverInit(this, 15, 15);
+    this->roomHandler.init(this, this->getResourceManager(), false);
+    this->roomHandler.generate(roomSeed);
+
+    // Ai management
+    this->aiHandler = new AIHandler();
+    this->aiHandler->init(this->getSceneHandler());
+    spawnHandler.init(
+        &this->roomHandler,
+        this,
+        this->getSceneHandler(),
+        this->aiHandler,
+        this->getResourceManager(),
+        this->getUIRenderer()
+    );
 }
 
 void NetworkGameScene::init() {}
 
 void NetworkGameScene::update(float dt)
-{
+{    
+    if (roomHandler.playerNewRoom(this->getPlayer(0), this->getPhysicsEngine()))
+    {
+        this->newRoomFrame = true;
+        this->spawnHandler.spawnEnemiesIntoRoom();
+    }
     aiHandler->update(dt);
   
     if (this->spawnHandler.allDead() && this->newRoomFrame)
@@ -99,12 +105,6 @@ void NetworkGameScene::onTriggerStay(Entity e1, Entity e2)
 	if (player != -1) // player triggered a trigger :]
 	{
 		Entity other = e1 == player ? e2 : e1;
-		if (roomHandler.onPlayerTrigger(other))
-		{
-			this->newRoomFrame = true;
-
-            this->spawnHandler.spawnEnemiesIntoRoom();
-		}
 	}        
 
             //if (other == portal &&

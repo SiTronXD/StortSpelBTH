@@ -1,9 +1,10 @@
 #include "Room Generator.h"
-#include "../deps/glm/src/glm/gtx/rotate_vector.hpp"
+#include "glm/gtx/rotate_vector.hpp"
 #include "vengine/dev/Random.hpp"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <cstring> // to use memset
 
 RoomGenerator::RoomGenerator(VRandom& random)
 	:tiles2D{}, random(random), minMaxPos{}, exitTilesPos{}, middle(0), size(0)

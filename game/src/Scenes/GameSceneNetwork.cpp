@@ -221,8 +221,19 @@ void GameSceneNetwork::update()
       }
     }
 
+    if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
+    {
+        this->newRoomFrame = true;
+        //TODO : need to do something here so I know witch room I should switch to
+        this->getNetworkHandler()->sendTCPDataToClient(
+            TCPPacketEvent({GameEvents::WentInToNewRoom})
+        );
 
-    if (allDead() && this->newRoomFrame)
+        this->spawnHandler.spawnEnemiesIntoRoom();
+        
+    }
+
+    if (this->spawnHandler.allDead() && this->newRoomFrame)
       {
         this->newRoomFrame = false;
             // Call when a room is cleared
@@ -235,12 +246,6 @@ void GameSceneNetwork::update()
         }
     }
 
-
-        if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
-          {
-            this->getComponent<MeshComponent>(portal).meshID = portalOnMesh;
-          }
-      }
 
   /*if (this->hasComponents<Collider, Rigidbody>(this->playerID))
 	{
@@ -411,16 +416,6 @@ Entity player = e1 == this->playerID ? e1 : e2 == this->playerID ? e2 : -1;
     if (player == playerID)  // player triggered a trigger :]
     {
         Entity other = e1 == player ? e2 : e1;
-        if (roomHandler.onPlayerTrigger(other))
-        {
-            this->newRoomFrame = true;
-            //TODO : need to do something here so I know witch room I should switch to
-          this->getNetworkHandler()->sendTCPDataToClient(
-              TCPPacketEvent({GameEvents::WentInToNewRoom})
-          );
-            const std::vector<Entity>& entites = roomHandler.getFreeTiles();
-        }
-
         if (other == portal && numRoomsCleared >= this->roomHandler.getNumRooms() - 1)  // -1 not counting start room
           {
             //TODO : send packet to server
