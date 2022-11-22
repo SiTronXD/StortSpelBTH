@@ -50,6 +50,16 @@ scene.getComponent(uiID, CompType.Script).perkSlotTextureID =
 	resources.addTexture("assets/textures/UI/perkSlot.png", pixelArtSettings)
 scene.getComponent(uiID, CompType.Script).crosshairTextureID = 
 	resources.addTexture("assets/textures/UI/crosshair.png", pixelArtSettings)
+scene.getComponent(uiID, CompType.Script).uiHpMidTexID = 
+	resources.addTexture("assets/textures/UI/UIBarMid.png")
+scene.getComponent(uiID, CompType.Script).uiHpSideTexID = 
+	resources.addTexture("assets/textures/UI/UIBarSide.png")
+scene.getComponent(uiID, CompType.Script).uiStamMidTexID = 
+	resources.addTexture("assets/textures/UI/UIBarMid.png")
+scene.getComponent(uiID, CompType.Script).uiStamSideTexID = 
+	resources.addTexture("assets/textures/UI/UIBarSide.png")
+scene.getComponent(uiID, CompType.Script).uiBorderTexID = 
+	resources.addTexture("assets/textures/UI/UIBorder.png")
 
 --[[local p = scene.createPrefab("scripts/prefabs/prefab.lua")
 

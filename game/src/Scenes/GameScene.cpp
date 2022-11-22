@@ -16,7 +16,7 @@ double heavyFunction(double value);
 
 GameScene::GameScene() :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
-    perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1)
+    perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1)
 {
 }
 
@@ -56,6 +56,8 @@ void GameScene::init()
     createPortal();
     // simon
     ResourceManager* resourceMng = this->getResourceManager();
+    this->abilityMeshes[0] = resourceMng->addMesh("assets/models/KnockbackAbility.obj");
+    this->abilityMeshes[1] = resourceMng->addMesh("assets/models/Ability_Healing.obj");
     this->perkMeshes[0] = resourceMng->addMesh("assets/models/Perk_Hp.obj");
     this->perkMeshes[1] = resourceMng->addMesh("assets/models/Perk_Dmg.obj");
     this->perkMeshes[2] = resourceMng->addMesh("assets/models/Perk_AtkSpeed.obj");
@@ -63,9 +65,9 @@ void GameScene::init()
     this->perkMeshes[4] = resourceMng->addMesh("assets/models/Perk_Stamina.obj");
 
     this->abilityTextures[0] =
-        resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
+        resourceMng->addTexture("assets/textures/UI/KnockbackAbility.png");
     this->abilityTextures[1] =
-        resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
+        resourceMng->addTexture("assets/textures/UI/HealingAbility.png");
     this->abilityTextures[2] = resourceMng->addTexture("assets/textures/UI/empty.png");
     this->perkTextures[0] = resourceMng->addTexture("assets/textures/UI/hpUp.png");
     this->perkTextures[1] = resourceMng->addTexture("assets/textures/UI/dmgUp.png");
@@ -121,22 +123,32 @@ void GameScene::start()
         this->getScriptHandler());
 
     this->ability = this->createEntity();
-    int knockback =
-        this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
-    this->setComponent<MeshComponent>(this->ability, knockback);
+    this->setComponent<MeshComponent>(this->ability, this->abilityMeshes[knockbackAbility]);
     Transform& abilityTrans = this->getComponent<Transform>(this->ability);
-    abilityTrans.position = glm::vec3(50.f, 10.f, 0.f);
-    abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
+    abilityTrans.position = glm::vec3(50.f, 8.f, 0.f);
+    abilityTrans.scale = glm::vec3(3.f);
     this->setComponent<Collider>(
         this->ability, Collider::createSphere(4.f, glm::vec3(0), true));
-    this->setComponent<Abilities>(this->ability, healAbility);
+    this->setComponent<Abilities>(this->ability, knockbackAbility);
     this->setComponent<PointLight>(this->ability, { glm::vec3(0.f), glm::vec3(7.f, 9.f, 5.f) });
+    this->setScriptComponent(this->ability, "scripts/spin.lua");
+
+    this->ability1 = this->createEntity();
+    this->setComponent<MeshComponent>(this->ability1, this->abilityMeshes[healAbility]);
+    Transform& abilityTrans1 = this->getComponent<Transform>(this->ability1);
+    abilityTrans1.position = glm::vec3(50.f, 8.f, 20.f);
+    abilityTrans1.scale = glm::vec3(3.f);
+    this->setComponent<Collider>(
+        this->ability1, Collider::createSphere(4.f, glm::vec3(0), true));
+    this->setComponent<Abilities>(this->ability1, healAbility);
+    this->setComponent<PointLight>(this->ability1, { glm::vec3(0.f), glm::vec3(7.f, 9.f, 5.f) });
+    this->setScriptComponent(this->ability1, "scripts/spin.lua");
 
     this->perk = this->createEntity();
     this->setComponent<MeshComponent>(this->perk, this->perkMeshes[hpUpPerk]);
     Transform& perkTrans = this->getComponent<Transform>(this->perk);
-    perkTrans.position = glm::vec3(30.f, 7.f, 20.f);
-    perkTrans.scale = glm::vec3(3.f, 3.f, 3.f);
+    perkTrans.position = glm::vec3(30.f, 6.f, 20.f);
+    perkTrans.scale = glm::vec3(2.f);
     this->setComponent<Collider>(
         this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
     this->setComponent<PointLight>(this->perk, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
@@ -149,8 +161,8 @@ void GameScene::start()
     this->perk1 = this->createEntity();
     this->setComponent<MeshComponent>(this->perk1, this->perkMeshes[dmgUpPerk]);
     Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
-    perkTrans1.position = glm::vec3(30.f, 7.f, -20.f);
-    perkTrans1.scale = glm::vec3(3.f, 3.f, 3.f);
+    perkTrans1.position = glm::vec3(30.f, 6.f, -20.f);
+    perkTrans1.scale = glm::vec3(2.f);
     this->setComponent<Collider>(
         this->perk1, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
     this->setComponent<PointLight>(this->perk1, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
@@ -163,8 +175,8 @@ void GameScene::start()
     this->perk2 = this->createEntity();
     this->setComponent<MeshComponent>(this->perk2, this->perkMeshes[attackSpeedUpPerk]);
     Transform& perkTrans2 = this->getComponent<Transform>(this->perk2);
-    perkTrans2.position = glm::vec3(30.f, 7.f, 0.f);
-    perkTrans2.scale = glm::vec3(3.f, 3.f, 3.f);
+    perkTrans2.position = glm::vec3(30.f, 6.f, 0.f);
+    perkTrans2.scale = glm::vec3(2.f);
     this->setComponent<Collider>(
         this->perk2, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
     this->setComponent<PointLight>(this->perk2, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
@@ -177,8 +189,8 @@ void GameScene::start()
     this->perk3 = this->createEntity();
     this->setComponent<MeshComponent>(this->perk3, this->perkMeshes[movementUpPerk]);
     Transform& perkTrans3 = this->getComponent<Transform>(this->perk3);
-    perkTrans3.position = glm::vec3(30.f, 5.f, -40.f);
-    perkTrans3.scale = glm::vec3(3.f, 3.f, 3.f);
+    perkTrans3.position = glm::vec3(30.f, 6.f, -40.f);
+    perkTrans3.scale = glm::vec3(2.f);
     this->setComponent<Collider>(
         this->perk3, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
     this->setComponent<PointLight>(this->perk3, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
@@ -191,8 +203,8 @@ void GameScene::start()
     this->perk4 = this->createEntity();
     this->setComponent<MeshComponent>(this->perk4, this->perkMeshes[staminaUpPerk]);
     Transform& perkTrans4 = this->getComponent<Transform>(this->perk4);
-    perkTrans4.position = glm::vec3(30.f, 5.f, -60.f);
-    perkTrans4.scale = glm::vec3(3.f, 3.f, 3.f);
+    perkTrans4.position = glm::vec3(30.f, 6.f, -60.f);
+    perkTrans4.scale = glm::vec3(2.f);
     this->setComponent<Collider>(
         this->perk4, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
     this->setComponent<PointLight>(this->perk4, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
@@ -366,7 +378,7 @@ void GameScene::update()
         abilityTextures[playerCombat.ability.abilityType]
     );
     this->getUIRenderer()->renderTexture(
-        glm::vec2(890.f, -390.f), glm::vec2(100.0f)
+        glm::vec2(-875.f, -455.f), glm::vec2(113.0f)
     );
 
     float perkXPos = -720.f;
@@ -377,8 +389,8 @@ void GameScene::update()
             this->perkTextures[playerCombat.perks[i].perkType]
         );
         this->getUIRenderer()->renderTexture(
-            glm::vec2(-perkXPos - 70.f + i * 80.f, perkYPos + 10.f),
-            glm::vec2(70.0f)
+            glm::vec2(-perkXPos - 142.f + i * 83.f, perkYPos + 25.f),
+            glm::vec2(76.0f)
         );
     }
 
@@ -390,9 +402,9 @@ void GameScene::update()
         hpPercent = playerCombat.health * 0.01f;
         maxHpPercent = playerCombat.maxHealth * 0.01f;
     }
-    float xPos = -720.f;
-    float yPos = -500.f;
-    float xSize = 1024.f * 0.35f;
+    float xPos = -600.f;
+    float yPos = -472.f;
+    float xSize = 1200.f * 0.35f;
     float ySize = 64.f * 0.35f;
 
     this->getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
@@ -810,7 +822,8 @@ void GameScene::onTriggerEnter(Entity e1, Entity e2)
         {
             this->removeComponent<Rigidbody>(ability);
             Transform& abilityTrans = this->getComponent<Transform>(ability);
-            abilityTrans.position.y = 4.f;
+            abilityTrans.position.y = 8.f;
+            this->setScriptComponent(ability, "scripts/spin.lua");
         }
     }
 }
