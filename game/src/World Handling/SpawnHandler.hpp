@@ -3,7 +3,6 @@
 #include "vengine/application/SceneHandler.hpp"
 //#include "../application/SceneHandler.hpp"
 //#include "vengine/application/SceneHandler.hpp"
-//#include "SpawnHandler.hpp"
 #include "vengine/ai/AIHandler.hpp"
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
@@ -26,7 +25,7 @@ private:
 
     int nrOfTanks  = 0;
     int nrOfLichs  = 1;
-    int nrOfSwarms = 3;
+    int nrOfSwarms = 0;
 
     int numOfGroups = 4;
     int group_size = 3;

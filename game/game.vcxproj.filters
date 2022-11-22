@@ -64,6 +64,7 @@
     <ClInclude Include="src\ServerGameModes\NetworkLobbyScene.h" />
     <ClInclude Include="src\ServerGameModes\NetworkGameScene.h" />
     <ClInclude Include="src\World Handling\SpawnHandler.hpp" />
+    <ClInclude Include="src\Network\NetworkDataFetcher.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
