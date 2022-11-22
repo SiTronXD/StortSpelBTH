@@ -499,7 +499,7 @@ void Lich_combat::start()
     shouldPickNewStrat->addDecorator(pickChoice);
 
     //TODO: add child back: Memory leaks
-    pickChoice->addLeafs({smartStrategy, /*randomStrategy*/});
+    pickChoice->addLeafs({smartStrategy, randomStrategy});
 
     this->setRoot(root);
 }
