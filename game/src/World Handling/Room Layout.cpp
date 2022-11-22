@@ -194,8 +194,6 @@ void RoomLayout::setBranch(int index, bool left, int size)
 			}
 			this->connections.emplace_back(curRoomIndex, sideIndex);
 		}
-
-
 	}
 }
 
@@ -209,7 +207,8 @@ bool RoomLayout::setExit()
 		{
 			exitIndex = 1;
 		}
-		if (++numTests > this->rooms.size()) {
+		if (++numTests > this->rooms.size()) 
+		{
 			return false;
 		}
 	}
@@ -219,7 +218,8 @@ bool RoomLayout::setExit()
 		{
 			exitIndex = 1;
 		}
-		if (++numTests > this->rooms.size()) {
+		if (++numTests > this->rooms.size()) 
+		{
 			return false;
 		}
 	}
@@ -229,7 +229,8 @@ bool RoomLayout::setExit()
 		{
 			exitIndex = 1;
 		}
-		if (++numTests > this->rooms.size()) {
+		if (++numTests > this->rooms.size()) 
+		{
 			return false;
 		}
 	}

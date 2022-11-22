@@ -3,7 +3,6 @@ local script = {}
 function script:init(dt) 
 	self.speed = 13.0
 	self.maxY = 21.0
-	print("Init")
 end
 
 function script:update(dt)

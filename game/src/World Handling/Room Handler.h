@@ -30,10 +30,6 @@ private:
 		glm::vec3 positions[4]{};
 	};
 
-	// CHANGE roomTiles.emplace_back() to roomTiles[i] = ()
-	// CHANGE roomTiles.emplace_back() to roomTiles[i] = ()
-	// CHANGE roomTiles.emplace_back() to roomTiles[i] = ()
-
 	struct Room
 	{
 		Room()
@@ -110,17 +106,10 @@ private:
 
 	// Other
 	void createFloor();
-
 	void reset();
-#ifdef _CONSOLE
-	bool showAllRooms = false;
-#endif
-	
-	// Created and deleted in generate()
-	VRandom* random;
+	VRandom* random; // Created and deleted in generate()
+	bool useMeshes; // Required by server
 
-	// Required by server
-	bool useMeshes;
 public:
 	RoomHandler();
 	~RoomHandler();

@@ -134,7 +134,7 @@ bool RoomHandler::onPlayerTrigger(Entity player, PhysicsEngine* physicsEngine)
 						this->closeDoors(this->activeIndex);
 						for (int j = 0; j < 4; j++)
 						{
-							if (newRoom.doors[i])
+							if (newRoom.connectingIndex[j] != -1)
 							{
 								this->deactivateRoom(newRoom.connectingIndex[j]);
 							}
@@ -143,8 +143,6 @@ bool RoomHandler::onPlayerTrigger(Entity player, PhysicsEngine* physicsEngine)
 						this->activateRoom(this->activeIndex);
 						this->showPaths(false);
 #endif // _DEBUG
-
-
 						return true;
 					}
 
@@ -165,7 +163,6 @@ bool RoomHandler::onPlayerTrigger(Entity player, PhysicsEngine* physicsEngine)
 						this->deactivateRoom(oldIndex);
 #endif // !_DEBUG
 					}
-
 					return false;
 				}
 			}
@@ -261,6 +258,7 @@ void RoomHandler::generate(uint32_t seed)
 			}
 		}
 
+		// Get and save tiles from roomGen
 		const uint32_t numMain = roomGen.getNumMainTiles();
 		for (uint32_t j = 0; j < numMain; j++)
 		{
@@ -315,8 +313,8 @@ void RoomHandler::generate(uint32_t seed)
 			Entity entity = this->scene->createEntity();
 			curRoom.rockFence = entity;
 			this->scene->getComponent<Transform>(entity).position += glm::vec3(TILE_WIDTH * 0.5f, 0.f, TILE_WIDTH * 0.5f);
-			this->scene->setComponent<Collider>(entity,
-				Collider::createBox(glm::vec3(TILE_WIDTH), glm::vec3(0.f, TILE_WIDTH, 0.f)));
+			this->scene->setComponent<Collider>(entity, Collider::createBox(
+					glm::vec3(TILE_WIDTH), glm::vec3(0.f, TILE_WIDTH, 0.f)));
 			if (this->useMeshes)
 			{
 				this->scene->setComponent<MeshComponent>(entity, (int)this->rockFenceMeshId);
@@ -355,6 +353,7 @@ void RoomHandler::generate(uint32_t seed)
 	this->setConnections(roomLayout.getNumMainRooms(), roomLayout.getConnections());
 	this->generatePathways();
 	this->createFloor();
+	delete this->random;
 
 	// Offset everything so origo is in the middle of spawn tile
 	for (Entity entity : this->pathEntities)
@@ -377,8 +376,6 @@ void RoomHandler::generate(uint32_t seed)
 	this->exitPairs.shrink_to_fit();
 	this->roomExitPoints.shrink_to_fit();
 	this->verticalConnection.shrink_to_fit();
-
-	delete this->random;
 
 	this->activeIndex = 0;
 	Room& startRoom = this->rooms[this->activeIndex];
@@ -424,7 +421,6 @@ void RoomHandler::moveRoom(int roomIndex, const glm::vec3& offset)
 		if (curRoom.doors[i] != -1)
 		{
 			this->roomExitPoints[roomIndex].positions[i] += offset;
-
 			this->scene->getComponent<Transform>(curRoom.doors[i]).position += offset;
 		}
 	}
@@ -553,9 +549,6 @@ void RoomHandler::setConnections(int numMainRooms, const std::vector<glm::ivec2>
 		if (curCon.x < numMainRooms && curCon.y < numMainRooms)
 		{
 			// Vertical Connection
-			// curCon.x = index of upper room
-			// curCon.y = index of lower room
-
 			this->verticalConnection[i] = true;
 
 			pair.first = this->roomExitPoints[curCon.y].positions[2];
@@ -564,9 +557,6 @@ void RoomHandler::setConnections(int numMainRooms, const std::vector<glm::ivec2>
 		else
 		{
 			// Horizontal connection
-			// curCon.x = right room
-			// curCon.y = left room
-
 			this->verticalConnection[i] = false;
 
 			pair.first = this->roomExitPoints[curCon.y].positions[0];
@@ -668,13 +658,12 @@ void RoomHandler::surroundPaths(size_t startIdx, const std::vector<glm::vec3>& p
 	};
 	const int NUM_OFFSETS = sizeof(OFFSETS) / sizeof(glm::vec3);
 
-	bool canPlace = true;
-
 	const glm::vec3& upperP = p0.z > p1.z ? p0 : p1;
 	const glm::vec3& lowerP = upperP == p0 ? p1 : p0;
 	const glm::vec3& rightP = p0.x > p1.x ? p0 : p1;
 	const glm::vec3& leftP = rightP == p0 ? p1 : p0;
 
+	bool canPlace = true;
 	for (size_t i = 0; i < pathPos.size(); i++)
 	{
 		const glm::vec3& pos = pathPos[i];
@@ -945,10 +934,14 @@ void RoomHandler::closeDoors(int index)
 
 void RoomHandler::activateRoom(int index)
 {
+#ifdef _CONSOLE
 	if (index < 0 || index >= (int)this->rooms.size())
 	{
+		Log::error("RoomHandler::activateRoom | Invalid index: " + std::to_string(index) + 
+		". Num rooms: " + std::to_string(this->rooms.size()));
 		return;
 	}
+#endif
 
 	Room& curRoom = this->rooms[index];
 	for (const Entity& entity : curRoom.objects)
@@ -961,7 +954,6 @@ void RoomHandler::activateRoom(int index)
 		if (curRoom.doors[i] != -1)
 		{
 			this->scene->setActive(curRoom.doors[i]);
-			//this->scene->setActive(curRoom.doorTriggers[i]);
 			this->scene->getComponent<Transform>(curRoom.doors[i]).position.y = -25;
 		}
 	}
@@ -975,10 +967,14 @@ void RoomHandler::activateRoom(int index)
 
 void RoomHandler::deactivateRoom(int index)
 {
+#ifdef _CONSOLE
 	if (index < 0 || index >= (int)this->rooms.size())
 	{
+		Log::error("RoomHandler::deactivateRoom | Invalid index: " + std::to_string(index) + 
+		". Num rooms: " + std::to_string(this->rooms.size()));
 		return;
 	}
+#endif
 
 	Room& curRoom = this->rooms[index];
 	for (const Entity& entity : curRoom.objects)
@@ -993,6 +989,7 @@ void RoomHandler::deactivateRoom(int index)
 			this->scene->setInactive(curRoom.doors[i]);
 		}
 	}
+
 	if (curRoom.type != RoomData::START_ROOM && curRoom.type != RoomData::EXIT_ROOM)
 	{
 		this->scene->setInactive(curRoom.rock);
@@ -1003,55 +1000,9 @@ void RoomHandler::deactivateRoom(int index)
 #ifdef _CONSOLE
 void RoomHandler::imgui(DebugRenderer* dr)
 {
-#if 0
-	if (ImGui::Begin("Debug"))
-	{
-		ImGui::PushItemWidth(-100.f);
-		ImGui::Text("Rooms");
-		ImGui::Text("Num: %zd", this->rooms.size());
-
-		if (ImGui::Checkbox("Show all rooms", &this->showAllRooms))
-		{
-			if (this->showAllRooms)
-			{
-				for (int i = 0; i < (int)this->rooms.size(); i++)
-				{
-					this->activateRoom(i);
-				}
-				this->showPaths(true);
-			}
-			else
-			{
-				for (int i = 0; i < (int)this->rooms.size(); i++)
-				{
-					if (i == this->activeIndex || i == this->nextIndex)
-					{
-						this->activateRoom(i);
-					}
-					else
-					{
-						this->deactivateRoom(i);
-					}
-
-				}
-			}
-		}
-
-		if (ImGui::Button("Reload"))
-		{
-			this->generate();
-		}
-
-		ImGui::Text("A: %d, N: %d, D: %d", this->activeIndex, this->nextIndex, this->curDoor);
-
-		ImGui::Separator();
-		ImGui::PopItemWidth();
-	}
-	ImGui::End();
-#else
 	if (ImGui::Begin("Rooms"))
 	{
-		if (ImGui::Button("Reload"))
+		if (ImGui::Button("Reload rooms only"))
 		{
 			this->generate(rand());
 		}
@@ -1089,8 +1040,6 @@ void RoomHandler::imgui(DebugRenderer* dr)
 
 	}
 	ImGui::End();
-#endif
 }
-
 #endif // _CONSOLE
 

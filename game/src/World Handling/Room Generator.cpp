@@ -17,19 +17,6 @@ RoomGenerator::RoomGenerator(VRandom& random)
 	this->clear();
 }
 
-/*
-	TODO: (Not in order)
-	* Add support for 1x2 & 2x2 tiles & make sure doors aren't blocked by them
-		* Make sure the rock can spawn in the middle
-	* Generate multiple rooms
-		* Generate paths
-		* Generate borders around paths
-	* Smoothen out borders
-	* Separate the current tile-meshes from their floor
-		* Fill the rooms with stuff
-	* Only place colliders on first border layer (Fog?)
-*/
-
 RoomGenerator::~RoomGenerator()
 {
 	for (uint32_t i = 0; i < WIDTH_HEIGHT; i++)
