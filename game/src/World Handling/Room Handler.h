@@ -122,7 +122,7 @@ public:
 #endif //  _CONSOLE
 
 	void roomCompleted();
-	bool onPlayerTrigger(Entity player, PhysicsEngine* physicsEngine);
+	bool playerNewRoom(Entity player, PhysicsEngine* physicsEngine);
 
 	const std::vector<glm::vec3>& getFreeTiles();
 	const Room& getExitRoom() const;
