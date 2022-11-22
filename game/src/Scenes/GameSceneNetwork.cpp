@@ -86,13 +86,9 @@ void GameSceneNetwork::init()
 
   roomHandler.init(
       this,
-      this->getResourceManager(),
-      this->getConfigValue<int>("room_size"),
-      this->getConfigValue<int>("tile_types")
+      this->getResourceManager(), false
   );
-
-  roomHandler.generate();
-
+  roomHandler.generate(123);
   createPortal();
 
   ResourceManager* resourceMng = this->getResourceManager();
@@ -235,9 +231,11 @@ void GameSceneNetwork::update()
     }
 
 
-    if (alldead)
-      {
-        this->newRoomFrame = false;
+      if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+        {
+          this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
+        }
+    }
 
         // Call when a room is cleared
         roomHandler.roomCompleted();
@@ -368,7 +366,7 @@ void GameSceneNetwork::update()
     }
   ImGui::End();
 
-  roomHandler.imgui();
+  this->roomHandler.imgui(this->getDebugRenderer());
 
 #endif
 }
@@ -413,28 +411,17 @@ bool GameSceneNetwork::allDead()
 
 void GameSceneNetwork::onTriggerStay(Entity e1, Entity e2)
 {
-    Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
+Entity player = e1 == this->playerID ? e1 : e2 == this->playerID ? e2 : -1;
 	
-    if (player == playerID)  // player triggered a trigger :]
-    {
-        Entity other = e1 == player ? e2 : e1;
-        if (roomHandler.onPlayerTrigger(other))
-        {
-            this->newRoomFrame = true;
-            //TODO : need to do something here so I know witch room I should switch to
-          this->getNetworkHandler()->sendTCPDataToClient(
-              TCPPacketEvent({GameEvents::WentInToNewRoom})
-          );
-            const std::vector<Entity>& entites = roomHandler.getFreeTiles();
-        }
-
-        if (other == portal && numRoomsCleared >= this->roomHandler.getNumRooms() - 1)  // -1 not counting start room
-          {
-            //TODO : send packet to server
-            std::cout << "next" << std::endl;
-            //this->switchScene(new GameSceneNetwork(), "scripts/gamescene.lua");
-          }
-    }
+	if (player == this->playerID) // player triggered a trigger :]
+	{
+		Entity other = e1 == player ? e2 : e1;
+	
+		if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
+		{
+			this->switchScene(new GameSceneNetwork(), "scripts/gamescene.lua");
+		}
+	}
 }
 
 void GameSceneNetwork::onTriggerEnter(Entity e1, Entity e2)

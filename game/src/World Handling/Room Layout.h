@@ -2,7 +2,9 @@
 #include <vector>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
-	
+
+class VRandom;
+
 struct RoomData
 {
 	enum Type : int
@@ -16,13 +18,13 @@ struct RoomData
 	};
 	
 	Type type;
-	glm::vec3 position;
 
 	// Index of connected rooms
 	int up, down, left, right;
+
 	RoomData()
 		:up(-1), down(-1), left(-1), right(-1),
-		type(Type::INVALID), position(0.f)
+		type(Type::INVALID)
 	{
 	};
 };
@@ -32,13 +34,13 @@ class RoomLayout
 public:
 
 	static const int MIN_MAIN_ROOMS = 2;
-	static const int MAX_MAIN_ROOMS = 2;
+	static const int MAX_MAIN_ROOMS = 3;
 
-	static const int MIN_NUM_BRANCHES = 2;
-	static const int MAX_NUM_BRANCHES = 2; // Will cap at numMainRooms
+	static const int MIN_NUM_BRANCHES = 1;
+	static const int MAX_NUM_BRANCHES = 2; // Will cap at numMainRooms * 2
 
 	static const int MIN_BRANCH_SIZE = 1;
-	static const int MAX_BRANCH_SIZE = 1;
+	static const int MAX_BRANCH_SIZE = 2;
 
 	// Total minimum rooms: 
 	// MIN_MAIN_ROOMS + MIN_NUM_BRANCHES * MIN_BRANCH_SIZE
@@ -47,7 +49,7 @@ public:
 	// MAX_MAIN_ROOMS + MAX_NUM_BRANCHES * MAX_BRANCH_SIZE
 
 private:
-	float distance;
+	VRandom& random;
 
 	int numMainRooms;
 	int numBranches;
@@ -63,10 +65,8 @@ private:
 	bool setExit();
 
 public:
-	RoomLayout();
+	RoomLayout(VRandom& random);
 	virtual ~RoomLayout();
-
-	void setRoomDistance(float distance);
 
 	void generate();
 	void clear();

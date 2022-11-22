@@ -26,7 +26,6 @@ GameScene::~GameScene()
 
 void GameScene::init()
 {
-
     TextureSamplerSettings samplerSettings{};
     samplerSettings.filterMode = vk::Filter::eNearest;
     samplerSettings.unnormalizedCoordinates = VK_TRUE;
@@ -48,10 +47,8 @@ void GameScene::init()
 
     roomHandler.init(
         this,
-        this->getResourceManager(),
-        this->getConfigValue<int>("room_size"),
-        this->getConfigValue<int>("tile_types"));
-    roomHandler.generate();
+        this->getResourceManager(), true);
+    roomHandler.generate(rand());
     createPortal();
     // simon
     ResourceManager* resourceMng = this->getResourceManager();
@@ -107,7 +104,7 @@ void GameScene::start()
 
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
-    this->getAudioHandler()->setMusicVolume(1.f);
+    this->getAudioHandler()->setMusicVolume(0.2f);
     this->getAudioHandler()->playMusic();
 
     this->setComponent<Combat>(playerID);
@@ -210,6 +207,122 @@ void GameScene::start()
 
 void GameScene::update()
 {
+    // TODO: Move to SpawnHandler ---- 
+    if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
+    {
+        this->newRoomFrame = true;
+
+        //Num to spawn
+        int numTanks        = 1;
+        int numLich         = 0;
+        int numSwarm        = 3;
+
+		int swarmIdx        = 0;
+		int lichIdx         = 0;
+		int tankIdx         = 0;
+		int randNumEnemies  = 10;
+		int counter         = 0;
+		const std::vector<glm::vec3>& tiles = roomHandler.getFreeTiles();
+		for (const glm::vec3& tilePos : tiles)
+		{
+			if (randNumEnemies - counter != 0)
+			{
+				if(tankIdx < numTanks)
+				{
+				    this->setActive(this->tankIDs[tankIdx]);
+					Transform& transform = this->getComponent<Transform>(this->tankIDs[tankIdx]);
+					float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
+					transform.position = tilePos;
+					transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
+
+                    //Reset
+                    TankComponent& tankComp = this->getComponent<TankComponent>(this->tankIDs[tankIdx]);
+                    tankComp.life = tankComp.FULL_HEALTH;
+                    transform.scale.y = tankComp.origScaleY;
+
+					tankIdx++;
+				}
+				else if(lichIdx < numLich)
+				{
+					this->setActive(this->lichIDs[lichIdx]);
+					Transform& transform = this->getComponent<Transform>(this->lichIDs[lichIdx]);
+					float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
+					transform.position = tilePos;
+					transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
+
+                    //Reset
+                    LichComponent& lichComp = this->getComponent<LichComponent>(this->lichIDs[tankIdx]);
+                    lichComp.life = lichComp.FULL_HEALTH;
+
+					lichIdx++;
+				}
+				else if(swarmIdx < numSwarm)
+				{
+					this->setActive(this->swarmIDs[swarmIdx]);
+					Transform& transform = this->getComponent<Transform>(this->swarmIDs[swarmIdx]);
+					float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
+					transform.position = tilePos;
+					transform.position = transform.position + glm::vec3(tileWidth, 0.f, tileWidth);
+
+					//Temporary enemie reset
+					SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(this->swarmIDs[swarmIdx]);
+					transform.scale.y = 1.0f;
+					swarmComp.life = swarmComp.FULL_HEALTH;
+					swarmComp.group->inCombat = false;
+				
+					swarmComp.group->aliveMembers.push(0); 
+
+					swarmIdx++;
+				}
+				
+				counter++;
+			
+			}
+		}
+
+		for(SwarmGroup* group: this->swarmGroups)
+		{
+			//Set idle mid pos
+			group->idleMidPos = glm::vec3(0.0f, 0.0f, 0.0f);
+			int numAlive = 0;
+			for(auto b: group->members)
+			{
+				if(isActive(b) && this->getComponent<SwarmComponent>(b).life > 0)
+				{
+					group->idleMidPos += this->getComponent<Transform>(b).position;
+					numAlive++;
+				}
+			}
+			group->idleMidPos /= numAlive;
+			//Set ilde radius
+			for(auto b: group->members)
+			{
+				if(isActive(b) && this->getComponent<SwarmComponent>(b).life > 0)
+				{
+					float len = glm::length(group->idleMidPos - this->getComponent<Transform>(b).position);
+					if(len > group->idleRadius)
+					{
+						group->idleRadius = len;
+					}
+				}
+			}
+			//Set move to
+			for(auto b: group->members)
+			{
+				SwarmComponent& swarmComp = this->getComponent<SwarmComponent>(b);
+				swarmComp.idleMoveTo = group->idleMidPos;
+				glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
+				swarmComp.idleMoveTo = swarmComp.group->idleMidPos + dir * swarmComp.group->idleRadius;
+			}
+			for(auto t: tankIDs)
+		    {
+		    	TankComponent& tankComp = this->getComponent<TankComponent>(t);
+		    	tankComp.setFriends(this, t);
+		    }
+		}
+    }
+    // ---- TODO: Move to SpawnHandler ^^^^
+
     this->aiHandler->update(Time::getDT());
 
     if (this->spawnHandler.allDead() && this->newRoomFrame)
@@ -217,12 +330,12 @@ void GameScene::update()
         this->newRoomFrame = false;
 
         // Call when a room is cleared
-        roomHandler.roomCompleted();
+        this->roomHandler.roomCompleted();
         this->numRoomsCleared++;
 
         if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
         {
-            this->getComponent<MeshComponent>(portal).meshID = portalOnMesh;
+            this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
         }
     }
 
@@ -289,6 +402,7 @@ void GameScene::update()
         glm::vec2(xSize * hpPercent, ySize)
     );
 
+    
 #ifdef _CONSOLE
 
     // Cascades
@@ -321,28 +435,24 @@ void GameScene::update()
     }
     ImGui::End();
 
-    roomHandler.imgui();
+    this->roomHandler.imgui(this->getDebugRenderer());
 
     decreaseFps();
 #endif
+
 }
 
 
 void GameScene::onTriggerStay(Entity e1, Entity e2)
 {
-	Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
+	Entity player = e1 == this->playerID ? e1 : e2 == this->playerID ? e2 : -1;
 	
-	if (player == playerID) // player triggered a trigger :]
+	if (player == this->playerID) // player triggered a trigger :]
 	{
 		Entity other = e1 == player ? e2 : e1;
-		if (roomHandler.onPlayerTrigger(other))
-		{
-			this->newRoomFrame = true;
+    
 
-            this->spawnHandler.spawnEnemiesIntoRoom();
-		}        
-
-		if (other == portal && numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
+		if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
 		{
 			this->switchScene(new GameScene(), "scripts/gamescene.lua");
 		}

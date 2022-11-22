@@ -1,368 +1,562 @@
 #include "Room Generator.h"
-#include <iostream> //TODO: ONLY FOR VISUALIZING ROOM LAYOUT. REMOVE LATER
+#include "../deps/glm/src/glm/gtx/rotate_vector.hpp"
+#include "vengine/dev/Random.hpp"
 
-/*
-    Limit num objects (atleast houses)
-    Sometimes generates:
-        holes (something to do with different size pieces I suspect)
-        piece on edge
-        border piece not on border
+#define _USE_MATH_DEFINES
+#include <math.h>
 
-*/
-
-const float RoomGenerator::DEFAULT_TILE_SCALE = 0.04f;
-
-RoomGenerator::RoomGenerator()
+RoomGenerator::RoomGenerator(VRandom& random)
+	:tiles2D{}, random(random), minMaxPos{}, exitTilesPos{}, middle(0), size(0)
 {
-    //create 2d array representing room and set all room pieces to 0
-    this->tiles = std::vector<Tile>();
+	this->tiles2D = new Tile::Type * [WIDTH_HEIGHT];
+	for (uint32_t i = 0; i < WIDTH_HEIGHT; i++)
+	{
+		this->tiles2D[i] = new Tile::Type[WIDTH_HEIGHT];
+	}
+
+	this->clear();
 }
 
 RoomGenerator::~RoomGenerator()
 {
-    delete[] room;
+	for (uint32_t i = 0; i < WIDTH_HEIGHT; i++)
+	{
+		delete[] this->tiles2D[i];
+	}
+	delete[] this->tiles2D;
 }
 
-void RoomGenerator::init(int roomSize, int tileTypes)
+void RoomGenerator::clear()
 {
-    this->ROOM_SIZE = roomSize;
-    this->TILE_TYPES = tileTypes;
-    this->HALF_ROOM = this->ROOM_SIZE / 2;
-    this->room = new Tile::Type[ROOM_SIZE * ROOM_SIZE];
+	this->exitTilesPos[LEFT_P]  = this->minMaxPos[LEFT_P]  = glm::ivec2(-1);
+	this->exitTilesPos[RIGHT_P] = this->minMaxPos[RIGHT_P] = glm::ivec2(WIDTH_HEIGHT);
+	this->exitTilesPos[UPPER_P] = this->minMaxPos[UPPER_P] = glm::ivec2(-1);
+	this->exitTilesPos[LOWER_P] = this->minMaxPos[LOWER_P] = glm::ivec2(WIDTH_HEIGHT);
 
-    this->reset();
+	this->mainTiles.clear();
+	this->bigTiles.clear();
+	this->borders.clear();
+	this->innerBorders.clear();
+	this->exitPathsTiles.clear();
+
+	for (uint32_t i = 0; i < WIDTH_HEIGHT; i++)
+	{
+		memset(this->tiles2D[i], Tile::Type::Unused, sizeof(Tile::Type) * WIDTH_HEIGHT);
+	}
 }
 
-void RoomGenerator::generateRoom()
+void RoomGenerator::generate(bool* doors)
 {
-    //generate first room piece in middle (0,0) and depth 0
-    this->addPiece(glm::vec2(0, 0), 0);
+	const glm::ivec2 gridMid(WIDTH_HEIGHT / 2);
+	this->drawCircle(gridMid, RADIUS);
+
+	glm::vec2 fBranch(0);
+	glm::ivec2 iBranch(0);
+	for (uint32_t i = 0; i < NUM_BRANCHES; i++)
+	{
+		fBranch.x = float(this->random.rand() % 2001) * 0.001f - 1.f;
+		fBranch.y = float(this->random.rand() % 2001) * 0.001f - 1.f;
+		fBranch = glm::normalize(fBranch);
+		iBranch = fBranch * (float)BRANCH_DIST;
+		iBranch += gridMid;
+
+		for (uint32_t j = 0; j < BRANCH_DEPTH; j++)
+		{
+			this->drawCircle(iBranch, RADIUS);
+			
+			if (MAX_ANGLE != 0)
+			{
+				const float rotAngle = float((int)this->random.rand() % (int)MAX_ANGLE - (int)MAX_ANGLE / 2);
+				fBranch = glm::rotate(fBranch, float(rotAngle * (M_PI / 180.f)));
+			}
+			iBranch += fBranch * (float)BRANCH_DIST;
+		}
+	}
+
+	this->findMinMax(); // Find minMax tiles & middle
+
+	// Reserve middle tiles for big rock
+	getType(this->middle) = Tile::Reserved;
+	getType(this->middle + glm::ivec2(1, 0)) = Tile::Reserved;
+	getType(this->middle + glm::ivec2(0, 1)) = Tile::Reserved;
+	getType(this->middle + glm::ivec2(1, 1)) = Tile::Reserved;
+
+	this->setBigTiles();	// Select spots for 1x2/2x1/2x2
+	this->setExits(doors);	// Set doors and make room for them
+	this->setBorders();		// Surround the room with borders
+	this->finalize();		// Finalize, fill Tile vectors and offset room to origo
 }
 
-void RoomGenerator::generateBorders(const bool* hasDoors)
+void RoomGenerator::findMinMax()
 {
-    // 4 doors, each with a row & column index (i & j) (in the next for loop)
-    int doorGridIndex[4][2]{};
-    for (int i = 0; i < 4; i++)
-    {
-        if (hasDoors[i])
-        {
-            getIJIndex(getArrayIndexFromPosition(this->minMaxPos[i].x, this->minMaxPos[i].y), doorGridIndex[i]);
-        }
 
-#ifdef _DEBUG
-        else
-        {
-            doorGridIndex[i][0] = doorGridIndex[i][1] = -1;
-        }
-#endif
-    }
+	glm::ivec2 position(0);
+	for (position.x = 0; position.x < WIDTH_HEIGHT; position.x++)
+	{
+		for (position.y = 0; position.y < WIDTH_HEIGHT; position.y++)
+		{
+			Tile::Type& tile = this->getType(position);
 
-    int index = -1;
-    for (int i = 0; i < this->ROOM_SIZE; i++)
-    {
-        for (int j = 0; j < this->ROOM_SIZE; j++)
-        {
-            index = -1;
+			if (tile != Tile::OneXOne)
+				continue;
 
-            // Check that we're behind the door and
-            // save index of which door we're currently behind
-            if      (hasDoors[0] && j > doorGridIndex[0][0] && i == doorGridIndex[0][1]) { index = 0; }
-            else if (hasDoors[1] && j < doorGridIndex[1][0] && i == doorGridIndex[1][1]) { index = 1; }
-            else if (hasDoors[2] && j == doorGridIndex[2][0] && i > doorGridIndex[2][1]) { index = 2; }
-            else if (hasDoors[3] && j == doorGridIndex[3][0] && i < doorGridIndex[3][1]) { index = 3; }
+			if (position.x > this->minMaxPos[LEFT_P].x)
+			{
+				this->minMaxPos[LEFT_P] = position;
+			}
+			if (position.x < this->minMaxPos[RIGHT_P].x)
+			{
+				this->minMaxPos[RIGHT_P] = position;
+			}
+			if (position.y > this->minMaxPos[UPPER_P].y)
+			{
+				this->minMaxPos[UPPER_P] = position;
+			}
+			if (position.y < this->minMaxPos[LOWER_P].y)
+			{
+				this->minMaxPos[LOWER_P] = position;
+			}
+		}
+	}
 
-            // Behind a door? Place tile..
-            if (index != -1)
-            {
-                this->room[i * this->ROOM_SIZE + j] = Tile::OneXOne;
-
-                Tile tile{};
-                tile.type = Tile::OneXOne;
-                tile.position = glm::vec2(j - this->HALF_ROOM, i - this->HALF_ROOM);
-                this->exitPathsTiles.emplace_back(tile);
-
-                // save the positions of the tile if it's at an edge
-                if (i == this->ROOM_SIZE - 1 || i == 0 || j == this->ROOM_SIZE - 1 || j == 0)
-                {
-                    this->exitTilesPos[index] = this->exitPathsTiles.back().position;
-                }
-            }
-
-
-            // Place a border-tile on empty tiles
-            else if (this->room[i * this->ROOM_SIZE + j] == Tile::Invalid)
-            {
-                Tile tile{};
-                tile.type = Tile::Border;
-                tile.position = glm::vec2(j - this->HALF_ROOM, i - this->HALF_ROOM);
-                this->borders.push_back(tile);
-            }
-        }
-    }
+	this->middle.x = (this->minMaxPos[LEFT_P].x  + this->minMaxPos[RIGHT_P].x) / 2;
+	this->middle.y = (this->minMaxPos[UPPER_P].y + this->minMaxPos[LOWER_P].y) / 2;
+	this->size.x = this->minMaxPos[LEFT_P].x  - this->minMaxPos[RIGHT_P].x;
+	this->size.y = this->minMaxPos[UPPER_P].y - this->minMaxPos[LOWER_P].y;
 }
 
-void RoomGenerator::addPiece(glm::vec2 position, int depth)
+void RoomGenerator::setBigTiles()
 {
-    int x = position.x;
-    int y = position.y;
-    int index = getArrayIndexFromPosition(x, y);
+	const uint32_t MAX_SEARCH = 100;
+	uint32_t searchCounter = 0;
+	glm::ivec2 pos(0);
+	bool vertical;
 
-    //add piece only if tile is within room bounds
-    if (abs(x) < this->HALF_ROOM - 1 && abs(y) < this->HALF_ROOM - 1)
-    {
-        //std::random_device rd; //obtain random number from hardware
-        //std::mt19937 gen(rand());  //seed generator
+	// First part of loops is for 2x2, second part is for 1x2/2x1
+	for (uint32_t i = 0; i < MAX_TWO_X_TWO + MAX_ONE_X_TWO; i++)
+	{
+		searchCounter = 0;
 
-        if (this->room[index] < 1) 
-        {
-            //std::uniform_int_distribution<> tileTypeRange(1, 10); //TODO: Update when more pieces exists
-            //Tile::Type tileType = Tile::Type(tileTypeRange(gen));
-
-            // Temp
-            //if (tileType == Tile::TwoXTwo)
-            Tile::Type tileType = Tile::OneXOne;
-
-
-            //TODO: clean up code
-            switch (tileType)
-            {
-            case Tile::OneXOne: //Simple 1x1 piece
-            {
-                this->placeTile(tileType, position, position);
-                break;
-            }
-            case Tile::OneXTwo: //1x2 piece, need to check if adjecent tile is free
-            {
-                int dY = this->getFreeAdjacent(position, glm::vec2(0, 1)).y;
-                if (dY != 0) 
-                {
-                    this->placeTile(tileType, position, position + glm::vec2(0, 0.5 * dY));
-                    this->room[this->getArrayIndexFromPosition(x, y + dY)] = tileType;
-                }
-                break;
-            }
-            case Tile::TwoXOne: //2x1
-            {
-                int dX = this->getFreeAdjacent(position, glm::vec2(1, 0)).x;
-                if (dX != 0)
-                {
-                    this->placeTile(tileType, position, position + glm::vec2(0.5 * dX, 0));
-                    this->room[this->getArrayIndexFromPosition(x + dX, y)] = tileType;
-                }
-                break;
-            }
-            case Tile::TwoXTwo: //2x2
-            {
-                glm::vec2 dir = getFreeLarge(position);
-                if (dir.x != 0) 
-                {
-                    this->placeTile(tileType, position, position + glm::vec2(0.5 * dir.x, 0.5 * dir.y));
-                    this->room[this->getArrayIndexFromPosition(x + dir.x, y)] = tileType;
-                    this->room[this->getArrayIndexFromPosition(x, y + dir.y)] = tileType;
-                    this->room[this->getArrayIndexFromPosition(x + dir.x, y + dir.y)] = tileType;
-                }
-                break;
-            }
-            default:
-                this->placeTile(Tile::OneXOne, position, position);
-                break;
-            }
-        }
-
-       // std::uniform_int_distribution<> distr(0, depth * 1); //smaller chance of creating new piece the deeper we are in the tree
-
-        //check if should place tiles above, below, right and left
-        for (int i = 0; i < 4; i++)
-        {
-            //use sin and cos to check adjacent tiles in clockwise order
-            int dirX = sin(i * M_PI / 2);
-            int dirY = cos(i * M_PI / 2);
-
-            int       newPiece = (rand() % (depth + 1));
-            glm::vec2 nextPos = position + glm::vec2(dirX, dirY);
-            if (newPiece <= 1)
-            {
-                this->addPiece(nextPos, depth + 1);
-            }
-        }
-    }
+		while (searchCounter++ < MAX_SEARCH)
+		{
+			pos.x = (int)this->random.rand() % this->size.x + this->minMaxPos[RIGHT_P].x;
+			pos.y = (int)this->random.rand() % this->size.y + this->minMaxPos[LOWER_P].y;
+			
+			if (i < MAX_TWO_X_TWO)
+			{
+				if (this->canPlaceTwoXTwo(pos) && this->random.rand() % 100 < TWO_X_TWO_CHANCE)
+				{
+					this->placeTwoXTwo(pos);
+					searchCounter = MAX_SEARCH;
+				}
+			}
+			else
+			{
+				vertical = this->random.rand() % 2;
+				if (this->canPlaceOneXTwo(pos, vertical) && this->random.rand() % 100 < ONE_X_TWO_CHANCE)
+				{
+					this->placeOneXTwo(pos, vertical);
+					searchCounter = MAX_SEARCH;
+				}
+			}
+		}
+	}
 }
 
-void RoomGenerator::placeTile(Tile::Type tileType, glm::vec2 gridPosition, glm::vec2 worldPosition)
+void RoomGenerator::setExits(bool* doors)
 {
-    this->room[this->getArrayIndexFromPosition(gridPosition.x, gridPosition.y)] = tileType;
+	const glm::ivec2 maxOffsets(this->size / 2);
 
-    Tile t;
-    t.type = tileType;
-    t.position = worldPosition;
-    this->tiles.push_back(t);
+	glm::ivec2 doorsPos[4] = 
+	{
+		{ this->minMaxPos[LEFT_P].x,  this->middle.y + (this->random.rand() % maxOffsets.y - maxOffsets.y / 2) },
+		{ this->minMaxPos[RIGHT_P].x, this->middle.y + (this->random.rand() % maxOffsets.y - maxOffsets.y / 2) },
 
-    if (tileType == Tile::TwoXTwo)
-        return;
+		{ this->middle.x + (this->random.rand() % maxOffsets.x - maxOffsets.x / 2), this->minMaxPos[UPPER_P].y },
+		{ this->middle.x + (this->random.rand() % maxOffsets.x - maxOffsets.x / 2), this->minMaxPos[LOWER_P].y }
+	};
 
-    // Find extents of room
-    if (worldPosition.x >= this->minMaxPos[0].x)
-    {
-        if (this->room[this->getArrayIndexFromPosition(gridPosition.x + 1.f, gridPosition.y)])
-        {
-            this->minMaxPos[0] = worldPosition;
-        }
-    }
-    if (worldPosition.x <= this->minMaxPos[1].x)
-    {
-        if (this->room[this->getArrayIndexFromPosition(gridPosition.x - 1.f, gridPosition.y)])
-        {
-            this->minMaxPos[1] = worldPosition;
-        }
-    }
-    if (worldPosition.y >= minMaxPos[2].y)
-    {
-        if (this->room[this->getArrayIndexFromPosition(gridPosition.x, gridPosition.y + 1.f)])
-        {
-            this->minMaxPos[2] = worldPosition;
-        }
-    }
-    if (worldPosition.y <= minMaxPos[3].y)
-    {
-        if (this->room[this->getArrayIndexFromPosition(gridPosition.x, gridPosition.y - 1.f)])
-        {
-            this->minMaxPos[3] = worldPosition;
-        }
-    }
+	const glm::ivec2 offsets[4] =
+	{
+		{0, RADIUS / 2},
+		{0, RADIUS / 2},
+		{RADIUS / 2, 0},
+		{RADIUS / 2, 0}
+	};
+
+	const glm::ivec2 dirs[4] =
+	{
+		{ 1,  0},
+		{-1,  0},
+		{ 0,  1},
+		{ 0, -1}
+	};
+
+	glm::ivec2 adjacent(0);
+	for (int i = 0; i < 4; i++)
+	{
+		this->exitTilesPos[i] = doorsPos[i];
+		if (doors[i])
+		{
+			doorsPos[i] += offsets[i];
+
+			this->drawCircle(doorsPos[i], RADIUS);
+			this->drawCircle(doorsPos[i] + -dirs[i] * (int)RADIUS, RADIUS - 1u);
+
+			doorsPos[i] += dirs[i] * (int)RADIUS;
+
+			if (this->onEdge(doorsPos[i]))
+			{
+				this->getType(doorsPos[i]) = Tile::Exit;
+				this->exitTilesPos[i] = doorsPos[i];
+			}
+			else
+			{
+				glm::ivec2 lastValid = doorsPos[i];
+				for (int j = 1; j < (int)BORDER_SIZE + 1; j++)
+				{
+					adjacent = doorsPos[i] + dirs[i] * j;
+					if (this->isValid(adjacent))
+					{
+						this->getType(adjacent) = Tile::Exit;
+						lastValid = adjacent;
+					}
+				}
+				this->exitTilesPos[i] = lastValid + dirs[i];
+			}
+		}
+	}
 }
 
-glm::vec2 RoomGenerator::getFreeLarge(glm::vec2 position)
+void RoomGenerator::setBorders()
 {
-    int x = position.x;
-    int y = position.y;
+	const int NUM = 8;
+	const glm::ivec2 DIRS[NUM] =
+	{
+		{ 1,  0},
+		{-1,  0},
+		{ 0,  1},
+		{ 0, -1},
 
-    int dY = 1;
-    if (this->room[this->getArrayIndexFromPosition(x, y + dY)] < 1) //first check tile above
-    {
-        int dX = 1;
-        if (this->room[this->getArrayIndexFromPosition(x + dX, y)] < 1 && this->room[this->getArrayIndexFromPosition(x + dX, y + dY)] < 1)
-        {
-            return glm::vec2(dX, dY);
-        }
+		{ 1,  1},
+		{-1,  1},
+		{ 1, -1},
+		{-1, -1},
+	};
 
-        dX = -1;
-        if (this->room[this->getArrayIndexFromPosition(x + dX, y)] < 1 && this->room[this->getArrayIndexFromPosition(x + dX, y + dY)] < 1)
-        {
-            return glm::vec2(dX, dY);
-        }
-    }
+	glm::ivec2 position(0);
+	glm::ivec2 adjacent(0);
+	for (position.x = 0; position.x < WIDTH_HEIGHT; position.x++)
+	{
+		for (position.y = 0; position.y < WIDTH_HEIGHT; position.y++)
+		{
+			Tile::Type& currTile = this->getType(position);
+			if (currTile == Tile::Unused)
+			{
+				for (uint32_t i = 0; i < NUM; i++)
+				{
+					for (int j = 1; j < (int)BORDER_SIZE + 1; j++)
+					{
+						adjacent = position + DIRS[i] * j;
+						if (this->isValid(adjacent))
+						{
+							const Tile::Type& adj = this->getType(adjacent);
+							if (adj == Tile::OneXOne || adj == Tile::TwoXTwo ||
+								adj == Tile::OneXTwo || adj == Tile::TwoXOne)
+							{
+								currTile = Tile::Border; 
+								i = NUM;
+								j = BORDER_SIZE + 1;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 
-    dY = -1;
-    if (this->room[this->getArrayIndexFromPosition(x, y + dY)] < 1) //then below
-    {
-        int dX = 1;
-        if (this->room[this->getArrayIndexFromPosition(x + dX, y)] < 1 && this->room[this->getArrayIndexFromPosition(x + dX, y + dY)] < 1)
-        {
-            return glm::vec2(dX, dY);
-        }
-
-        dX = -1;
-        if (this->room[this->getArrayIndexFromPosition(x + dX, y)] < 1 && this->room[this->getArrayIndexFromPosition(x + dX, y + dY)] < 1)
-        {
-            return glm::vec2(dX, dY);
-        }
-    }
-    return glm::vec2(0); //if no direction has free space, return 0,0
+	for (position.x = 0; position.x < WIDTH_HEIGHT; position.x++)
+	{
+		for (position.y = 0; position.y < WIDTH_HEIGHT; position.y++)
+		{
+			Tile::Type& currTile = this->getType(position);
+			if (currTile == Tile::OneXOne || currTile == Tile::Exit || 
+				currTile == Tile::OneXTwo || currTile == Tile::TwoXOne || currTile == Tile::TwoXTwo)
+			{
+				for (int i = 0; i < 4; i++)
+				{
+					adjacent = position + DIRS[i];
+					if (this->isValid(adjacent))
+					{
+						if (this->getType(adjacent) == Tile::Border)
+						{
+							this->getType(adjacent) = Tile::InnerBorder;
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
-glm::vec2 RoomGenerator::getFreeAdjacent(glm::vec2 position, glm::vec2 dir)
+void RoomGenerator::finalize()
 {
-    if (this->room[this->getArrayIndexFromPosition(position.x + dir.x, position.y + dir.y)] < 1)
-    {
-        return dir;
-    }
+	const glm::vec2 fMiddle = middle;
+	glm::vec2 fPosition(0.f);
+	glm::ivec2 iPosition(0);
 
-    dir *= -1;
+	for (iPosition.x = 0; iPosition.x < WIDTH_HEIGHT; iPosition.x++)
+	{
+		for (iPosition.y = 0; iPosition.y < WIDTH_HEIGHT; iPosition.y++)
+		{
+			Tile::Type& curTile = this->getType(iPosition);
 
-    if (this->room[this->getArrayIndexFromPosition(position.x + dir.x, position.y + dir.y)] < 1)
-    {
-        return dir;
-    }
+			if (this->onEdge(iPosition) && curTile != Tile::Unused)
+			{
+				curTile = Tile::Border;
+			}
+			
+			fPosition = iPosition;
 
-    return glm::vec2(0);
+			switch (curTile)
+			{
+			default:
+				break;
+			case Tile::Border:
+				this->borders.emplace_back(Tile::Border, fPosition - fMiddle);
+				break;
+			case Tile::InnerBorder:
+				this->innerBorders.emplace_back(Tile::InnerBorder, fPosition - fMiddle);
+				break;
+
+			case Tile::OneXOne:
+				this->mainTiles.emplace_back(Tile::OneXOne, fPosition - fMiddle);
+				break;
+
+			case Tile::TwoXOne:
+				this->bigTiles.emplace_back(Tile::TwoXOne, (fPosition + glm::vec2(0.5f, 0.f)) - fMiddle);
+				this->getType(iPosition + glm::ivec2(1, 0)) = Tile::Reserved;
+				break;
+
+			case Tile::OneXTwo:
+				this->bigTiles.emplace_back(Tile::OneXTwo, (fPosition + glm::vec2(0.f, 0.5f)) - fMiddle);
+				this->getType(iPosition + glm::ivec2(0, 1)) = Tile::Reserved;
+				break;
+
+			case Tile::TwoXTwo:
+				this->bigTiles.emplace_back(Tile::TwoXTwo, (fPosition + glm::vec2(0.5f)) - fMiddle);
+				this->getType(iPosition + glm::ivec2(1, 0)) = Tile::Reserved;
+				this->getType(iPosition + glm::ivec2(0, 1)) = Tile::Reserved;
+				this->getType(iPosition + glm::ivec2(1, 1)) = Tile::Reserved;
+				break;
+
+			case Tile::Exit:
+				this->exitPathsTiles.emplace_back(Tile::Exit, fPosition - fMiddle);
+				break;
+			}
+		}
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		this->exitTilesPos[i] -= this->middle;
+		this->minMaxPos[i] -= this->middle;
+	}
 }
 
-int RoomGenerator::getArrayIndexFromPosition(int x, int y) const
+void RoomGenerator::drawCircle(const glm::ivec2& center, uint32_t radius)
 {
-    return (y + this->HALF_ROOM) * this->ROOM_SIZE + (x + this->HALF_ROOM);
+	const glm::ivec2 start = center - glm::ivec2((int)radius);
+
+	glm::ivec2 currentPoint{};
+	for (currentPoint.x = start.x; currentPoint.x < start.x + (int)radius * 2 + 1; currentPoint.x++)
+	{
+		for (currentPoint.y = start.y; currentPoint.y < start.y + (int)radius * 2 + 1; currentPoint.y++)
+		{
+			if (this->isValid(currentPoint))
+			{
+				Tile::Type& curTile = this->getType(currentPoint);
+				if (curTile == Tile::Unused && curTile != Tile::Reserved)
+				{
+					// check if tile is within radius to center
+					// glm::dot only accepts floating point numbers
+					const glm::vec2 centerToCurr(currentPoint - center);
+					if (glm::dot(centerToCurr, centerToCurr) <= ((float)radius + 0.5f) * ((float)radius + 0.5f))
+					{
+						curTile = Tile::Type::OneXOne;
+					}
+				}
+			}
+		}
+	}
 }
 
-void RoomGenerator::getIJIndex(int index, int* output) const
+bool RoomGenerator::canPlaceOneXTwo(const glm::ivec2& pos, bool vertical)
 {
-    output[1] = (index / this->ROOM_SIZE);
-    output[0] = (index - this->ROOM_SIZE * output[1]);
+	const glm::ivec2 adjacent(pos.x + 1 * !vertical, pos.y + 1 * vertical);
+
+	if (!this->isValid(pos) || !this->isValid(adjacent))
+	{
+		return false;
+	}
+
+	if (this->getType(pos) != Tile::OneXOne || this->getType(adjacent) != Tile::OneXOne)
+	{
+		return false;
+	}
+
+	glm::ivec2 curPos(0);
+	const int thicc = (int)BIG_TILE_MIN_DIST;
+	for (curPos.x = pos.x - thicc; curPos.x <= (pos.x + (int)!vertical + thicc); curPos.x++)
+	{
+		for (curPos.y = pos.y - thicc; curPos.y <= (pos.y + (int)vertical + thicc); curPos.y++)
+		{
+			if (this->isValid(curPos))
+			{
+				const Tile::Type& curTile = this->getType(curPos);
+				if (curTile != Tile::OneXOne && curTile != Tile::Unused)
+				{
+					return false;
+				}
+			}
+		}
+	}
+
+	return true;
 }
 
-const glm::vec2* RoomGenerator::getExitTilesPos() const
+bool RoomGenerator::canPlaceTwoXTwo(const glm::ivec2& pos)
 {
-    return this->exitTilesPos;
+	if (!this->isValid(pos) || !this->isValid(pos + glm::ivec2(1, 0)) ||
+		!this->isValid(pos + glm::ivec2(0, 1)) || !this->isValid(pos + glm::ivec2(1, 1)))
+	{
+		return false;
+	}
+
+	if (this->getType(pos) != Tile::OneXOne || this->getType(pos + glm::ivec2(1, 0)) != Tile::OneXOne ||
+		this->getType(pos + glm::ivec2(0, 1)) != Tile::OneXOne || this->getType(pos + glm::ivec2(1, 1)) != Tile::OneXOne)
+	{
+		return false;
+	}
+
+	glm::ivec2 curPos(0);
+	const int thicc = (int)BIG_TILE_MIN_DIST;
+	for (curPos.x = pos.x - thicc; curPos.x <= (pos.x + 1 + thicc); curPos.x++)
+	{
+		for (curPos.y = pos.y - thicc; curPos.y <= (pos.y + 1 + thicc); curPos.y++)
+		{
+			if (this->isValid(curPos))
+			{
+				const Tile::Type& curTile = this->getType(curPos);
+				if (curTile != Tile::OneXOne && curTile != Tile::Unused)
+				{
+					return false;
+				}
+			}
+		}
+	}
+	
+	return true;
 }
 
-int RoomGenerator::getRoomTile(int index) const
+void RoomGenerator::placeTwoXTwo(const glm::ivec2& pos)
 {
-    return this->room[index];
+	this->getType(pos) = Tile::TwoXTwo;
+	this->getType(pos + glm::ivec2(1, 0)) = Tile::TwoXTwo;
+	this->getType(pos + glm::ivec2(0, 1)) = Tile::TwoXTwo;
+	this->getType(pos + glm::ivec2(1, 1)) = Tile::TwoXTwo;
 }
 
-int RoomGenerator::getRoomSize() const
+void RoomGenerator::placeOneXTwo(const glm::ivec2& pos, bool vertical)
 {
-    return ROOM_SIZE;
+	const glm::ivec2 adjacent(pos.x + 1 * !vertical, pos.y + 1 * vertical);
+
+	this->getType(pos)		= vertical ? Tile::OneXTwo : Tile::TwoXOne;
+	this->getType(adjacent) = vertical ? Tile::OneXTwo : Tile::TwoXOne;
 }
 
-int RoomGenerator::getNrTiles() const
+const glm::ivec2* RoomGenerator::getMinMax() const
 {
-    return (int)this->tiles.size();
+	return this->minMaxPos;
 }
 
-int RoomGenerator::getNrBorders() const
+const glm::ivec2* RoomGenerator::getExits() const
 {
-    return (int)this->borders.size();
+	return this->exitTilesPos;
 }
 
-int RoomGenerator::getNrExitTiles() const
+const glm::ivec2& RoomGenerator::getMiddle() const
 {
-    return (int)this->exitPathsTiles.size();
+	return this->middle;
 }
 
-const Tile& RoomGenerator::getTile(int index) const
+const glm::ivec2& RoomGenerator::getSize() const
 {
-    return this->tiles[index];
+	return this->size;
 }
 
-const Tile& RoomGenerator::getBorder(int index) const
+Tile::Type& RoomGenerator::getType(const glm::ivec2& pos)
 {
-    return this->borders[index];
+	return this->tiles2D[pos.x][pos.y];
 }
 
-const Tile& RoomGenerator::getExitTiles(int index) const
+bool RoomGenerator::isValid(const glm::ivec2& pos)
 {
-    return this->exitPathsTiles[index];
+	return (pos.x >= 0 && pos.x < WIDTH_HEIGHT && pos.y >= 0 && pos.y < WIDTH_HEIGHT);
 }
 
-const glm::vec2* RoomGenerator::getMinMaxPos() const
+bool RoomGenerator::onEdge(const glm::ivec2& pos)
 {
-    return this->minMaxPos;
+	return (pos.x == 0 || pos.x == WIDTH_HEIGHT - 1 ||
+			pos.y == 0 || pos.y == WIDTH_HEIGHT - 1);
 }
 
-void RoomGenerator::reset()
+uint32_t RoomGenerator::getNumMainTiles() const
 {
-    memset(this->room, Tile::Invalid, sizeof(int) * this->ROOM_SIZE * this->ROOM_SIZE);
-    this->tiles.clear();
-    this->borders.clear();
-    this->exitPathsTiles.clear();
+	return (int)this->mainTiles.size();
+}
 
-    this->minMaxPos[0] = glm::vec2((float)-this->ROOM_SIZE);
-    this->minMaxPos[1] = glm::vec2((float)this->ROOM_SIZE);
-    this->minMaxPos[2] = glm::vec2((float)-this->ROOM_SIZE);
-    this->minMaxPos[3] = glm::vec2((float)this->ROOM_SIZE);
+uint32_t RoomGenerator::getNumBigTiles() const
+{
+	return (int)this->bigTiles.size();
+}
 
-    for (int i = 0; i < 4; i++)
-    {
-        this->exitTilesPos[i] = glm::vec2(0.f);
-    }
+uint32_t RoomGenerator::getNumBorders() const
+{
+	return (int)this->borders.size();
+}
+
+uint32_t RoomGenerator::getNumInnerBorders() const
+{
+	return (int)this->innerBorders.size();
+}
+
+uint32_t RoomGenerator::getNumExitTiles() const
+{
+	return (int)this->exitPathsTiles.size();
+}
+
+const Tile& RoomGenerator::getMainTile(uint32_t index) const
+{
+	return this->mainTiles[index];
+}
+
+const Tile& RoomGenerator::getBigTile(uint32_t index) const
+{
+	return this->bigTiles[index];
+}
+
+const Tile& RoomGenerator::getBorder(uint32_t index) const
+{
+	return this->borders[index];
+}
+
+const Tile& RoomGenerator::getInnerBorder(uint32_t index) const
+{
+	return this->innerBorders[index];
+}
+
+const Tile& RoomGenerator::getExitTile(uint32_t index) const
+{
+	return this->exitPathsTiles[index];
 }
