@@ -17,9 +17,8 @@ function script:update(dt)
 
 	-- Clamped percentage for HP
 	local staminaPercent = self.playerScript.currentStamina * 0.01
-	--staminaPercent = math.min(math.max(staminaPercent, 0.0), 1.0)
 	local staminaMaxPercent = self.playerScript.maxStamina * 0.01
-	--staminaMaxPercent = self.playerScript.maxStamina * 0.01
+	local healthMaxPercent = self.playerScript.maxHealth * 0.01
 
     uiRenderer.setTexture(self.staminaBarBackgroundTxtID)
 	uiRenderer.renderTexture(vector(xPos - (1.0 - staminaMaxPercent) * xSize * 0.5, yPos - 15), 
@@ -29,15 +28,37 @@ function script:update(dt)
 	uiRenderer.renderTexture(vector(xPos - (1.0 - staminaPercent) * xSize * 0.5, yPos - 15), 
 	vector(xSize * staminaPercent, ySize))
 
-	uiRenderer.setTexture(self.uiTextureID)
-	uiRenderer.renderTexture(vector(0.0, 0.0), vector(1920.0, 1080.0))
+	-- Health UI Border Bar
+	local borderHpXPos = -600.0
+	local borderHpYPos = -452.0
+	local borderHpXSize = 764 * 0.56
+	local borderHpYSize = 104 * 0.34
 
-	-- Perk slots
-	--uiRenderer.setTexture(self.perkSlotTextureID)
-	--for i = 1, 3 
-	--do
-	--	uiRenderer.renderTexture(-xPos - 70 + i * 80, yPos + 10, 70, 70)
-	--end
+	uiRenderer.setTexture(self.uiHpMidTexID)
+	uiRenderer.renderTexture(vector(borderHpXPos - (1.0 - healthMaxPercent) * borderHpXSize * 0.5, borderHpYPos), 
+		vector(borderHpXSize * healthMaxPercent, borderHpYSize))
+
+	uiRenderer.setTexture(self.uiHpSideTexID)
+	uiRenderer.renderTexture(vector(borderHpXPos - (1.0 - healthMaxPercent) * borderHpXSize + 211, borderHpYPos), 
+		vector(10.0, borderHpYSize))
+
+	-- Stamina UI Border Bar
+	local borderStamXPos = -648.0
+	local borderStamYPos = -480.0
+	local borderStamXSize = 764 * 0.45
+	local borderStamYSize = 104 * 0.25
+
+	uiRenderer.setTexture(self.uiStamMidTexID)
+	uiRenderer.renderTexture(vector(borderStamXPos - (1.0 - staminaMaxPercent) * borderStamXSize * 0.5, borderStamYPos), 
+		vector(borderStamXSize * staminaMaxPercent, borderStamYSize))
+
+	uiRenderer.setTexture(self.uiStamSideTexID)
+	uiRenderer.renderTexture(vector(borderStamXPos - (1.0 - staminaMaxPercent) * borderStamXSize + 169, borderStamYPos), 
+		vector(10.0, borderStamYSize))
+
+	-- Perks and Ability UI Border
+	uiRenderer.setTexture(self.uiBorderTexID)
+	uiRenderer.renderTexture(vector(0.0, 0.0), vector(1920.0, 1080.0))
 
 	-- Crosshair
 	uiRenderer.setTexture(self.crosshairTextureID)

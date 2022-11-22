@@ -439,6 +439,8 @@ public:
 		}
 		float tempHp = (float)combat.maxHealth * combat.hpMultiplier;
 		combat.maxHealth = (int)tempHp;
+		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+		this->script->setScriptComponentValue(playerScript, combat.maxHealth, "maxHealth");
 		combat.health = std::min(combat.health, combat.maxHealth);
 	}
 
@@ -559,6 +561,8 @@ public:
 	{
 		float tempHp = (float)combat.maxHealth / combat.hpMultiplier;
 		combat.maxHealth = (int)(tempHp + 0.5f);
+		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+		this->script->setScriptComponentValue(playerScript, combat.maxHealth, "maxHealth");
 	}
 
 	void setDefaultDmg(Combat& combat)
@@ -726,7 +730,7 @@ public:
 		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
 		Rigidbody& abilityRb = this->scene->getComponent<Rigidbody>(entity);
 		abilityTrans.position = glm::vec3(playerTrans.position.x, playerTrans.position.y + 8.f, playerTrans.position.z);
-		abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
+		abilityTrans.scale = glm::vec3(3.f);
 		playerTrans.updateMatrix();
 		glm::vec3 throwDir = glm::normalize(playerTrans.forward());
 		abilityRb.gravityMult = 6.f;
