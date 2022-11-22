@@ -191,6 +191,7 @@ void RoomHandler::generate(uint32_t seed)
 	this->reset();
 
 	roomLayout.generate();
+
 	const int numTotRooms = roomLayout.getNumRooms();
 	const int numMainRooms = roomLayout.getNumMainRooms();
 	this->rooms.resize(numTotRooms);
@@ -476,6 +477,10 @@ Entity RoomHandler::createFloorDecoEntity(const glm::vec2& pos, bool scalePos)
 	if (this->useMeshes)
 	{
 		this->scene->setComponent<MeshComponent>(entity, (int)this->oneXOneMeshIds[this->random->rand() % NUM_ONE_X_ONE]);
+	}
+	else
+	{
+		this->random->rand();
 	}
 	return entity;
 }
@@ -784,6 +789,10 @@ Entity RoomHandler::createBorderEntity(const glm::vec2& position, bool scalePos)
 	if (this->useMeshes)
 	{
 		this->scene->setComponent<MeshComponent>(entity, (int)this->borderMeshIds[this->random->rand() % NUM_BORDER]);
+	}
+	else
+	{
+		this->random->rand();
 	}
 
 	return entity;
