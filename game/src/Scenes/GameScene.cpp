@@ -123,7 +123,7 @@ void GameScene::start()
         this->getScriptHandler(),
         this->networkHandler);
 
-    this->ability = this->createEntity();
+    /*this->ability = this->createEntity();
     int knockback =
         this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
     this->setComponent<MeshComponent>(this->ability, knockback);
@@ -134,10 +134,11 @@ void GameScene::start()
         this->ability, Collider::createSphere(4.f, glm::vec3(0), true));
     this->setComponent<Abilities>(this->ability, healAbility);
     this->setComponent<PointLight>(this->ability, { glm::vec3(0.f), glm::vec3(7.f, 9.f, 5.f) });
-    this->setScriptComponent(this->ability, "scripts/spin.lua");
+    this->setScriptComponent(this->ability, "scripts/spin.lua");*/
 
     if (this->networkHandler->hasServer())
     {
+        this->networkHandler->spawnItemRequest(healAbility, glm::vec3(50.0f, 10.0f, 0.0f));
         this->networkHandler->spawnItemRequest(hpUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 20.0f));
         this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f));
         this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 0.0f));

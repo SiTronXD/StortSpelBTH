@@ -24,7 +24,7 @@ public:
 	void update(float dt) override;
 
 	// Returns itemID
-	int spawnItem(ItemType type, int otherType, float multiplier);
+	int spawnItem(ItemType type, int otherType, float multiplier = 0.0f);
 	void deleteItem(int playerID, Entity ID);
 	void setEntityID(int itemID, int playerID, Entity ID);
 	Entity getEntityID(int itemID, int playerID);

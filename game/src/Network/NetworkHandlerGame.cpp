@@ -5,32 +5,58 @@
 
 const float NetworkHandlerGame::UPDATE_RATE = ServerUpdateRate;
 
-Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 spawnDir)
+Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir)
 {
 	Scene* scene = this->sceneHandler->getScene();
 	Perks perk{ .multiplier = 0.2f, .perkType = type };
 
-	Entity perkEnt = scene->createEntity();
-	scene->setComponent<MeshComponent>(perkEnt, perkMeshes[type]);
+	Entity e = scene->createEntity();
+	scene->setComponent<MeshComponent>(e, perkMeshes[type]);
 
-	Transform& perkTrans = sceneHandler->getScene()->getComponent<Transform>(perkEnt);
+	Transform& perkTrans = sceneHandler->getScene()->getComponent<Transform>(e);
 	perkTrans.position = pos;
 	perkTrans.scale = glm::vec3(2.0f);
-	scene->setComponent<Collider>(perkEnt, Collider::createSphere(2.0f, glm::vec3(0.0f), true));
+	scene->setComponent<Collider>(e, Collider::createSphere(2.0f, glm::vec3(0.0f), true));
 
-	if (spawnDir != glm::vec3(0.0f))
+	if (shootDir != glm::vec3(0.0f))
 	{
-		scene->setComponent<Rigidbody>(perkEnt);
-		Rigidbody& perkRb = sceneHandler->getScene()->getComponent<Rigidbody>(perkEnt);
+		scene->setComponent<Rigidbody>(e);
+		Rigidbody& perkRb = sceneHandler->getScene()->getComponent<Rigidbody>(e);
 		perkRb.gravityMult = 6.0f;
-		perkRb.velocity = spawnDir * 20.0f;
+		perkRb.velocity = shootDir * 20.0f;
 	}
 
-	scene->setComponent<Perks>(perkEnt, perk);
-	scene->setComponent<PointLight>(perkEnt, glm::vec3(5.f, 7.f, 9.f));
-	scene->setScriptComponent(perkEnt, "scripts/spin.lua");
+	scene->setComponent<Perks>(e, perk);
+	scene->setComponent<PointLight>(e, glm::vec3(0.0f), glm::vec3(5.0f, 7.0f, 9.0f));
+	scene->setScriptComponent(e, "scripts/spin.lua");
 
-	return perkEnt;
+	return e;
+}
+
+Entity NetworkHandlerGame::spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 shootDir)
+{
+	Scene* scene = this->sceneHandler->getScene();
+	Entity e = scene->createEntity();
+	scene->setComponent<MeshComponent>(e, abilityMeshes[type]);
+
+	Transform& perkTrans = sceneHandler->getScene()->getComponent<Transform>(e);
+	perkTrans.position = pos;
+	perkTrans.scale = glm::vec3(2.0f);
+	scene->setComponent<Collider>(e, Collider::createSphere(4.0f, glm::vec3(0.0f), true));
+
+	if (shootDir != glm::vec3(0.0f))
+	{
+		scene->setComponent<Rigidbody>(e);
+		Rigidbody& perkRb = sceneHandler->getScene()->getComponent<Rigidbody>(e);
+		perkRb.gravityMult = 6.0f;
+		perkRb.velocity = shootDir * 20.0f;
+	}
+
+	scene->setComponent<Abilities>(e, type);
+	scene->setComponent<PointLight>(e, glm::vec3(0.0f), glm::vec3(7.0f, 9.0f, 5.0f));
+	scene->setScriptComponent(e, "scripts/spin.lua");
+
+	return e;
 }
 
 void NetworkHandlerGame::setCombatSystem(CombatSystem* system)
@@ -46,7 +72,7 @@ void NetworkHandlerGame::init()
 	this->perkMeshes[3] = this->resourceManger->addMesh("assets/models/Perk_Movement.obj");
 	this->perkMeshes[4] = this->resourceManger->addMesh("assets/models/Perk_Stamina.obj");
 	this->abilityMeshes[0] = this->resourceManger->addMesh("assets/models/KnockbackAbility.obj");
-	this->abilityMeshes[1] = this->resourceManger->addMesh("assets/models/HealingAbility.obj");
+	this->abilityMeshes[1] = this->resourceManger->addMesh("assets/models/KnockbackAbility.obj");
 }
 
 void NetworkHandlerGame::cleanup()
@@ -63,7 +89,14 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		tcpPacket >> i0 >> i1 >> i2 >> f0;
 		v0 = this->getVec(tcpPacket);
 		v1 = this->getVec(tcpPacket);
-		e = this->spawnItem((PerkType)i2, f0, v0, v1);
+		if ((ItemType)i1 == ItemType::PERK)
+		{
+			e = this->spawnItem((PerkType)i2, f0, v0, v1);
+		}
+		else
+		{
+			e = this->spawnItem((AbilityType)i2, v0, v1);
+		}
 
 		packet << (int)GameEvent::SET_ITEM_ID << i0 << e;
 		this->sendDataToServerTCP(packet);
@@ -71,14 +104,14 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 	case GameEvent::PICKUP_ITEM:
 		// EntityID -> ItemType
 		tcpPacket >> i0 >> i1;
-		if (i1 == (int)ItemType::PERK)
+		if ((ItemType)i1 == ItemType::PERK)
 		{
 			this->combatSystem->pickupPerk(i0);
 		}
-		/*else
+		else
 		{
-
-		}*/
+			this->combatSystem->pickUpAbility(i0);
+		}
 		break;
 	case GameEvent::DELETE_ITEM:
 		// EntityID -> ItemType
@@ -144,26 +177,26 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 	{
 	case GameEvent::SPAWN_ITEM:
 		serverScene = server->getScene<ServerGameMode>();
-		tcpPacket >> i0 >> i1 >> f0;
-		i2 = serverScene->spawnItem((ItemType)i0, i1, f0);
-		v0 = this->getVec(tcpPacket);
-		v1 = this->getVec(tcpPacket);
+		tcpPacket >> si0 >> si1 >> sf0;
+		sv0 = this->getVec(tcpPacket);
+		sv1 = this->getVec(tcpPacket);
+		si2 = serverScene->spawnItem((ItemType)si0, si1, sf0);
 
 		// event <- itemID <- ItemType <- otherType <- multiplier
-		packet << (int)GameEvent::SPAWN_ITEM << i2 << i0 << i1 << f0;
-		this->sendVec(packet, v0);
-		this->sendVec(packet, v1);
+		packet << (int)GameEvent::SPAWN_ITEM << si2 << si0 << si1 << sf0;
+		this->sendVec(packet, sv0);
+		this->sendVec(packet, sv1);
 		server->sendToAllClientsTCP(packet);
 		break;
 	case GameEvent::SET_ITEM_ID:
 		serverScene = server->getScene<ServerGameMode>();
-		tcpPacket >> i0 >> i1;
-		serverScene->setEntityID(i0, clientID, i1);
+		tcpPacket >> si0 >> si1;
+		serverScene->setEntityID(si0, clientID, si1);
 		break;
 	case GameEvent::PICKUP_ITEM:
 		serverScene = server->getScene<ServerGameMode>();
-		tcpPacket >> i0;
-		serverScene->deleteItem(clientID, i0);
+		tcpPacket >> si0;
+		serverScene->deleteItem(clientID, si0);
 		break;
 	default:
 		packet << event;
@@ -180,13 +213,13 @@ void NetworkHandlerGame::handleUDPEventServer(Server* server, int clientID, sf::
 	{
 	case GameEvent::UPDATE_PLAYER:
 		packet << (int)GameEvent::UPDATE_PLAYER << clientID;
-		v0 = this->getVec(udpPacket);
-		this->sendVec(packet, v0);
-		v0 = this->getVec(udpPacket);
-		this->sendVec(packet, v0);
+		sv0 = this->getVec(udpPacket);
+		this->sendVec(packet, sv0);
+		sv0 = this->getVec(udpPacket);
+		this->sendVec(packet, sv0);
 
-		udpPacket >> i0 >> f0 >> f1;
-		packet << i0 << f0 << f1;
+		udpPacket >> si0 >> sf0 >> sf1;
+		packet << si0 << sf0 << sf1;
 
 		server->sendToAllOtherClientsUDP(packet, clientID);
 		break;
@@ -252,29 +285,41 @@ void NetworkHandlerGame::interpolatePositions()
 	}
 }
 
-void NetworkHandlerGame::pickUpItem(PerkType type, float multiplier)
+void NetworkHandlerGame::spawnItemRequest(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir)
 {
-}
-
-void NetworkHandlerGame::spawnItemRequest(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 spawnDir)
-{
-	if (/*!this->playerEntities.empty()*/true) // Multiplayer (send to server)
+	if (!this->playerEntities.empty()) // Multiplayer (send to server)
 	{
 		sf::Packet packet;
 		packet << (int)GameEvent::SPAWN_ITEM << (int)ItemType::PERK << type << multiplier;
 		this->sendVec(packet, pos);
-		this->sendVec(packet, spawnDir);
+		this->sendVec(packet, shootDir);
 		this->sendDataToServerTCP(packet);
 	}
 	else // Singleplayer
 	{
-		this->spawnItem(type, multiplier, pos, spawnDir);
+		this->spawnItem(type, multiplier, pos, shootDir);
 	}
 }
 
-void NetworkHandlerGame::pickUpItemRequest(Entity itemEntity)
+void NetworkHandlerGame::spawnItemRequest(AbilityType type, glm::vec3 pos, glm::vec3 shootDir)
 {
-	if (/*!this->playerEntities.empty()*/true) // Multiplayer (send to server)
+	if (!this->playerEntities.empty()) // Multiplayer (send to server)
+	{
+		sf::Packet packet;
+		packet << (int)GameEvent::SPAWN_ITEM << (int)ItemType::ABILITY << type << 0.0f;
+		this->sendVec(packet, pos);
+		this->sendVec(packet, shootDir);
+		this->sendDataToServerTCP(packet);
+	}
+	else // Singleplayer
+	{
+		this->spawnItem(type, pos, shootDir);
+	}
+}
+
+void NetworkHandlerGame::pickUpItemRequest(Entity itemEntity, ItemType type)
+{
+	if (!this->playerEntities.empty()) // Multiplayer (send to server)
 	{
 		sf::Packet packet;
 		packet << (int)GameEvent::PICKUP_ITEM << itemEntity;
@@ -282,6 +327,13 @@ void NetworkHandlerGame::pickUpItemRequest(Entity itemEntity)
 	}
 	else // Singleplayer
 	{
-		this->combatSystem->pickupPerk(itemEntity);
+		if (type == ItemType::PERK)
+		{
+			this->combatSystem->pickupPerk(itemEntity);
+		}
+		else
+		{
+			this->combatSystem->pickUpAbility(itemEntity);
+		}
 	}
 }

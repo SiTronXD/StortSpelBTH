@@ -36,15 +36,21 @@ private:
 	std::vector<glm::vec3> playerPosLast;
 	std::vector<glm::vec3> playerPosCurrent;
 
+	// Client helpers
 	int i0, i1, i2;
 	float f0, f1, f2;
 	glm::vec3 v0, v1, v2;
 
+	// Server helpers
+	int si0, si1, si2;
+	float sf0, sf1, sf2;
+	glm::vec3 sv0, sv1, sv2;
+
 	int perkMeshes[PerkType::emptyPerk];
 	int abilityMeshes[AbilityType::emptyAbility];
 
-	Entity spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 spawnDir = glm::vec3(0.0f));
-	void pickUpItem(PerkType type, float multiplier);
+	Entity spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
+	Entity spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 public:
 	void init();
 	void cleanup();
@@ -61,7 +67,8 @@ public:
 	void updatePlayer();
 	void interpolatePositions();
 
-	void spawnItemRequest(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 spawnDir = glm::vec3(0.0f));
-	void pickUpItemRequest(Entity itemEntity);
+	void spawnItemRequest(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
+	void spawnItemRequest(AbilityType type, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
+	void pickUpItemRequest(Entity itemEntity, ItemType type);
 };
 
