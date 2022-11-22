@@ -106,7 +106,7 @@ void RoomHandler::roomCompleted()
 	this->showPaths(true);
 }
 
-bool RoomHandler::onPlayerTrigger(Entity player, PhysicsEngine* physicsEngine)
+bool RoomHandler::playerNewRoom(Entity player, PhysicsEngine* physicsEngine)
 {
 	Room& curRoom = this->rooms[this->activeIndex];
 	if (!curRoom.finished)
