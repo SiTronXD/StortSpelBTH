@@ -120,7 +120,19 @@ BTStatus LichBT::creepyLook(Entity entityID)
 
 BTStatus LichBT::huntingPlayer(Entity entityID)
 {
-    return BTStatus::Success;
+    BTStatus ret = BTStatus::Running;
+    
+    int playerID = getPlayerID();
+    Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+    Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
+    Rigidbody& lichRb = getTheScene()->getComponent<Rigidbody>(entityID);
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, playerTrans.position);
+	moveDir = glm::normalize(moveDir);
+    lichRb.velocity = moveDir * lichComp.huntSpeed;
+    rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
+
+    return ret;
 }
 
 BTStatus LichBT::playerInNoNoZone(Entity entityID)

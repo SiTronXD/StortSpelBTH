@@ -71,19 +71,21 @@ struct LichComponent
     //Floats
     float tempRotAngle			= 0.0f;//Dont touch!
     float creepRotSpeed         = 60.0f;
+    float huntRotSpeed         = 60.0f;
         //Alert
     float origScaleY			= 1.0f;
 	float alertScale			= 1.5f;
 	float alertAnimSpeed		= 3.0f;
 	float alertTempYpos			= 0.0f;
         //Radius
-    float sightRadius           = 150; // I'll just look at you
-    float peronalSpaceRadius    = 90 ; // To close! I will initiate hunt!
-    float attackRadius          = 70 ; // I'm actually able to shoot at you!
-    float nonoRadius            = 40 ; // Too close, I will back away from you! (while shooting) 
+    float sightRadius           = 150.0f; // I'll just look at you
+    float peronalSpaceRadius    = 90.0f; // To close! I will initiate hunt!
+    float attackRadius          = 70.0f; // I'm actually able to shoot at you!
+    float nonoRadius            = 40.0f; // Too close, I will back away from you! (while shooting) 
         //Stats
-    float mana                  = 100;
-    float speed                 = 20 ; // Too close, I will back away from you! (while shooting) 
+    float mana                  = 100.0f;
+    float huntSpeed             = 60.0f;
+    float speed                 = 20.0f ; // Too close, I will back away from you! (while shooting) 
 
     ATTACK_STRATEGY strat       = ATTACK_STRATEGY::NONE;
 
