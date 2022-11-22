@@ -83,8 +83,11 @@ struct LichComponent
     float attackRadius          = 70.0f; // I'm actually able to shoot at you!
     float nonoRadius            = 40.0f; // Too close, I will back away from you! (while shooting) 
         //Stats
-    float mana                  = 100.0f;
+    float maxMana               = 100.0f;
+    float mana                  = maxMana;
     float manaRegenSpeed        = 2.0f;
+    float healthRegenSpeed      = 2.0f;
+    float deathAnimSpeed        = 3.0f;
     float huntSpeed             = 60.0f;
     float speed                 = 20.0f ; // Too close, I will back away from you! (while shooting) 
 

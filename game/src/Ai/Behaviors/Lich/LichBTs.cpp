@@ -161,7 +161,12 @@ BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
     glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, playerTrans.position);
 	moveDir = -glm::normalize(moveDir);
     lichRb.velocity = moveDir * lichComp.huntSpeed;
-    rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
+
+
+    glm::vec3 player_to_lich = glm::normalize(lichTrans.position - playerTrans.position);
+    glm::vec3 lookAtPos = lichTrans.position + player_to_lich * 2.0f;
+    rotateTowards(entityID, lookAtPos, lichComp.huntRotSpeed);
+
     return ret;
 }
 
@@ -199,6 +204,7 @@ BTStatus LichBT::regenerateMana(Entity entityID)
     }
     else
     {
+        lichComp.mana = lichComp.maxMana;
         ret = BTStatus::Success;
     }
 
@@ -378,7 +384,19 @@ BTStatus LichBT::attack(Entity entityID)
 
 BTStatus LichBT::selfHeal(Entity entityID)
 {
-    return BTStatus::Failure;
+    BTStatus ret =  BTStatus::Running;
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    if(lichComp.life < lichComp.FULL_HEALTH)
+    {
+        lichComp.life += get_dt() * lichComp.healthRegenSpeed;
+    }
+    else
+    {
+         lichComp.life = lichComp.FULL_HEALTH;
+         ret =  BTStatus::Success;
+    }
+    return ret;
+
 }
 
 BTStatus LichBT::playerNotVisible(Entity entityID)
@@ -399,12 +417,35 @@ BTStatus LichBT::playerNotVisible(Entity entityID)
 
 BTStatus LichBT::runAwayFromPlayer(Entity entityID)
 {
-    return BTStatus::Failure;
+    BTStatus ret = BTStatus::Running;
+    int playerID = getPlayerID();
+    Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+    Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
+    Rigidbody& lichRb = getTheScene()->getComponent<Rigidbody>(entityID);
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, playerTrans.position);
+	moveDir = -glm::normalize(moveDir);
+    lichRb.velocity = moveDir * lichComp.huntSpeed;
+    rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
+    return ret;
 }
 
 BTStatus LichBT::playDeathAnim(Entity entityID)
 {
-    return BTStatus::Failure;
+    BTStatus ret = BTStatus::Failure;
+	LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+	Transform& lichTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+	if(lichTrans.scale.y <= 0.0f)
+	{
+		ret = BTStatus::Success;
+	}
+	else
+	{
+		lichTrans.rotation.y +=  1000*lichComp.deathAnimSpeed*get_dt();
+		lichTrans.scale.y -= lichComp.deathAnimSpeed*get_dt();
+	}
+
+	return ret;
 }
 
 BTStatus LichBT::die(Entity entityID)
