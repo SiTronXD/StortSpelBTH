@@ -14,10 +14,9 @@ const uint32_t RoomHandler::NUM_TWO_X_TWO = 1;
 const uint32_t RoomHandler::DECO_ENTITY_CHANCE = 30;
 
 RoomHandler::RoomHandler()
-	:scene(nullptr), resourceMan(nullptr),
-	activeIndex(0), nextIndex(-1), floor(-1),
-	doorMeshID(0), tileFloorMeshId(0), innerBorderMesh(0)
-	, rockFenceMeshId(0), rockMeshId(0), random(), useMeshes(true)
+	:scene(nullptr), resourceMan(nullptr), activeIndex(0), 
+	floor(-1), doorMeshID(0), tileFloorMeshId(0), innerBorderMesh(0),
+	rockFenceMeshId(0), rockMeshId(0), random(), useMeshes(true)
 {
 }
 
@@ -72,6 +71,7 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, bool useMeshe
 		this->twoXTwoMeshIds[i].second = resourceMan->getCollisionShapeFromMesh(collId).size() ? collId : ~0u;
 
 	}
+
 	if (this->useMeshes)
 	{
 		this->doorMeshID = resourceMan->addMesh("assets/models/door.obj");
@@ -173,25 +173,18 @@ bool RoomHandler::onPlayerTrigger(Entity player, PhysicsEngine* physicsEngine)
 	}
 	
 	return false;
-	
-
-	if (this->checkRoom(this->activeIndex, player))
-	{
-		return true;
-	}
-
-	if (this->nextIndex != -1)
-	{
-		if (this->checkRoom(this->nextIndex, player))
-		{
-			return true;
-		}
-	}
-
 }
 
 void RoomHandler::generate(uint32_t seed)
 {
+	const glm::vec3 noDoorBoxOffset[] = 
+	{ 
+		glm::vec3(TILE_WIDTH, 0.f, 0.f),
+		glm::vec3(-TILE_WIDTH, 0.f, 0.f),
+		glm::vec3(0.f, 0.f, TILE_WIDTH),
+		glm::vec3(0.f, 0.f, -TILE_WIDTH)
+	};
+
 	this->random = new VRandom;
 	this->random->srand(seed);
 
@@ -212,7 +205,6 @@ void RoomHandler::generate(uint32_t seed)
 		const RoomData& roomData = roomLayout.getRoom(i);
 		Room& curRoom = this->rooms[i];
 
-		//curRoom.position = roomData.position;
 		curRoom.type = roomData.type;
 
 		// Save connecting indices
@@ -221,14 +213,15 @@ void RoomHandler::generate(uint32_t seed)
 		curRoom.connectingIndex[UPPER_P] = roomData.up;
 		curRoom.connectingIndex[LOWER_P] = roomData.down;
 
+		// Send door info to roomGen when generating room
 		hasDoor[LEFT_P]  = roomData.left != -1;
 		hasDoor[RIGHT_P] = roomData.right != -1;
 		hasDoor[UPPER_P] = roomData.up != -1;
 		hasDoor[LOWER_P] = roomData.down != -1;
-
 		roomGen.generate(hasDoor);
-		const glm::ivec2* exits = roomGen.getExits();
 
+		// Save extents, used when moving rooms and creating floor
+		const glm::ivec2* exits = roomGen.getExits();
 		curRoom.extents[LEFT_P]  = std::abs((float)exits[LEFT_P].x)  * TILE_WIDTH;// - TILE_WIDTH * 0.5f;
 		curRoom.extents[RIGHT_P] = std::abs((float)exits[RIGHT_P].x) * TILE_WIDTH;// - TILE_WIDTH * 0.5f;
 		curRoom.extents[UPPER_P] = std::abs((float)exits[UPPER_P].y) * TILE_WIDTH;// - TILE_WIDTH * 0.5f;
@@ -237,13 +230,19 @@ void RoomHandler::generate(uint32_t seed)
 		this->createDoors(i, exits);
 		const glm::ivec2* roomMinMax = roomGen.getMinMax();
 
+		// Find minMax based on doors, used for the room collider
 		glm::vec3 minMax[4]{};
 		for (int j = 0; j < 4; j++)
 		{
-			if (hasDoor[j]) { minMax[j] = scene->getComponent<Transform>(curRoom.doors[j]).position; }
-			else			{ minMax[j] = glm::vec3(roomMinMax[j].x, 0.f, roomMinMax[j].y) * TILE_WIDTH; }
+			if (hasDoor[j]) 
+			{
+				minMax[j] = scene->getComponent<Transform>(curRoom.doors[j]).position; 
+			}
+			else			
+			{ 
+				minMax[j] = glm::vec3(roomMinMax[j].x, 0.f, roomMinMax[j].y) * TILE_WIDTH + noDoorBoxOffset[j]; 
+			}
 		}
-
 		curRoom.colliderPos.x = (minMax[0].x + minMax[1].x) * 0.5f;
 		curRoom.colliderPos.y = TILE_WIDTH * 4.f;
 		curRoom.colliderPos.z = (minMax[2].z + minMax[3].z) * 0.5f;
@@ -310,6 +309,7 @@ void RoomHandler::generate(uint32_t seed)
 			}
 		}
 
+		// Spawn big rock if room isn't start or exit
 		if (curRoom.type != RoomData::START_ROOM && curRoom.type != RoomData::EXIT_ROOM)
 		{
 			Entity entity = this->scene->createEntity();
@@ -337,6 +337,7 @@ void RoomHandler::generate(uint32_t seed)
 		roomGen.clear();
 	}
 
+	// Move rooms to world space
 	for (int i = 0; i < numMainRooms; i++)
 	{
 		if (this->rooms[i].connectingIndex[LOWER_P] != -1)
@@ -349,15 +350,17 @@ void RoomHandler::generate(uint32_t seed)
 		}
 		this->placeBranch(i, this->rooms[i].connectingIndex[LEFT_P], this->rooms[i].connectingIndex[RIGHT_P]);
 	}
+
+	// Create pathways and floor
 	this->setConnections(roomLayout.getNumMainRooms(), roomLayout.getConnections());
 	this->generatePathways();
 	this->createFloor();
 
+	// Offset everything so origo is in the middle of spawn tile
 	for (Entity entity : this->pathEntities)
 	{
 		this->scene->getComponent<Transform>(entity).position += glm::vec3(TILE_WIDTH * -0.5f, 0.f, TILE_WIDTH * -0.5f);
 	}
-
 	for (int i = 0; i < numTotRooms; i++)
 	{
 		this->moveRoom(i, glm::vec3(TILE_WIDTH * -0.5f, 0.f, TILE_WIDTH * -0.5f));
@@ -400,48 +403,6 @@ void RoomHandler::generate(uint32_t seed)
 				}
 #endif // !_DEBUG
 			}
-		}
-	}
-
-
-	return;
-#ifdef _CONSOLE
-	if (this->showAllRooms)
-	{
-		for (int i = 0; i < numTotRooms; i++)
-		{
-			this->activateRoom(i);
-		}
-		this->showPaths(true);
-	}
-	else
-	{
-		for (int i = 0; i < numTotRooms; i++)
-		{
-			if (i != this->activeIndex)
-			{
-				this->deactivateRoom(i);
-			}
-		}
-		this->showPaths(true);
-	}
-#else
-	for (int i = 0; i < numTotRooms; i++)
-	{
-		if (i != this->activeIndex)
-		{
-			this->deactivateRoom(i);
-		}
-	}
-	this->showPaths(true);
-#endif // _CONSOLE
-
-	this->rooms[this->activeIndex].finished = true;
-	for (int i = 0; i < 4; i++)
-	{
-		if (this->rooms[this->activeIndex].doors[i] != -1)
-		{
-			this->scene->setScriptComponent(this->rooms[this->activeIndex].doors[i], "scripts/opendoor.lua");
 		}
 	}
 }
@@ -893,76 +854,6 @@ void RoomHandler::createObjectEntities(const Tile& tile, Room& room)
 	}
 }
 
-bool RoomHandler::checkRoom(int index, Entity otherEntity)
-{
-	return false;
-
-	bool newUnfinshedRoom = false;
-	Room& curRoom = this->rooms[index];
-
-	for (int i = 0; i < 4; i++)
-	{
-		Entity entity;// = curRoom.doorTriggers[i];
-
-		// Will also skip invalid doors (-1)
-		if (otherEntity == entity)
-		{
-			// Entered next room
-			if (index == this->nextIndex)
-			{
-				if (!curRoom.finished)
-				{
-					newUnfinshedRoom = true;
-
-#ifdef _CONSOLE
-					if (!showAllRooms)
-					{
-						this->deactivateRoom(this->activeIndex);
-						this->showPaths(false);
-					}
-#else
-					this->deactivateRoom(this->activeIndex);
-					this->showPaths(false);
-#endif
-					this->closeDoors(index);
-
-					this->nextIndex = -1;
-					this->curDoor = -1;
-				}
-				else
-				{
-					this->curDoor = i;
-					this->nextIndex = curRoom.connectingIndex[i];
-				}
-
-				this->activeIndex = index;
-			}
-
-			// Leaving room
-			else if (index == this->activeIndex && this->curDoor != i && curRoom.finished)
-			{
-#ifdef _CONSOLE
-				if (!showAllRooms)
-				{
-					this->deactivateRoom(this->nextIndex);
-					this->activateRoom(curRoom.connectingIndex[i]);
-				}
-#else
-				this->deactivateRoom(this->nextIndex);
-				this->activateRoom(curRoom.connectingIndex[i]);
-#endif
-
-				this->curDoor = i;
-				this->nextIndex = curRoom.connectingIndex[i];
-			}
-
-			break;
-		}
-	}
-
-	return newUnfinshedRoom;
-}
-
 void RoomHandler::showPaths(bool show)
 {
 	if (show)
@@ -998,10 +889,8 @@ void RoomHandler::reset()
 			if (room.doors[i] != -1)
 			{
 				this->scene->removeEntity(room.doors[i]);
-				//this->scene->removeEntity(room.doorTriggers[i]);
 			}
 			room.doors[i] = -1;
-			//room.doorTriggers[i] = -1;
 			room.connectingIndex[i] = -1;
 			room.extents[i] = 0.f;
 		}
@@ -1028,16 +917,18 @@ void RoomHandler::reset()
 	this->roomExitPoints.clear();
 
 	this->activeIndex = 0;
-	this->nextIndex = -1;
-	this->curDoor = -1;
 }
 
 void RoomHandler::closeDoors(int index)
 {
+#ifdef _CONSOLE
 	if (index < 0 || index >= (int)this->rooms.size())
 	{
+		Log::error("RoomHandler::closeDoors | Invalid index: " + std::to_string(index) + 
+		". Num rooms: " + std::to_string(this->rooms.size()));
 		return;
 	}
+#endif
 
 	Room& room = this->rooms[index];
 

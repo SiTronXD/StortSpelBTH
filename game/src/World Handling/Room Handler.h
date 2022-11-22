@@ -37,10 +37,9 @@ private:
 	struct Room
 	{
 		Room()
-			:doors{-1,-1,-1,-1},
-			connectingIndex{-1,-1,-1,-1}, finished(false), 
-			type(RoomData::INVALID), position(0.f)
-			, extents{}, rock(-1), rockFence(-1)
+			:doors{-1,-1,-1,-1}, connectingIndex{-1,-1,-1,-1}, 
+			finished(false), type(RoomData::INVALID), position(0.f)
+			, extents{}, rock(-1), rockFence(-1), colliderPos(0.f)
 		{		
 		}
 
@@ -93,10 +92,6 @@ private:
 
 	// Room Updating
 	int activeIndex = 0;
-	int nextIndex = -1;
-	int curDoor = -1;
-	bool checkRoom(int index, Entity entity);
-
 	void showPaths(bool show);
 	void closeDoors(int index);
 	void activateRoom(int index);
