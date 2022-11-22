@@ -53,7 +53,7 @@ void NetworkGameScene::init() {}
 
 void NetworkGameScene::update(float dt)
 {
-    aiHandler->update(dt);
+    //aiHandler->update(dt);
   
     if (this->spawnHandler.allDead() && this->newRoomFrame)
     {
@@ -69,6 +69,19 @@ void NetworkGameScene::update(float dt)
               //send event to spawn portal
           }
     }
+
+    for (int i = 0; i < roomHandler.rooms.size(); i++)
+    {
+        for (int d = 0; d < 4; d++)
+        {
+            if (roomHandler.rooms[i].doors[d] != -1)
+            {
+                glm::vec3 dp = this->getComponent<Transform>(roomHandler.rooms[i].doors[d]).position;
+                 addEvent({(int)GameEvents::Draw_Debug_BoxCollider}, {dp.x, dp.y, dp.z, 10.f, 10.f, 10.f});
+            }    
+        }
+    }
+
     sf::Packet &packet = ((NetworkSceneHandler*)this->getSceneHandler())->getCallFromClient();
     while (!packet.endOfPacket())
     {

@@ -203,7 +203,6 @@ void GameSceneNetwork::start()
 
 void GameSceneNetwork::update()
 {
-  static int nrOfAttacks = 0;
     bool alldead = false;
     int gameEvents;
     sf::Packet &p = this->getNetworkHandler()->getScenePacket();
@@ -219,8 +218,19 @@ void GameSceneNetwork::update()
         int monsterID, damage, thePlayerID;
         p >> monsterID >> damage >> thePlayerID;
         //check if its us?
-        std::cout << "attacked: " << ++nrOfAttacks << std::endl;
         this->getComponent<Combat>(playerID).health -= damage; 
+      }
+      else if (gameEvents == GameEvents::Draw_Debug_BoxCollider)
+      {
+              float xpos, ypos, zpos, sa;
+              p >> xpos >> ypos >> zpos >> sa >> sa >> sa;
+            this->getPhysicsEngine()->renderDebugShapes(true);
+              this->getDebugRenderer()->renderBox(
+                  glm::vec3(xpos, ypos, zpos),
+                  glm::vec3(0, 0, 0),
+                  glm::vec3(sa),
+                  glm::vec3(1, 0, 0)
+              );
       }
     }
 
