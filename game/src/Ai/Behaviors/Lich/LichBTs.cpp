@@ -162,10 +162,8 @@ BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
 	moveDir = -glm::normalize(moveDir);
     lichRb.velocity = moveDir * lichComp.huntSpeed;
 
+    rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
 
-    glm::vec3 player_to_lich = glm::normalize(lichTrans.position - playerTrans.position);
-    glm::vec3 lookAtPos = lichTrans.position + player_to_lich * 2.0f;
-    rotateTowards(entityID, lookAtPos, lichComp.huntRotSpeed);
 
     return ret;
 }
@@ -349,6 +347,9 @@ BTStatus LichBT::attack(Entity entityID)
 {
     BTStatus ret = BTStatus::Failure;
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    int playerID = getPlayerID();
+    Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+    rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
     if(lichComp.curAttack == nullptr){return ret;}
     if(lichComp.chargingAttack)
     {
@@ -427,6 +428,12 @@ BTStatus LichBT::runAwayFromPlayer(Entity entityID)
 	moveDir = -glm::normalize(moveDir);
     lichRb.velocity = moveDir * lichComp.huntSpeed;
     rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
+
+    
+   /* glm::vec3 player_to_lich = glm::normalize(lichTrans.position - playerTrans.position);
+    glm::vec3 lookAtPos = lichTrans.position + player_to_lich * 2.0f;
+    rotateTowards(entityID, lookAtPos, lichComp.huntRotSpeed);*/
+
     return ret;
 }
 
