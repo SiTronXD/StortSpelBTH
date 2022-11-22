@@ -20,6 +20,7 @@
     <ClCompile Include="src\Ai\Behaviors\Lich\LichFSM.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Tank\TankFSM.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Tank\TankBTs.cpp" />
+    <ClCompile Include="src\World Handling\SpawnHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -59,6 +60,7 @@
     <ClInclude Include="src\Components\AICombatTank.hpp" />
     <ClInclude Include="src\Ai\Behaviors\Tank\TankBTs.hpp" />
     <ClInclude Include="src\Network\NetworkDataFetcher.hpp" />
+    <ClInclude Include="src\World Handling\SpawnHandler.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
