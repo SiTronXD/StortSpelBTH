@@ -36,9 +36,21 @@ bool LichFSM::falseIfDead(Entity entityID)
     {return true;}
 }
 
+void LichFSM::updateAttackColldowns(Entity entityID)
+{
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    if(lichComp.lightning.cooldownTimer > 0.0f)
+        lichComp.lightning.cooldownTimer -= get_dt();
+    if(lichComp.ice.cooldownTimer > 0.0f)
+        lichComp.ice.cooldownTimer -= get_dt();
+    if(lichComp.fire.cooldownTimer > 0.0f)
+        lichComp.fire.cooldownTimer -= get_dt();
+}
+
 bool LichFSM::idleToCreep(Entity entityID)
 {
     if(!falseIfDead(entityID)){return false;}
+     updateAttackColldowns(entityID);
     int playerID = getPlayerID();    
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     Transform& lichTrans   = getTheScene()->getComponent<Transform>(entityID);
@@ -56,6 +68,7 @@ bool LichFSM::idleToCreep(Entity entityID)
 bool LichFSM::creepToAlerted(Entity entityID)
 {
     if(!falseIfDead(entityID)){return false;}
+     updateAttackColldowns(entityID);
     bool ret = false;
     int playerID = getPlayerID();  
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
@@ -73,7 +86,7 @@ bool LichFSM::creepToAlerted(Entity entityID)
 bool LichFSM::alertToHunt(Entity entityID)
 {
     if(!falseIfDead(entityID)){return false;}
-
+     updateAttackColldowns(entityID);
     bool ret = false;
 
     int playerID = getPlayerID();     
@@ -107,6 +120,8 @@ bool LichFSM::huntToCombat(Entity entityID)
 {
     if(!falseIfDead(entityID)){return false;}
 
+    updateAttackColldowns(entityID);
+
     int playerID        = getPlayerID();  
     auto playerCombat   = getTheScene()->getComponent<Combat>(playerID);
     auto playerTrans    = getTheScene()->getComponent<Transform>(playerID);
@@ -125,7 +140,7 @@ bool LichFSM::huntToCombat(Entity entityID)
 bool LichFSM::escapeToCombat(Entity entityID)
 {
    if(!falseIfDead(entityID)){return false;}
-
+    updateAttackColldowns(entityID);
     int playerID = getPlayerID();  
     auto playerCombat = getTheScene()->getComponent<Combat>(playerID);
     auto lichComp = getTheScene()->getComponent<LichComponent>(entityID);
@@ -160,7 +175,7 @@ bool LichFSM::escapeToIdle(Entity entityID)
 bool LichFSM::combatToIdle(Entity entityID)
 {
    if(!falseIfDead(entityID)){return false;}
-
+    updateAttackColldowns(entityID);
     int playerID = getPlayerID();  
     auto playerCombat   = getTheScene()->getComponent<Combat>(playerID);   
     

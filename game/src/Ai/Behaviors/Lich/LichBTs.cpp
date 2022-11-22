@@ -152,14 +152,24 @@ BTStatus LichBT::playerInNoNoZone(Entity entityID)
 
 BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
 {
-    return BTStatus::Success;
+    BTStatus ret = BTStatus::Running;
+    int playerID = getPlayerID();
+    Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+    Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
+    Rigidbody& lichRb = getTheScene()->getComponent<Rigidbody>(entityID);
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, playerTrans.position);
+	moveDir = -glm::normalize(moveDir);
+    lichRb.velocity = moveDir * lichComp.huntSpeed;
+    rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
+    return ret;
 }
 
-BTStatus LichBT::hasMana(Entity entityID)
+BTStatus LichBT::notEnoughMana(Entity entityID)
 {
     BTStatus ret = BTStatus::Failure;
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-    if(lichComp.mana > 0)
+    if (lichComp.mana < lichComp.lightning.manaCost)
     {
         ret = BTStatus::Success;
     }
@@ -171,7 +181,7 @@ BTStatus LichBT::hasStrategy(Entity entityID)
 {
     BTStatus ret = BTStatus::Success;
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-    if(lichComp.strat == ATTACK_STRATEGY::NONE)
+    if(lichComp.curAttack == nullptr)
     {
         ret = BTStatus::Failure;
     }
@@ -181,7 +191,19 @@ BTStatus LichBT::hasStrategy(Entity entityID)
 
 BTStatus LichBT::regenerateMana(Entity entityID)
 {
-    return BTStatus::Success;
+    BTStatus ret =  BTStatus::Running;
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    if(lichComp.mana <= lichComp.fire.manaCost)
+    {
+        lichComp.mana+=lichComp.manaRegenSpeed*get_dt();
+    }
+    else
+    {
+        ret = BTStatus::Success;
+    }
+
+
+    return ret;
 }
 
 BTStatus LichBT::pickBestStrategy(Entity entityID)
@@ -220,7 +242,7 @@ BTStatus LichBT::pickBestStrategy(Entity entityID)
 
     //Points based on own health
     //Player damage 50-150
-    static const float pointsForLichHealth = 1.5f;
+    static const float pointsForLichHealth = 1.2f;
     if(lichComp.life <= 50){lightningPoints+=pointsForLichHealth;}//Lich low health
     else if(lichComp.life > 50 && lichComp.life <= 150) {icePoints+=pointsForLichHealth;}//Lich medium health
     else if(lichComp.life > 150){firePoints+=pointsForLichHealth;}//Lich high health
@@ -235,20 +257,33 @@ BTStatus LichBT::pickBestStrategy(Entity entityID)
 
     if(lightningPoints > icePoints && lightningPoints > firePoints && lichComp.lightning.manaCost <= lichComp.mana)
     {
-        //Lightning attack!
-        lichComp.strat = ATTACK_STRATEGY::LIGHT;
+        if(lichComp.lightning.cooldownTimer <= 0.0f)
+        {
+            //Lightning attack!
+            lichComp.curAttack = &lichComp.lightning;
+            lichComp.lastAttack = "lightning";
+        }
     }
     else  if(icePoints > lightningPoints && icePoints > firePoints && lichComp.ice.manaCost <= lichComp.mana)
     {
-        //ice attack!
-        lichComp.strat = ATTACK_STRATEGY::ICE;
+        if(lichComp.ice.cooldownTimer <= 0.0f)
+        {
+            //ice attack!
+             lichComp.curAttack = &lichComp.ice;
+             lichComp.lastAttack = "ice";
+        }
     }
     else  if(firePoints > lightningPoints && firePoints > icePoints && lichComp.fire.manaCost <= lichComp.mana)
     {
-        //fire attack!
-        lichComp.strat = ATTACK_STRATEGY::FIRE;
+        if(lichComp.fire.cooldownTimer <= 0.0f)
+        {
+            //fire attack!
+             lichComp.curAttack = &lichComp.fire;
+             lichComp.lastAttack = "fire";
+        }
     }
-    else
+
+    if( lichComp.curAttack == nullptr)
     {
         pickRandomStrategy(entityID);
     }
@@ -260,24 +295,47 @@ BTStatus LichBT::pickRandomStrategy(Entity entityID)
 {
     BTStatus ret = BTStatus::Success;
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-    if (lichComp.mana >= lichComp.lightning.manaCost && lichComp.mana < lichComp.ice.manaCost)
+    std::vector<ATTACK_STRATEGY>validChoises;
+
+    if(lichComp.mana >= lichComp.lightning.manaCost && lichComp.lightning.cooldownTimer <= 0.0f)
     {
-         lichComp.strat =  ATTACK_STRATEGY::LIGHT;
+        validChoises.push_back(ATTACK_STRATEGY::LIGHT);
     }
-    else if(lichComp.mana >= lichComp.lightning.manaCost && lichComp.mana < lichComp.fire.manaCost)
+    if(lichComp.mana >= lichComp.ice.manaCost && lichComp.ice.cooldownTimer <= 0.0f)
     {
-        //Select ligh or ice
-        lichComp.strat = ATTACK_STRATEGY(rand()%(ATTACK_STRATEGY::_LAST-2)+1);
+        validChoises.push_back(ATTACK_STRATEGY::ICE);
     }
-    else if(lichComp.mana >= lichComp.lightning.manaCost && lichComp.mana >= lichComp.fire.manaCost)
+    if(lichComp.mana >= lichComp.fire.manaCost && lichComp.fire.cooldownTimer <= 0.0f)
     {
-        //Select ligh or ice or fire
-        lichComp.strat = ATTACK_STRATEGY(rand()%(ATTACK_STRATEGY::_LAST-1)+1);
+        validChoises.push_back(ATTACK_STRATEGY::FIRE);
+    }
+
+
+    if(validChoises.size() > 0)
+    {
+        ATTACK_STRATEGY randStrat =  validChoises[rand()%validChoises.size()];
+        switch (randStrat)
+        {
+        case LIGHT:
+            lichComp.curAttack = &lichComp.lightning;
+            lichComp.lastAttack = "lightning";
+            break;
+        case ICE:
+            lichComp.curAttack = &lichComp.ice;
+            lichComp.lastAttack = "ice";
+            break;
+        case FIRE:
+            lichComp.curAttack = &lichComp.fire;
+            lichComp.lastAttack = "fire";
+            break;
+        }
     }
     else
     {
-        lichComp.strat = ATTACK_STRATEGY::NONE;
+        lichComp.curAttack = nullptr;
     }
+
+
     return ret;
 }
 
@@ -285,25 +343,37 @@ BTStatus LichBT::attack(Entity entityID)
 {
     BTStatus ret = BTStatus::Failure;
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-    if(lichComp.tempAttack)
+    if(lichComp.curAttack == nullptr){return ret;}
+    if(lichComp.chargingAttack)
     {
-        lichComp.tempAttack = false;
-        switch (lichComp.strat)
+        //Tick down cast time for current strat
+        lichComp.curAttack->castTimeTimer -= get_dt();
+        if(lichComp.curAttack->castTimeTimer <= 0.0f)
         {
-        case ATTACK_STRATEGY::LIGHT:
-            lichComp.mana -= lichComp.lightning.manaCost;
-            break;
-        case ATTACK_STRATEGY::ICE:
-            lichComp.mana -= lichComp.ice.manaCost;
-            break;
-        case ATTACK_STRATEGY::FIRE:
-            lichComp.mana -= lichComp.fire.manaCost;
-            break;
+            lichComp.chargingAttack = false;
         }
-        lichComp.strat = ATTACK_STRATEGY::NONE;
-        ret = BTStatus::Success;
     }
-    return BTStatus();
+    else
+    {
+        //Remove mana
+        lichComp.mana -= lichComp.curAttack->manaCost;
+       
+        //Reset cast times
+        lichComp.curAttack->castTimeTimer = lichComp.curAttack->castTimeTimerOrig;
+        lichComp.curAttack->cooldownTimer = lichComp.curAttack->cooldownTimerOrig;
+
+        lichComp.lightning.castTimeTimer = lichComp.lightning.castTimeTimerOrig;
+        lichComp.ice.castTimeTimer = lichComp.ice.castTimeTimerOrig;
+        lichComp.fire.castTimeTimer = lichComp.fire.castTimeTimerOrig;
+        //Remove current strat
+        lichComp.curAttack = nullptr;
+
+        //Shoot projectile!
+
+        ret = BTStatus::Success;
+       
+    }
+    return ret;
 }
 
 BTStatus LichBT::selfHeal(Entity entityID)
@@ -469,7 +539,7 @@ void Lich_combat::start()
 
     Condition*  playerInNoNoZone        = c.l.condition("player in NoNo zone",  LichBT::playerInNoNoZone);
     Task*       moveAwayFromPlayer      = c.l.task("moving away from player",   LichBT::moveAwayFromPlayer);
-    Condition*  noManaToAttack          = c.l.condition("must generte mana",    LichBT::hasMana);
+    Condition*  noManaToAttack          = c.l.condition("must generte mana",    LichBT::notEnoughMana);
     Task*       regenerateMana          = c.l.task("generating mana",           LichBT::regenerateMana);
     Selector*   shouldPickNewStrat      = c.c.selector();
     Task*       doTheAttack             = c.l.task("Do the attack",         LichBT::attack);

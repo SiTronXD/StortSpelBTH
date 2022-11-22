@@ -282,7 +282,7 @@ ImguiLambda SpawnHandler::LichImgui()
         float& sightRange       = lichComponent.sightRadius;
         float& gravity 		    = entityRigidBody.gravityMult;
         bool& tempAttack        = lichComponent.tempAttack;
-        std::string tempStrat   = lichComponent.getStrat();
+        std::string tempStrat   = lichComponent.lastAttack;
         std::string& status     = entiyFSMAgentComp.currentNode->status;
         ImGui::Text(status.c_str());
         ImGui::Text(tempStrat.c_str());

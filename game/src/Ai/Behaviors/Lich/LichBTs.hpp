@@ -32,7 +32,7 @@ class LichBT : public BehaviorTree
 
 	static BTStatus playerInNoNoZone(Entity entityID);    
 	static BTStatus moveAwayFromPlayer(Entity entityID);    
-	static BTStatus hasMana(Entity entityID);    
+	static BTStatus notEnoughMana(Entity entityID);    
     static BTStatus hasStrategy(Entity entityID);
 	static BTStatus regenerateMana(Entity entityID);    
 	static BTStatus pickBestStrategy(Entity entityID);    

@@ -31,20 +31,20 @@ struct LichAttack
         case LIGHT:
             this->damage = 10;
             this->manaCost = 5.0f;
-            this->cooldownTimer = this->cooldownTimerOrig = 0.5f;
+            this->cooldownTimer = this->cooldownTimerOrig = 2.0f;
             this->castTimeTimer = this->castTimeTimerOrig = 0.0f;
             break;
         case FIRE:
             this->damage = 65;
             this->manaCost = 30.0f;
-            this->cooldownTimer = this->cooldownTimerOrig = 7.0f;
-            this->castTimeTimer = this->castTimeTimerOrig = 2.0f;
+            this->cooldownTimer = this->cooldownTimerOrig = 14.0f;
+            this->castTimeTimer = this->castTimeTimerOrig = 4.0f;
             break;
         case ICE:
             this->damage = 25;
             this->manaCost = 10.0f;
-            this->cooldownTimer = this->cooldownTimerOrig = 3.0f;
-            this->castTimeTimer = this->castTimeTimerOrig = 1.0f;
+            this->cooldownTimer = this->cooldownTimerOrig = 7.0f;
+            this->castTimeTimer = this->castTimeTimerOrig = 2.0f;
             break;
         }
     }
@@ -84,10 +84,11 @@ struct LichComponent
     float nonoRadius            = 40.0f; // Too close, I will back away from you! (while shooting) 
         //Stats
     float mana                  = 100.0f;
+    float manaRegenSpeed        = 2.0f;
     float huntSpeed             = 60.0f;
     float speed                 = 20.0f ; // Too close, I will back away from you! (while shooting) 
 
-    ATTACK_STRATEGY strat       = ATTACK_STRATEGY::NONE;
+    //ATTACK_STRATEGY strat       = ATTACK_STRATEGY::NONE;
 
     //Bools
     bool rotateLeft				= true;
@@ -95,38 +96,18 @@ struct LichComponent
     bool shieldedByTank         = false;
     bool alertAtTop				= false;
 	bool alertDone				= false;
+    bool chargingAttack         = true;
     bool tempAttack             = false;//For testing strategy picker
 
     bool isDead(){return life<=0;}
 
     //Combat stuff
+    LichAttack* curAttack       = nullptr;
     LichAttack lightning;
     LichAttack fire;
     LichAttack ice;
 
-    std::string getStrat()
-    {
-        std::string ret = "";
-        switch(this->strat)
-        {
-        case ATTACK_STRATEGY::NONE:
-            ret = "none";
-            break;
-        case ATTACK_STRATEGY::LIGHT:
-            ret = "light";
-            break;
-        case ATTACK_STRATEGY::FIRE:
-            ret = "fire";
-            break;
-        case ATTACK_STRATEGY::ICE:
-            ret = "ice";
-            break;
-        default:
-            ret = "invalid";
-            break;
-        }
-        return ret;
-    }
+    std::string lastAttack      = "";
 };
 
 
@@ -217,4 +198,5 @@ protected:
 	static float	get_dt();
 	static Scene*	getTheScene();
 	static bool		falseIfDead(Entity entityID);
+    static void updateAttackColldowns(Entity entityID);
 };
