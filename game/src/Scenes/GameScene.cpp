@@ -211,7 +211,7 @@ void GameScene::start()
 
 void GameScene::update()
 {
-    if (roomHandler.onPlayerTrigger(playerID, getPhysicsEngine()))
+    if (this->roomHandler.onPlayerTrigger(this->playerID, this->getPhysicsEngine()))
     {
         this->newRoomFrame = true;
 
@@ -332,12 +332,12 @@ void GameScene::update()
         this->newRoomFrame = false;
 
         // Call when a room is cleared
-        roomHandler.roomCompleted();
+        this->roomHandler.roomCompleted();
         this->numRoomsCleared++;
 
         if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
         {
-            this->getComponent<MeshComponent>(portal).meshID = portalOnMesh;
+            this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
         }
     }
 
@@ -437,7 +437,7 @@ void GameScene::update()
     }
     ImGui::End();
 
-    roomHandler.imgui(getDebugRenderer());
+    this->roomHandler.imgui(this->getDebugRenderer());
 
     decreaseFps();
 #endif
@@ -731,14 +731,14 @@ bool GameScene::allDead()
 
 void GameScene::onTriggerStay(Entity e1, Entity e2)
 {
-	Entity player = e1 == playerID ? e1 : e2 == playerID ? e2 : -1;
+	Entity player = e1 == this->playerID ? e1 : e2 == this->playerID ? e2 : -1;
 	
-	if (player == playerID) // player triggered a trigger :]
+	if (player == this->playerID) // player triggered a trigger :]
 	{
 		Entity other = e1 == player ? e2 : e1;
     
 
-		if (other == portal && numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
+		if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
 		{
 			this->switchScene(new GameScene(), "scripts/gamescene.lua");
 		}
