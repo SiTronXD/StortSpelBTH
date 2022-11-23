@@ -427,12 +427,12 @@ BTStatus LichBT::runAwayFromPlayer(Entity entityID)
     glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, playerTrans.position);
 	moveDir = -glm::normalize(moveDir);
     lichRb.velocity = moveDir * lichComp.huntSpeed;
-    rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
+    //rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
 
     
-   /* glm::vec3 player_to_lich = glm::normalize(lichTrans.position - playerTrans.position);
+    glm::vec3 player_to_lich = glm::normalize(lichTrans.position - playerTrans.position);
     glm::vec3 lookAtPos = lichTrans.position + player_to_lich * 2.0f;
-    rotateTowards(entityID, lookAtPos, lichComp.huntRotSpeed);*/
+    rotateTowards(entityID, lookAtPos, lichComp.huntRotSpeed);
 
     return ret;
 }

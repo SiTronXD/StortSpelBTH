@@ -65,6 +65,7 @@ struct LichComponent
     int LOW_HEALTH              = 30;            
     int FULL_HEALTH             = 300;  
     int ESCAPE_HEALTH           = FULL_HEALTH / 4; 
+    int BACK_TO_FIGHT_HEALTH    = FULL_HEALTH / 2; 
     int life                    = FULL_HEALTH;    
     int numBones                = 0;
 
@@ -119,11 +120,12 @@ class LichFSM : public FSM
 private:
 	static bool idleToCreep(Entity entityID);
 	static bool creepToAlerted(Entity entityID);
-    static bool alertToHunt(Entity entityID);    
+    static bool alertToHunt(Entity entityID);
     static bool huntToIdle(Entity entityID);
     static bool huntToCombat(Entity entityID);
     static bool escapeToCombat(Entity entityID);
     static bool escapeToIdle(Entity entityID);
+    static bool combatToEscape(Entity entityID);
     static bool combatToIdle(Entity entityID);
     static bool combatToHunt(Entity entityID);
 
@@ -137,6 +139,7 @@ private:
     EntityEvent hunt_to_combat{  "hunt to combat",     huntToCombat};
     EntityEvent combat_to_idle{  "combat to dead",     combatToIdle};
     EntityEvent combat_to_hunt{  "combat to hunt",     combatToHunt};
+    EntityEvent combat_to_escape{"combat to escape",   combatToEscape};
     EntityEvent escape_to_combat{"escape to combat",   escapeToCombat};
     EntityEvent escape_to_idle{  "escape to idle",     escapeToIdle};
 
@@ -179,6 +182,7 @@ protected:
 		addEntityTransition("hunt",     LichFSM::hunt_to_combat,       "combat");
 		addEntityTransition("combat",   LichFSM::combat_to_idle,       "idle");
 		addEntityTransition("combat",   LichFSM::combat_to_hunt,       "hunt");
+		addEntityTransition("combat",   LichFSM::combat_to_escape,     "escape");
 		addEntityTransition("escape",   LichFSM::escape_to_combat,     "combat");
 		addEntityTransition("escape",   LichFSM::escape_to_idle,       "idle");
 
