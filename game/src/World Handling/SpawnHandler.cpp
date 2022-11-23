@@ -4,6 +4,8 @@
 
 void SpawnHandler::spawnEnemiesIntoRoom()
 {
+    this->aiHandler->resetEventSystemLastReturn();
+
     int swarmIdx        = 0;
     int lichIdx         = 0;
     int tankIdx         = 0;

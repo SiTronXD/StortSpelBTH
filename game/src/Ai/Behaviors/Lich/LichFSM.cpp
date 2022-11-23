@@ -1,14 +1,6 @@
 #include "LichFSM.hpp"
 #include "../../../Components/Combat.h"
 
-//TODO: Change this to funtions!!!!
-//#define getLichComponent() FSM::sceneHandler->getScene()->getComponent<LichComponent>(entityID)
-//#define getPlayerID(playerID) std::string playerId_str = "playerID";FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerId_str)
-//#define getPlayerTrans(playerID) FSM::sceneHandler->getScene()->getComponent<Transform>(playerID) 
-//#define getPlayerCombat(playerID) FSM::sceneHandler->getScene()->getComponent<Combat>(playerID) 
-//#define getLichTrans() FSM::sceneHandler->getScene()->getComponent<Transform>(entityID) 
-//#define falseIfDead() LichComponent& lichComp_____macro = getLichComponent();if(lichComp_____macro.isDead()) {return false;}
-
 
 int	LichFSM::getPlayerID()
 {
@@ -80,6 +72,11 @@ bool LichFSM::creepToAlerted(Entity entityID)
         ret = true;
     }    
 
+    if(ret)
+    {
+         getTheScene()->getComponent<LichComponent>(entityID).alertDone = false;
+    }
+
     return ret;
 }
 
@@ -98,6 +95,12 @@ bool LichFSM::alertToHunt(Entity entityID)
     if(lichComp.alertDone)
     {
         ret = true;
+    }
+
+
+    if(ret)
+    {
+        lichComp.alertDone = false;
     }
 
     return ret;
