@@ -152,7 +152,13 @@ void LobbyScene::update()
     }
 
     // Start game
-    if (getNetworkHandler()->hasServer())
+    if (this->getNetworkHandler()->getStatus() == ServerStatus::RUNNING)
+    {
+        this->switchScene(
+            new GameScene(), "scripts/gamescene.lua"
+        );
+    }
+    else if (getNetworkHandler()->hasServer())
     {
         this->getUIRenderer()->setTexture(this->fontTextureId);
         this->getUIRenderer()->renderString(
@@ -162,20 +168,13 @@ void LobbyScene::update()
         {
             this->helpPacket << (int)NetworkEvent::START;
             this->getNetworkHandler()->sendDataToServerTCP(helpPacket);
-            this->getSceneHandler()->setScene(
-                new GameScene(), "scripts/gamescene.lua"
-            );
         }
-    }
-    else if (this->getNetworkHandler()->getStatus() == ServerStatus::RUNNING)
-    {
-        this->getSceneHandler()->setScene(
-            new GameScene(), "scripts/gamescene.lua"
-        );
     }
 
     if (!this->getNetworkHandler()->isConnected())
     {
+        this->getNetworkHandler()->disconnectClient();
+        this->getNetworkHandler()->deleteServer();
         this->switchScene(new MainMenu, "scripts/MainMenu.lua");
     }
 

@@ -27,7 +27,7 @@ void logInScene::start()
         "uvwxyz+-.'",
         "0123456789",
         "!?,<>:()#^",
-        "@         "},
+        "@%        "},
         this->fontTextureId,
         glm::vec2(16,16)
     );
@@ -36,40 +36,32 @@ void logInScene::start()
     this->setComponent<Camera>(camEntity);
     this->setMainCamera(camEntity);
 
-    this->nameButton = this->createEntity();
-    this->ipButton = this->createEntity();
-    this->joinStartButton = this->createEntity();
-    this->backButton = this->createEntity();
+    nameButton.position = glm::vec2(0, 1080 / 4);
+    nameButton.dimension = glm::vec2(1920, 1080/2);
 
-    UIArea area{};
-    area.position = glm::vec2(0, 1080 / 4);
-    area.dimension = glm::vec2(1920, 1080/2);
-    this->setComponent<UIArea>(nameButton, area);
+    ipButton.position = glm::vec2(0, -1080 / 4);
+    ipButton.dimension = glm::vec2(1920, 1080 / 2);
 
-    area.position = glm::vec2(0, -1080 / 4);
-    area.dimension = glm::vec2(1920, 1080 / 2);
-    this->setComponent<UIArea>(ipButton, area);
+    startButton.position = glm::vec2(0.0f, -400.f);
+    startButton.dimension = glm::vec2(300, 150);
 
-    area.position = glm::vec2(660.f, -400.f);
-    area.dimension = glm::vec2(5*50, 50);
-    this->setComponent<UIArea>(joinStartButton, area);
+    backButton.position = glm::vec2(-660.f, -400.f);
+    backButton.dimension = glm::vec2(250, 50);
 
-    area.position = glm::vec2(-660.f, -400.f);
-    area.dimension = glm::vec2(5*50, 50);
-    this->setComponent<UIArea>(backButton, area);
+    title = this->getNetworkHandler()->hasServer() ? "create game" : "join game";
 }
 
 void logInScene::update()
 {
-    if (this->getComponent<UIArea>(nameButton).isClicking())
+    if (this->nameButton.isClicking())
     {
         nameOrIp = &name;
     }
-    else if (this->getComponent<UIArea>(ipButton).isClicking())
+    else if (this->ipButton.isClicking())
     {
         nameOrIp = &ipAddress;
     }
-    if (this->getComponent<UIArea>(joinStartButton).isClicking())
+    if (this->startButton.isClicking())
     {
         this->getNetworkHandler()->createClient(name);
         if (this->getNetworkHandler()->hasServer())
@@ -83,26 +75,22 @@ void logInScene::update()
                 this->getNetworkHandler()->deleteServer();
                 this->getSceneHandler()->setScene(new MainMenu(), "scripts/MainMenu.lua");
             }
-        
         }
         else
         {
-            if (this->getNetworkHandler()->connectClient(ipAddress))
+            if (this->getNetworkHandler()->connectClient("192.168.1." + ipAddress))
             {
                 this->getSceneHandler()->setScene(new LobbyScene()); 
             }
             else
             {
-                this->getSceneHandler()->setScene(new MainMenu(), "scripts/MainMenu.lua");
+                this->incorrectIP = true;
             }
         }
     }
-    if (this->getComponent<UIArea>(backButton).isClicking())
+    if (this->backButton.isClicking())
     {
-        if (this->getNetworkHandler()->hasServer())
-        {
-            this->getNetworkHandler()->deleteServer();  
-        }
+        this->getNetworkHandler()->deleteServer();
         this->getSceneHandler()->setScene(new MainMenu(), "scripts/MainMenu.lua");
     }
 
@@ -115,24 +103,36 @@ void logInScene::update()
         this->name, glm::vec2(0.f, 50.f), glm::vec2(50.f, 50.f), 0.0, StringAlignment::LEFT
     );
 
+    this->getUIRenderer()->renderString(
+        title, glm::vec2(0.f, 350.f), glm::vec2(125.f, 125.f), 0.0, StringAlignment::CENTER
+    );
+
     if (!this->getNetworkHandler()->hasServer())
     {
         this->getUIRenderer()->renderString(
-            "ip: ", glm::vec2(0.f, -50.f), glm::vec2(50.f, 50.f), 0.0f, StringAlignment::RIGHT
+            "code: ", glm::vec2(0.f, -50.f), glm::vec2(50.f, 50.f), 0.0f, StringAlignment::RIGHT
         );
         this->getUIRenderer()->renderString(this->ipAddress, glm::vec2(0.f, -50.f), glm::vec2(50.f, 50.f), 0.0, StringAlignment::LEFT);
     }
 
     this->getUIRenderer()->renderString(
-        "start", glm::vec2(660.f, -400.f), glm::vec2(50.f, 50.f), 0.0f, StringAlignment::RIGHT
+        "start", this->startButton.position, glm::vec2(50.f, 50.f), 0.0f, StringAlignment::CENTER
     );
     this->getUIRenderer()->renderString(
         "back", glm::vec2(-660.f, -400.f), glm::vec2(50.f, 50.f), 0.0f, StringAlignment::RIGHT
     );
+
+    if (this->incorrectIP)
+    {
+        this->getUIRenderer()->renderString(
+            "code not valid", glm::vec2(0.0f, -200.f), glm::vec2(50.f, 50.f), 0.0f, StringAlignment::CENTER, glm::vec4(1.0f, 0.1f, 0.1f, 1.0f)
+        );
+    }
 }
 
 void logInScene::write()
 {
+    std::string orig = *nameOrIp;
     for (int i = 97; i < 123; i++)
     {
         if (Input::isKeyPressed((Keys)i))
@@ -158,5 +158,10 @@ void logInScene::write()
     else if (Input::isKeyPressed(Keys::BACK) && nameOrIp->length() > 0)
     {
         nameOrIp->pop_back();
+    }
+
+    if (this->incorrectIP && orig != *nameOrIp)
+    {
+        this->incorrectIP = false;
     }
 }
