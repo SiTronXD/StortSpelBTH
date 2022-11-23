@@ -220,18 +220,11 @@ BTStatus LichBT::pickBestStrategy(Entity entityID)
 
     int playerID = getPlayerID();
     int playerHealth = 0;
-    NetworkScene *a = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
-    if(a != nullptr){
-    //multiplayer
-    // Do some wierd stuff here
-        //we sending events to client, making events in networkEnumandDefines.h
-        a->addEvent({(int)GameEvents::GetPlayerHP, playerID});
-    }
-    else{
+
     //singleplayer
-        Combat& playerCombat = getTheScene()->getComponent<Combat>(playerID);
-        playerHealth = playerCombat.health;
-    }
+    Combat& playerCombat = getTheScene()->getComponent<Combat>(playerID);
+    playerHealth = playerCombat.health;
+    
 
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
