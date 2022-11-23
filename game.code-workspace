@@ -63,7 +63,7 @@
         "editor.minimap.scale": 1,
         "editor.minimap.maxColumn": 50,
         "editor.minimap.renderCharacters": false,
-        "window.zoomLevel": -1,
+        "window.zoomLevel": -2,
         "gitlens.views.commits.files.layout": "list",
         "activitusbar.combineWorkspaceSettings": true,
         "activitusbar.views": [

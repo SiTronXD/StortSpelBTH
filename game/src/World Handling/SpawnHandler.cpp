@@ -10,25 +10,25 @@ void SpawnHandler::spawnEnemiesIntoRoom()
     int randNumEnemies  = 10; //TODO: Make random when not debugging
     int counter         = 0;
     
-    const std::vector<glm::vec3>& tiles = this->roomHandler->getFreeTiles();
-    for (const glm::vec3& tilePos : tiles)
+    const std::vector<TileInfo>& tileInfos = this->roomHandler->getFreeTileInfos();
+    for (const TileInfo& tileInfo : tileInfos)
     {
         if (randNumEnemies - counter != 0)
         {
             
             if(tankIdx < nrOfTanks)
             {
-                this->spawnTank(tankIdx, tilePos);
+                this->spawnTank(tankIdx, tileInfo.pos);
                 tankIdx++;
             }
             else if(lichIdx < nrOfLichs)
             {
-                this->spawnLich(lichIdx, tilePos);
+                this->spawnLich(lichIdx, tileInfo.pos);
                 lichIdx++;
             }
             else if(swarmIdx < nrOfSwarms)
             {
-                this->spawnSwarm(swarmIdx, tilePos);                
+                this->spawnSwarm(swarmIdx, tileInfo.pos);                
                 swarmIdx++;
             }        
             counter++;        

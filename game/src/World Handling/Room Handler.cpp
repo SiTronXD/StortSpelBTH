@@ -333,6 +333,7 @@ void RoomHandler::generate(uint32_t seed)
 			}
 
 		}
+        this->createTileInfos();
 		roomGen.clear();
 	}
 
@@ -490,6 +491,11 @@ const std::vector<glm::vec3>& RoomHandler::getFreeTiles()
 	return this->rooms[this->activeIndex].mainTiles;
 }
 
+const std::vector<TileInfo>& RoomHandler::getFreeTileInfos()
+{
+	return this->rooms[this->activeIndex].tileInfos;
+}
+
 const RoomHandler::Room& RoomHandler::getExitRoom() const
 {
 	for (const RoomHandler::Room& room : this->rooms)
@@ -511,6 +517,121 @@ int RoomHandler::getNumRooms() const
 Entity RoomHandler::getFloor() const
 {
 	return this->floor;
+}
+
+
+#include <vector>
+#include <unordered_map>
+#include <algorithm>
+void RoomHandler::createTileInfos()
+{
+	auto rawTiles = this->getFreeTiles();
+	auto& tileInfos = this->rooms[this->activeIndex].tileInfos;    
+
+    const int NUM = 4;
+    const glm::vec3 DIRS[NUM] =
+	{
+		{ 1,  0,  0 }, // Left
+		{-1,  0,  0 }, // Right
+		{ 0,  0,  1 }, // Up
+		{ 0,  0,  -1}, // Down
+	};
+
+    for(size_t i = 0; i < rawTiles.size() - 1; i++)
+    {
+        const glm::vec3 currentPos = rawTiles[i];
+        //std::array<int,4> neigbours{TileInfo::NONE,TileInfo::NONE,TileInfo::NONE,TileInfo::NONE};
+        std::array<int,4> neighbours{TileInfo::NONE,TileInfo::NONE,TileInfo::NONE,TileInfo::NONE};
+        
+        for(size_t j = i+1; j < rawTiles.size(); j++)
+        {
+            for(size_t k = 0; k < neighbours.size();k++) // Left, Right, Up, Down
+            {
+                if(neighbours[k] == TileInfo::NONE)
+                {
+                    //Distance between currentPos and possible neighbour pos
+                    glm::vec3 sideOffset = currentPos + DIRS[k] * RoomHandler::TILE_WIDTH; 
+                    sideOffset.y = 0.f;
+                    float dist = glm::length(sideOffset - rawTiles[j]); 
+
+                    std::cout << "rawTile:      ";
+                    std::cout << rawTiles[j].x << ",";
+                    std::cout << rawTiles[j].y << ",";
+                    std::cout << rawTiles[j].z << "\n";
+                    std::cout << "sideOffset:   ";
+                    std::cout << sideOffset.x << ",";
+                    std::cout << sideOffset.y << ",";
+                    std::cout << sideOffset.z << "\n";
+                    std::cout << "distance: " << dist << "\n";
+                    
+                    if(dist <= RoomHandler::TILE_WIDTH) 
+                    {
+                        std::cout << "\tWas small enough!: " << dist << "\n\n";
+                        neighbours[k] = j;
+                    }
+                    
+                }
+            }
+        }
+        tileInfos.emplace_back(currentPos, std::move(neighbours));
+    }
+
+
+    std::unordered_map<int, std::vector<int>> rows; // Contains values of X for key Y pos
+
+    //Stupid print check
+    for(auto& tile : tileInfos) 
+    {
+        rows[tile.pos.x].push_back(tile.pos.z);
+
+    }
+
+    std::vector<int> orderedRows;
+    for(auto row : rows){orderedRows.push_back(row.first);}
+    std::sort(orderedRows.begin(),orderedRows.end(), std::greater<int>());
+
+    for(auto rowKey : orderedRows)
+    {
+        int lastColumn = 99999999; //lazy me...        
+        for(auto z : rows[rowKey]) { if(z < lastColumn){lastColumn = z;} }
+
+        bool first = true;
+        for(auto z : rows[rowKey])
+        {         
+            auto column = z / RoomHandler::TILE_WIDTH;
+
+            if(lastColumn + 1 <= column) 
+            {
+                while(lastColumn + 1 <= column)
+                {
+                    std::cout << "_\n";   
+                    lastColumn++; 
+                }
+            }
+            else 
+            {
+                if(column > 0)
+                {
+                    std::cout <<" " << column << " \n";
+                }
+                else 
+                {
+                    std::cout << column << " \n";
+                }
+            }
+            
+            
+
+            lastColumn = column;
+         
+        }
+        std::cout << "\n";
+    }
+
+    
+
+    int breakMe = 3;
+    
 }
 
 void RoomHandler::createDoors(int roomIndex, const glm::ivec2* doorTilePos)

@@ -3,6 +3,8 @@
 #include "Room Layout.h"
 #include "Room Generator.h"
 #include "vengine/components/Collider.h"
+#include <array>
+
 
 class VRandom;
 class DebugRenderer;
@@ -10,6 +12,28 @@ class PhysicsEngine;
 class Scene;
 class ResourceManager;
 typedef int Entity;
+
+struct TileInfo 
+{
+    TileInfo(const glm::vec3 pos, std::array<int,4>&& neighbours)
+        : pos(pos), neighbours(neighbours)
+    {}
+
+    const std::array<int,4> neighbours;
+    glm::vec3 pos;
+
+    static const int NONE  = -1;
+    static const int LEFT  =  0;
+    static const int RIGHT =  1;
+    static const int DOWN  =  2;
+    static const int UP    =  3;
+
+    const int& idLeftOf() {return neighbours[LEFT]  ;};
+    const int& idRightOf(){return neighbours[RIGHT] ;};
+    const int& idDownOf() {return neighbours[DOWN]  ;};
+    const int& idUpOf()   {return neighbours[UP]    ;};
+    
+};
 
 class RoomHandler
 {
@@ -42,7 +66,8 @@ private:
 		glm::vec3 position;
 		float extents[4];
 		RoomData::Type type;
-
+		
+        std::vector<TileInfo>  tileInfos;
 		std::vector<glm::vec3> mainTiles; // "Playable" tiles (used for spawning enemies)
 		std::vector<Entity> objects;	  // Objects inside room (borders, rocks etc)
 
@@ -74,6 +99,9 @@ private:
 	Entity createBorderEntity(const glm::vec2& position, bool scalePos);
 	void createObjectEntities(const Tile& tile, Room& room);
 	Entity createDoorEntity(float yRotation);
+
+    // Create TileInfos 
+    void createTileInfos();
 
 	// Doors and paths
 	void createDoors(int roomIndex, const glm::ivec2* doorTilePos);
@@ -125,6 +153,7 @@ public:
 	bool playerNewRoom(Entity player, PhysicsEngine* physicsEngine);
 
 	const std::vector<glm::vec3>& getFreeTiles();
+	const std::vector<TileInfo>& getFreeTileInfos();
 	const Room& getExitRoom() const;
 	int getNumRooms() const;
 
