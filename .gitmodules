@@ -1,4 +1,4 @@
 [submodule "deps/vengine/src"]
 	path = deps/vengine/src
 	url = https://github.com/SiTronXD/StortSpelBTH_Engine.git
-	branch = addPointsToNetworkScene
+	branch = networkMerge
