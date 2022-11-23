@@ -14,7 +14,7 @@ void logInScene::start()
     samplerSettings.unnormalizedCoordinates = VK_TRUE;
 
     this->backgroundId =
-        this->getResourceManager()->addTexture("assets/textures/UI/background.png"
+        this->getResourceManager()->addTexture("assets/textures/blackTex.png"
         );
 
     this->fontTextureId = Scene::getResourceManager()->addTexture(
@@ -43,10 +43,10 @@ void logInScene::start()
     ipButton.dimension = glm::vec2(1920, 1080 / 2);
 
     startButton.position = glm::vec2(0.0f, -400.f);
-    startButton.dimension = glm::vec2(300, 150);
+    startButton.dimension = glm::vec2(275.0f, 100.0f);
 
-    backButton.position = glm::vec2(-660.f, -400.f);
-    backButton.dimension = glm::vec2(250, 50);
+    backButton.position = glm::vec2(-700.f, -400.f);
+    backButton.dimension = glm::vec2(225.0f, 100.0f);
 
     title = this->getNetworkHandler()->hasServer() ? "create game" : "join game";
 }
@@ -61,7 +61,11 @@ void logInScene::update()
     {
         nameOrIp = &ipAddress;
     }
-    if (this->startButton.isClicking())
+    if (this->startButton.isClicking() && this->name == "")
+    {
+        this->noName = true;
+    }
+    else if (this->startButton.isClicking())
     {
         this->getNetworkHandler()->createClient(name);
         if (this->getNetworkHandler()->hasServer())
@@ -94,6 +98,15 @@ void logInScene::update()
         this->getSceneHandler()->setScene(new MainMenu(), "scripts/MainMenu.lua");
     }
 
+    // Button backtgrounds
+    this->getUIRenderer()->setTexture(this->backgroundId);
+    this->getUIRenderer()->renderTexture(
+        this->backButton.position, this->backButton.dimension,
+        glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.1f + this->backButton.isHovering() * 0.15f));
+    this->getUIRenderer()->renderTexture(
+        this->startButton.position, this->startButton.dimension,
+        glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.1f + this->startButton.isHovering() * 0.15f));
+
     this->write();
     this->getUIRenderer()->setTexture(this->fontTextureId);
     this->getUIRenderer()->renderString(
@@ -104,7 +117,7 @@ void logInScene::update()
     );
 
     this->getUIRenderer()->renderString(
-        title, glm::vec2(0.f, 350.f), glm::vec2(125.f, 125.f), 0.0, StringAlignment::CENTER
+        this->title, glm::vec2(0.f, 350.f), glm::vec2(125.f, 125.f), 0.0, StringAlignment::CENTER
     );
 
     if (!this->getNetworkHandler()->hasServer())
@@ -119,10 +132,16 @@ void logInScene::update()
         "start", this->startButton.position, glm::vec2(50.f, 50.f), 0.0f, StringAlignment::CENTER
     );
     this->getUIRenderer()->renderString(
-        "back", glm::vec2(-660.f, -400.f), glm::vec2(50.f, 50.f), 0.0f, StringAlignment::RIGHT
+        "back", this->backButton.position, glm::vec2(50.f, 50.f), 0.0f, StringAlignment::CENTER
     );
 
-    if (this->incorrectIP)
+    if (this->noName)
+    {
+        this->getUIRenderer()->renderString(
+            "no name provided", glm::vec2(0.0f, -200.f), glm::vec2(50.f, 50.f), 0.0f, StringAlignment::CENTER, glm::vec4(1.0f, 0.1f, 0.1f, 1.0f)
+        );
+    }
+    else if (this->incorrectIP)
     {
         this->getUIRenderer()->renderString(
             "code not valid", glm::vec2(0.0f, -200.f), glm::vec2(50.f, 50.f), 0.0f, StringAlignment::CENTER, glm::vec4(1.0f, 0.1f, 0.1f, 1.0f)
@@ -160,7 +179,11 @@ void logInScene::write()
         nameOrIp->pop_back();
     }
 
-    if (this->incorrectIP && orig != *nameOrIp)
+    if (this->noName && orig != *nameOrIp)
+    {
+        this->noName = false;
+    }
+    else if (this->incorrectIP && orig != *nameOrIp)
     {
         this->incorrectIP = false;
     }

@@ -10,6 +10,7 @@ private:
 	std::string name;
 	std::string ipAddress;
 	std::string* nameOrIp;
+	bool noName = false;
 	bool incorrectIP = false;
 
 	UIArea nameButton;
