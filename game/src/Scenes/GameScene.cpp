@@ -3,10 +3,12 @@
 #include "../Systems/AiCombatSystem.hpp"
 #include "../Systems/AiMovementSystem.hpp"
 #include "../Systems/CameraMovementSystem.hpp"
-#include "../Systems/CombatSystem.hpp"
+//#include "../Systems/CombatSystem.hpp"
 #include "../Systems/HealthBarSystem.hpp"
 #include "../Systems/MovementSystem.hpp"
+#include "../Network/NetworkHandlerGame.h"
 #include "GameOverScene.h"
+#include "MainMenu.h"
 
 #ifdef _CONSOLE
 // decreaseFps used for testing game with different framerates
@@ -50,7 +52,7 @@ void GameScene::init()
         this->getResourceManager(), true);
     roomHandler.generate(rand());
     createPortal();
-    // simon
+    
     ResourceManager* resourceMng = this->getResourceManager();
     this->perkMeshes[0] = resourceMng->addMesh("assets/models/Perk_Hp.obj");
     this->perkMeshes[1] = resourceMng->addMesh("assets/models/Perk_Dmg.obj");
@@ -58,10 +60,8 @@ void GameScene::init()
     this->perkMeshes[3] = resourceMng->addMesh("assets/models/Perk_Movement.obj");
     this->perkMeshes[4] = resourceMng->addMesh("assets/models/Perk_Stamina.obj");
 
-    this->abilityTextures[0] =
-        resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
-    this->abilityTextures[1] =
-        resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
+    this->abilityTextures[0] = resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
+    this->abilityTextures[1] = resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
     this->abilityTextures[2] = resourceMng->addTexture("assets/textures/UI/empty.png");
     this->perkTextures[0] = resourceMng->addTexture("assets/textures/UI/hpUp.png");
     this->perkTextures[1] = resourceMng->addTexture("assets/textures/UI/dmgUp.png");
@@ -69,10 +69,9 @@ void GameScene::init()
     this->perkTextures[3] = resourceMng->addTexture("assets/textures/UI/moveUp.png");
     this->perkTextures[4] = resourceMng->addTexture("assets/textures/UI/staminaUp.png");
     this->perkTextures[5] = resourceMng->addTexture("assets/textures/UI/empty.png");
-    this->hpBarBackgroundTextureID =
-        resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
-    this->hpBarTextureID =
-        resourceMng->addTexture("assets/textures/UI/hpBar.png");
+    this->hpBarBackgroundTextureID = resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
+    this->hpBarTextureID = resourceMng->addTexture("assets/textures/UI/hpBar.png");
+    this->blackTextureIndex = resourceMng->addTexture("assets/textures/blackTex.png");
 
     // Temporary light
     this->dirLightEntity = this->createEntity();
@@ -99,102 +98,44 @@ void GameScene::init()
 
 void GameScene::start()
 {
-    std::string playerName = "playerID";
-    this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+    this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, "playerID");
 
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
     this->getAudioHandler()->setMusicVolume(0.2f);
     this->getAudioHandler()->playMusic();
 
+    this->networkHandler = dynamic_cast<NetworkHandlerGame*>(this->getNetworkHandler());
+    this->networkHandler->init();
+    this->networkHandler->setPlayerEntity(playerID);
+    this->networkHandler->createOtherPlayers(this->getComponent<MeshComponent>(playerID).meshID);
+
     this->setComponent<Combat>(playerID);
     this->createSystem<CombatSystem>(
         this,
         this->getResourceManager(),
         this->playerID,
+        this->paused,
         this->getPhysicsEngine(),
         this->getUIRenderer(),
-        this->getScriptHandler());
+        this->getScriptHandler(),
+        this->networkHandler);
 
-    this->ability = this->createEntity();
-    int knockback = this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
-    this->setComponent<MeshComponent>(this->ability, knockback);
-    Transform& abilityTrans = this->getComponent<Transform>(this->ability);
-    abilityTrans.position = glm::vec3(50.f, 10.f, 0.f);
-    abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
-    this->setComponent<Collider>(this->ability, Collider::createSphere(4.f, glm::vec3(0), true));
-    this->setComponent<Abilities>(this->ability, healAbility);
-    this->setComponent<PointLight>(this->ability, { glm::vec3(0.f), glm::vec3(7.f, 9.f, 5.f) });
+    if (this->networkHandler->hasServer())
+    {
+        this->networkHandler->spawnItemRequest(healAbility, glm::vec3(50.0f, 10.0f, 0.0f));
+        this->networkHandler->spawnItemRequest(hpUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 20.0f));
+        this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f));
+        this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 0.0f));
+        this->networkHandler->spawnItemRequest(movementUpPerk, 1.0f, glm::vec3(30.0f, 5.0f, -40.0f));
+        this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f));
+    }
 
-    this->perk = this->createEntity();
-    this->setComponent<MeshComponent>(this->perk, this->perkMeshes[hpUpPerk]);
-    Transform& perkTrans = this->getComponent<Transform>(this->perk);
-    perkTrans.position = glm::vec3(30.f, 7.f, 20.f);
-    perkTrans.scale = glm::vec3(3.f, 3.f, 3.f);
-    this->setComponent<Collider>(
-        this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-    this->setComponent<PointLight>(this->perk, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
-    this->setComponent<Perks>(this->perk);
-    Perks& perkSetting = this->getComponent<Perks>(this->perk);
-    perkSetting.multiplier = 0.5f;
-    perkSetting.perkType = hpUpPerk;
-    this->setScriptComponent(this->perk, "scripts/spin.lua");
-
-    this->perk1 = this->createEntity();
-    this->setComponent<MeshComponent>(this->perk1, this->perkMeshes[dmgUpPerk]);
-    Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
-    perkTrans1.position = glm::vec3(30.f, 7.f, -20.f);
-    perkTrans1.scale = glm::vec3(3.f, 3.f, 3.f);
-    this->setComponent<Collider>(
-        this->perk1, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-    this->setComponent<PointLight>(this->perk1, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
-    this->setComponent<Perks>(this->perk1);
-    Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
-    perkSetting1.multiplier = 0.5f;
-    perkSetting1.perkType = dmgUpPerk;
-    this->setScriptComponent(this->perk1, "scripts/spin.lua");
-
-    this->perk2 = this->createEntity();
-    this->setComponent<MeshComponent>(this->perk2, this->perkMeshes[attackSpeedUpPerk]);
-    Transform& perkTrans2 = this->getComponent<Transform>(this->perk2);
-    perkTrans2.position = glm::vec3(30.f, 7.f, 0.f);
-    perkTrans2.scale = glm::vec3(3.f, 3.f, 3.f);
-    this->setComponent<Collider>(
-        this->perk2, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-    this->setComponent<PointLight>(this->perk2, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
-    this->setComponent<Perks>(this->perk2);
-    Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
-    perkSetting2.multiplier = 0.5f;
-    perkSetting2.perkType = attackSpeedUpPerk;
-    this->setScriptComponent(this->perk2, "scripts/spin.lua");
-
-    this->perk3 = this->createEntity();
-    this->setComponent<MeshComponent>(this->perk3, this->perkMeshes[movementUpPerk]);
-    Transform& perkTrans3 = this->getComponent<Transform>(this->perk3);
-    perkTrans3.position = glm::vec3(30.f, 5.f, -40.f);
-    perkTrans3.scale = glm::vec3(3.f, 3.f, 3.f);
-    this->setComponent<Collider>(
-        this->perk3, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-    this->setComponent<PointLight>(this->perk3, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
-    this->setComponent<Perks>(this->perk3);
-    Perks& perkSetting3 = this->getComponent<Perks>(this->perk3);
-    perkSetting3.multiplier = 1.f;
-    perkSetting3.perkType = movementUpPerk;
-    this->setScriptComponent(this->perk3, "scripts/spin.lua");
-
-    this->perk4 = this->createEntity();
-    this->setComponent<MeshComponent>(this->perk4, this->perkMeshes[staminaUpPerk]);
-    Transform& perkTrans4 = this->getComponent<Transform>(this->perk4);
-    perkTrans4.position = glm::vec3(30.f, 5.f, -60.f);
-    perkTrans4.scale = glm::vec3(3.f, 3.f, 3.f);
-    this->setComponent<Collider>(
-        this->perk4, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-    this->setComponent<PointLight>(this->perk4, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
-    this->setComponent<Perks>(this->perk4);
-    Perks& perkSetting4 = this->getComponent<Perks>(this->perk4);
-    perkSetting4.multiplier = 0.5f;
-    perkSetting4.perkType = staminaUpPerk;
-    this->setScriptComponent(this->perk4, "scripts/spin.lua");
+    // Pause menu
+    this->resumeButton.position = glm::vec2(0.0f, 100.0f);
+    this->exitButton.position = glm::vec2(0.0f, -100.0f);
+    this->resumeButton.dimension = glm::vec2(500.0f, 150.0f);
+    this->exitButton.dimension = glm::vec2(500.0f, 150.0f);
 
     // Ai management
     this->aiHandler = this->getAIHandler();
@@ -231,21 +172,19 @@ void GameScene::update()
             this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
         }
     }
+    // Server is diconnected
+    if (this->networkHandler->getStatus() == ServerStatus::DISCONNECTED)
+    {
+        this->networkHandler->disconnectClient();
+        this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
+    }
 
-    /*if (this->hasComponents<Collider, Rigidbody>(this->playerID))
-      {
-          Rigidbody& rb = this->getComponent<Rigidbody>(this->playerID);
-          glm::vec3 vec = glm::vec3(Input::isKeyDown(Keys::LEFT) - Input::isKeyDown(Keys::RIGHT), 0.0f, Input::isKeyDown(Keys::UP) - Input::isKeyDown(Keys::DOWN));
-          float y = rb.velocity.y;
-          rb.velocity = vec * 10.0f;
-          rb.velocity.y = y + Input::isKeyPressed(Keys::SPACE) * 5.0f;
-      }*/
-
-      // Switch scene if the player is dead
+    // Switch scene if the player is dead
     if (this->hasComponents<Combat>(this->playerID))
     {
         if (this->getComponent<Combat>(this->playerID).health <= 0.0f)
         {
+            this->networkHandler->disconnectClient(); // TEMP: probably will be in game over scene later
             this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
         }
     }
@@ -295,7 +234,42 @@ void GameScene::update()
         glm::vec2(xSize * hpPercent, ySize)
     );
 
-    
+    // Network
+    this->networkHandler->updatePlayer();
+    this->networkHandler->interpolatePositions();
+    if (Input::isKeyPressed(Keys::B))
+    {
+        sf::Packet packet;
+        packet << (int)NetworkEvent::ECHO << "Test";
+        this->networkHandler->sendDataToServerTCP(packet);
+    }
+
+    // Paused
+    if (Input::isKeyPressed(Keys::ESC))
+    {
+        this->paused = !this->paused;
+    }
+    if (this->paused)
+    {
+        this->getUIRenderer()->setTexture(this->blackTextureIndex);
+        this->getUIRenderer()->renderTexture(glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f), glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
+        this->getUIRenderer()->renderTexture(this->resumeButton.position, this->resumeButton.dimension);
+        this->getUIRenderer()->renderTexture(this->exitButton.position, this->exitButton.dimension);
+        this->getUIRenderer()->renderString("resume", this->resumeButton.position, glm::vec2(50.0f));
+        this->getUIRenderer()->renderString("exit", this->exitButton.position, glm::vec2(50.0f));
+
+        if (this->resumeButton.isClicking())
+        {
+            this->paused = false;
+        }
+        else if (this->exitButton.isClicking())
+        {
+            this->networkHandler->disconnectClient();
+            this->networkHandler->deleteServer();
+            this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
+        }
+    }
+
 #ifdef _CONSOLE
 
     // Cascades

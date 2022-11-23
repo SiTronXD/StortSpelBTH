@@ -5,6 +5,7 @@
 
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../World Handling/Room Handler.h"
+#include "../Systems/CombatSystem.hpp"
 #include "../World Handling/SpawnHandler.hpp"
 #include "vengine.h"
 #include "../World Handling/Room Handler.h"
@@ -12,7 +13,7 @@
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
 
-
+class NetworkHandlerGame;
 
 class GameScene : public Scene
 {
@@ -20,6 +21,11 @@ private:
   RoomHandler roomHandler;
   SpawnHandler spawnHandler;
   AIHandler* aiHandler = nullptr;
+  NetworkHandlerGame* networkHandler;
+
+  bool paused = false;
+  UIArea resumeButton;
+  UIArea exitButton;
 
   Entity playerID;
   Entity portal;
@@ -39,7 +45,9 @@ private:
   int perkMeshes[5];
 
   uint32_t abilityTextures[3];
-  uint32_t perkTextures[6];  
+  uint32_t perkTextures[6];
+  uint32_t fontTextureIndex;
+  uint32_t blackTextureIndex;
 
   uint32_t hpBarBackgroundTextureID;
   uint32_t hpBarTextureID;
