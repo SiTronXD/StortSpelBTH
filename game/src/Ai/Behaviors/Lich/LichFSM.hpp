@@ -32,7 +32,7 @@ struct LichAttack
             this->damage = 10;
             this->manaCost = 5.0f;
             this->cooldownTimer = this->cooldownTimerOrig = 2.0f;
-            this->castTimeTimer = this->castTimeTimerOrig = 0.0f;
+            this->castTimeTimer = this->castTimeTimerOrig = 0.5f;
             break;
         case FIRE:
             this->damage = 65;
@@ -56,9 +56,13 @@ struct LichComponent
 {
 	LichComponent() 
     {
+        LichAttack lightning, fire, ice;
         lightning.setStats(ATTACK_STRATEGY::LIGHT);  
         fire.setStats(ATTACK_STRATEGY::FIRE);
         ice.setStats(ATTACK_STRATEGY::ICE);
+        attacks.insert({"lightning", lightning});
+        attacks.insert({"ice", ice});
+        attacks.insert({"fire", fire});
     };
 
     //Ints
@@ -108,9 +112,10 @@ struct LichComponent
 
     //Combat stuff
     LichAttack* curAttack       = nullptr;
-    LichAttack lightning;
+    std::unordered_map<std::string, LichAttack> attacks;
+   /* LichAttack lightning;
     LichAttack fire;
-    LichAttack ice;
+    LichAttack ice;*/
 
     std::string lastAttack      = "";
 };

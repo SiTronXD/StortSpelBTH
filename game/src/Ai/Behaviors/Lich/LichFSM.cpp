@@ -31,12 +31,20 @@ bool LichFSM::falseIfDead(Entity entityID)
 void LichFSM::updateAttackColldowns(Entity entityID)
 {
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-    if(lichComp.lightning.cooldownTimer > 0.0f)
+    for(auto& atck: lichComp.attacks)
+    {
+        if(atck.second.cooldownTimer > 0.0f)
+        {
+            atck.second.cooldownTimer -= get_dt();
+        }
+    }
+
+   /* if(lichComp.lightning.cooldownTimer > 0.0f)
         lichComp.lightning.cooldownTimer -= get_dt();
     if(lichComp.ice.cooldownTimer > 0.0f)
         lichComp.ice.cooldownTimer -= get_dt();
     if(lichComp.fire.cooldownTimer > 0.0f)
-        lichComp.fire.cooldownTimer -= get_dt();
+        lichComp.fire.cooldownTimer -= get_dt();*/
 }
 
 bool LichFSM::idleToCreep(Entity entityID)
