@@ -17,11 +17,11 @@ void NetworkLobbyScene::update(float dt)
   {
       int gameEvent;
       packet >> gameEvent;
-      if (gameEvent == GameEvents::START)
+      if (gameEvent == (int)NetworkEvent::START)
         {
           std::cout << "got start in network lobby" << std::endl;
           ((NetworkSceneHandler*)this->getSceneHandler())->setScene(new NetworkGameScene());
-          this->addEvent({(int)GameEvents::START});
+          this->addEvent({(int)NetworkEvent::START});
         }
   }
 	

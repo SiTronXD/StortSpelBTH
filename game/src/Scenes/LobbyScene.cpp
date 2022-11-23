@@ -72,12 +72,13 @@ void LobbyScene::init()
         this->players[i] = this->createEntity();
         this->setComponent<MeshComponent>(this->players[i], playerModel);
         this->setComponent<AnimationComponent>(this->players[i]);
-
+        this->setInactive(this->players[i]);
         Transform& t = this->getComponent<Transform>(this->players[i]);
         t.position = this->POSITIONS[i];
         t.rotation = glm::vec3(0, 180, 0);
         t.scale = glm::vec3(1);
     }
+    this->setActive(players[0]);
 
     this->startButton = this->createEntity();
     this->disconnectButton = this->createEntity();
@@ -90,24 +91,6 @@ void LobbyScene::init()
     area.position = glm::vec2(-800.f, -60.f);
     area.dimension = glm::vec2(20 * 10, 20);
     this->setComponent<UIArea>(this->disconnectButton, area);
-  int mainPlayer = this->createEntity();
-  this->setComponent<MeshComponent>(mainPlayer, playerModel);
-  this->setComponent<AnimationComponent>(mainPlayer);
-  this->setAnimation(mainPlayer, "idle", true);
-  this->getComponent<Transform>(mainPlayer).position = playerPositions[0];
-  this->getComponent<Transform>(mainPlayer).rotation = glm::vec3(0,180,0);
-
-  activePlayers.reserve(MAXNUMBEROFPLAYERS - 1);
-  for (int i = 0; i < MAXNUMBEROFPLAYERS - 1; i++)
-  {
-      int e = this->createEntity(); 
-      players[i] = e;
-      this->setComponent<MeshComponent>(e, playerModel);
-      this->setComponent<AnimationComponent>(e);
-      this->getComponent<Transform>(e).position = glm::vec3(0, 10000, 0);
-      this->getComponent<Transform>(e).rotation = glm::vec3(0, 180, 0);
-      this->setAnimation(e, "idle", true);
-  }
 }
 
 void LobbyScene::start() 

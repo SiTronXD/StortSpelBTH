@@ -31,7 +31,7 @@ void NetworkGameScene::start()
 {
   //send seed to players
   std::cout << "SERVER: seed is: " << roomSeed << std::endl;
-  this->addEvent({(int)GameEvents::GetLevelSeed, this->roomSeed});
+  this->addEvent({(int)NetworkEvent::EMPTY, this->roomSeed});
   this->roomHandler.init(this, this->getResourceManager(), false);
   this->roomHandler.generate(123);
   
@@ -58,7 +58,7 @@ void NetworkGameScene::update(float dt)
     {
           this->newRoomFrame = false;
           std::cout << "all dead" << std::endl;
-          this->addEvent({GameEvents::ROOM_CLEAR});
+          this->addEvent({(int)NetworkEvent::EMPTY});
           // Call when a room is cleared
           roomHandler.roomCompleted();
           this->numRoomsCleared++;
@@ -76,32 +76,12 @@ void NetworkGameScene::update(float dt)
             if (roomHandler.rooms[i].doors[d] != -1)
             {
                 glm::vec3 dp = this->getComponent<Transform>(roomHandler.rooms[i].doors[d]).position;
-                 addEvent({(int)GameEvents::Draw_Debug_BoxCollider}, {dp.x, dp.y, dp.z, 10.f, 10.f, 10.f});
+                 //addEvent({(int)GameEvents::Draw_Debug_BoxCollider}, {dp.x, dp.y, dp.z, 10.f, 10.f, 10.f});
+                 addEvent({(int)NetworkEvent::EMPTY}, {dp.x, dp.y, dp.z, 10.f, 10.f, 10.f});
             }    
         }
     }
 
-    sf::Packet &packet = ((NetworkSceneHandler*)this->getSceneHandler())->getCallFromClient();
-    while (!packet.endOfPacket())
-    {
-        int gameEvent;
-        packet >> gameEvent;
-        if (gameEvent == GameEvents::HitMonster)
-          {
-            int monsterID, playerEnt, damage;
-            float knockBack;
-            packet >> monsterID >> playerEnt >> damage >> knockBack;
-
-            SwarmComponent& enemy = this->getComponent<SwarmComponent>(monsterID);
-            enemy.life -= damage;
-            std::cout << enemy.life << std::endl;
-            Rigidbody& enemyRB = this->getComponent<Rigidbody>(monsterID);
-            Transform& enemyTrans = this->getComponent<Transform>(monsterID);
-            Transform& playerTrans = this->getComponent<Transform>(playerEnt);
-	    	glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
-            enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * knockBack;
-          }
-    }
 }
 
 void NetworkGameScene::onTriggerStay(Entity e1, Entity e2)
@@ -169,7 +149,7 @@ void NetworkGameScene::onCollisionStay(Entity e1, Entity e2)
               swarmComp.touchedPlayer = true;
               aiCombat.timer = aiCombat.lightAttackTime;
               this->addEvent(
-                  {(int)GameEvents::MONSTER_HIT,
+                  {(int)NetworkEvent::CLIENTJOINED,
                    other,
                    (int)aiCombat.lightHit,
                    player}

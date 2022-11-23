@@ -80,7 +80,8 @@ void GameSceneNetwork::init()
   this->getNetworkHandler()->setMeshes("tank", swarm);
   this->getNetworkHandler()->setMeshes("PlayerMesh", playerModel);
 
-  int seed = this->getNetworkHandler()->getServerSeed();
+  //int seed = this->getNetworkHandler()->getServerSeed();
+  int seed = 123;
   std::cout << "Client: got seed " << seed << std::endl;
 
   roomHandler.init(
@@ -198,39 +199,7 @@ void GameSceneNetwork::start()
 
 void GameSceneNetwork::update()
 {
-    bool alldead = false;
-    int gameEvents;
-    sf::Packet &p = this->getNetworkHandler()->getScenePacket();
-    while (!p.endOfPacket())
-    {
-      p >> gameEvents;
-      if (gameEvents == GameEvents::ROOM_CLEAR)
-      {
-          alldead = true;
-          // Call when a room is cleared
-          roomHandler.roomCompleted();
-          this->numRoomsCleared++;
-      }
-      else if (gameEvents == GameEvents::MONSTER_HIT)
-      {
-        int monsterID, damage, thePlayerID;
-        p >> monsterID >> damage >> thePlayerID;
-        //check if its us?
-        this->getComponent<Combat>(playerID).health -= damage; 
-      }
-      else if (gameEvents == GameEvents::Draw_Debug_BoxCollider)
-      {
-              float xpos, ypos, zpos, sa;
-              p >> xpos >> ypos >> zpos >> sa >> sa >> sa;
-            this->getPhysicsEngine()->renderDebugShapes(true);
-              this->getDebugRenderer()->renderBox(
-                  glm::vec3(xpos, ypos, zpos),
-                  glm::vec3(0, 0, 0),
-                  glm::vec3(sa),
-                  glm::vec3(1, 0, 0)
-              );
-      }
-    }
+    
             // TODO: Move to SpawnHandler ---- 
     if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
     {

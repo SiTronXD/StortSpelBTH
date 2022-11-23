@@ -4,6 +4,7 @@
 #include "../Components/Combat.h"
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../Network/NetworkHandlerGame.h"
+#include "../Ai/Behaviors/Tank/TankFSM.hpp"
 
 class CombatSystem : public System
 {
