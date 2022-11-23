@@ -19,7 +19,7 @@ private:
 	Entity playerID;
 	Entity swordID;
 	Entity heal;
-	const bool& paused;
+	const bool* paused;
 
 	int swordMesh;
 	int perkMeshes[5];
@@ -30,7 +30,7 @@ private:
 
 public:
 
-	CombatSystem(Scene* scene, ResourceManager* resourceMng, Entity playerID, const bool& paused,
+	CombatSystem(Scene* scene, ResourceManager* resourceMng, Entity playerID, const bool* paused,
 		PhysicsEngine* physics, UIRenderer* uiRenderer, ScriptHandler* script, NetworkHandlerGame* networkHandler)
 		: scene(scene), resourceMng(resourceMng), playerID(playerID), heal(-1), paused(paused),
 		swordID(-1), physics(physics), uiRenderer(uiRenderer), script(script), networkHandler(networkHandler)
@@ -105,7 +105,7 @@ public:
 				}
 			}
 
-			if (!this->paused)
+			if (!*this->paused)
 			{
 				// Check if player is trying to attack
 				if (Input::isMouseButtonPressed(Mouse::LEFT))

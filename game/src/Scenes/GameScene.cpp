@@ -20,6 +20,7 @@ GameScene::GameScene() :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
     perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1)
 {
+    Input::setHideCursor(true);
 }
 
 GameScene::~GameScene()
@@ -115,7 +116,7 @@ void GameScene::start()
         this,
         this->getResourceManager(),
         this->playerID,
-        this->paused,
+        &this->paused,
         this->getPhysicsEngine(),
         this->getUIRenderer(),
         this->getScriptHandler(),
@@ -248,6 +249,9 @@ void GameScene::update()
     if (Input::isKeyPressed(Keys::ESC))
     {
         this->paused = !this->paused;
+        this->getScriptHandler()->setGlobal(this->paused, "paused");
+        Input::setHideCursor(!this->paused);
+        this->getComponent<Rigidbody>(this->playerID).velocity = glm::vec3(0.0f);
     }
     if (this->paused)
     {
@@ -261,6 +265,8 @@ void GameScene::update()
         if (this->resumeButton.isClicking())
         {
             this->paused = false;
+            this->getScriptHandler()->setGlobal(this->paused, "paused");
+            Input::setHideCursor(!this->paused);
         }
         else if (this->exitButton.isClicking())
         {
