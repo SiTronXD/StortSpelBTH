@@ -172,12 +172,17 @@ BTStatus LichBT::notEnoughMana(Entity entityID)
 {
     BTStatus ret = BTStatus::Failure;
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-    if (lichComp.mana < lichComp.lightning.manaCost)
+    if (lichComp.mana < lichComp.lightning.manaCost && !lichComp.regeningMana)
+    {
+        ret = BTStatus::Success;
+        lichComp.regeningMana = true;
+    }
+    else if(lichComp.regeningMana)
     {
         ret = BTStatus::Success;
     }
 
-    return BTStatus::Failure;
+    return ret;
 }
 
 BTStatus LichBT::hasStrategy(Entity entityID)
@@ -194,16 +199,16 @@ BTStatus LichBT::hasStrategy(Entity entityID)
 
 BTStatus LichBT::regenerateMana(Entity entityID)
 {
-    BTStatus ret =  BTStatus::Running;
+    BTStatus ret =  BTStatus::Success;
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-    if(lichComp.mana <= lichComp.fire.manaCost)
+    if(lichComp.mana <= lichComp.maxMana)
     {
         lichComp.mana+=lichComp.manaRegenSpeed*get_dt();
     }
     else
     {
-        lichComp.mana = lichComp.maxMana;
-        ret = BTStatus::Success;
+        lichComp.regeningMana = false;
+        ret = BTStatus::Failure;
     }
 
 
@@ -598,6 +603,7 @@ void Lich_combat::start()
 
     alwaysTrue->addCompositor(avoidPlayerInNoNoZone);
     attackIfManaExists->addCompositor(regenerateManaIfNeeded);
+
     attackIfManaExists->addCompositor(attackSeq);
 
 

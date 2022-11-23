@@ -86,7 +86,7 @@ struct LichComponent
         //Stats
     float maxMana               = 100.0f;
     float mana                  = maxMana;
-    float manaRegenSpeed        = 2.0f;
+    float manaRegenSpeed        = 5.0f;
     float healthRegenSpeed      = 2.0f;
     float deathAnimSpeed        = 3.0f;
     float huntSpeed             = 60.0f;
@@ -100,6 +100,7 @@ struct LichComponent
     bool shieldedByTank         = false;
     bool alertAtTop				= false;
 	bool alertDone				= false;
+    bool regeningMana           = false;
     bool chargingAttack         = true;
     bool tempAttack             = false;//For testing strategy picker
 
