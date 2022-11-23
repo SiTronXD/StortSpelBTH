@@ -132,6 +132,12 @@ BTStatus LichBT::huntingPlayer(Entity entityID)
     lichRb.velocity = moveDir * lichComp.huntSpeed;
     rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
 
+    float dist = glm::length(playerTrans.position - lichTrans.position);
+    if(dist <= lichComp.sightRadius)
+    {
+        ret = BTStatus::Success;
+    }
+
     return ret;
 }
 
@@ -207,6 +213,7 @@ BTStatus LichBT::regenerateMana(Entity entityID)
     }
     else
     {
+        lichComp.mana = lichComp.mana;
         lichComp.regeningMana = false;
         ret = BTStatus::Failure;
     }
@@ -406,7 +413,11 @@ BTStatus LichBT::playerNotVisible(Entity entityID)
     Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
     LichComponent lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     float dist = glm::length(playerTrans.position -  lichTrans.position);
-    if(dist > lichComp.sightRadius)
+   /* if(dist > lichComp.sightRadius)
+    {
+        ret = BTStatus::Success;
+    }*/
+    if(dist > lichComp.attackRadius)
     {
         ret = BTStatus::Success;
     }

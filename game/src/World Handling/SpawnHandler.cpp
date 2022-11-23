@@ -277,7 +277,7 @@ ImguiLambda SpawnHandler::LichImgui()
         auto& lichComponent     = this->sceneHandler->getScene()->getComponent<LichComponent>(entityId);
         auto& entiyFSMAgentComp = this->sceneHandler->getScene()->getComponent<FSMAgentComponent>(entityId);
         auto& entityRigidBody   = this->sceneHandler->getScene()->getComponent<Rigidbody>(entityId);
-        int& health             = lichComponent.life;
+        float& health             = lichComponent.life;
         float& mana             = lichComponent.mana;
         float& speed            = lichComponent.speed;
         float& attackRange      = lichComponent.attackRadius;
@@ -290,7 +290,7 @@ ImguiLambda SpawnHandler::LichImgui()
         ImGui::Text(tempStrat.c_str());
         ImGui::Checkbox("Attack", &tempAttack);
         ImGui::SliderFloat("mana", &mana, 0, 100);
-        ImGui::SliderInt("health", &health, 0, lichComponent.FULL_HEALTH);
+        ImGui::SliderFloat("health", &health, 0, lichComponent.FULL_HEALTH);
         ImGui::SliderFloat("speed", &speed, 0, 100);
         ImGui::SliderFloat("gravity", &gravity, 0, 10);
         ImGui::SliderFloat("attackRange", &attackRange, 0, 100);

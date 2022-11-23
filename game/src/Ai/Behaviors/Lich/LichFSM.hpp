@@ -66,13 +66,13 @@ struct LichComponent
     int FULL_HEALTH             = 300;  
     int ESCAPE_HEALTH           = FULL_HEALTH / 4; 
     int BACK_TO_FIGHT_HEALTH    = FULL_HEALTH / 2; 
-    int life                    = FULL_HEALTH;    
     int numBones                = 0;
 
     //Floats
+    float life                  = (float)FULL_HEALTH;    
     float tempRotAngle			= 0.0f;//Dont touch!
     float creepRotSpeed         = 60.0f;
-    float huntRotSpeed         = 60.0f;
+    float huntRotSpeed          = 60.0f;
         //Alert
     float origScaleY			= 1.0f;
 	float alertScale			= 1.5f;
