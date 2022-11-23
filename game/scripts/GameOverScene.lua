@@ -1,7 +1,7 @@
 
 -- Camera
-local cam = scene.createPrefab("scripts/prefabs/CameraPrefab.lua")
-scene.setMainCamera(cam)
+--local cam = scene.createPrefab("scripts/prefabs/CameraPrefab.lua")
+--scene.setMainCamera(cam)
 
 -- Game over logic
 local gameOverID = scene.createEntity()
