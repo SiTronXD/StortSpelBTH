@@ -1,8 +1,7 @@
 #pragma once 
 #include "Room Handler.h"
-#include "../application/SceneHandler.hpp"
-#include "SpawnHandler.hpp"
-#include "../ai/AIHandler.hpp"
+#include "vengine/application/SceneHandler.hpp"
+#include "vengine/ai/AIHandler.hpp"
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
@@ -24,7 +23,7 @@ private:
 
     int nrOfTanks  = 0;
     int nrOfLichs  = 1;
-    int nrOfSwarms = 3;
+    int nrOfSwarms = 0;
 
     int numOfGroups = 4;
     int group_size = 3;

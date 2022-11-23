@@ -1,34 +1,117 @@
 #pragma once
 #include "vengine.h"
 #include "LichBTs.hpp"
+#include <string>
 
+enum ATTACK_STRATEGY
+{
+    NONE    = 0,  
+    LIGHT   = 1,
+    FIRE    = 2,
+    ICE     = 3,
+    _LAST
+
+};
+
+struct LichAttack
+{
+    ATTACK_STRATEGY type;
+    float manaCost;
+    int damage;
+    float cooldownTimer;
+    float cooldownTimerOrig;
+    float castTimeTimer;
+    float castTimeTimerOrig;
+    
+    void setStats(ATTACK_STRATEGY type)
+    {
+        this->type = type;
+        switch (type)
+        {
+        case LIGHT:
+            this->damage = 10;
+            this->manaCost = 5.0f;
+            this->cooldownTimer = this->cooldownTimerOrig = 2.0f;
+            this->castTimeTimer = this->castTimeTimerOrig = 0.0f;
+            break;
+        case FIRE:
+            this->damage = 65;
+            this->manaCost = 30.0f;
+            this->cooldownTimer = this->cooldownTimerOrig = 14.0f;
+            this->castTimeTimer = this->castTimeTimerOrig = 4.0f;
+            break;
+        case ICE:
+            this->damage = 25;
+            this->manaCost = 10.0f;
+            this->cooldownTimer = this->cooldownTimerOrig = 7.0f;
+            this->castTimeTimer = this->castTimeTimerOrig = 2.0f;
+            break;
+        }
+    }
+
+
+};
 
 struct LichComponent
 {
-	LichComponent() {};
+	LichComponent() 
+    {
+        lightning.setStats(ATTACK_STRATEGY::LIGHT);  
+        fire.setStats(ATTACK_STRATEGY::FIRE);
+        ice.setStats(ATTACK_STRATEGY::ICE);
+    };
 
     //Ints
-    int LOW_HEALTH = 30;
-    int FULL_HEALTH = 100;  
-    int ESCAPE_HEALTH = 100 / 4;
-    int life = FULL_HEALTH;    
+    int LOW_HEALTH              = 30;            
+    int FULL_HEALTH             = 300;  
+    int ESCAPE_HEALTH           = FULL_HEALTH / 4; 
+    int BACK_TO_FIGHT_HEALTH    = FULL_HEALTH / 2; 
+    int life                    = FULL_HEALTH;    
+    int numBones                = 0;
 
     //Floats
+    float tempRotAngle			= 0.0f;//Dont touch!
+    float creepRotSpeed         = 60.0f;
+    float huntRotSpeed         = 60.0f;
+        //Alert
+    float origScaleY			= 1.0f;
+	float alertScale			= 1.5f;
+	float alertAnimSpeed		= 3.0f;
+	float alertTempYpos			= 0.0f;
         //Radius
-    float sightRadius           = 100; // I'll just look at you
-    float peronalSpaceRadius    = 90 ; // To close! I will initiate hunt!
-    float attackRadius          = 70 ; // I'm actually able to shoot at you!
-    float nonoRadius            = 40 ; // Too close, I will back away from you! (while shooting) 
+    float sightRadius           = 150.0f; // I'll just look at you
+    float peronalSpaceRadius    = 90.0f; // To close! I will initiate hunt!
+    float attackRadius          = 70.0f; // I'm actually able to shoot at you!
+    float nonoRadius            = 40.0f; // Too close, I will back away from you! (while shooting) 
         //Stats
-    float mana                  = 100;
-    float speed                 = 20 ; // Too close, I will back away from you! (while shooting) 
+    float maxMana               = 100.0f;
+    float mana                  = maxMana;
+    float manaRegenSpeed        = 2.0f;
+    float healthRegenSpeed      = 2.0f;
+    float deathAnimSpeed        = 3.0f;
+    float huntSpeed             = 60.0f;
+    float speed                 = 20.0f ; // Too close, I will back away from you! (while shooting) 
 
+    //ATTACK_STRATEGY strat       = ATTACK_STRATEGY::NONE;
 
     //Bools
+    bool rotateLeft				= true;
     bool inCombat               = false;
     bool shieldedByTank         = false;
+    bool alertAtTop				= false;
+	bool alertDone				= false;
+    bool chargingAttack         = true;
+    bool tempAttack             = false;//For testing strategy picker
 
     bool isDead(){return life<=0;}
+
+    //Combat stuff
+    LichAttack* curAttack       = nullptr;
+    LichAttack lightning;
+    LichAttack fire;
+    LichAttack ice;
+
+    std::string lastAttack      = "";
 };
 
 
@@ -37,11 +120,12 @@ class LichFSM : public FSM
 private:
 	static bool idleToCreep(Entity entityID);
 	static bool creepToAlerted(Entity entityID);
-    static bool alertToHunt(Entity entityID);    
+    static bool alertToHunt(Entity entityID);
     static bool huntToIdle(Entity entityID);
     static bool huntToCombat(Entity entityID);
     static bool escapeToCombat(Entity entityID);
     static bool escapeToIdle(Entity entityID);
+    static bool combatToEscape(Entity entityID);
     static bool combatToIdle(Entity entityID);
     static bool combatToHunt(Entity entityID);
 
@@ -55,6 +139,7 @@ private:
     EntityEvent hunt_to_combat{  "hunt to combat",     huntToCombat};
     EntityEvent combat_to_idle{  "combat to dead",     combatToIdle};
     EntityEvent combat_to_hunt{  "combat to hunt",     combatToHunt};
+    EntityEvent combat_to_escape{"combat to escape",   combatToEscape};
     EntityEvent escape_to_combat{"escape to combat",   escapeToCombat};
     EntityEvent escape_to_idle{  "escape to idle",     escapeToIdle};
 
@@ -97,6 +182,7 @@ protected:
 		addEntityTransition("hunt",     LichFSM::hunt_to_combat,       "combat");
 		addEntityTransition("combat",   LichFSM::combat_to_idle,       "idle");
 		addEntityTransition("combat",   LichFSM::combat_to_hunt,       "hunt");
+		addEntityTransition("combat",   LichFSM::combat_to_escape,     "escape");
 		addEntityTransition("escape",   LichFSM::escape_to_combat,     "combat");
 		addEntityTransition("escape",   LichFSM::escape_to_idle,       "idle");
 
@@ -119,4 +205,5 @@ protected:
 	static float	get_dt();
 	static Scene*	getTheScene();
 	static bool		falseIfDead(Entity entityID);
+    static void updateAttackColldowns(Entity entityID);
 };

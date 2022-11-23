@@ -29,13 +29,14 @@ private:
   Entity perk3;
   Entity perk4;
   Entity ability;
+  Entity ability1;
 
   Entity dirLightEntity;
 
   int numRoomsCleared;
   bool newRoomFrame;
 
-
+  int abilityMeshes[2];
   int perkMeshes[5];
 
   uint32_t abilityTextures[3];
