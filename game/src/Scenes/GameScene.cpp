@@ -253,21 +253,7 @@ void GameScene::update()
           float y = rb.velocity.y;
           rb.velocity = vec * 10.0f;
           rb.velocity.y = y + Input::isKeyPressed(Keys::SPACE) * 5.0f;
-      }*/
-
-    sf::Packet &packet = this->getNetworkHandler()->getScenePacket();
-    int gameEvent;
-    while(!packet.endOfPacket()){
-        packet >> gameEvent;
-        if(gameEvent == GameEvents::GetPlayerHP){
-            TCPPacketEvent packetToServer;
-            packetToServer.gameEvent = GameEvents::GetPlayerHP;
-            packetToServer.nrOfInts = 1;
-            packetToServer.ints[0] = 100;
-            this->getNetworkHandler()->sendTCPDataToClient(packetToServer);
-        }
-
-    }
+      }*/  
 
       // Switch scene if the player is dead
     if (this->hasComponents<Combat>(this->playerID))
