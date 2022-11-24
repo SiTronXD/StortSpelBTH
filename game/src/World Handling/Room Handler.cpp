@@ -558,6 +558,14 @@ bool TileInfo::amIMyNeighboursNeighbour(int myID, const std::vector<TileInfo>& a
     {
         goodNeighbour = false;
     }
+
+
+    if( this->idUpOf() == TileInfo::NONE  && this->idDownOf() == TileInfo::NONE  && this->idLeftOf() == TileInfo::NONE && this->idRightOf() == TileInfo::NONE) 
+    {
+        assert(false);
+        return false; 
+    }
+
     return goodNeighbour;
 
 }
