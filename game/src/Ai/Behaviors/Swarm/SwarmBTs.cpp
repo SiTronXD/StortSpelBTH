@@ -294,7 +294,9 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 	}
 
 	Transform tempTrans = swarmTransform;
+	float tempVelY = swarmRB.velocity.y;
 	swarmRB.velocity = swarmComp.dir * swarmComp.idleSpeed;
+	swarmRB.velocity.y = tempVelY;
 	glm::vec3 to = swarmTransform.position + swarmComp.dir * 3.0f;
 	swarmTransform.rotation.y = lookAtY(swarmTransform.position, to);
 	swarmTransform.updateMatrix();
@@ -604,30 +606,6 @@ BTStatus SwarmBT::attack(Entity entityID)
 	thisTransform.updateMatrix();
 
 	static float initialFriction = rigidbody.friction;
-
-	glm::vec3 posToUse = thisTransform.position;
-    static Ray downRay;
-	downRay.pos = posToUse; 
-	downRay.dir = glm::vec3(0.0f,-1.0f,0.0f); 
-        
-    float maxDist = sawrmCollider.radius + 1.0f;
-    RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(downRay,maxDist);   
-
-    if(rp.hit && swarmComp.groundTimer <= 0.0f)
-    {
-		Collider& hitCol = getTheScene()->getComponent<Collider>(rp.entity);
-		float dist = glm::length(rp.hitPoint - posToUse);
-		if(dist < (sawrmCollider.radius + 0.5f) && !hitCol.isTrigger)
-		{
-			swarmComp.grounded = true;	
-			swarmComp.groundTimer = swarmComp.groundTimerOrig;
-		}
-    }
-
-	if(!swarmComp.grounded && swarmComp.groundTimer > 0.0f)
-	{
-		swarmComp.groundTimer -= get_dt();
-	}
 
 
 	if(swarmComp.grounded && combat.timer > 0.0f)

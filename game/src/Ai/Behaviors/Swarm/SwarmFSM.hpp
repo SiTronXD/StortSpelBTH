@@ -64,16 +64,22 @@ struct SwarmComponent
 
 	float getGroupHealth(Scene* scene)
 	{
-		float ret = 0.0f;
+		float avgHealth = 0.0f;
+		int num = 0;
 		for(auto p: group->members)
 		{
-			ret += scene->getComponent<SwarmComponent>(p).life;
+			float health = scene->getComponent<SwarmComponent>(p).life;
+			if(health > 0.0f)
+			{
+				avgHealth += health;
+				num++;
+			}
 		}
-		if(group->members.size() > 0)
+		if(num > 0)
 		{
-			ret /= group->members.size();
+			avgHealth /=num;
 		}
-		return ret;
+		return avgHealth;
 	};
 	float getNumAliveInGroup(Scene* scene)
 	{
@@ -190,5 +196,10 @@ protected:
 
 
 		setInitialNode("idle");
+
+
+
 	}
+	//Helper functions
+	static void updateSwarmGrounded(Entity entityID);
 };
