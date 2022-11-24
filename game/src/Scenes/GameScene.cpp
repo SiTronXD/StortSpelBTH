@@ -48,7 +48,7 @@ void GameScene::init()
     roomHandler.init(
         this,
         this->getResourceManager(), true);
-    roomHandler.generate(rand());
+    roomHandler.generate(rand());    
     createPortal();
     // simon
     ResourceManager* resourceMng = this->getResourceManager();

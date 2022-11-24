@@ -587,7 +587,7 @@ void RoomHandler::createTileInfos(uint32_t roomIndex)
 
     for(size_t i = 0; i < rawTiles.size(); i++)
     {
-        const glm::vec3 currentPos = rawTiles[i];
+        const glm::vec3 currentPos = rawTiles[i];        
         std::array<int,4> neighbours{TileInfo::NONE,TileInfo::NONE,TileInfo::NONE,TileInfo::NONE};
         
         for(size_t j = 0; j < rawTiles.size(); j++)
@@ -600,7 +600,7 @@ void RoomHandler::createTileInfos(uint32_t roomIndex)
                     glm::vec3 sideOffset = currentPos + DIRS[k] * RoomHandler::TILE_WIDTH; 
                     sideOffset.y = 0.f;
                     float dist = glm::length(sideOffset - rawTiles[j]); 
-
+                    
                     // Check if correct neighbour
                     if(dist < RoomHandler::TILE_WIDTH) 
                     {

@@ -42,7 +42,7 @@ public:
 
     inline const glm::vec3& getPos() const  {return pos;};
     static bool checkValidTileInfoVector(const std::vector<TileInfo>& allTiles, int roomIndex);
-    
+
 };
 
 class RoomHandler
@@ -111,7 +111,7 @@ private:
 	Entity createDoorEntity(float yRotation);
 
     // Create TileInfos 
-    void createTileInfos();
+    void createTileInfos(uint32_t roomIndex);
 
 	// Doors and paths
 	void createDoors(int roomIndex, const glm::ivec2* doorTilePos);
