@@ -11,11 +11,13 @@ class LobbyScene : public Scene
 private:
 	uint32_t fontTextureId;
 	uint32_t backgroundId;
+	std::string serverIP;
 
 	uint32_t activePlayers;
 	std::vector<Entity> players;
 	std::vector<std::string> playersNames;
     int playerModel;
+	int light;
 
 	static const int MAX_PLAYER_COUNT = 4;
 	inline static const std::vector<glm::vec3> POSITIONS = { 
@@ -25,15 +27,14 @@ private:
 		glm::vec3(-5, -10, 21) 
 	};
 
-	int startButton;
-	int disconnectButton;
-	int light;
+	UIArea startButton;
+	UIArea disconnectButton;
 
 	sf::Packet helpPacket;
 	NetworkHandlerGame* networkHandler;
 
 public:
-	LobbyScene();
+	LobbyScene(const std::string& serverIP = "");
 	virtual ~LobbyScene();
 
 	// Inherited via Scene

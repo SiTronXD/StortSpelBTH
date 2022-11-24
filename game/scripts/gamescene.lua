@@ -5,6 +5,8 @@ local playerMesh = resources.addAnimations({ "assets/models/Character/CharIdle.f
 resources.mapAnimations(playerMesh, {"idle", "run", "dodge", "lightAttack", "heavyAttack", 
 "spinAttack", "knockback", "mixAttack", "slashAttack"})
 
+paused = false
+
 -- Camera
 local cam = scene.createPrefab("scripts/prefabs/CameraPrefab.lua")
 scene.setMainCamera(cam)

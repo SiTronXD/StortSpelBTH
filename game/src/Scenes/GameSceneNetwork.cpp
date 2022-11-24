@@ -137,7 +137,7 @@ void GameSceneNetwork::start()
       this,
       this->getResourceManager(),
       this->playerID,
-      paused,
+      &paused,
       this->getPhysicsEngine(),
       this->getUIRenderer(),
       this->getScriptHandler(),
