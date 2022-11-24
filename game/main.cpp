@@ -29,6 +29,7 @@ int main(int argc, char* argv[])
         //engine.run("Presumed Dead", "", new RoomTesting());
         //engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
         engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
+        //engine.run("Presumed Dead", "scripts/levelEditor.lua", new LevelEditor());
     }
 
     return EXIT_SUCCESS;

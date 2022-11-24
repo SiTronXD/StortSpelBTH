@@ -4,6 +4,7 @@
 #include "vengine/shared_memory/Comlib.h"
 #include "vengine/shared_memory/mayaStructures.h"
 #include "../LevelEditor/ObjectHandler.h"
+#include "../World Handling/Room Handler.h"
 
 class LevelEditor: public Scene
 {
@@ -11,9 +12,16 @@ private:
     Comlib* comlib;
     char* data;
     MessageHeader* header;
-    
-    Entity playerID;
+
     ObjectHandler objectHandler;
+    RoomHandler roomHandler;
+
+    Entity playerID;
+    Entity playerCamera;
+    Entity mayaCamera;
+    Entity sun;
+
+    void readBuffer();
 
 public:
     LevelEditor();
