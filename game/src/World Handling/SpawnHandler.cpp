@@ -10,8 +10,8 @@ void SpawnHandler::spawnEnemiesIntoRoom()
     int swarmIdx        = 0;
     int lichIdx         = 0;
     int tankIdx         = 0;
-    this->totalNumberOfEnemies  = 10; //TODO: Make random when not debugging
     int counter         = 0;
+    this->nrOfEnemiesPerRoom  = enemiesPerTiles; //TODO: Make random when not debugging
 
     static auto randomEngine = std::default_random_engine{};    
     
@@ -22,26 +22,34 @@ void SpawnHandler::spawnEnemiesIntoRoom()
 
     std::stack<const TileInfo*> unusedTileInfos(tilePtrs);
     
-    while(this->totalNumberOfEnemies > counter) 
+    this->nrOfEnemiesPerRoom *= tileInfos.size();
+
+    this->nrOfEnemiesPerRoom = std::clamp((int)this->nrOfEnemiesPerRoom, 0 , SpawnHandler::MAX_NR_OF_ENEMIES);
+
+    this->nrOfTanks_inRoom  = std::clamp((int)(tileInfos.size() * enemiesPerTiles *PERCENTAGE_TANKS), 0, MAX_NR_TANKS);
+    this->nrOfLichs_inRoom  = std::clamp((int)(tileInfos.size() * enemiesPerTiles *PERCENTAGE_LICHS), 0, MAX_NR_LICHS);
+    this->nrOfGroups_inRoom = std::clamp((int)(tileInfos.size() * enemiesPerTiles *PERCENTAGE_SWARMG),0, MAX_NR_SWARMGROUPS);
+
+    while(this->nrOfEnemiesPerRoom > counter) 
     {
 
         auto& tileInfo = unusedTileInfos.top();
                     
-        if(tankIdx < nrOfTanks)
+        if(tankIdx < this->nrOfTanks_inRoom)
         {
             this->spawnTank(tankIdx, tileInfo->getPos());
             tankIdx++;
         }
-        else if(lichIdx < nrOfLichs)
+        else if(lichIdx < this->nrOfLichs_inRoom)
         {
             this->spawnLich(lichIdx, tileInfo->getPos());
             lichIdx++;
         }
-        else if(swarmIdx < nrOfSwarms)
+        else if(swarmIdx < this->nrOfGroups_inRoom)
         {
             this->spawnSwarmGroup(swarmIdx, tileInfo->getPos());
-            swarmIdx += this->group_size;
-            counter += this->group_size - 1;
+            swarmIdx += SpawnHandler::NR_BLOBS_IN_GROUP;
+            counter  += SpawnHandler::NR_BLOBS_IN_GROUP - 1;
         }
 
         counter++;        
@@ -80,7 +88,7 @@ void SpawnHandler::spawnLich(int lichIdx, const glm::vec3& pos)
 void SpawnHandler::spawnSwarmGroup(const int swarmStartIdx, const glm::vec3& pos)
 {
     int swarmIdx = swarmStartIdx;
-    for(size_t i = 0; i < this->group_size; i++)
+    for(size_t i = 0; i < SpawnHandler::NR_BLOBS_IN_GROUP; i++)
     {
         this->spawnSwarm(swarmIdx, pos);
 
@@ -128,19 +136,19 @@ void SpawnHandler::createEntities()
 #endif 
 
     // Swarm        
-    for(size_t j = 0; j < numOfGroups; j++)
+    for(size_t j = 0; j < SpawnHandler::MAX_NR_SWARMGROUPS; j++)
     {
         this->createSwarmGroup();   
     }
 
     // Tank
-    for(int i = 0; i < 1; i++)
+    for(int i = 0; i < SpawnHandler::MAX_NR_TANKS; i++)
     {
         this->createTank();
     }
 
     // Lich
-    for(int i = 0; i < 1; i++)
+    for(int i = 0; i < SpawnHandler::MAX_NR_LICHS; i++)
     {
         this->createLich();
     }
@@ -167,11 +175,13 @@ void SpawnHandler::createTank()
     TankComponent& tankComp = this->currScene->getComponent<TankComponent>(this->tankIDs.back());
     tankComp.origScaleY = transform.scale.y;
     this->currScene->setInactive(this->tankIDs.back());
+    tankComp.life = 0;
 }
 
 void SpawnHandler::createLich()
 {
     static int lich = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
+
     this->lichIDs.push_back(this->currScene->createEntity());
     this->allEntityIDs.push_back(this->lichIDs.back());
     this->currScene->setComponent<MeshComponent>(this->lichIDs.back(), lich);
@@ -188,13 +198,14 @@ void SpawnHandler::createLich()
     LichComponent& lichComp = this->currScene->getComponent<LichComponent>(this->lichIDs.back());
     lichComp.origScaleY = transform.scale.y;
     this->currScene->setInactive(this->lichIDs.back());
+    lichComp.life = 0;
 }
 
 void SpawnHandler::createSwarmGroup()
 {
     static int swarm = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
     this->swarmGroups.push_back(new SwarmGroup); //TODO: Does this work as expected? Do we need to clear (delete contents) this on every init? 
-    for (size_t i = 0; i < this->group_size; i++)
+    for (size_t i = 0; i < SpawnHandler::NR_BLOBS_IN_GROUP; i++)
     {
         this->swarmIDs.push_back(this->currScene->createEntity());
         this->allEntityIDs.push_back(this->swarmIDs.back());

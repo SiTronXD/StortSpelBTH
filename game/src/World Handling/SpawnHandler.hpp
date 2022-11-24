@@ -13,6 +13,19 @@ using ImguiLambda = std::function<void(FSM* fsm, uint32_t entityId)>;
 
 class SpawnHandler
 {
+public:
+    inline static const int MAX_NR_OF_ENEMIES = 100;
+    inline static const float PERCENTAGE_TANKS   = 0.10f;
+    inline static const float PERCENTAGE_LICHS   = 0.25f;
+    inline static const float PERCENTAGE_SWARMG  = 0.75f;
+
+    const float enemiesPerTiles = 1.0;
+
+    inline static const int NR_BLOBS_IN_GROUP = 3;
+
+    inline static const int MAX_NR_TANKS        = MAX_NR_OF_ENEMIES * PERCENTAGE_TANKS;
+    inline static const int MAX_NR_LICHS        = MAX_NR_OF_ENEMIES * PERCENTAGE_LICHS;
+    inline static const int MAX_NR_SWARMGROUPS  = (MAX_NR_OF_ENEMIES * PERCENTAGE_SWARMG)/NR_BLOBS_IN_GROUP;
 private:
     RoomHandler*     roomHandler;
     GameScene*       currScene;
@@ -21,14 +34,16 @@ private:
     ResourceManager* resourceManager;
     UIRenderer*      uiRenderer;
 
-    int totalNumberOfEnemies = 10;
 
-    int nrOfTanks  = 1;
-    int nrOfLichs  = 1;
-    int nrOfSwarms = 0;
+    float nrOfEnemiesPerRoom = 0; // Set based on nr of Tile per room
 
-    int numOfGroups = 4;
-    int group_size = 3;
+
+    // Enemies in current Room
+    int nrOfTanks_inRoom  = 0;
+    int nrOfLichs_inRoom  = 0;
+    int nrOfSwarms_inRoom = 0;
+    int nrOfGroups_inRoom = 0;
+
 
     std::vector<int> allEntityIDs;
     std::vector<int> swarmIDs;
