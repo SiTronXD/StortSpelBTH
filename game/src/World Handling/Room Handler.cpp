@@ -9,7 +9,7 @@ const float RoomHandler::TILE_WIDTH = 25.f;
 const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 5;
 const uint32_t RoomHandler::NUM_BORDER = 1;
 const uint32_t RoomHandler::NUM_ONE_X_ONE = 3;
-const uint32_t RoomHandler::NUM_ONE_X_TWO = 1;
+const uint32_t RoomHandler::NUM_ONE_X_TWO = 2;
 const uint32_t RoomHandler::NUM_TWO_X_TWO = 1;
 const uint32_t RoomHandler::DECO_ENTITY_CHANCE = 30;
 
