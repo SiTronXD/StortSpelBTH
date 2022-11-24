@@ -514,6 +514,49 @@ int RoomHandler::getNumRooms() const
 	return (int)this->rooms.size();
 }
 
+bool TileInfo::checkValidTileInfoVector(const std::vector<TileInfo>& tileInfos, int roomIndex)
+{
+    bool tileInfosValid = true; 
+    for(size_t i = 0; i < tileInfos.size(); i++ )
+    {
+        if(!tileInfos[i].amIMyNeighboursNeighbour(i, tileInfos))
+        {
+            Log::warning("Tile["+std::to_string(i)+"] neigbhours is not neigbhour with Tile["+std::to_string(i)+"]!");
+            tileInfosValid = false;
+        }
+    }
+
+    if(!tileInfosValid)
+    {Log::error("RoomHandler has invalid TileInfos for room["+std::to_string(roomIndex)+"], se warning/s above!");}
+    else{Log::write("RoomHandlers TileInfos are correct for room["+std::to_string(roomIndex)+"]!");}
+
+    return tileInfosValid;
+}
+
+bool TileInfo::amIMyNeighboursNeighbour(int myID, const std::vector<TileInfo>& allTiles) const
+{    
+    bool goodNeighbour = true;
+   
+    if(  this->idUpOf() != TileInfo::NONE && allTiles[this->idUpOf()].idDownOf() != myID)
+    {
+        goodNeighbour = false;
+    }
+    if( this->idDownOf() != TileInfo::NONE && allTiles[this->idDownOf()].idUpOf() != myID)
+    {
+        goodNeighbour = false;
+    }
+    if( this->idLeftOf() != TileInfo::NONE && allTiles[this->idLeftOf()].idRightOf() != myID)
+    {
+        goodNeighbour = false;
+    }
+    if( this->idRightOf() != TileInfo::NONE && allTiles[this->idRightOf()].idLeftOf() != myID )
+    {
+        goodNeighbour = false;
+    }
+    return goodNeighbour;
+
+}
+
 Entity RoomHandler::getFloor() const
 {
 	return this->floor;
