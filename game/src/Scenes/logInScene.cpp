@@ -7,7 +7,7 @@ logInScene::~logInScene() {}
 
 void logInScene::start()
 {
-    nameOrIp = &name;
+    selected = nullptr;
 
     TextureSamplerSettings samplerSettings{};
     samplerSettings.filterMode = vk::Filter::eNearest;
@@ -36,11 +36,11 @@ void logInScene::start()
     this->setComponent<Camera>(camEntity);
     this->setMainCamera(camEntity);
 
-    nameButton.position = glm::vec2(0, 1080 / 4);
-    nameButton.dimension = glm::vec2(1920, 1080/2);
+    nameButton.position = glm::vec2(0.0f, 50.0f);
+    nameButton.dimension = glm::vec2(600.0f, 75.0f);
 
-    ipButton.position = glm::vec2(0, -1080 / 4);
-    ipButton.dimension = glm::vec2(1920, 1080 / 2);
+    ipButton.position = glm::vec2(0.0f, -50.0f);
+    ipButton.dimension = glm::vec2(600.0f, 75.0f);
 
     startButton.position = glm::vec2(0.0f, -400.f);
     startButton.dimension = glm::vec2(275.0f, 100.0f);
@@ -48,19 +48,24 @@ void logInScene::start()
     backButton.position = glm::vec2(-700.f, -400.f);
     backButton.dimension = glm::vec2(225.0f, 100.0f);
 
-    title = this->getNetworkHandler()->hasServer() ? "create game" : "join game";
+    title = this->getNetworkHandler()->hasServer() ? "create" : "join";
 }
 
 void logInScene::update()
 {
     if (this->nameButton.isClicking())
     {
-        nameOrIp = &name;
+        selected = &name;
     }
-    else if (this->ipButton.isClicking())
+    else if (this->ipButton.isClicking() && !this->getNetworkHandler()->hasServer())
     {
-        nameOrIp = &ipAddress;
+        selected = &ipAddress;
     }
+    else if (Input::isMouseButtonPressed(Mouse::LEFT))
+    {
+        selected = nullptr;
+    }
+
     if (this->startButton.isClicking() && this->name == "")
     {
         this->noName = true;
@@ -72,7 +77,8 @@ void logInScene::update()
         {
             if (this->getNetworkHandler()->connectClientToThis())
             {
-                this->getSceneHandler()->setScene(new LobbyScene());
+                std::string str = sf::IpAddress::getLocalAddress().toString();
+                this->getSceneHandler()->setScene(new LobbyScene(str.substr(str.length() - 3, 3)));
             }
             else
             {
@@ -82,9 +88,10 @@ void logInScene::update()
         }
         else
         {
-            if (this->getNetworkHandler()->connectClient("192.168.1." + ipAddress))
+            std::string startAddress = ipAddress.contains(".") ? "" : "192.168.1.";
+            if (this->getNetworkHandler()->connectClient(startAddress + ipAddress))
             {
-                this->getSceneHandler()->setScene(new LobbyScene()); 
+                this->getSceneHandler()->setScene(new LobbyScene(ipAddress));
             }
             else
             {
@@ -101,35 +108,60 @@ void logInScene::update()
     // Button backtgrounds
     this->getUIRenderer()->setTexture(this->backgroundId);
     this->getUIRenderer()->renderTexture(
+        this->nameButton.position, this->nameButton.dimension,
+        glm::uvec4(0, 0, 1, 1), 
+        glm::vec4(1.0f, 1.0f, 1.0f, 0.1f + (this->nameButton.isHovering() || (this->selected == &this->name)) * 0.15f));
+    if (!this->getNetworkHandler()->hasServer())
+    {
+        this->getUIRenderer()->renderTexture(
+            this->ipButton.position, this->ipButton.dimension,
+            glm::uvec4(0, 0, 1, 1), 
+            glm::vec4(1.0f, 1.0f, 1.0f, 0.1f + (this->ipButton.isHovering() || (this->selected == &this->ipAddress)) * 0.15f));
+    }
+    this->getUIRenderer()->renderTexture(
         this->backButton.position, this->backButton.dimension,
         glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.1f + this->backButton.isHovering() * 0.15f));
     this->getUIRenderer()->renderTexture(
         this->startButton.position, this->startButton.dimension,
         glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.1f + this->startButton.isHovering() * 0.15f));
 
-    this->write();
-    this->getUIRenderer()->setTexture(this->fontTextureId);
-    this->getUIRenderer()->renderString(
-        "name: ", glm::vec2(0.f, 50.f), glm::vec2(50.f, 50.f), 0.0f, StringAlignment::RIGHT
-    );
-    this->getUIRenderer()->renderString(
-        this->name, glm::vec2(0.f, 50.f), glm::vec2(50.f, 50.f), 0.0, StringAlignment::LEFT
-    );
-
-    this->getUIRenderer()->renderString(
-        this->title, glm::vec2(0.f, 350.f), glm::vec2(125.f, 125.f), 0.0, StringAlignment::CENTER
-    );
-
-    if (!this->getNetworkHandler()->hasServer())
+    if (this->selected)
     {
-        this->getUIRenderer()->renderString(
-            "code: ", glm::vec2(0.f, -50.f), glm::vec2(50.f, 50.f), 0.0f, StringAlignment::RIGHT
-        );
-        this->getUIRenderer()->renderString(this->ipAddress, glm::vec2(0.f, -50.f), glm::vec2(50.f, 50.f), 0.0, StringAlignment::LEFT);
+        this->write();
     }
 
     this->getUIRenderer()->renderString(
-        "start", this->startButton.position, glm::vec2(50.f, 50.f), 0.0f, StringAlignment::CENTER
+        this->title + " game", glm::vec2(0.f, 350.f), glm::vec2(125.f, 125.f), 0.0, StringAlignment::CENTER
+    );
+    if (this->name == "" && this->selected != &this->name)
+    {
+        this->getUIRenderer()->renderString(
+            "name", glm::vec2(-275.0f, 50.f), glm::vec2(40.0f), 0.0f, StringAlignment::LEFT, glm::vec4(glm::vec3(1.0f), 0.5f)
+        );
+    }
+    else
+    {
+        this->getUIRenderer()->renderString(
+            this->name, glm::vec2(-275.0f, 50.f), glm::vec2(50.f, 50.f), 0.0f, StringAlignment::LEFT
+        );
+    }
+
+    if (!this->getNetworkHandler()->hasServer())
+    {
+        if (this->ipAddress == "" && this->selected != &this->ipAddress)
+        {
+            this->getUIRenderer()->renderString(
+                "address", glm::vec2(-275.0f, -50.f), glm::vec2(40.0f), 0.0f, StringAlignment::LEFT, glm::vec4(glm::vec3(1.0f), 0.5f)
+            );
+        }
+        else
+        {
+            this->getUIRenderer()->renderString(this->ipAddress, glm::vec2(-275.0f, -50.f), glm::vec2(50.f, 50.f), 0.0f, StringAlignment::LEFT);
+        }
+    }
+
+    this->getUIRenderer()->renderString(
+        title, this->startButton.position, glm::vec2(50.f, 50.f), 0.0f, StringAlignment::CENTER
     );
     this->getUIRenderer()->renderString(
         "back", this->backButton.position, glm::vec2(50.f, 50.f), 0.0f, StringAlignment::CENTER
@@ -138,52 +170,66 @@ void logInScene::update()
     if (this->noName)
     {
         this->getUIRenderer()->renderString(
-            "no name provided", glm::vec2(0.0f, -200.f), glm::vec2(50.f, 50.f), 0.0f, StringAlignment::CENTER, glm::vec4(1.0f, 0.1f, 0.1f, 1.0f)
+            "no name provided", glm::vec2(0.0f, -150.f), glm::vec2(40.0f), 0.0f, StringAlignment::CENTER, glm::vec4(1.0f, 0.1f, 0.1f, 1.0f)
         );
     }
     else if (this->incorrectIP)
     {
         this->getUIRenderer()->renderString(
-            "code not valid", glm::vec2(0.0f, -200.f), glm::vec2(50.f, 50.f), 0.0f, StringAlignment::CENTER, glm::vec4(1.0f, 0.1f, 0.1f, 1.0f)
+            "address not valid", glm::vec2(0.0f, -150.f), glm::vec2(40.0f), 0.0f, StringAlignment::CENTER, glm::vec4(1.0f, 0.1f, 0.1f, 1.0f)
         );
     }
+
+    //if (this->selected)
+    //{
+    //    // Text cursor
+    //    this->getUIRenderer()->setTexture(this->backgroundId);
+    //    float opacity = (sin(7.5f * Time::getTimeSinceStart()) + 1.0f) * 0.5f;
+    //    this->getUIRenderer()->renderTexture(
+    //        this->nameButton.position - 
+    //        glm::vec2(275.0f - 50.0f * this->selected->length(), 100.0f * (this->selected == &this->ipAddress)), 
+    //        glm::vec2(7.5f, 50.0f), glm::uvec4(0, 0, 1, 1),
+    //        glm::vec4(1.0f, 1.0f, 1.0f, 0.2f * std::max(std::min(opacity, 0.75f), 0.25f)));
+    //}
 }
 
 void logInScene::write()
 {
-    std::string orig = *nameOrIp;
-    for (int i = 97; i < 123; i++)
+    std::string orig = *selected;
+    if (Input::isKeyPressed(Keys::BACK) && selected->length() > 0)
     {
-        if (Input::isKeyPressed((Keys)i))
+        selected->pop_back();
+    }
+    if (orig.length() <= 12)
+    {
+        for (int i = 97; i < 123; i++)
         {
-            *nameOrIp += i;
+            if (Input::isKeyPressed((Keys)i))
+            {
+                *selected += i;
+            }
+        }
+        for (int i = 48; i < 58; i++)
+        {
+            if (Input::isKeyPressed(Keys(i)))
+            {
+                *selected += i;
+            }
+        }
+        if (Input::isKeyPressed(Keys::DOT))
+        {
+            *selected += 46;
+        }
+        else if (Input::isKeyPressed(Keys::SPACE))
+        {
+            *selected += 32;
         }
     }
-    for (int i = 48; i < 58; i++)
-    {
-        if (Input::isKeyPressed(Keys(i)))
-        {
-            *nameOrIp += i;
-        }
-    }
-    if (Input::isKeyPressed(Keys::DOT))
-    {
-        *nameOrIp += 46;
-    }
-    else if(Input::isKeyPressed(Keys::SPACE))
-    {
-        *nameOrIp += 32;
-    }
-    else if (Input::isKeyPressed(Keys::BACK) && nameOrIp->length() > 0)
-    {
-        nameOrIp->pop_back();
-    }
-
-    if (this->noName && orig != *nameOrIp)
+    if (this->noName && orig != *selected)
     {
         this->noName = false;
     }
-    else if (this->incorrectIP && orig != *nameOrIp)
+    else if (this->incorrectIP && orig != *selected)
     {
         this->incorrectIP = false;
     }

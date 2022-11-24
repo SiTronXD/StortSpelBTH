@@ -9,7 +9,7 @@ private:
 	std::string title;
 	std::string name;
 	std::string ipAddress;
-	std::string* nameOrIp;
+	std::string* selected;
 	bool noName = false;
 	bool incorrectIP = false;
 

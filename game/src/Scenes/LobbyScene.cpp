@@ -2,7 +2,7 @@
 #include "GameScene.h"
 #include "MainMenu.h"
 
-LobbyScene::LobbyScene() {}
+LobbyScene::LobbyScene(const std::string& serverIP) : serverIP(serverIP) {}
 LobbyScene::~LobbyScene() {}
 
 void LobbyScene::init()
@@ -42,7 +42,7 @@ void LobbyScene::init()
     this->networkHandler = dynamic_cast<NetworkHandlerGame*>(this->getNetworkHandler());
 
     this->backgroundId =
-        this->getResourceManager()->addTexture("assets/textures/UI/background.png"
+        this->getResourceManager()->addTexture("assets/textures/blackTex.png"
         );
 
     this->fontTextureId = Scene::getResourceManager()->addTexture(
@@ -65,8 +65,8 @@ void LobbyScene::init()
     this->getComponent<Transform>(camEntity).position = glm::vec3(0, 0, 0);
     this->getComponent<Transform>(camEntity).rotation = glm::vec3(0, 0, 0);
 
-    this->players.resize(4);
-    this->playersNames.resize(4);
+    this->players.resize(MAX_PLAYER_COUNT);
+    this->playersNames.resize(MAX_PLAYER_COUNT);
     for (int i = 0; i < 4; i++)
     {
         this->players[i] = this->createEntity();
@@ -76,21 +76,21 @@ void LobbyScene::init()
         Transform& t = this->getComponent<Transform>(this->players[i]);
         t.position = this->POSITIONS[i];
         t.rotation = glm::vec3(0, 180, 0);
-        t.scale = glm::vec3(1);
+
+        if (i != 0)
+        {
+            MeshComponent& mesh = this->getComponent<MeshComponent>(this->players[i]);
+            this->getResourceManager()->makeUniqueMaterials(mesh);
+            mesh.overrideMaterials[0].tintColor = this->networkHandler->playerColors[i];
+        }
     }
     this->setActive(players[0]);
 
-    this->startButton = this->createEntity();
-    this->disconnectButton = this->createEntity();
+    startButton.position = glm::vec2(0.0f, -400.f);
+    startButton.dimension = glm::vec2(275.0f, 100.0f);
 
-    UIArea area{};
-    area.position = glm::vec2(800.f, 0.f);
-    area.dimension = glm::vec2(20 * 10, 20);
-    this->setComponent<UIArea>(this->startButton, area);
-
-    area.position = glm::vec2(-800.f, -60.f);
-    area.dimension = glm::vec2(20 * 10, 20);
-    this->setComponent<UIArea>(this->disconnectButton, area);
+    disconnectButton.position = glm::vec2(-700.f, -400.f);
+    disconnectButton.dimension = glm::vec2(225.0f, 75.0f);
 }
 
 void LobbyScene::start() 
@@ -115,13 +115,14 @@ void LobbyScene::update()
     {
         this->playersNames.clear();
         this->activePlayers = netPlayers.size() + 1;
-        Log::write("Active players: " + std::to_string(this->activePlayers));
+        this->getComponent<AnimationComponent>(this->players[0]).timer = 0.0f;
         for (int i = 0; i < netPlayers.size(); i++)
         {
             this->setActive(this->players[i + 1]);
             this->playersNames.push_back(
                 this->getNetworkHandler()->getPlayers()[i].second
             );
+            this->getComponent<AnimationComponent>(this->players[i + 1]).timer = 0.0f;
         }
         for (int i = this->activePlayers; i < MAX_PLAYER_COUNT; i++)
         {
@@ -129,27 +130,37 @@ void LobbyScene::update()
         }
     }
 
+    // Button backtgrounds
+    this->getUIRenderer()->setTexture(this->backgroundId);
+    this->getUIRenderer()->renderTexture(
+        this->disconnectButton.position, this->disconnectButton.dimension,
+        glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.1f + this->disconnectButton.isHovering() * 0.15f));
+    if (this->getNetworkHandler()->hasServer())
+    {
+        this->getUIRenderer()->renderTexture(
+            this->startButton.position, this->startButton.dimension,
+            glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.1f + this->startButton.isHovering() * 0.15f));
+    }
+
     // Write player names in lobby
-    Scene::getUIRenderer()->setTexture(this->fontTextureId);
     this->getUIRenderer()->renderString(
         this->getNetworkHandler()->getClientName(),
-        glm::vec2(1920 / 2 - 500, 1080.f / 2 - 140 - (70 * 0)),
-        glm::vec2(40.f, 40.f),
-        0,
-        StringAlignment::LEFT
+        this->POSITIONS[0] + glm::vec3(0.0f, 20.0f, 0.0f),
+        glm::vec2(100.0f)
     );
     for (int i = 0; i < this->playersNames.size(); i++)
     {
         this->getUIRenderer()->renderString(
             playersNames[i],
-            glm::vec2(1920 / 2 - 500,
-            1080.f / 2 - 140 - (70 * (i + 1))),
-            glm::vec2(40.f,
-            40.f),
-            0,
-            StringAlignment::LEFT
+            this->POSITIONS[i + 1] + glm::vec3(0.0f, 20.0f, 0.0f),
+            glm::vec2(100.0f)
         );
     }
+    this->getUIRenderer()->renderString(
+        "address code: " + this->serverIP,
+        glm::vec2(0.0f, 450.0f),
+        glm::vec2(40.0f)
+    );
 
     // Start game
     if (this->getNetworkHandler()->getStatus() == ServerStatus::RUNNING)
@@ -158,13 +169,12 @@ void LobbyScene::update()
             new GameScene(), "scripts/gamescene.lua"
         );
     }
-    else if (getNetworkHandler()->hasServer())
+    else if (this->getNetworkHandler()->hasServer())
     {
-        this->getUIRenderer()->setTexture(this->fontTextureId);
         this->getUIRenderer()->renderString(
-            "start match", glm::vec2(800.f, 0.f), glm::vec2(20.f, 20.f)
+            "start", this->startButton.position, glm::vec2(50.0f), 0.0f, StringAlignment::CENTER
         );
-        if (this->getComponent<UIArea>(this->startButton).isClicking())
+        if (this->startButton.isClicking())
         {
             this->helpPacket << (int)NetworkEvent::START;
             this->getNetworkHandler()->sendDataToServerTCP(helpPacket);
@@ -178,15 +188,13 @@ void LobbyScene::update()
         this->switchScene(new MainMenu, "scripts/MainMenu.lua");
     }
 
-    if (this->getNetworkHandler()->getClient() != nullptr)
-    {
-        this->getUIRenderer()->setTexture(this->fontTextureId);
-        this->getUIRenderer()->renderString("disconnect", glm::vec2(-800.f, -60.f), glm::vec2(20.f, 20.f));
-        if (this->getComponent<UIArea>(disconnectButton).isClicking()) {
-            this->getNetworkHandler()->disconnectClient();
-            this->getNetworkHandler()->deleteServer();
-            this->getSceneHandler()->setScene(new MainMenu, "scripts/MainMenu.lua");
-        }
+    this->getUIRenderer()->renderString(
+        "disconnect", this->disconnectButton.position, glm::vec2(25.0f), 0.0f, StringAlignment::CENTER
+    );
+    if (this->disconnectButton.isClicking()) {
+        this->getNetworkHandler()->disconnectClient();
+        this->getNetworkHandler()->deleteServer();
+        this->getSceneHandler()->setScene(new MainMenu, "scripts/MainMenu.lua");
     }
 
     this->helpPacket.clear();

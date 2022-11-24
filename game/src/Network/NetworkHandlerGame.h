@@ -25,6 +25,14 @@ enum class ItemType
 
 class NetworkHandlerGame : public NetworkHandler
 {
+public:
+	inline static const glm::vec4 playerColors[]
+	{
+		glm::vec4(1.0f, 1.0f, 1.0f, 0.25f),
+		glm::vec4(0.0f, 0.0f, 1.0f, 0.25f),
+		glm::vec4(0.0f, 1.0f, 0.0f, 0.25f),
+		glm::vec4(1.0f, 1.0f, 0.0f, 0.25f),
+	};
 private:
 	static const float UPDATE_RATE;
 
