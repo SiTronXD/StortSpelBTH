@@ -123,7 +123,7 @@ void GameScene::start()
         this->getScriptHandler());
 
     this->ability = this->createEntity();
-    this->setComponent<MeshComponent>(this->ability, this->abilityMeshes[knockbackAbility]);
+    this->setComponent<MeshComponent>(this->ability, this->abilityMeshes[knockbackAbility], false);
     Transform& abilityTrans = this->getComponent<Transform>(this->ability);
     abilityTrans.position = glm::vec3(50.f, 8.f, 0.f);
     abilityTrans.scale = glm::vec3(3.f);
@@ -134,7 +134,7 @@ void GameScene::start()
     this->setScriptComponent(this->ability, "scripts/spin.lua");
 
     this->ability1 = this->createEntity();
-    this->setComponent<MeshComponent>(this->ability1, this->abilityMeshes[healAbility]);
+    this->setComponent<MeshComponent>(this->ability1, this->abilityMeshes[healAbility], false);
     Transform& abilityTrans1 = this->getComponent<Transform>(this->ability1);
     abilityTrans1.position = glm::vec3(50.f, 8.f, 20.f);
     abilityTrans1.scale = glm::vec3(3.f);
@@ -145,7 +145,7 @@ void GameScene::start()
     this->setScriptComponent(this->ability1, "scripts/spin.lua");
 
     this->perk = this->createEntity();
-    this->setComponent<MeshComponent>(this->perk, this->perkMeshes[hpUpPerk]);
+    this->setComponent<MeshComponent>(this->perk, this->perkMeshes[hpUpPerk], false);
     Transform& perkTrans = this->getComponent<Transform>(this->perk);
     perkTrans.position = glm::vec3(30.f, 6.f, 20.f);
     perkTrans.scale = glm::vec3(2.f);
@@ -159,7 +159,7 @@ void GameScene::start()
     this->setScriptComponent(this->perk, "scripts/spin.lua");
 
     this->perk1 = this->createEntity();
-    this->setComponent<MeshComponent>(this->perk1, this->perkMeshes[dmgUpPerk]);
+    this->setComponent<MeshComponent>(this->perk1, this->perkMeshes[dmgUpPerk], false);
     Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
     perkTrans1.position = glm::vec3(30.f, 6.f, -20.f);
     perkTrans1.scale = glm::vec3(2.f);
@@ -173,7 +173,7 @@ void GameScene::start()
     this->setScriptComponent(this->perk1, "scripts/spin.lua");
 
     this->perk2 = this->createEntity();
-    this->setComponent<MeshComponent>(this->perk2, this->perkMeshes[attackSpeedUpPerk]);
+    this->setComponent<MeshComponent>(this->perk2, this->perkMeshes[attackSpeedUpPerk], false);
     Transform& perkTrans2 = this->getComponent<Transform>(this->perk2);
     perkTrans2.position = glm::vec3(30.f, 6.f, 0.f);
     perkTrans2.scale = glm::vec3(2.f);
@@ -187,7 +187,7 @@ void GameScene::start()
     this->setScriptComponent(this->perk2, "scripts/spin.lua");
 
     this->perk3 = this->createEntity();
-    this->setComponent<MeshComponent>(this->perk3, this->perkMeshes[movementUpPerk]);
+    this->setComponent<MeshComponent>(this->perk3, this->perkMeshes[movementUpPerk], false);
     Transform& perkTrans3 = this->getComponent<Transform>(this->perk3);
     perkTrans3.position = glm::vec3(30.f, 6.f, -40.f);
     perkTrans3.scale = glm::vec3(2.f);
@@ -201,7 +201,7 @@ void GameScene::start()
     this->setScriptComponent(this->perk3, "scripts/spin.lua");
 
     this->perk4 = this->createEntity();
-    this->setComponent<MeshComponent>(this->perk4, this->perkMeshes[staminaUpPerk]);
+    this->setComponent<MeshComponent>(this->perk4, this->perkMeshes[staminaUpPerk], false);
     Transform& perkTrans4 = this->getComponent<Transform>(this->perk4);
     perkTrans4.position = glm::vec3(30.f, 6.f, -60.f);
     perkTrans4.scale = glm::vec3(2.f);

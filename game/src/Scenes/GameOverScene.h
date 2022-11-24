@@ -13,11 +13,17 @@ private:
     Entity crystals[4];
     Entity groundPillar;
     Entity ground;
-    Entity trees[40];
-    //Entity groundPillars[6];
+    Entity trees[148];
+    Entity stones[60];
 
     float camRotSpeed = 20.f;
-    float camDist = 8.f; //15.f;
+    float camDist = 35.f;
+
+    float shakeScalar = 0.3f;
+    float shakeTimer = 0.f;
+    float shakeDuration = 0.1f;
+    bool isShaking = false;
+
 public:
     GameOverScene();
     virtual ~GameOverScene();
