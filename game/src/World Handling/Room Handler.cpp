@@ -520,32 +520,31 @@ Entity RoomHandler::getFloor() const
 }
 
 
-#include <vector>
-#include <unordered_map>
-#include <algorithm>
-void RoomHandler::createTileInfos()
+
+
+
+void RoomHandler::createTileInfos(uint32_t roomIndex)
 {
-	auto rawTiles = this->getFreeTiles();
-	auto& tileInfos = this->rooms[this->activeIndex].tileInfos;    
+	auto rawTiles = this->rooms[roomIndex].mainTiles;
+	auto& tileInfos = this->rooms[roomIndex].tileInfos;    
 
     const int NUM = 4;
     const glm::vec3 DIRS[NUM] =
 	{
 		{ 1,  0,  0 }, // Left
 		{-1,  0,  0 }, // Right
-		{ 0,  0,  1 }, // Up
-		{ 0,  0,  -1}, // Down
+		{ 0,  0,  1 }, // Down
+		{ 0,  0,  -1}, // Up
 	};
 
-    for(size_t i = 0; i < rawTiles.size() - 1; i++)
+    for(size_t i = 0; i < rawTiles.size(); i++)
     {
         const glm::vec3 currentPos = rawTiles[i];
-        //std::array<int,4> neigbours{TileInfo::NONE,TileInfo::NONE,TileInfo::NONE,TileInfo::NONE};
         std::array<int,4> neighbours{TileInfo::NONE,TileInfo::NONE,TileInfo::NONE,TileInfo::NONE};
         
-        for(size_t j = i+1; j < rawTiles.size(); j++)
+        for(size_t j = 0; j < rawTiles.size(); j++)
         {
-            for(size_t k = 0; k < neighbours.size();k++) // Left, Right, Up, Down
+            for(size_t k = 0; k < neighbours.size();k++) // Left, Right, Down, Up
             {
                 if(neighbours[k] == TileInfo::NONE)
                 {
@@ -554,19 +553,9 @@ void RoomHandler::createTileInfos()
                     sideOffset.y = 0.f;
                     float dist = glm::length(sideOffset - rawTiles[j]); 
 
-                    std::cout << "rawTile:      ";
-                    std::cout << rawTiles[j].x << ",";
-                    std::cout << rawTiles[j].y << ",";
-                    std::cout << rawTiles[j].z << "\n";
-                    std::cout << "sideOffset:   ";
-                    std::cout << sideOffset.x << ",";
-                    std::cout << sideOffset.y << ",";
-                    std::cout << sideOffset.z << "\n";
-                    std::cout << "distance: " << dist << "\n";
-                    
-                    if(dist <= RoomHandler::TILE_WIDTH) 
+                    // Check if correct neighbour
+                    if(dist < RoomHandler::TILE_WIDTH) 
                     {
-                        std::cout << "\tWas small enough!: " << dist << "\n\n";
                         neighbours[k] = j;
                     }
                     
@@ -577,61 +566,9 @@ void RoomHandler::createTileInfos()
     }
 
 
-    std::unordered_map<int, std::vector<int>> rows; // Contains values of X for key Y pos
-
-    //Stupid print check
-    for(auto& tile : tileInfos) 
-    {
-        rows[tile.pos.x].push_back(tile.pos.z);
-
-    }
-
-    std::vector<int> orderedRows;
-    for(auto row : rows){orderedRows.push_back(row.first);}
-    std::sort(orderedRows.begin(),orderedRows.end(), std::greater<int>());
-
-    for(auto rowKey : orderedRows)
-    {
-        int lastColumn = 99999999; //lazy me...        
-        for(auto z : rows[rowKey]) { if(z < lastColumn){lastColumn = z;} }
-
-        bool first = true;
-        for(auto z : rows[rowKey])
-        {         
-            auto column = z / RoomHandler::TILE_WIDTH;
-
-            if(lastColumn + 1 <= column) 
-            {
-                while(lastColumn + 1 <= column)
-                {
-                    std::cout << "_\n";   
-                    lastColumn++; 
-                }
-            }
-            else 
-            {
-                if(column > 0)
-                {
-                    std::cout <<" " << column << " \n";
-                }
-                else 
-                {
-                    std::cout << column << " \n";
-                }
-            }
-            
-            
-
-            lastColumn = column;
-         
-        }
-        std::cout << "\n";
-    }
-
-    
-
-    int breakMe = 3;
-    
+#ifdef _CONSOLE
+    TileInfo::checkValidTileInfoVector(tileInfos, roomIndex);
+#endif
 }
 
 void RoomHandler::createDoors(int roomIndex, const glm::ivec2* doorTilePos)

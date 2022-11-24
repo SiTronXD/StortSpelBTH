@@ -15,23 +15,33 @@ typedef int Entity;
 
 struct TileInfo 
 {
-    TileInfo(const glm::vec3 pos, std::array<int,4>&& neighbours)
-        : pos(pos), neighbours(neighbours)
-    {}
-
-    const std::array<int,4> neighbours;
-    glm::vec3 pos;
-
+public: 
+    friend class RoomHandler;
     static const int NONE  = -1;
     static const int LEFT  =  0;
     static const int RIGHT =  1;
     static const int DOWN  =  2;
     static const int UP    =  3;
 
-    const int& idLeftOf() {return neighbours[LEFT]  ;};
-    const int& idRightOf(){return neighbours[RIGHT] ;};
-    const int& idDownOf() {return neighbours[DOWN]  ;};
-    const int& idUpOf()   {return neighbours[UP]    ;};
+private:
+    const std::array<int,4> neighbours;
+    glm::vec3 pos;
+
+    bool amIMyNeighboursNeighbour(int myID, const std::vector<TileInfo>& allTiles) const;
+
+public: 
+
+    TileInfo(const glm::vec3 pos, std::array<int,4>&& neighbours)
+        : pos(pos), neighbours(neighbours)
+    {}
+
+    const int& idLeftOf() const {return neighbours[LEFT]  ;};
+    const int& idRightOf()const {return neighbours[RIGHT] ;};
+    const int& idDownOf() const {return neighbours[DOWN]  ;};
+    const int& idUpOf()   const {return neighbours[UP]    ;};
+
+    inline const glm::vec3& getPos() const  {return pos;};
+    static bool checkValidTileInfoVector(const std::vector<TileInfo>& allTiles, int roomIndex);
     
 };
 
