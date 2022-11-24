@@ -72,4 +72,6 @@ public:
 private:
 
   void createPortal();
+
+  int colliderTest;
 };

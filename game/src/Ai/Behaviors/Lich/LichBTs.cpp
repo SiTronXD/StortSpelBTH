@@ -131,7 +131,8 @@ BTStatus LichBT::die(Entity entityID)
    BTStatus ret = BTStatus::Failure;
 
 	int playerID = getPlayerID();
-	Combat& playerCombat = sceneHandler->getScene()->getComponent<Combat>(playerID);
+   //TODO : this was changed from combat to networkCombat see if it works
+	NetworkCombat& playerCombat = sceneHandler->getScene()->getComponent<NetworkCombat>(playerID);
 	if (playerCombat.health <= (playerCombat.maxHealth - 10))
 	{
 		playerCombat.health += 10;

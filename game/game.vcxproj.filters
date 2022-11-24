@@ -68,13 +68,12 @@
     <ClInclude Include="src\ServerGameModes\NetworkLobbyScene.h" />
     <ClInclude Include="src\ServerGameModes\NetworkGameScene.h" />
     <ClInclude Include="src\World Handling\SpawnHandler.hpp" />
+    <ClInclude Include="src\Components\NetworkCombat.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
     <None Include="src\Scripts\Prefab.lua" />
     <None Include="src\Scripts\Prefabs.lua" />
-    <None Include="src\Scripts\PuzzleCreatorLua.lua" />
-    <None Include="src\Scripts\PuzzleLoader.lua" />
     <None Include="scripts\moveRock.lua" />
     <None Include="scripts\loadBlob.lua" />
   </ItemGroup>
