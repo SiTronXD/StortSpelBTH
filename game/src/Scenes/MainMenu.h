@@ -14,6 +14,10 @@ private:
         Quit = 4
     };
 
+    Entity backgroundScene;
+    Entity character;
+    Entity camera;
+
     State state;
     uint32_t fontTextureId;
     uint32_t backgroundId;

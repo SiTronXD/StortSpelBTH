@@ -1,7 +1,6 @@
 #include "MainMenu.h"
 #include "GameScene.h"
 #include "logInScene.h"
-//#include "vengine/network/ServerGameModes/NetworkLobbyScene.h"
 
 void MainMenu::init()
 {
@@ -12,7 +11,21 @@ void MainMenu::init()
 	samplerSettings.filterMode = vk::Filter::eNearest;
 	samplerSettings.unnormalizedCoordinates = VK_TRUE;
 
-	this->backgroundId = this->getResourceManager()->addTexture("assets/textures/UI/background.png");
+	//this->backgroundId = this->getResourceManager()->addTexture("assets/textures/UI/background.png");
+    Entity light = this->createEntity();
+    this->setComponent<DirectionalLight>(
+        light, glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.6f)
+    );
+
+    //Light
+    DirectionalLight& dirLight =
+        this->getComponent<DirectionalLight>(light);
+    dirLight.cascadeSizes[0] = 0.044f;
+    dirLight.cascadeSizes[1] = 0.149f;
+    dirLight.cascadeSizes[2] = 1.0f;
+    dirLight.cascadeDepthScale = 36.952f;
+    dirLight.shadowMapMinBias = 0.00001f;
+    dirLight.shadowMapAngleBias = 0.0004f;
 
 	this->fontTextureId = Scene::getResourceManager()->addTexture("assets/textures/UI/testBitmapFont.png", { samplerSettings, true });
 	Scene::getUIRenderer()->setBitmapFont(
@@ -31,6 +44,14 @@ void MainMenu::init()
 
 void MainMenu::start()
 {
+    camera = this->createEntity();
+    this->setComponent<Camera>(camera);
+    this->setMainCamera(camera);
+    this->getComponent<Transform>(camera).position = glm::vec3(0, 5, 20);
+
+    this->getSceneHandler()->getScriptHandler()->getGlobal(character, "character");
+    this->getComponent<AnimationComponent>(character).animationIndex = 0;
+
 	this->getAudioHandler()->setMusic("assets/Sounds/BackgroundMusic.ogg");
 	this->getAudioHandler()->setMasterVolume(0.5f);
 	this->getAudioHandler()->setMusicVolume(1.f);
@@ -79,8 +100,19 @@ void MainMenu::update()
 {
 	// Switches next frame to render loading texture
 
-	this->getUIRenderer()->setTexture(this->backgroundId);
-	this->getUIRenderer()->renderTexture(glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f));
+	//this->getUIRenderer()->setTexture(this->backgroundId);
+	//this->getUIRenderer()->renderTexture(glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f));
+
+    Transform& t = this->getComponent<Transform>(camera);
+    ImGui::Begin("Camera");
+    ImGui::SliderFloat("position X", &t.position.x, -20.f, 20.f);
+    ImGui::SliderFloat("position Y", &t.position.y, -20.f, 20.f);
+    ImGui::SliderFloat("position Z", &t.position.z, -20.f, 20.f);
+
+    ImGui::SliderFloat("rotation X", &t.rotation.x, 0.f, 360.f);
+    ImGui::SliderFloat("rotation Y", &t.rotation.y, 0.f, 360.f);
+    ImGui::SliderFloat("rotation Z", &t.rotation.z, 0.f, 360.f);
+    ImGui::End();
 
 	switch (this->state)
 	{
