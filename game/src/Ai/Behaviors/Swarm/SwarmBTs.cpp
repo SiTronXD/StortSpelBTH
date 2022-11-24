@@ -447,21 +447,32 @@ BTStatus SwarmBT::attack(Entity entityID)
 
 	static float initialFriction = rigidbody.friction;
 
-
-    static Ray downRay{
-        thisTransform.position,
-        glm::vec3(0.0f,-1.0f,0.0f)
-    };
+	glm::vec3 posToUse = thisTransform.position;
+    static Ray downRay;
+	downRay.pos = posToUse; 
+	downRay.dir = glm::vec3(0.0f,-1.0f,0.0f); 
         
-    float heightOfSwarmBlob = sawrmCollider.radius + 2.0f;//TODO: get height of swarmblob
-    RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(downRay,heightOfSwarmBlob);   
+    float maxDist = sawrmCollider.radius + 1.0f;
+    RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(downRay,maxDist);   
+	////Draw ray
+	//BehaviorTree::sceneHandler->getPhysicsEngine()->renderDebugShapes(true);
+	//BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
+	//posToUse,
+	//posToUse + glm::vec3(0.0f,-1.0f,0.0f) * maxDist,
+	//glm::vec3(1.0f, 0.0f, 0.0f));
+
+	
+
     if(rp.hit && swarmComp.groundTimer <= 0.0f)
     {
-        swarmComp.grounded = true;	
-		swarmComp.groundTimer = swarmComp.groundTimerOrig;
+		Collider& hitCol = BehaviorTree::sceneHandler->getScene()->getComponent<Collider>(rp.entity);
+		float dist = glm::length(rp.hitPoint - posToUse);
+		if(dist < (sawrmCollider.radius + 0.5f) && !hitCol.isTrigger)
+		{
+			swarmComp.grounded = true;	
+			swarmComp.groundTimer = swarmComp.groundTimerOrig;
+		}
     }
-     
-
 
 	if(!swarmComp.grounded && swarmComp.groundTimer > 0.0f)
 	{

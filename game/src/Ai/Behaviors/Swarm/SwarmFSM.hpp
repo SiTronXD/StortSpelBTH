@@ -38,7 +38,7 @@ struct SwarmComponent
 	bool shieldedByTank		= false;
 	//Timers				
 	float groundTimer		= 0.0f;
-	float groundTimerOrig	= 0.5f;
+	float groundTimerOrig	= 1.0f;
 	float lonelyTime		= 3.0f;
 	float lonelyTimer		= 0.0f;
 

@@ -22,8 +22,8 @@ private:
     UIRenderer*      uiRenderer;
 
     int nrOfTanks  = 0;
-    int nrOfLichs  = 1;
-    int nrOfSwarms = 0;
+    int nrOfLichs  = 0;
+    int nrOfSwarms = 1;
 
     int numOfGroups = 4;
     int group_size = 3;
