@@ -80,6 +80,9 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
     swarmComp.group->inCombat = false;
 
     swarmComp.group->aliveMembers.push(0); 
+
+    swarmComp.setGroupMidPos(this->currScene);
+    swarmComp.setGroupRadius(this->currScene);
 }
 
 
@@ -311,6 +314,7 @@ ImguiLambda SpawnHandler::SwarmImgui()
             auto& entiyFSMAgentComp         = this->sceneHandler->getScene()->getComponent<FSMAgentComponent>(entityId);
             auto& entityRigidBody           = this->sceneHandler->getScene()->getComponent<Rigidbody>(entityId);
             int& health            = entitySwarmComponent.life;
+            float& rotSpeed         = entitySwarmComponent.idleRotSpeed;
             float& jumpForce		=entitySwarmComponent.jumpForce;
             float& jumpForceY		=entitySwarmComponent.jumpY;
             float& speed           = entitySwarmComponent.speed;
@@ -324,6 +328,7 @@ ImguiLambda SpawnHandler::SwarmImgui()
             ImGui::Text(status.c_str());
             ImGui::SliderInt("health", &health, 0, 100);
             ImGui::SliderFloat("speed", &speed, 0, 100);
+            ImGui::SliderFloat("rot speed", &rotSpeed, 0, 200);
             ImGui::SliderFloat("jumpForce", &jumpForce, 0, 100);
             ImGui::SliderFloat("jumpForceY", &jumpForceY, 0, 100);
             ImGui::SliderFloat("gravity", &gravity, 0, 10);

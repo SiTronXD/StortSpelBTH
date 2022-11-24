@@ -8,45 +8,53 @@ struct SwarmComponent
 {
 
 	//Ints
-	int LOW_HEALTH			= 30;
-	int FULL_HEALTH			= 100;
-	int life				= FULL_HEALTH;
+	int LOW_HEALTH				= 30;
+	int FULL_HEALTH				= 100;
+	int life					= FULL_HEALTH;
 	//Floats
-	float speed				= 17.0f;
-	float jumpForce			= 70.0f;
-	float idleSpeed			= 10.0f;
-	float jumpY				= 10.0f;
-	float deathAnimSpeed	= 1.0f;
-	float alertAnimSpeed	= 2.0f;
-	float chargeAnimSpeed	= 1.0f;
-	float escapeAnimSpeed	= 2.0f;
-	float alertScale		= 1.5f;
-	float alertTempYpos		= 0.0f;
-    float sightRadius		= 70;
-	float attackRange		= 40;
+	float speed					= 17.0f;
+	float jumpForce				= 70.0f;
+	float idleSpeed				= 10.0f;
+	float jumpY					= 10.0f;
+	float deathAnimSpeed		= 1.0f;
+	float alertAnimSpeed		= 2.0f;
+	float chargeAnimSpeed		= 1.0f;
+	float escapeAnimSpeed		= 2.0f;
+	float alertScale			= 1.5f;
+	float alertTempYpos			= 0.0f;
+    float sightRadius			= 70.0f;
+	float attackRange			= 40.0f;
     float alert_top;
+	float idleRotSpeed			= 100.0f;
+	float tempRotAngle			= 0.0f;//Dont touch!
 	//Bools
-    bool alert_go_up		= true;
-	bool alertAtTop			= false;
-	bool inCombat			= false;
-	bool forcedToAttack		= false;
-	bool alertDone			= false;
-    bool inAttack			= false;
-	bool touchedPlayer		= false;
-	bool touchedFriend		= false;
-	bool grounded			= true;
-	bool shieldedByTank		= false;
-	//Timers				
-	float groundTimer		= 0.0f;
-	float groundTimerOrig	= 1.0f;
-	float lonelyTime		= 3.0f;
-	float lonelyTimer		= 0.0f;
+    bool alert_go_up			= true;
+	bool alertAtTop				= false;
+	bool inCombat				= false;
+	bool forcedToAttack			= false;
+	bool alertDone				= false;
+    bool inAttack				= false;
+	bool touchedPlayer			= false;
+	bool touchedFriend			= false;
+	bool grounded				= true;
+	bool shieldedByTank			= false;
+	bool idleIgnoreCol			= false;
+	bool rotateLeft				= false;
+	//Timers					
+	float groundTimer			= 0.0f;
+	float groundTimerOrig		= 1.0f;
+	float lonelyTime			= 3.0f;
+	float lonelyTimer			= 0.0f;
+	float ignoreColTimerOrig	= 1.0f;
+	float ignoreColTimer		= ignoreColTimerOrig;
 
 
 	glm::vec3 friendTouched = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 idleMoveTo = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 lonelyDir = glm::vec3(0.0f, 0.0f, 1.0f);
-
+	glm::vec3 dir = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 forward = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 right = glm::vec3(0.0f, 0.0f, 0.0f);
 
 	SwarmGroup* group;
 	std::vector<SwarmGroup*> groupsInSight;
@@ -79,6 +87,34 @@ struct SwarmComponent
 			
 		}
 		return ret;
+	}
+	void setGroupMidPos(Scene* scene)
+	{
+		this->group->idleMidPos = glm::vec3(0.0f, 0.0f, 0.0f);
+		int num = 0;
+		for(auto& m: this->group->members)
+		{
+			if(this->life > 0)
+			{
+				this->group->idleMidPos += scene->getComponent<Transform>(m).position;
+				num++;
+			}
+		}
+		this->group->idleMidPos/=num;
+	}
+	void setGroupRadius(Scene* scene)
+	{
+		float max = 0.0f;
+		for(auto& m: this->group->members)
+		{
+			Transform& trans = scene->getComponent<Transform>(m);
+			float dist = glm::length(trans.position - this->group->idleMidPos);
+			if(dist > max)
+			{
+				max = dist;
+			}
+		}
+		this->group->idleRadius = max;
 	}
 };
 

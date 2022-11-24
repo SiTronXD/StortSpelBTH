@@ -23,10 +23,10 @@ private:
 
     int nrOfTanks  = 0;
     int nrOfLichs  = 0;
-    int nrOfSwarms = 1;
+    int nrOfSwarms = 6;
 
     int numOfGroups = 4;
-    int group_size = 3;
+    int group_size = 6;
 
     std::vector<int> allEntityIDs;
     std::vector<int> swarmIDs;
