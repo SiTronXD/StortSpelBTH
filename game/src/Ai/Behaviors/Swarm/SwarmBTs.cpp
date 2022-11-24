@@ -204,16 +204,18 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 		swarmComp.dir = rayForward.dir;
 	}
 
-	//Special cases
+	bool foundSpecialCase = false;
 	if(outsideRadius(entityID))
 	{
 		swarmComp.dir = glm::normalize(swarmComp.group->idleMidPos - swarmTransform.position);
+		foundSpecialCase = true;
 	}
 	else if(stuckInCorner(rpLeft, rpRight, rpForward) && !swarmComp.idleIgnoreCol)
 	{
 		swarmComp.idleIgnoreCol = true;
 		swarmComp.ignoreColTimer = swarmComp.ignoreColTimerOrig;
 		swarmComp.dir = -rayForward.dir;
+		foundSpecialCase = true;
 	}
 
 	//Tick down ignore timer
@@ -223,7 +225,7 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 	}
 	
 
-	if( swarmComp.group->aliveMembers.size() != 1)
+	if( swarmComp.group->aliveMembers.size() != 1 && !foundSpecialCase)
 	{
 		glm::vec3 swarmPosRayOffset = swarmTransform.position + rayForward.dir * maxDist;
 		float len = glm::length(swarmComp.group->idleMidPos - swarmPosRayOffset);
@@ -253,7 +255,7 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 			}
 		}	
 	}
-	else
+	else if(!foundSpecialCase)
 	{
 		if(rpForward.hit)
 		{
