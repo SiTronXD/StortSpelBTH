@@ -96,7 +96,7 @@ void ServerGameMode::update(float dt)
 
 void ServerGameMode::makeDataSendToClient() 
 {
-    int nrOfMonsters = 0;
+    size_t nrOfMonsters = 0;
     for (auto& it : aiHandler.FSMsEntities)
     {
         nrOfMonsters += it.second.size();

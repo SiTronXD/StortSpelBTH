@@ -5,7 +5,6 @@
 #include "../Components/Abilities.h"
 
 class CombatSystem;
-
 enum class GameEvent
 {
 	EMPTY = (int)NetworkEvent::END + 1,
