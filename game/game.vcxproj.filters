@@ -3,7 +3,6 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
-    <ClCompile Include="src\World Handling\Room Generator.cpp" />
     <ClCompile Include="src\World Handling\Room Handler.cpp" />
     <ClCompile Include="src\World Handling\Room Layout.cpp" />
     <ClCompile Include="src\ServerGameModes\TheServerGame.cpp" />
@@ -15,9 +14,15 @@
     <ClCompile Include="src\Scenes\LevelEditor.cpp" />
     <ClCompile Include="src\LevelEditor\ObjectHandler.cpp" />
     <ClCompile Include="src\Ai\Behaviors\HelperFuncs.cpp" />
+    <ClCompile Include="src\World Handling\Room Generator.cpp" />
+    <ClCompile Include="src\Scenes\RoomTesting.cpp" />
     <ClCompile Include="src\Scenes\LobbyScene.cpp" />
     <ClCompile Include="src\Scenes\logInScene.cpp" />
     <ClCompile Include="src\Scenes\GameSceneNetwork.cpp" />
+    <ClCompile Include="src\Ai\Behaviors\Lich\LichBTs.cpp" />
+    <ClCompile Include="src\Ai\Behaviors\Lich\LichFSM.cpp" />
+    <ClCompile Include="src\Ai\Behaviors\Tank\TankFSM.cpp" />
+    <ClCompile Include="src\Ai\Behaviors\Tank\TankBTs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -35,7 +40,6 @@
     <ClInclude Include="src\Systems\CameraMovementSystem.hpp" />
     <ClInclude Include="src\Systems\CombatSystem.hpp" />
     <ClInclude Include="src\Systems\MovementSystem.hpp" />
-    <ClInclude Include="src\World Handling\Room Generator.h" />
     <ClInclude Include="src\World Handling\Room Handler.h" />
     <ClInclude Include="src\World Handling\Room Layout.h" />
     <ClInclude Include="src\Scenes\MainMenu.h" />
@@ -48,10 +52,19 @@
     <ClInclude Include="src\LevelEditor\ObjectHandler.h" />
     <ClInclude Include="src\Components\Abilities.h" />
     <ClInclude Include="src\Ai\Behaviors\HelperFuncs.hpp" />
+    <ClInclude Include="src\World Handling\Room Generator.h" />
+    <ClInclude Include="src\Scenes\RoomTesting.h" />
     <ClInclude Include="src\Systems\HealthBarSystem.hpp" />
     <ClInclude Include="src\Scenes\LobbyScene.h" />
     <ClInclude Include="src\Scenes\logInScene.h" />
     <ClInclude Include="src\Scenes\GameSceneNetwork.h" />
+    <ClInclude Include="src\Ai\Behaviors\Lich\LichBTs.hpp" />
+    <ClInclude Include="src\Ai\Behaviors\Lich\LichFSM.hpp" />
+    <ClInclude Include="src\Ai\Behaviors\Tank\TankFSM.hpp" />
+    <ClInclude Include="src\Components\AiCombatLich.hpp" />
+    <ClInclude Include="src\Components\AiCombatSwarm.h" />
+    <ClInclude Include="src\Components\AICombatTank.hpp" />
+    <ClInclude Include="src\Ai\Behaviors\Tank\TankBTs.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
@@ -60,5 +73,6 @@
     <None Include="src\Scripts\PuzzleCreatorLua.lua" />
     <None Include="src\Scripts\PuzzleLoader.lua" />
     <None Include="scripts\levelEditor.lua" />
+    <None Include="scripts\moveRock.lua" />
   </ItemGroup>
 </Project>

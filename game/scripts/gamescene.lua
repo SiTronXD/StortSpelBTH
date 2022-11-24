@@ -1,5 +1,10 @@
 --local playerMesh = resources.addMesh("assets/models/Amogus/source/1.fbx")
-local playerMesh = resources.addAnimations({ "assets/models/Character/CharRun.fbx" }, "assets/textures/playerMesh")
+local playerMesh = resources.addAnimations({ "assets/models/Character/CharIdle.fbx", "assets/models/Character/CharRun.fbx",
+"assets/models/Character/CharDodge.fbx", "assets/models/Character/CharOutwardAttack.fbx", "assets/models/Character/CharHeavyAttack.fbx", 
+"assets/models/Character/CharSpinAttack.fbx", "assets/models/Character/CharKnockbackAttack.fbx", 
+"assets/models/Character/CharInwardAttack.fbx", "assets/models/Character/CharSlashAttack.fbx" }, "assets/textures/playerMesh")
+resources.mapAnimations(playerMesh, {"idle", "run", "dodge", "lightAttack", "heavyAttack", 
+"spinAttack", "knockback", "mixAttack", "slashAttack"})
 --local playerAttackMesh = resources.addMesh("assets/models/Hurricane Kick.fbx", "assets/textures/playerMesh")
 print(playerMesh)
 
@@ -7,7 +12,7 @@ print(playerMesh)
 local cam = scene.createPrefab("scripts/prefabs/CameraPrefab.lua")
 scene.setMainCamera(cam)
 
--- Player
+-- 
 playerID = scene.createEntity()
 scene.setComponent(playerID, CompType.Mesh, playerMesh)
 local playerAnim = 
@@ -45,6 +50,16 @@ scene.getComponent(uiID, CompType.Script).perkSlotTextureID =
 	resources.addTexture("assets/textures/UI/perkSlot.png", pixelArtSettings)
 scene.getComponent(uiID, CompType.Script).crosshairTextureID = 
 	resources.addTexture("assets/textures/UI/crosshair.png", pixelArtSettings)
+scene.getComponent(uiID, CompType.Script).uiHpMidTexID = 
+	resources.addTexture("assets/textures/UI/UIBarMid.png")
+scene.getComponent(uiID, CompType.Script).uiHpSideTexID = 
+	resources.addTexture("assets/textures/UI/UIBarSide.png")
+scene.getComponent(uiID, CompType.Script).uiStamMidTexID = 
+	resources.addTexture("assets/textures/UI/UIBarMid.png")
+scene.getComponent(uiID, CompType.Script).uiStamSideTexID = 
+	resources.addTexture("assets/textures/UI/UIBarSide.png")
+scene.getComponent(uiID, CompType.Script).uiBorderTexID = 
+	resources.addTexture("assets/textures/UI/UIBorder.png")
 
 --[[local p = scene.createPrefab("scripts/prefabs/prefab.lua")
 
