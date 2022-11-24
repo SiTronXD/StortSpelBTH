@@ -19,8 +19,9 @@ bool SwarmFSM::idle_alerted(Entity entityID)
 
     float swarmPlayerLen = getEntityDist(entityID, getPlayerID(sceneHandler));
 
-	if (swarmPlayerLen <= enemySwarmComp.sightRadius || 
-		enemySwarmComp.group->inCombat)
+	if ((swarmPlayerLen <= enemySwarmComp.sightRadius || 
+		enemySwarmComp.group->inCombat)&&
+		groupHealth <= enemySwarmComp.LOW_HEALTH)
     {
 		ret = true;
     }
@@ -176,10 +177,19 @@ bool SwarmFSM::combat_escape(Entity entityID)
 		return false;
 	}
 
+	Entity playerID = getPlayerID(sceneHandler);
+	bool ShouldEscape = false;
+	float swarmPlayerLen = getEntityDist(entityID, playerID);
+	if (swarmPlayerLen <= enemySwarmComp.sightRadius || enemySwarmComp.group->inCombat)
+	{
+		ShouldEscape = true;
+	}
+
 	float groupHealth = enemySwarmComp.getGroupHealth(FSM::sceneHandler->getScene());
     
 	if(groupHealth < enemySwarmComp.LOW_HEALTH &&
-		!enemySwarmComp.forcedToAttack)
+		!enemySwarmComp.forcedToAttack &&
+		ShouldEscape)
 	{
 		ret = true;
 	}
