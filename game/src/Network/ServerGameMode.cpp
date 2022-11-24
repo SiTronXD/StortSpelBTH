@@ -101,8 +101,8 @@ void ServerGameMode::makeDataSendToClient()
     {
         nrOfMonsters += it.second.size();
     }
-    this->addEvent({(int)GameEvent::UPDATE_MONSTER});
-    this->addEvent({nrOfMonsters});
+    this->addEventUdp({(int)GameEvent::UPDATE_MONSTER});
+    this->addEventUdp({nrOfMonsters});
     
      //get the position and rotation of monsters
     for (auto& it : aiHandler.FSMsEntities)
@@ -110,7 +110,7 @@ void ServerGameMode::makeDataSendToClient()
         for (int i = 0; i < it.second.size(); ++i)
         {
             const Transform &t = this->getComponent<Transform>(it.second[i]);
-            this->addEvent({(int)it.second[i]} ,{
+            this->addEventUdp({(int)it.second[i]} ,{
                 t.position.x,
                 t.position.y,
                 t.position.z,
