@@ -29,8 +29,7 @@ private:
 
     bool amIMyNeighboursNeighbour(int myID, const std::vector<TileInfo>& allTiles) const;
 
-public: 
-
+public:     
     TileInfo(const glm::vec3 pos, std::array<int,4>&& neighbours)
         : pos(pos), neighbours(neighbours)
     {}

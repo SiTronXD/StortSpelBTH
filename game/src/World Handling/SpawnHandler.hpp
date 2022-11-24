@@ -21,7 +21,9 @@ private:
     ResourceManager* resourceManager;
     UIRenderer*      uiRenderer;
 
-    int nrOfTanks  = 0;
+    int totalNumberOfEnemies = 10;
+
+    int nrOfTanks  = 1;
     int nrOfLichs  = 1;
     int nrOfSwarms = 0;
 
@@ -38,6 +40,7 @@ private:
 
     void spawnTank( const int tankIdx,  const glm::vec3& pos);
     void spawnLich( const int lichIdx,  const glm::vec3& pos);
+    void spawnSwarmGroup(const int swarmStartIdx, const glm::vec3& pos); //TODO: Do we need to have a vector of pos; say 2 to let a swarm spawn over two tiles?
     void spawnSwarm(const int swarmIdx, const glm::vec3& pos);
 
     void createTank();

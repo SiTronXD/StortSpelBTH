@@ -1,38 +1,52 @@
 #include "SpawnHandler.hpp"
 #include "../Scenes/GameScene.h"
 #include <functional>
+#include <stack>
+#include <random>
+#include <algorithm>
 
 void SpawnHandler::spawnEnemiesIntoRoom()
 {
     int swarmIdx        = 0;
     int lichIdx         = 0;
     int tankIdx         = 0;
-    int randNumEnemies  = 10; //TODO: Make random when not debugging
+    this->totalNumberOfEnemies  = 10; //TODO: Make random when not debugging
     int counter         = 0;
+
+    static auto randomEngine = std::default_random_engine{};    
     
     const std::vector<TileInfo>& tileInfos = this->roomHandler->getFreeTileInfos();
-    for (const TileInfo& tileInfo : tileInfos)
+    std::deque<const TileInfo*> tilePtrs;
+    for(auto& tileInfo : tileInfos){tilePtrs.push_back(&tileInfo);}
+    std::shuffle(tilePtrs.begin(),tilePtrs.end(), randomEngine);
+
+    std::stack<const TileInfo*> unusedTileInfos(tilePtrs);
+    
+    while(this->totalNumberOfEnemies > counter) 
     {
-        if (randNumEnemies - counter != 0)
+
+        auto& tileInfo = unusedTileInfos.top();
+                    
+        if(tankIdx < nrOfTanks)
         {
-            
-            if(tankIdx < nrOfTanks)
-            {
-                this->spawnTank(tankIdx, tileInfo.getPos());
-                tankIdx++;
-            }
-            else if(lichIdx < nrOfLichs)
-            {
-                this->spawnLich(lichIdx, tileInfo.getPos());
-                lichIdx++;
-            }
-            else if(swarmIdx < nrOfSwarms)
-            {
-                this->spawnSwarm(swarmIdx, tileInfo.getPos());                
-                swarmIdx++;
-            }        
-            counter++;        
+            this->spawnTank(tankIdx, tileInfo->getPos());
+            tankIdx++;
         }
+        else if(lichIdx < nrOfLichs)
+        {
+            this->spawnLich(lichIdx, tileInfo->getPos());
+            lichIdx++;
+        }
+        else if(swarmIdx < nrOfSwarms)
+        {
+            this->spawnSwarmGroup(swarmIdx, tileInfo->getPos());
+            swarmIdx += this->group_size;
+            counter += this->group_size - 1;
+        }
+
+        counter++;        
+        unusedTileInfos.pop();
+    
     }
 }
 
@@ -61,6 +75,18 @@ void SpawnHandler::spawnLich(int lichIdx, const glm::vec3& pos)
     LichComponent& lichComp = currScene->getComponent<LichComponent>(this->lichIDs[lichIdx]);
     lichComp.life = lichComp.FULL_HEALTH;
     transform.scale.y = lichComp.origScaleY;
+}
+
+void SpawnHandler::spawnSwarmGroup(const int swarmStartIdx, const glm::vec3& pos)
+{
+    int swarmIdx = swarmStartIdx;
+    for(size_t i = 0; i < this->group_size; i++)
+    {
+        this->spawnSwarm(swarmIdx, pos);
+
+        swarmIdx++;
+    }
+
 }
 
 void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
