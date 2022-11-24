@@ -333,7 +333,7 @@ void RoomHandler::generate(uint32_t seed)
 			}
 
 		}
-        this->createTileInfos();
+        this->createTileInfos(i);
 		roomGen.clear();
 	}
 
@@ -425,6 +425,11 @@ void RoomHandler::moveRoom(int roomIndex, const glm::vec3& offset)
 			this->roomExitPoints[roomIndex].positions[i] += offset;
 			this->scene->getComponent<Transform>(curRoom.doors[i]).position += offset;
 		}
+	}
+
+    for (TileInfo& tile : curRoom.tileInfos)
+	{
+		tile.pos += offset;
 	}
 
 	for (glm::vec3& pos : curRoom.mainTiles)
