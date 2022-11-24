@@ -43,7 +43,7 @@ private:
     int nrOfLichs_inRoom  = 0;
     int nrOfSwarms_inRoom = 0;
     int nrOfGroups_inRoom = 0;
-
+    
 
     std::vector<int> allEntityIDs;
     std::vector<int> swarmIDs;

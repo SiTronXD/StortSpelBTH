@@ -22,13 +22,20 @@ int main(int argc, char* argv[])
 #if defined(_WIN32) && defined(_DEBUG)
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif // _WIN32 && _DEBUG
+    
+    //int seed = (unsigned int)time(0); 
+    int seed = 1669306701; 
 
-    srand((unsigned int)time(0));
+    // SUSS SEED: 1669306701
+
+    Log::write("SEED: " + std::to_string(seed));
+    srand(seed);
     {
         Engine engine;
         //engine.run("Presumed Dead", "", new RoomTesting());
         //engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
         engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
+        //engine.run("Presumed Dead", "", new RoomTesting());
     }
 
     return EXIT_SUCCESS;

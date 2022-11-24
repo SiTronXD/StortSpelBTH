@@ -481,8 +481,8 @@ Entity RoomHandler::createFloorDecoEntity(const glm::vec2& pos, bool scalePos)
 	transform.position.z = pos.y * (scalePos ? TILE_WIDTH : 1.f) + float((int)this->random->rand() % 12 - 6);
 	transform.rotation.y = float(this->random->rand() % 360);
 	if (this->useMeshes)
-	{
-		this->scene->setComponent<MeshComponent>(entity, (int)this->oneXOneMeshIds[this->random->rand() % NUM_ONE_X_ONE]);
+	{		
+        this->scene->setComponent<MeshComponent>(entity, (int)this->oneXOneMeshIds[this->random->rand() % NUM_ONE_X_ONE]);
 	}
 	else
 	{
@@ -902,7 +902,7 @@ Entity RoomHandler::createBorderEntity(const glm::vec2& position, bool scalePos)
 	
 	if (this->useMeshes)
 	{
-		this->scene->setComponent<MeshComponent>(entity, (int)this->borderMeshIds[this->random->rand() % NUM_BORDER]);
+		this->scene->setComponent<MeshComponent>(entity, (int)this->borderMeshIds[this->random->rand() % NUM_BORDER]);		
 	}
 	else
 	{
@@ -1050,7 +1050,7 @@ void RoomHandler::closeDoors(int index)
 		{
 			this->scene->setScriptComponent(room.doors[i], "scripts/closedoor.lua");
 			this->scene->setComponent<Collider>(room.doors[i], Collider::createBox(
-					glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH * 2.f, TILE_WIDTH * 0.1f), glm::vec3(0.f, TILE_WIDTH * 2.f, 0.f)));
+					glm::vec3(TILE_WIDTH, TILE_WIDTH * 2.f, TILE_WIDTH), glm::vec3(0.f, TILE_WIDTH * 2.f, 0.f)));
 		}
 	}
 }
@@ -1089,7 +1089,7 @@ void RoomHandler::activateRoom(int index)
 }
 
 void RoomHandler::deactivateRoom(int index)
-{
+{    
 #ifdef _CONSOLE
 	if (index < 0 || index >= (int)this->rooms.size())
 	{
