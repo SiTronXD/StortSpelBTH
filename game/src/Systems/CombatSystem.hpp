@@ -488,39 +488,40 @@ public:
 
 	void updateMovementSpeed(Combat& combat, Perks& perk, bool doUpgrade = true)
 	{
+		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 		if (doUpgrade)
 		{
 			setDefaultMovementSpeed(combat);
 			combat.movementMultiplier += perk.multiplier;
-			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-
 			float moveTimers[4] = { 0.f, 0.f, 0.f, 0.f };
-			this->script->getScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
-			this->script->getScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
-			this->script->getScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
-			this->script->getScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
-			for (size_t i = 0; i < 4; i++)
+			if (combat.movementMultiplier > 1.5f)
 			{
-				moveTimers[i] += perk.multiplier;
+				combat.movementMultiplier = 1.5f;
+				moveTimers[0] = 1.5f;
+				moveTimers[1] = 1.2f;
+				moveTimers[2] = 1.7f;
+				moveTimers[3] = 3.5f;
+				this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
+				this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
+				this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
+				this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
 			}
-			this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
-			this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
-			this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
-			this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
-			if (combat.movementMultiplier < 0.3f)
+			else
 			{
-				combat.movementMultiplier = 0.3f;
-				moveTimers[0] = 1.7f;
-				moveTimers[1] = 1.4f;
-				moveTimers[2] = 1.9f;
-				moveTimers[3] = 3.2f;
+				this->script->getScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
+				this->script->getScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
+				this->script->getScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
+				this->script->getScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
+				for (size_t i = 0; i < 4; i++)
+				{
+					moveTimers[i] += perk.multiplier;
+				}
 				this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
 			}
 		}
-		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 		int maxSpeed = 0;
 		int sprintSpeed = 0;
 		int dodgeSpeed = 0;
@@ -607,6 +608,11 @@ public:
 		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
 		this->script->setScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
 		this->script->setScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
+
+		this->script->setScriptComponentValue(playerScript, 1.f, "idleAnimTime");
+		this->script->setScriptComponentValue(playerScript, 0.7f, "runAnimTime");
+		this->script->setScriptComponentValue(playerScript, 1.2f, "sprintAnimTime");
+		this->script->setScriptComponentValue(playerScript, 3.f, "dodgeAnimTime");
 	}
 
 	void setDefaultStamina(Combat& combat)
