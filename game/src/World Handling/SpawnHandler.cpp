@@ -155,6 +155,78 @@ void SpawnHandler::createEntities()
     
 }
 
+void SpawnHandler::killAllEnemiesOutsideRoom()
+{
+    
+#ifdef _CONSOLE 
+Log::write("Killing all enemies outside room...");
+#endif 
+
+    this->sceneHandler->getScene()->getSceneReg().view<FSMAgentComponent,Transform>(entt::exclude<Inactive>).each(
+        [&](const auto& entity, FSMAgentComponent, Transform& transform)
+        {
+            bool enemyUnderFloor    = transform.position.y < 0;
+            bool enemyOverRoof      = transform.position.y > RoomHandler::BORDER_COLLIDER_HEIGHT; 
+            bool enemyOutsideRoom   = false;
+
+            glm::vec3 tempPos = transform.position;
+            tempPos.y += RoomHandler::TILE_WIDTH * 3;
+
+            Ray rayToMiddle{tempPos, glm::normalize(this->roomHandler->getRoomPos() - tempPos)};
+
+            RayPayload rp = this->sceneHandler->getPhysicsEngine()->raycast(rayToMiddle,glm::length(this->roomHandler->getRoomPos() - tempPos));
+
+            if(rp.hit)
+            {
+                if(this->sceneHandler->getScene()->hasComponents<EdgeTile>(rp.entity))
+                {
+                    enemyOutsideRoom  = true; 
+                }
+            }
+            else 
+            {
+                int id = static_cast<int>(entity);
+                if(this->sceneHandler->getScene()->hasComponents<SwarmComponent>(id))
+                {
+                    
+                    Log::write("Swarm was not killed off ["+std::to_string(id)+"] ()");
+
+                }
+            }
+
+            if(enemyUnderFloor || enemyOverRoof || enemyOutsideRoom)
+            {
+                int id = static_cast<int>(entity);
+                
+                if(this->sceneHandler->getScene()->hasComponents<SwarmComponent>(id))
+                {
+                    auto& comp = this->sceneHandler->getScene()->getComponent<SwarmComponent>(id);
+                    comp.life = 0;
+#ifdef _CONSOLE 
+                    Log::write("Killing Swarm["+std::to_string(id)+"] enemies outside room...");
+#endif 
+                }
+                else if(this->sceneHandler->getScene()->hasComponents<LichComponent>(id))
+                {
+                    auto& comp = this->sceneHandler->getScene()->getComponent<LichComponent>(id);
+                    comp.life = 0;
+#ifdef _CONSOLE 
+                    Log::write("Killing Lich["+std::to_string(id)+"] enemies outside room...");
+#endif 
+                }
+                else if(this->sceneHandler->getScene()->hasComponents<TankComponent>(id))
+                {
+                    auto& comp = this->sceneHandler->getScene()->getComponent<TankComponent>(id);
+                    comp.life = 0;
+#ifdef _CONSOLE 
+                    Log::write("Killing Tank["+std::to_string(id)+"] enemies outside room...");
+#endif 
+                }
+            }               
+        }
+    );
+}
+
 void SpawnHandler::createTank()
 {
     static int tank = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
@@ -391,7 +463,7 @@ ImguiLambda SpawnHandler::SwarmImgui()
             ImGui::SliderFloat("speed", &speed, 0, 100);
             ImGui::SliderFloat("jumpForce", &jumpForce, 0, 100);
             ImGui::SliderFloat("jumpForceY", &jumpForceY, 0, 100);
-            ImGui::SliderFloat("gravity", &gravity, 0, 10);
+             ImGui::SliderFloat("gravity", &gravity, 0, 10);
             ImGui::SliderFloat("attackRange", &attackRange, 0, 100);
             ImGui::SliderFloat("sightRange", &sightRange, 0, 100);		
             ImGui::InputFloat("attack/s", &attackPerSec);		

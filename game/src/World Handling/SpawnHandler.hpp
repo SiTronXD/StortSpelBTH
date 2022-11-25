@@ -95,6 +95,8 @@ public:
 
     void createEntities();
 
+    void killAllEnemiesOutsideRoom();
+
     bool allDead();
 
     

@@ -6,6 +6,7 @@
 #include "vengine/application/Input.hpp"
 
 const float RoomHandler::TILE_WIDTH = 25.f;
+const float RoomHandler::BORDER_COLLIDER_HEIGHT = TILE_WIDTH * 6.f;
 const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 5;
 const uint32_t RoomHandler::NUM_BORDER = 1;
 const uint32_t RoomHandler::NUM_ONE_X_ONE = 3;
@@ -300,8 +301,9 @@ void RoomHandler::generate(uint32_t seed)
 			Entity entity = this->createBorderEntity(roomGen.getInnerBorder(j).position, true);
 			curRoom.objects.emplace_back(entity);
 			this->scene->setComponent<Collider>(entity, Collider::createBox(
-				glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH * 3.f, TILE_WIDTH * 0.5f), glm::vec3(0.f, TILE_WIDTH * 3.f, 0.f)));
-
+				glm::vec3(TILE_WIDTH * 0.5f, BORDER_COLLIDER_HEIGHT * 0.5f, TILE_WIDTH * 0.5f), 
+                glm::vec3(0.f, BORDER_COLLIDER_HEIGHT * 0.5f, 0.f)));
+            this->scene->setComponent<EdgeTile>(entity);
 			if (this->useMeshes)
 			{
 				this->scene->getComponent<MeshComponent>(entity).meshID = this->innerBorderMesh;
@@ -575,8 +577,10 @@ Entity RoomHandler::getFloor() const
 	return this->floor;
 }
 
-
-
+const glm::vec3& RoomHandler::getRoomPos() const 
+{
+    return this->rooms[this->activeIndex].position;
+}
 
 
 void RoomHandler::createTileInfos(uint32_t roomIndex)
@@ -651,6 +655,8 @@ void RoomHandler::createDoors(int roomIndex, const glm::ivec2* doorTilePos)
 			Transform& tra = this->scene->getComponent<Transform>(curRoom.doors[i]);
 			tra.position.x = ((float)doorTilePos[i].x + OFFSETS[i].x) * TILE_WIDTH;
 			tra.position.z = ((float)doorTilePos[i].y + OFFSETS[i].y) * TILE_WIDTH;
+
+            this->scene->setComponent<EdgeTile>(curRoom.doors[i]);
 		}
 	}
 }
@@ -902,7 +908,7 @@ Entity RoomHandler::createBorderEntity(const glm::vec2& position, bool scalePos)
 	
 	if (this->useMeshes)
 	{
-		this->scene->setComponent<MeshComponent>(entity, (int)this->borderMeshIds[this->random->rand() % NUM_BORDER]);
+        this->scene->setComponent<MeshComponent>(entity, (int)this->borderMeshIds[this->random->rand() % NUM_BORDER]);
 	}
 	else
 	{
@@ -920,8 +926,6 @@ void RoomHandler::createObjectEntities(const Tile& tile, Room& room)
 	Transform& transform = this->scene->getComponent<Transform>(mainEntity);
 	transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
 	transform.position *= TILE_WIDTH;
-	transform.position.x += float((int)this->random->rand() % 10 - 5);
-	transform.position.z += float((int)this->random->rand() % 10 - 5);
 
 	if (tile.type == Tile::TwoXOne || tile.type == Tile::OneXTwo)
 	{

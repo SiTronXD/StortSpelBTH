@@ -21,6 +21,10 @@ private:
   SpawnHandler spawnHandler;
   AIHandler* aiHandler = nullptr;
 
+  bool safetyCleanDone = false;
+  uint32_t timeWhenEnteredRoom = 0;
+  const uint32_t delayToSafetyDelete = 2;
+
   Entity playerID;
   Entity portal;
   Entity perk;

@@ -219,16 +219,27 @@ void GameScene::start()
         this->getResourceManager(),this->getUIRenderer());
 }
 
+#include "vengine/application/Time.hpp"
 void GameScene::update()
-{
-    // TODO: Move to SpawnHandler ---- 
+{    
     if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
     {
         this->newRoomFrame = true;
+        this->spawnHandler.spawnEnemiesIntoRoom();
 
-        this->spawnHandler.spawnEnemiesIntoRoom();		
+        this->timeWhenEnteredRoom = Time::getTimeSinceStart();
+        this->safetyCleanDone = false; 
+
+    }    
+    if(!this->safetyCleanDone)
+    {
+        
+        if(this->timeWhenEnteredRoom + delayToSafetyDelete < Time::getTimeSinceStart())
+        {
+            this->spawnHandler.killAllEnemiesOutsideRoom();
+            this->safetyCleanDone = true;
+        }
     }
-    // ---- TODO: Move to SpawnHandler ^^^^
 
     this->aiHandler->update(Time::getDT());
 

@@ -13,6 +13,11 @@ class Scene;
 class ResourceManager;
 typedef int Entity;
 
+struct EdgeTile
+{
+    char dummy{};
+};
+
 struct TileInfo 
 {
 public: 
@@ -48,6 +53,7 @@ class RoomHandler
 {
 public:
 	static const float TILE_WIDTH;
+	static const float BORDER_COLLIDER_HEIGHT;
 	static const uint32_t TILES_BETWEEN_ROOMS;
 	static const uint32_t NUM_BORDER;
 	static const uint32_t NUM_ONE_X_ONE;
@@ -147,6 +153,7 @@ private:
 	VRandom* random; // Created and deleted in generate()
 	bool useMeshes; // Required by server
 
+
 public:
 	RoomHandler();
 	~RoomHandler();
@@ -165,6 +172,8 @@ public:
 	const std::vector<TileInfo>& getFreeTileInfos();
 	const Room& getExitRoom() const;
 	int getNumRooms() const;
+
+    const glm::vec3& getRoomPos() const;
 
 	Entity getFloor() const;
 };
