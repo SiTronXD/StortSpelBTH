@@ -62,7 +62,7 @@ void GameOverScene::init()
 	this->graveStone = this->createEntity();
 	this->setComponent<MeshComponent>(this->graveStone, graveStoneMesh);
 	Transform& graveStoneTrans = this->getComponent<Transform>(this->graveStone);
-	graveStoneTrans.position.y = 40.f;
+	graveStoneTrans.position.y = 80.f;
 	graveStoneTrans.rotation.y = 180.f;
 	graveStoneTrans.scale *= 5.f;
 	this->setComponent<PointLight>(this->graveStone, glm::vec3(0.f, 6.f, 4.f), 
@@ -212,7 +212,7 @@ void GameOverScene::update()
 	}
 	else if (graveTrans.position.y > 0.001f)
 	{
-		graveTrans.position.y -= 20.f * dt;
+		graveTrans.position.y -= 40.f * dt;
 	}
 
 	// CAMERA SHAKE
