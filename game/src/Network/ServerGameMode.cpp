@@ -96,13 +96,13 @@ void ServerGameMode::update(float dt)
 
 void ServerGameMode::makeDataSendToClient() 
 {
-    size_t nrOfMonsters = 0;
+    int nrOfMonsters = 0;
     for (auto& it : aiHandler.FSMsEntities)
     {
         nrOfMonsters += it.second.size();
     }
     this->addEventUdp({(int)GameEvent::UPDATE_MONSTER});
-    this->addEventUdp({nrOfMonsters});
+    this->addEventUdp({(int)nrOfMonsters});
     
      //get the position and rotation of monsters
     for (auto& it : aiHandler.FSMsEntities)
