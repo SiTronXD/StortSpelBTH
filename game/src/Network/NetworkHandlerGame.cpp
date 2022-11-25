@@ -159,6 +159,7 @@ void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 	switch ((GameEvent)event)
 	{
 	case GameEvent::UPDATE_PLAYER:
+		this->timer = 0;
 		udpPacket >> i0;
 		i1 = -1;
 		for (int i = 0; i < this->otherPlayersServerId.size(); i++)
@@ -307,14 +308,27 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 	this->playerEntities.resize(size);
 	this->playerPosLast.resize(size);
 	this->playerPosCurrent.resize(size);
+	float angle = 360.0f / (size + 1);
 
 	Scene* scene = this->sceneHandler->getScene();
+	Transform& playerTrans = scene->getComponent<Transform>(this->player);
+	playerTrans.position = SMath::rotateVector(glm::vec3(0.0f, angle * this->ID, 0.0f), glm::vec3(10.0f, 12.0f, 0.0f));
 	for (int i = 0; i < size; i++)
 	{
 		this->playerEntities[i] = scene->createEntity();
 		scene->setComponent<MeshComponent>(this->playerEntities[i], playerMesh);
 		scene->setComponent<AnimationComponent>(this->playerEntities[i]);
 		scene->setComponent<Collider>(this->playerEntities[i], Collider::createCapsule(2, 11, glm::vec3(0, 7.3, 0)));
+
+		// Set Position
+		Transform& t = scene->getComponent<Transform>(this->playerEntities[i]);
+		t.position = playerTrans.position = SMath::rotateVector(glm::vec3(0.0f, angle * this->otherPlayersServerId[i], 0.0f), glm::vec3(10.0f, 12.0f, 0.0f));
+
+		// Set tint color
+		MeshComponent& mesh = scene->getComponent<MeshComponent>(this->playerEntities[i]);
+		this->resourceManger->makeUniqueMaterials(mesh);
+		mesh.overrideMaterials[0].tintColor = this->playerColors[i + 1];
+
 		/*scene->setComponent<Rigidbody>(this->playerEntities[i]);
 
 		Rigidbody& rb = scene->getComponent<Rigidbody>(this->playerEntities[i]);
@@ -343,7 +357,9 @@ void NetworkHandlerGame::updatePlayer()
 void NetworkHandlerGame::interpolatePositions()
 {
 	Scene* scene = this->sceneHandler->getScene();
-	float percent = this->getClient()->getAccumulatedTime() / UPDATE_RATE;
+	this->timer += Time::getDT();
+
+	float percent = this->timer / UPDATE_RATE;
 	for (int i = 0; i < this->playerEntities.size(); i++)
 	{
 		Transform& t = scene->getComponent<Transform>(this->playerEntities[i]);

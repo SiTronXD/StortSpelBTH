@@ -40,6 +40,7 @@ public:
 	};
 private:
 	static const float UPDATE_RATE;
+	float timer = 0.0f;
 
 	CombatSystem* combatSystem;
 
