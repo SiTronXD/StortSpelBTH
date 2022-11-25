@@ -8,7 +8,7 @@ const float NetworkHandlerGame::UPDATE_RATE = ServerUpdateRate;
 Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir)
 {
 	Scene* scene = this->sceneHandler->getScene();
-	Perks perk{ .multiplier = 0.2f, .perkType = type };
+	Perks perk{ .multiplier = multiplier, .perkType = type };
 
 	Entity e = scene->createEntity();
 	scene->setComponent<MeshComponent>(e, perkMeshes[type]);
@@ -104,7 +104,6 @@ void NetworkHandlerGame::cleanup()
 void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 {
 	sf::Packet packet;
-	Entity e;
 	switch ((GameEvent)event)
 	{
 	case GameEvent::SPAWN_ITEM:
@@ -113,37 +112,41 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		v1 = this->getVec(tcpPacket);
 		if ((ItemType)i1 == ItemType::PERK)
 		{
-			e = this->spawnItem((PerkType)i2, f0, v0, v1);
+			this->itemIDs.push_back(this->spawnItem((PerkType)i2, f0, v0, v1));
 		}
 		else
 		{
-			e = this->spawnItem((AbilityType)i2, v0, v1);
+			this->itemIDs.push_back(this->spawnItem((AbilityType)i2, v0, v1));
 		}
-
-		packet << (int)GameEvent::SET_ITEM_ID << i0 << e;
-		this->sendDataToServerTCP(packet);
 		break;
 	case GameEvent::PICKUP_ITEM:
-		// EntityID -> ItemType
+		// Index -> ItemType
 		tcpPacket >> i0 >> i1;
-		if ((ItemType)i1 == ItemType::PERK)
+		if (this->sceneHandler->getScene()->entityValid(this->itemIDs[i0]))
 		{
-			this->combatSystem->pickupPerk(i0);
-		}
-		else
-		{
-			this->combatSystem->pickUpAbility(i0);
+			if ((ItemType)i1 == ItemType::PERK)
+			{
+				this->combatSystem->pickupPerk(this->itemIDs[i0]);
+			}
+			else
+			{
+				this->combatSystem->pickUpAbility(this->itemIDs[i0]);
+			}
+			std::swap(this->itemIDs[i0], this->itemIDs[this->itemIDs.size() - 1]);
+			this->itemIDs.pop_back();
 		}
 		break;
 	case GameEvent::DELETE_ITEM:
-		// EntityID -> ItemType
+		// Index -> ItemType
 		tcpPacket >> i0 >> i1;
-		this->sceneHandler->getScene()->removeEntity(i0);
+		this->sceneHandler->getScene()->removeEntity(this->itemIDs[i0]);
+		std::swap(this->itemIDs[i0], this->itemIDs[this->itemIDs.size() - 1]);
+		this->itemIDs.pop_back();
 		break;
     case GameEvent::SPAWN_ENEMY:
         tcpPacket >> i0 >> i1;
         v0 = this->getVec(tcpPacket);
-        serverEnteties.insert(std::pair<int, int>(i1, spawnEnemy(i0, v0)));
+		serverEntities.insert(std::pair<int, int>(i1, spawnEnemy(i0, v0)));
 		break;
 	default:
 		break;
@@ -193,25 +196,25 @@ void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 		anim->animationIndex = (uint32_t)i0;
 		break;
     case GameEvent::UPDATE_MONSTER:
-        //how many monsters we shall update
+        // How many monsters we shall update
         udpPacket >> i0;
         for (int i = 0; i < i0; i++)
         {
-			//the monster id on server side
+			// The monster id on server side
 			udpPacket >> i1;
 
-			if (serverEnteties.find(i1) == serverEnteties.end())
+			if (serverEntities.find(i1) == serverEntities.end())
             {
 				udpPacket.clear();
                 break;
 			}
-			//get and set position and rotation
+			// Get and set position and rotation
             v0 = getVec(udpPacket);
             v1 = getVec(udpPacket);
-            sceneHandler->getScene()->getComponent<Transform>(serverEnteties.find(i1)->second).position = v0;
-            sceneHandler->getScene()->getComponent<Transform>(serverEnteties.find(i1)->second).rotation = v1;
+            sceneHandler->getScene()->getComponent<Transform>(serverEntities.find(i1)->second).position = v0;
+            sceneHandler->getScene()->getComponent<Transform>(serverEntities.find(i1)->second).rotation = v1;
 
-			//get and set animation // don't know how this should be made
+			// Get and set animation // don't know how this should be made
 			//anim = &this->sceneHandler->getScene()->getComponent<AnimationComponent>(serverEnteties.find(i1)->second);
 			//udpPacket >> i2 >> anim->timer >> anim->timeScale;
 			//anim->animationIndex = (uint32_t)i2;
@@ -241,15 +244,10 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 		this->sendVec(packet, sv1);
 		server->sendToAllClientsTCP(packet);
 		break;
-	case GameEvent::SET_ITEM_ID:
-		serverScene = server->getScene<ServerGameMode>();
-		tcpPacket >> si0 >> si1;
-		serverScene->setEntityID(si0, clientID, si1);
-		break;
 	case GameEvent::PICKUP_ITEM:
 		serverScene = server->getScene<ServerGameMode>();
-		tcpPacket >> si0;
-		serverScene->deleteItem(clientID, si0);
+		tcpPacket >> si0 >> si1 >> si2 >> sf0;
+		serverScene->deleteItem(clientID, si0, (ItemType)si1, si2, sf0);
 		break;
 	default:
 		packet << event;
@@ -403,9 +401,31 @@ void NetworkHandlerGame::pickUpItemRequest(Entity itemEntity, ItemType type)
 {
 	if (!this->playerEntities.empty()) // Multiplayer (send to server)
 	{
+		int index = -1;
+		for (int i = 0; i < this->itemIDs.size(); i++)
+		{
+			if (this->itemIDs[i] == itemEntity)
+			{
+				index = i;
+				break;
+			}
+		}
 		sf::Packet packet;
-		packet << (int)GameEvent::PICKUP_ITEM << itemEntity;
-		this->sendDataToServerTCP(packet);
+		packet << (int)GameEvent::PICKUP_ITEM << index;
+
+		Scene* scene = this->sceneHandler->getScene();
+		if (scene->hasComponents<Perks>(itemEntity))
+		{
+			Perks& perk = scene->getComponent<Perks>(itemEntity);
+			packet << (int)ItemType::PERK << perk.perkType << perk.multiplier;
+			this->sendDataToServerTCP(packet);
+		}
+		else if (scene->hasComponents<Abilities>(itemEntity))
+		{
+			Abilities& ability = scene->getComponent<Abilities>(itemEntity);
+			packet << (int)ItemType::ABILITY << ability.abilityType << 0.0f;
+			this->sendDataToServerTCP(packet);
+		}
 	}
 	else // Singleplayer
 	{

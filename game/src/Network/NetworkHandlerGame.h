@@ -46,7 +46,8 @@ private:
 
 	Entity player; // Own player
 	std::vector<Entity> playerEntities; // Other players connected
-    std::map<int, Entity> serverEnteties;
+    std::map<int, Entity> serverEntities;
+	std::vector<Entity> itemIDs;
 
 	// Interpolation of other transforms
 	std::vector<glm::vec3> playerPosLast;

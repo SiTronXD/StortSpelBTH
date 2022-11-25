@@ -39,15 +39,15 @@ void ServerGameMode::update(float dt)
 {
     aiHandler.update(dt);
 
-    //for now we only look at player 0
-     if (this->roomHandler.playerNewRoom(this->getPlayer(0), this->getPhysicsEngine()))
-     {
-         std::cout << "Server: player in new room" << std::endl;
-         this->newRoomFrame = true;
-         spawnHandler.spawnEnemiesIntoRoom();
-     }
+    // For now we only look at player 0
+    if (this->roomHandler.playerNewRoom(this->getPlayer(0), this->getPhysicsEngine()))
+    {
+        std::cout << "Server: player in new room" << std::endl;
+        this->newRoomFrame = true;
+        spawnHandler.spawnEnemiesIntoRoom();
+    }
 
-	if (this->spawnHandler.allDead() && this->newRoomFrame)
+    if (this->spawnHandler.allDead() && this->newRoomFrame)
     {
         this->newRoomFrame = false;
         std::cout << "all dead" << std::endl;
@@ -58,10 +58,10 @@ void ServerGameMode::update(float dt)
         
         if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
         {
-           this->addEvent({(int)GameEvent::SPAWN_PORTAL});
+            this->addEvent({(int)GameEvent::SPAWN_PORTAL});
         }
     }
-	//Send data to player
+	// Send data to player
     makeDataSendToClient();
 
 	//DEBUG ONLY
@@ -104,7 +104,7 @@ void ServerGameMode::makeDataSendToClient()
     this->addEventUdp({(int)GameEvent::UPDATE_MONSTER});
     this->addEventUdp({(int)nrOfMonsters});
     
-     //get the position and rotation of monsters
+    // Get the position and rotation of monsters
     for (auto& it : aiHandler.FSMsEntities)
     {
         for (int i = 0; i < it.second.size(); ++i)
@@ -122,7 +122,7 @@ void ServerGameMode::makeDataSendToClient()
     }
 
     //DEBUG
-     //get the position and rotation of monsters
+    // Get the position and rotation of monsters
     for (auto& it : aiHandler.FSMsEntities)
     {
         for (int i = 0; i < it.second.size(); ++i)
@@ -157,34 +157,29 @@ int ServerGameMode::spawnItem(ItemType type, int otherType, float multiplier)
 	return this->curItems.size() - 1;
 }
 
-void ServerGameMode::deleteItem(int playerID, Entity ID)
+void ServerGameMode::deleteItem(int playerID, int index, ItemType type, int otherType, float multiplier)
 {
-	int index = -1;
-	int size = this->curItems.size();
-	for (int i = 0; i < size; i++)
-	{
-		if (this->itemIDs[i][playerID] == ID)
-		{
-			index = i;
-			break;
-		}
-	}
-	if (index != -1)
-	{
-		sf::Packet packet;
-		for (int i = 0; i < this->server->getClientCount(); i++)
-		{
-			packet.clear();
-			int gameEvent = i == playerID ? (int)GameEvent::PICKUP_ITEM : (int)GameEvent::DELETE_ITEM;
-			packet << (int)gameEvent << itemIDs[index][i] << (int)this->curItems[index].type;
-			this->server->sendToClientTCP(packet, i);
-		}
+    int size = this->curItems.size();
+    if (index >= size || index < 0)
+    {
+        return;
+    }
+    else if (this->curItems[index].type == type && this->curItems[index].otherType == otherType && this->curItems[index].multiplier == multiplier)
+    {
+        sf::Packet packet;
+        for (int i = 0; i < this->server->getClientCount(); i++)
+        {
+            packet.clear();
+            int gameEvent = i == playerID ? (int)GameEvent::PICKUP_ITEM : (int)GameEvent::DELETE_ITEM;
+            packet << (int)gameEvent << index << (int)this->curItems[index].type;
+            this->server->sendToClientTCP(packet, i);
+        }
 
-		std::swap(this->curItems[index], this->curItems[size - 1]);
-		std::swap(this->itemIDs[index], this->itemIDs[size - 1]);
-		this->curItems.pop_back();
-		this->itemIDs.pop_back();
-	}
+        std::swap(this->curItems[index], this->curItems[size - 1]);
+        std::swap(this->itemIDs[index], this->itemIDs[size - 1]);
+        this->curItems.pop_back();
+        this->itemIDs.pop_back();
+    }
 }
 
 void ServerGameMode::setEntityID(int itemID, int playerID, Entity ID)
