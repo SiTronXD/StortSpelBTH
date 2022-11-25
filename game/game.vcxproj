@@ -271,6 +271,7 @@ SET ERRORLEVEL=0</Command>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\LevelEditor\ObjectHandler.cpp" />
     <ClCompile Include="src\Ai\Behaviors\HelperFuncs.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Lich\LichBTs.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Lich\LichFSM.cpp" />
@@ -285,6 +286,7 @@ SET ERRORLEVEL=0</Command>
     <ClCompile Include="src\Scenes\GameSceneNetwork.cpp" />
     <ClCompile Include="src\Scenes\LobbyScene.cpp" />
     <ClCompile Include="src\Scenes\logInScene.cpp" />
+    <ClCompile Include="src\Scenes\LevelEditor.cpp" />
     <ClCompile Include="src\World Handling\Room Generator.cpp" />
     <ClCompile Include="src\World Handling\Room Handler.cpp" />
     <ClCompile Include="src\World Handling\Room Layout.cpp" />
@@ -305,6 +307,8 @@ SET ERRORLEVEL=0</Command>
     <ClInclude Include="src\Components\AiCombatSwarm.h" />
     <ClInclude Include="src\Components\AICombatTank.hpp" />
     <ClInclude Include="src\Components\Perks.h" />
+    <ClInclude Include="src\LevelEditor\mayaStructures.h" />
+    <ClInclude Include="src\LevelEditor\ObjectHandler.h" />
     <ClInclude Include="src\Scenes\GameOverScene.h" />
     <ClInclude Include="src\Ai\Behaviors\Swarm\SwarmBTs.hpp" />
     <ClInclude Include="src\Ai\Behaviors\Swarm\SwarmFSM.hpp" />
@@ -314,6 +318,7 @@ SET ERRORLEVEL=0</Command>
     <ClInclude Include="src\Components\Combat.h" />
     <ClInclude Include="src\Components\Movement.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
+    <ClInclude Include="src\Scenes\LevelEditor.h" />
     <ClInclude Include="src\Scenes\RoomTesting.h" />
     <ClInclude Include="src\Scenes\GameSceneNetwork.h" />
     <ClInclude Include="src\Scenes\LobbyScene.h" />
@@ -338,6 +343,7 @@ SET ERRORLEVEL=0</Command>
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
+    <None Include="scripts\levelEditor.lua" />
     <None Include="scripts\moveRock.lua">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">true</ExcludedFromBuild>
