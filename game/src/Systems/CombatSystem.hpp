@@ -250,7 +250,7 @@ public:
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 		this->script->setScriptComponentValue(playerScript, animIdx, "currentAnimation");
 		this->script->setScriptComponentValue(playerScript, cdValue, "animTimer");
-		this->scene->getComponent<AnimationComponent>(this->playerID).timeScale = animMultiplier;
+		this->scene->getComponent<AnimationComponent>(this->playerID).aniSlots[0].timeScale = animMultiplier;
 		Transform& swordTrans = this->scene->getComponent<Transform>(this->swordID);
 		swordTrans.updateMatrix();
 		this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 12.f, (swordTrans.right() * swordTrans.forward()), true));
