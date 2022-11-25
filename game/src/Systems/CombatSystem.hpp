@@ -489,11 +489,11 @@ public:
 	void updateMovementSpeed(Combat& combat, Perks& perk, bool doUpgrade = true)
 	{
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+		float moveTimers[4] = { 0.f, 0.f, 0.f, 0.f };
 		if (doUpgrade)
 		{
 			setDefaultMovementSpeed(combat);
 			combat.movementMultiplier += perk.multiplier;
-			float moveTimers[4] = { 0.f, 0.f, 0.f, 0.f };
 			if (combat.movementMultiplier > 1.5f)
 			{
 				combat.movementMultiplier = 1.5f;
@@ -522,21 +522,37 @@ public:
 				this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
 			}
 		}
-		int maxSpeed = 0;
-		int sprintSpeed = 0;
-		int dodgeSpeed = 0;
-		this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
-		this->script->getScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
-		this->script->getScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
-		float tempMaxSpeed = (float)maxSpeed * combat.movementMultiplier;
-		float tempSprintSpeed = (float)sprintSpeed * combat.movementMultiplier;
-		float tempDodgeSpeed = (float)dodgeSpeed * combat.movementMultiplier;
-		maxSpeed = (int)tempMaxSpeed;
-		sprintSpeed = (int)tempSprintSpeed;
-		dodgeSpeed = (int)tempDodgeSpeed;
-		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
-		this->script->setScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
-		this->script->setScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
+		else
+		{
+			int maxSpeed = 0;
+			int sprintSpeed = 0;
+			int dodgeSpeed = 0;
+			this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
+			this->script->getScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
+			this->script->getScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
+			float tempMaxSpeed = (float)maxSpeed * combat.movementMultiplier;
+			float tempSprintSpeed = (float)sprintSpeed * combat.movementMultiplier;
+			float tempDodgeSpeed = (float)dodgeSpeed * combat.movementMultiplier;
+			maxSpeed = (int)tempMaxSpeed;
+			sprintSpeed = (int)tempSprintSpeed;
+			dodgeSpeed = (int)tempDodgeSpeed;
+			this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
+			this->script->setScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
+			this->script->setScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
+
+			this->script->getScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
+			this->script->getScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
+			this->script->getScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
+			this->script->getScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
+			for (size_t i = 0; i < 4; i++)
+			{
+				moveTimers[i] += perk.multiplier;
+			}
+			this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
+			this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
+			this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
+			this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
+		}
 	}
 
 	void updateStamina(Combat& combat, Perks& perk, bool doUpgrade = true)
@@ -593,21 +609,21 @@ public:
 	void setDefaultMovementSpeed(Combat& combat)
 	{
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		int maxSpeed = 0;
-		int sprintSpeed = 0;
-		int dodgeSpeed = 0;
-		this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
-		this->script->getScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
-		this->script->getScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
-		float tempMaxSpeed = (float)maxSpeed / combat.movementMultiplier;
-		float tempSprintSpeed = (float)sprintSpeed / combat.movementMultiplier;
-		float tempDodgeSpeed = (float)dodgeSpeed / combat.movementMultiplier;
-		maxSpeed = (int)tempMaxSpeed;
-		sprintSpeed = (int)tempSprintSpeed;
-		dodgeSpeed = (int)tempDodgeSpeed;
-		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
-		this->script->setScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
-		this->script->setScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
+		//int maxSpeed = 0;
+		//int sprintSpeed = 0;
+		//int dodgeSpeed = 0;
+		//this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
+		//this->script->getScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
+		//this->script->getScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
+		//float tempMaxSpeed = (float)maxSpeed / combat.movementMultiplier;
+		//float tempSprintSpeed = (float)sprintSpeed / combat.movementMultiplier;
+		//float tempDodgeSpeed = (float)dodgeSpeed / combat.movementMultiplier;
+		//maxSpeed = (int)tempMaxSpeed;
+		//sprintSpeed = (int)tempSprintSpeed;
+		//dodgeSpeed = (int)tempDodgeSpeed;
+		this->script->setScriptComponentValue(playerScript, 30, "maxSpeed");
+		this->script->setScriptComponentValue(playerScript, 60, "sprintSpeed");
+		this->script->setScriptComponentValue(playerScript, 100, "dodgeSpeed");
 
 		this->script->setScriptComponentValue(playerScript, 1.f, "idleAnimTime");
 		this->script->setScriptComponentValue(playerScript, 0.7f, "runAnimTime");
