@@ -84,8 +84,8 @@ void GameScene::init()
     this->dirLightEntity = this->createEntity();
     this->setComponent<DirectionalLight>(
         this->dirLightEntity,
-        glm::vec3(-1.0f, -1.0f, -1.0f),
-        glm::vec3(0.6f)
+        glm::vec3(-0.7f, -1.0f, -0.7f),
+        glm::vec3(0.3f)
         );
     DirectionalLight& dirLight = this->getComponent<DirectionalLight>(this->dirLightEntity);
     dirLight.cascadeSizes[0] = 0.044f;
