@@ -11,13 +11,27 @@ void MainMenu::init()
 	samplerSettings.filterMode = vk::Filter::eNearest;
 	samplerSettings.unnormalizedCoordinates = VK_TRUE;
 
-	//this->backgroundId = this->getResourceManager()->addTexture("assets/textures/UI/background.png");
-    Entity light = this->createEntity();
-    this->setComponent<DirectionalLight>(
-        light, glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.6f)
+	Entity scene = this->createEntity();
+    this->setComponent<MeshComponent>(
+        scene,
+        (int)this->getResourceManager()->addMesh("assets/models/Menu/scene.obj")
     );
 
+    signpost = this->createEntity();
+    this->setComponent<MeshComponent>(
+        signpost,
+        (int)this->getResourceManager()->addMesh("assets/models/Menu/signpost.obj")
+    );
+    
+
     //Light
+    light = this->createEntity();
+    this->setComponent<DirectionalLight>(
+        light, glm::vec3(-0.5f, -1.0f, 1.0f), glm::vec3(0.6f)
+    );
+    this->setComponent<PointLight>(
+        light, {glm::vec3(8, 16,0), glm::vec3(50.f, 25.f, 50.f)}
+    );
     DirectionalLight& dirLight =
         this->getComponent<DirectionalLight>(light);
     dirLight.cascadeSizes[0] = 0.044f;
@@ -47,10 +61,14 @@ void MainMenu::start()
     camera = this->createEntity();
     this->setComponent<Camera>(camera);
     this->setMainCamera(camera);
-    this->getComponent<Transform>(camera).position = glm::vec3(0, 5, 20);
+    this->getComponent<Transform>(camera).position = glm::vec3(10, 10, -20);
+    this->getComponent<Transform>(camera).rotation = glm::vec3(0, 11, -0);
 
     this->getSceneHandler()->getScriptHandler()->getGlobal(character, "character");
     this->getComponent<AnimationComponent>(character).animationIndex = 0;
+    this->setAnimation(character, "idle");
+    Transform& t = this->getComponent<Transform>(character);
+    t.rotation = glm::vec3(0,108,0);
 
 	this->getAudioHandler()->setMusic("assets/Sounds/BackgroundMusic.ogg");
 	this->getAudioHandler()->setMasterVolume(0.5f);
@@ -64,23 +82,23 @@ void MainMenu::start()
   this->fullscreenButton = this->createEntity();
 
   UIArea area{};
-  area.position = glm::vec2(0.f, 200.f);
+  area.position = glm::vec2(-500.f, 200.f);
   area.dimension = glm::vec2(50 * 5, 50);
   this->setComponent<UIArea>(this->playButton, area);
 
-  area.position = glm::vec2(0.f, 100.f);
+  area.position = glm::vec2(-500.f, 100.f);
   area.dimension = glm::vec2(50 * 10, 50);
   this->setComponent<UIArea>(this->joinGameButton, area);
 
-  area.position = glm::vec2(0.f, 0.f);
+  area.position = glm::vec2(-500.f, 0.f);
   area.dimension = glm::vec2(50 * 10, 50);
   this->setComponent<UIArea>(this->settingsButton, area);
 
-    area.position = glm::vec2(0.f, -100.f);
+    area.position = glm::vec2(-500.f, -100.f);
   area.dimension = glm::vec2(50 * 10, 50);
   this->setComponent<UIArea>(this->howToPlayButton, area);
 
-  area.position = glm::vec2(0.f, -200.f);
+  area.position = glm::vec2(-500.f, -200.f);
   area.dimension = glm::vec2(50 * 10, 50);
   this->setComponent<UIArea>(this->quitButton, area);
 
@@ -103,8 +121,8 @@ void MainMenu::update()
 	//this->getUIRenderer()->setTexture(this->backgroundId);
 	//this->getUIRenderer()->renderTexture(glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f));
 
-    Transform& t = this->getComponent<Transform>(camera);
-    ImGui::Begin("Camera");
+    ImGui::Begin("Character transform");
+    Transform& t = this->getComponent<Transform>(character);
     ImGui::SliderFloat("position X", &t.position.x, -20.f, 20.f);
     ImGui::SliderFloat("position Y", &t.position.y, -20.f, 20.f);
     ImGui::SliderFloat("position Z", &t.position.z, -20.f, 20.f);
@@ -114,6 +132,26 @@ void MainMenu::update()
     ImGui::SliderFloat("rotation Z", &t.rotation.z, 0.f, 360.f);
     ImGui::End();
 
+    ImGui::Begin("Signpost transform");
+    Transform& tS = this->getComponent<Transform>(signpost);
+    ImGui::SliderFloat("position X", &tS.position.x, -20.f, 20.f);
+    ImGui::SliderFloat("position Y", &tS.position.y, -20.f, 20.f);
+    ImGui::SliderFloat("position Z", &tS.position.z, -20.f, 20.f);
+                                               
+    ImGui::SliderFloat("rotation X", &tS.rotation.x, 0.f, 360.f);
+    ImGui::SliderFloat("rotation Y", &tS.rotation.y, 0.f, 360.f);
+    ImGui::SliderFloat("rotation Z", &tS.rotation.z, 0.f, 360.f);
+    ImGui::End();
+
+    
+    ImGui::Begin("Point light");
+    PointLight& pL = this->getComponent<PointLight>(light);
+    ImGui::SliderFloat("position X", &pL.color.x, 0.f, 50.f);
+    ImGui::SliderFloat("position Y", &pL.color.y, 0.f, 50.f);
+    ImGui::SliderFloat("position Z", &pL.color.z, 0.f, 50.f);
+
+    ImGui::End();
+
 	switch (this->state)
 	{
 	default:
@@ -121,11 +159,12 @@ void MainMenu::update()
 	case Menu:
 
 		this->getUIRenderer()->setTexture(this->fontTextureId);
-		this->getUIRenderer()->renderString("play",         glm::vec2(0.f, 200.f),  glm::vec2(50.f, 50.f));
-		this->getUIRenderer()->renderString("join game",    glm::vec2(0.f, 100.f),  glm::vec2(50.f, 50.f));
-		this->getUIRenderer()->renderString("settings",     glm::vec2(0.f, 0.f),    glm::vec2(50.f, 50.f));
-        this->getUIRenderer()->renderString("how to play",  glm::vec2(0.f, -100.f), glm::vec2(50.f, 50.f));
-		this->getUIRenderer()->renderString("quit",         glm::vec2(0.f, -200.f), glm::vec2(50.f, 50.f));
+		this->getUIRenderer()->renderString("play",         glm::vec2(-430.f, 410.f),  glm::vec2(50.f, 50.f));
+		this->getUIRenderer()->renderString("join game",    glm::vec2(-450.f, 230.f),  glm::vec2(50.f, 50.f));
+		this->getUIRenderer()->renderString("level editor",     glm::vec2(-440.f, 50.f),    glm::vec2(50.f, 50.f));
+		this->getUIRenderer()->renderString("settings",     glm::vec2(-450.f, -80.f),    glm::vec2(50.f, 50.f));
+        this->getUIRenderer()->renderString("how to play",  glm::vec2(-450.f, -205.f), glm::vec2(50.f, 50.f));
+		this->getUIRenderer()->renderString("quit",         glm::vec2(-470.f, -365.f), glm::vec2(50.f, 50.f));
 		
 		if (this->getComponent<UIArea>(playButton).isClicking())
         {

@@ -17,6 +17,8 @@ private:
     Entity backgroundScene;
     Entity character;
     Entity camera;
+    Entity signpost;
+    Entity light;
 
     State state;
     uint32_t fontTextureId;
