@@ -1,5 +1,6 @@
 #include "SpawnHandler.hpp"
 #include <functional>
+#include "../Network/ServerGameMode.h"
 
 void SpawnHandler::spawnEnemiesIntoRoom()
 {
@@ -124,12 +125,18 @@ void SpawnHandler::createEntities()
 
 void SpawnHandler::createTank()
 {
-    this->tankIDs.push_back(this->currScene->createEntity());
-    this->allEntityIDs.push_back(this->tankIDs.back());
-    if (dynamic_cast<NetworkScene*>(currScene) == nullptr)
+    ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
+    if (netScene == nullptr)
     {
+        this->tankIDs.push_back(this->currScene->createEntity());
+        this->allEntityIDs.push_back(this->tankIDs.back());
         static int tank = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
         this->currScene->setComponent<MeshComponent>(this->tankIDs.back(), tank);
+    }
+    else
+    {
+        this->tankIDs.push_back(netScene->spawnEnemy(0));
+        this->allEntityIDs.push_back(this->tankIDs.back());
     }
     this->currScene->setComponent<AiCombatTank>(this->tankIDs.back());
     this->currScene->setComponent<Rigidbody>(this->tankIDs.back());
@@ -149,14 +156,18 @@ void SpawnHandler::createTank()
 
 void SpawnHandler::createLich()
 {
-    
-    this->lichIDs.push_back(this->currScene->createEntity());
-    this->allEntityIDs.push_back(this->lichIDs.back());
-    if (dynamic_cast<NetworkScene*>(currScene) == nullptr)
+    ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
+    if (netScene == nullptr)
     {
+        this->lichIDs.push_back(this->currScene->createEntity());
         static int lich = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
         this->currScene->setComponent<MeshComponent>(this->lichIDs.back(), lich);
     }
+    else
+    {
+        this->lichIDs.push_back(netScene->spawnEnemy(0));
+    }
+    this->allEntityIDs.push_back(this->lichIDs.back());
     this->currScene->setComponent<Rigidbody>(this->lichIDs.back());
     Rigidbody& rb = this->currScene->getComponent<Rigidbody>(this->lichIDs.back());
     rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -172,18 +183,21 @@ void SpawnHandler::createLich()
 
 void SpawnHandler::createSwarmGroup()
 {
-    
-    
+    ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
     this->swarmGroups.push_back(new SwarmGroup); //TODO: Does this work as expected? Do we need to clear (delete contents) this on every init? 
     for (size_t i = 0; i < this->group_size; i++)
     {
-        this->swarmIDs.push_back(this->currScene->createEntity());
-        this->allEntityIDs.push_back(this->swarmIDs.back());
-        if (dynamic_cast<NetworkScene*>(currScene) == nullptr)
+        if (netScene == nullptr)
         {
+            this->swarmIDs.push_back(this->currScene->createEntity());
             static int swarm = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
             this->currScene->setComponent<MeshComponent>(this->swarmIDs.back(), swarm);
         }
+        else
+        {
+            this->swarmIDs.push_back(netScene->spawnEnemy(0));
+        }
+        this->allEntityIDs.push_back(this->swarmIDs.back());
         this->currScene->setComponent<AiCombatSwarm>(this->swarmIDs.back());
         this->currScene->setComponent<Collider>(this->swarmIDs.back(), Collider::createSphere(4.0f));
         this->currScene->setComponent<Rigidbody>(this->swarmIDs.back());

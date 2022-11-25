@@ -6,13 +6,14 @@
 #include "glm/glm.hpp"
 #include "../Components/Perks.h"
 #include "../Components/Abilities.h"
+#include "../Components/NetworkCombat.h"
 
 enum ActiveAttack { lightActive, heavyActive, comboActive1, comboActive2, comboActive3, knockbackActive, noActive };
 
-struct Combat
+struct Combat : public NetworkCombat
 {
-	int maxHealth = 100;
-	int health = 100;
+	//int maxHealth = 100;
+	//int health = 100;
 	
 	// Damage for each kind of hit
 	// 0 = Light Hit

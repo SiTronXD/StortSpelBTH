@@ -51,8 +51,6 @@ void GameScene::init()
     roomHandler.init(
         this,
         this->getResourceManager(), true);
-    roomHandler.generate(rand());
-    createPortal();
     
     ResourceManager* resourceMng = this->getResourceManager();
     this->perkMeshes[0] = resourceMng->addMesh("assets/models/Perk_Hp.obj");
@@ -111,6 +109,20 @@ void GameScene::start()
     this->networkHandler->setPlayerEntity(playerID);
     this->networkHandler->createOtherPlayers(this->getComponent<MeshComponent>(playerID).meshID);
 
+        //TODO : was it okay to make this in to start?
+    if (networkHandler->isConnected())
+    {
+        //GET SEED FROM SERVER
+        srand(69);
+        roomHandler.generate(rand());
+    }
+    else
+    {
+        roomHandler.generate(rand());
+    }
+    
+    createPortal();
+
     this->setComponent<Combat>(playerID);
     this->createSystem<CombatSystem>(
         this,
@@ -138,56 +150,85 @@ void GameScene::start()
     this->resumeButton.dimension = glm::vec2(500.0f, 150.0f);
     this->exitButton.dimension = glm::vec2(500.0f, 150.0f);
 
-    // Ai management
-    this->aiHandler = this->getAIHandler();
-    this->aiHandler->init(this->getSceneHandler());
+    //if we are not multiplayer we do this by ourself
+    if (!networkHandler->isConnected())
+    {
+        // Ai management
+        this->aiHandler = this->getAIHandler();
+        this->aiHandler->init(this->getSceneHandler());
     
-    spawnHandler.init(&this->roomHandler, this, 
+        spawnHandler.init(&this->roomHandler, this, 
         this->getSceneHandler(),this->aiHandler,
         this->getResourceManager(),this->getUIRenderer());
+    }
 }
 
 void GameScene::update()
 {
-    // TODO: Move to SpawnHandler ---- 
-    if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
-    {
-        this->newRoomFrame = true;
+    if (!networkHandler->isConnected())
+     {   
+        this->aiHandler->update(Time::getDT());
 
-        this->spawnHandler.spawnEnemiesIntoRoom();
-    }
-    // ---- TODO: Move to SpawnHandler ^^^^
-
-    this->aiHandler->update(Time::getDT());
-
-    if (this->spawnHandler.allDead() && this->newRoomFrame)
-    {
-        this->newRoomFrame = false;
-
-        // Call when a room is cleared
-        this->roomHandler.roomCompleted();
-        this->numRoomsCleared++;
-
-        if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+        // TODO: Move to SpawnHandler ---- 
+        if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
         {
-            this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
+            this->newRoomFrame = true;
+
+            this->spawnHandler.spawnEnemiesIntoRoom();
+        }
+        // ---- TODO: Move to SpawnHandler ^^^^
+
+        if (this->spawnHandler.allDead() && this->newRoomFrame)
+        {
+            this->newRoomFrame = false;
+
+            // Call when a room is cleared
+            this->roomHandler.roomCompleted();
+            this->numRoomsCleared++;
+
+            if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+            {
+                this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
+            }
+        }
+
+        // Switch scene if the player is dead
+        if (this->hasComponents<Combat>(this->playerID))
+        {
+            if (this->getComponent<Combat>(this->playerID).health <= 0.0f)
+            {
+                this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+            }
         }
     }
-    // Server is diconnected
-    if (this->networkHandler->getStatus() == ServerStatus::DISCONNECTED)
+    else
     {
-        this->networkHandler->disconnectClient();
-        this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
-    }
-
-    // Switch scene if the player is dead
-    if (this->hasComponents<Combat>(this->playerID))
-    {
-        if (this->getComponent<Combat>(this->playerID).health <= 0.0f)
+        if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
         {
-            this->networkHandler->disconnectClient(); // TEMP: probably will be in game over scene later
-            this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+            this->newRoomFrame = true;
         }
+
+         // Server is diconnected
+        if (this->networkHandler->getStatus() == ServerStatus::DISCONNECTED)
+        {
+            this->networkHandler->disconnectClient();
+            this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
+        }
+
+        // If player is dead make the player not able to move
+        // and server shall say if we shall switch scene
+        if (this->hasComponents<Combat>(this->playerID))
+        {
+            if (this->getComponent<Combat>(this->playerID).health <= 0.0f)
+            {
+                this->networkHandler->disconnectClient(); // TEMP: probably will be in game over scene later
+                this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+            }
+        }
+
+        // Network
+        this->networkHandler->updatePlayer();
+        this->networkHandler->interpolatePositions();
     }
 
     Combat& playerCombat = this->getComponent<Combat>(this->playerID);
@@ -234,16 +275,6 @@ void GameScene::update()
         glm::vec2(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos + 20.f),
         glm::vec2(xSize * hpPercent, ySize)
     );
-
-    // Network
-    this->networkHandler->updatePlayer();
-    this->networkHandler->interpolatePositions();
-    if (Input::isKeyPressed(Keys::B))
-    {
-        sf::Packet packet;
-        packet << (int)NetworkEvent::ECHO << "Test";
-        this->networkHandler->sendDataToServerTCP(packet);
-    }
 
     // Paused
     if (Input::isKeyPressed(Keys::ESC))

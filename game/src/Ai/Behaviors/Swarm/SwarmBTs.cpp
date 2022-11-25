@@ -454,7 +454,6 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
                 BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(
                     rayToPlayer, distEntityToPlayer
                 );
-
             //Draw ray
             /*BehaviorTree::sceneHandler->getPhysicsEngine()->renderDebugShapes(true);
 		BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
@@ -464,11 +463,7 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 
             if (rp.hit)
                 {
-                    int playerId = -1;
-                    std::string playerStr = "playerID";
-                    BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(
-                        playerId, playerStr
-                    );
+                    int playerId = getPlayerID(sceneHandler, entityID);
 
                     if (playerId != rp.entity)
                         {
@@ -650,9 +645,8 @@ BTStatus SwarmBT::die(Entity entityID)
 {
     BTStatus ret = BTStatus::Success;
 
-    Combat& playerCombat =
-        sceneHandler->getScene()->getComponent<Combat>(getPlayerID(sceneHandler,entityID)
-        );
+    //TODO : this was changed from combat to networkCombat see if it works
+    NetworkCombat& playerCombat = sceneHandler->getScene()->getComponent<NetworkCombat>(getPlayerID(sceneHandler,entityID));
     if (playerCombat.health <= (playerCombat.maxHealth - 10))
         {
             playerCombat.health += 10;

@@ -59,6 +59,28 @@ Entity NetworkHandlerGame::spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 
 	return e;
 }
 
+Entity NetworkHandlerGame::spawnEnemy(const int& type, const glm::vec3& pos) {
+    int e = sceneHandler->getScene()->createEntity();
+    switch (type)
+        {
+            case 0:
+				//load blob
+                sceneHandler->getScene()->setScriptComponent(e, "scripts/loadBlob.lua");
+                break;
+            case 1:
+				//load lich
+                sceneHandler->getScene()->setScriptComponent(e, "scripts/loadBlob.lua");
+                break;
+            case 2:
+				//load tank
+                sceneHandler->getScene()->setScriptComponent(e, "scripts/loadBlob.lua");
+                break;
+            default:
+                break;
+        }
+    return e;
+}
+
 void NetworkHandlerGame::setCombatSystem(CombatSystem* system)
 {
 	combatSystem = system;
@@ -118,6 +140,11 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		tcpPacket >> i0 >> i1;
 		this->sceneHandler->getScene()->removeEntity(i0);
 		break;
+    case GameEvent::SPAWN_ENEMY:
+        tcpPacket >> i0 >> i1;
+        v0 = this->getVec(tcpPacket);
+        serverEnteties.insert(std::pair<int, int>(i1, spawnEnemy(i0, v0)));
+		break;
 	default:
 		break;
 	}
@@ -164,6 +191,31 @@ void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 		udpPacket >> i0 >> anim->timer >> anim->timeScale;
 		anim->animationIndex = (uint32_t)i0;
 		break;
+    case GameEvent::UPDATE_MONSTER:
+        //how many monsters we shall update
+        udpPacket >> i0;
+        for (int i = 0; i < i0; i++)
+        {
+			//the monster id on server side
+			udpPacket >> i1;
+
+			if (serverEnteties.find(i1) == serverEnteties.end())
+            {
+				udpPacket.clear();
+                break;
+			}
+			//get and set position and rotation
+            v0 = getVec(udpPacket);
+            v1 = getVec(udpPacket);
+            sceneHandler->getScene()->getComponent<Transform>(serverEnteties.find(i1)->second).position = v0;
+            sceneHandler->getScene()->getComponent<Transform>(serverEnteties.find(i1)->second).rotation = v1;
+
+			//get and set animation // don't know how this should be made
+			//anim = &this->sceneHandler->getScene()->getComponent<AnimationComponent>(serverEnteties.find(i1)->second);
+			//udpPacket >> i2 >> anim->timer >> anim->timeScale;
+			//anim->animationIndex = (uint32_t)i2;
+		}
+		break;
 	default:
 		break;
 	}
@@ -209,12 +261,16 @@ void NetworkHandlerGame::handleUDPEventServer(Server* server, int clientID, sf::
 {
 	sf::Packet packet;
 	ServerGameMode* serverScene;
+	NetworkScene* scene;
 	switch ((GameEvent)event)
 	{
 	case GameEvent::UPDATE_PLAYER:
+        scene = server->getScene<NetworkScene>();
 		packet << (int)GameEvent::UPDATE_PLAYER << clientID;
 		sv0 = this->getVec(udpPacket);
 		this->sendVec(packet, sv0);
+        
+        scene->getComponent<Transform>(scene->getPlayer(clientID)).position = sv0;
 		sv0 = this->getVec(udpPacket);
 		this->sendVec(packet, sv0);
 

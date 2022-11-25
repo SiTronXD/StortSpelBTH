@@ -4,18 +4,19 @@
 #include "../Systems/CameraMovementSystem.hpp"
 #include "../Systems/CombatSystem.hpp"
 #include "../Systems/MovementSystem.hpp"
+#include "../Network/NetworkHandlerGame.h"
 #include <iostream>
 //SEVER SIDE!!!
 
 NetworkGameScene::NetworkGameScene() : newRoomFrame(false)
 {
-  //create seed
+    //create seed
 #ifdef _CONSOLE
-  srand(69);
+    srand(69);
 #else
-  srand(time(NULL));
+    srand(time(NULL));
 #endif
-  this->roomSeed = rand();
+    this->roomSeed = rand();
 }
 
 NetworkGameScene::~NetworkGameScene()
@@ -33,7 +34,7 @@ void NetworkGameScene::start()
   std::cout << "SERVER: seed is: " << roomSeed << std::endl;
   this->addEvent({(int)NetworkEvent::EMPTY, this->roomSeed});
   this->roomHandler.init(this, this->getResourceManager(), false);
-  this->roomHandler.generate(123);
+  this->roomHandler.generate(this->roomSeed);
   
   // Ai management
   this->aiHandler = new AIHandler();
@@ -56,17 +57,17 @@ void NetworkGameScene::update(float dt)
   
     if (this->spawnHandler.allDead() && this->newRoomFrame)
     {
-          this->newRoomFrame = false;
-          std::cout << "all dead" << std::endl;
-          this->addEvent({(int)NetworkEvent::EMPTY});
-          // Call when a room is cleared
-          roomHandler.roomCompleted();
-          this->numRoomsCleared++;
-    
-          if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
-          {
-              //send event to spawn portal
-          }
+        this->newRoomFrame = false;
+        std::cout << "all dead" << std::endl;
+        this->addEvent({(int)GameEvent::ROOM_CLEAR});
+        // Call when a room is cleared
+        roomHandler.roomCompleted();
+        this->numRoomsCleared++;
+        
+        if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+        {
+           this->addEvent({(int)GameEvent::SPAWN_PORTAL});
+        }
     }
 
     for (int i = 0; i < roomHandler.rooms.size(); i++)
@@ -76,8 +77,7 @@ void NetworkGameScene::update(float dt)
             if (roomHandler.rooms[i].doors[d] != -1)
             {
                 glm::vec3 dp = this->getComponent<Transform>(roomHandler.rooms[i].doors[d]).position;
-                 //addEvent({(int)GameEvents::Draw_Debug_BoxCollider}, {dp.x, dp.y, dp.z, 10.f, 10.f, 10.f});
-                 addEvent({(int)NetworkEvent::EMPTY}, {dp.x, dp.y, dp.z, 10.f, 10.f, 10.f});
+                 addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {dp.x, dp.y, dp.z, 0.f, 0.f, 0.f, 10.f, 10.f, 10.f});
             }    
         }
     }

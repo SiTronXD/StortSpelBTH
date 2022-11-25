@@ -96,7 +96,8 @@ bool LichFSM::huntToIdle(Entity entityID)
 {
     if(!falseIfDead(entityID)){return false;}
     int playerID = getPlayerID(entityID);         
-    auto playerCombat = getTheScene()->getComponent<Combat>(playerID);
+    //TODO : this was changed from combat to networkCombat see if it works
+    auto playerCombat = getTheScene()->getComponent<NetworkCombat>(playerID);
     if(playerCombat.health <= 0){return true;}
 
     
@@ -108,7 +109,8 @@ bool LichFSM::huntToCombat(Entity entityID)
    if(!falseIfDead(entityID)){return false;}
 
    int playerID = getPlayerID(entityID);  
-    auto playerCombat = getTheScene()->getComponent<Combat>(playerID);
+   //TODO : this was changed from combat to networkCombat see if it works
+    auto playerCombat = getTheScene()->getComponent<NetworkCombat>(playerID);
     if(playerCombat.health > 0){return true;}
 
     return false;
@@ -119,7 +121,8 @@ bool LichFSM::escapeToCombat(Entity entityID)
    if(!falseIfDead(entityID)){return false;}
 
     int playerID = getPlayerID(entityID);  
-    auto playerCombat = getTheScene()->getComponent<Combat>(playerID);
+    //TODO : this was changed from combat to networkCombat see if it works
+    auto playerCombat = getTheScene()->getComponent<NetworkCombat>(playerID);
     auto lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     auto playerTrans = getTheScene()->getComponent<Transform>(playerID);
     auto lichTrans = getTheScene()->getComponent<Transform>(entityID);
@@ -154,7 +157,8 @@ bool LichFSM::combatToIdle(Entity entityID)
    if(!falseIfDead(entityID)){return false;}
 
     int playerID = getPlayerID(entityID);  
-    auto playerCombat   = getTheScene()->getComponent<Combat>(playerID);   
+    //TODO : this was changed from combat to networkCombat see if it works
+    auto playerCombat   = getTheScene()->getComponent<NetworkCombat>(playerID);   
     
     if( playerCombat.health <= 0)
     {return true;}
@@ -167,7 +171,8 @@ bool LichFSM::combatToHunt(Entity entityID)
     if(!falseIfDead(entityID)){return false;}
 
     int playerID = getPlayerID(entityID);  
-    auto playerCombat   = getTheScene()->getComponent<Combat>(playerID);
+    //TODO : this was changed from combat to networkCombat see if it works
+    auto playerCombat   = getTheScene()->getComponent<NetworkCombat>(playerID);
     auto lichComp       = getTheScene()->getComponent<LichComponent>(entityID);
     auto playerTrans    = getTheScene()->getComponent<Transform>(playerID);
     auto lichTrans      = getTheScene()->getComponent<Transform>(entityID);
