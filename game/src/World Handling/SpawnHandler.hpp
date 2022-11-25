@@ -21,12 +21,12 @@ private:
     ResourceManager* resourceManager;
     UIRenderer*      uiRenderer;
 
-    int nrOfTanks  = 0;
+    int nrOfTanks  = 1;
     int nrOfLichs  = 0;
-    int nrOfSwarms = 2;
+    int nrOfSwarms = 3;
 
     int numOfGroups = 4;
-    int group_size = 6;
+    int group_size = 1;
 
     std::vector<int> allEntityIDs;
     std::vector<int> swarmIDs;
@@ -39,6 +39,7 @@ private:
     void spawnTank( const int tankIdx,  const glm::vec3& pos);
     void spawnLich( const int lichIdx,  const glm::vec3& pos);
     void spawnSwarm(const int swarmIdx, const glm::vec3& pos);
+    void initTanks();
 
     void createTank();
     void createLich();

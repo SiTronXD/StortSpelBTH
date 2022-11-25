@@ -57,6 +57,7 @@ class TankBT : public BehaviorTree
 	static Scene*	getTheScene();
 	static void		updateCanBeHit(Entity entityID);
 	static void		groundHumpShortcut(Entity entityID, float maxRad);
+	static void		giveFriendsHealth(Entity entityID);
 
 };
 

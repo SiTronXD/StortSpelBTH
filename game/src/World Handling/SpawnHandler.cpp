@@ -36,6 +36,8 @@ void SpawnHandler::spawnEnemiesIntoRoom()
             counter++;        
         }
     }
+
+    initTanks();
 }
 
 void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
@@ -83,6 +85,15 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
 
     swarmComp.setGroupMidPos(this->currScene);
     swarmComp.setGroupRadius(this->currScene);
+}
+
+void SpawnHandler::initTanks()
+{
+    for(auto t: tankIDs)
+    {
+        TankComponent& tankComp = this->currScene->getComponent<TankComponent>(t);
+		tankComp.setFriends(this->currScene, t);
+    }
 }
 
 

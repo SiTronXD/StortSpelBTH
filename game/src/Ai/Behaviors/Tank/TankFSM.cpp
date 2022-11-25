@@ -58,6 +58,7 @@ void TankFSM::updateFriendsInSight(Entity entityID)
     std::vector<TankFriend> toAddData;
     for(auto f: tankComp.allFriends)
     {
+        //Check if friend is dead, then remove it from all friends
         if(f.second.type == "Swarm")
         {
             SwarmComponent& swarmComp = scene->getComponent<SwarmComponent>(f.first);
@@ -88,6 +89,7 @@ void TankFSM::updateFriendsInSight(Entity entityID)
             }
         }
 
+        //Update friends in sight
         Transform& transComp = scene->getComponent<Transform>(f.first);
         float dist = glm::length(transComp.position - tankTransform.position);
         if(dist < tankComp.sightRadius)
