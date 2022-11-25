@@ -30,6 +30,18 @@ void SpawnHandler::spawnEnemiesIntoRoom()
     this->nrOfLichs_inRoom  = std::clamp((int)(tileInfos.size() * enemiesPerTiles *PERCENTAGE_LICHS), 0, MAX_NR_LICHS);
     this->nrOfGroups_inRoom = std::clamp((int)(tileInfos.size() * enemiesPerTiles *PERCENTAGE_SWARMG),0, MAX_NR_SWARMGROUPS);
 
+
+    for(auto tile : tileInfos)
+    {
+        glm::vec3 cpy = tile.getPos();
+        tileCornersRays.push_back(cpy + glm::vec3((RoomHandler::TILE_WIDTH/2.f),0.f, (RoomHandler::TILE_WIDTH/2.f)));
+        tileCornersRays.push_back(cpy + glm::vec3((RoomHandler::TILE_WIDTH/2.f),0.f, -(RoomHandler::TILE_WIDTH/2.f)));
+        tileCornersRays.push_back(cpy + glm::vec3(-(RoomHandler::TILE_WIDTH/2.f),0.f, (RoomHandler::TILE_WIDTH/2.f)));
+        tileCornersRays.push_back(cpy + glm::vec3(-(RoomHandler::TILE_WIDTH/2.f),0.f, -(RoomHandler::TILE_WIDTH/2.f)));
+
+    }
+
+
     while(this->nrOfEnemiesPerRoom > counter) 
     {
 
@@ -64,7 +76,7 @@ void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
     Transform& transform = currScene->getComponent<Transform>(this->tankIDs[tankIdx]);
     
     float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
-    transform.position = pos + glm::vec3(tileWidth, 0.f, tileWidth);
+    transform.position = pos + glm::vec3(tileWidth, TankComponent::colliderRadius, tileWidth);
 
     //Reset
     TankComponent& tankComp = currScene->getComponent<TankComponent>(this->tankIDs[tankIdx]);
@@ -77,7 +89,7 @@ void SpawnHandler::spawnLich(int lichIdx, const glm::vec3& pos)
     currScene->setActive(this->lichIDs[lichIdx]);
     Transform& transform = currScene->getComponent<Transform>(this->lichIDs[lichIdx]);
     float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
-    transform.position = pos + glm::vec3(tileWidth, 0.f, tileWidth);
+    transform.position = pos + glm::vec3(tileWidth, LichComponent::colliderHeight, tileWidth);
 
     //Reset
     LichComponent& lichComp = currScene->getComponent<LichComponent>(this->lichIDs[lichIdx]);
@@ -88,9 +100,49 @@ void SpawnHandler::spawnLich(int lichIdx, const glm::vec3& pos)
 void SpawnHandler::spawnSwarmGroup(const int swarmStartIdx, const glm::vec3& pos)
 {
     int swarmIdx = swarmStartIdx;
+
+    // Find free random positions for SwarmBlobs within tile...
+    
+    static const float padding = 5.f;
+    static const float swarmBlobWidth = SwarmComponent::colliderRadius * 2 + padding;
+    static const float nrOfSubTiles_x = RoomHandler::TILE_WIDTH / swarmBlobWidth;
+    static const float nrOfSubTiles_z = RoomHandler::TILE_WIDTH / swarmBlobWidth;
+    static const glm::vec3 tileCorner = glm::vec3( (RoomHandler::TILE_WIDTH/2.f),0.f,(RoomHandler::TILE_WIDTH/2.f));
+    static const glm::vec3 initialSubtilePos_offset = glm::vec3(
+            tileCorner.x/nrOfSubTiles_x/2.f,
+            0.f,
+            tileCorner.z/nrOfSubTiles_z/2.f);
+    
+    glm::vec3 initialSubtilePos = pos + (tileCorner - initialSubtilePos_offset);
+
+    std::vector<Ray> rays(nrOfSubTiles_z*nrOfSubTiles_x); 
+
+    
+
+    std::deque<glm::vec3> subtiles;
+    for(int i = 0; i < nrOfSubTiles_z; i++)
+    {
+        for(int j = 0; j < nrOfSubTiles_x; j++)
+        {
+            subtiles.emplace_back(
+                initialSubtilePos.x - i * swarmBlobWidth,
+                0,
+                initialSubtilePos.z + j * swarmBlobWidth
+            );
+            this->debugRays.emplace_back(
+                initialSubtilePos.x - i * swarmBlobWidth,
+                0,
+                initialSubtilePos.z + j * swarmBlobWidth);
+        }
+    }
+    std::stack<glm::vec3> subtile_stack{std::move(subtiles)};
+    
+    
+    // 
     for(size_t i = 0; i < SpawnHandler::NR_BLOBS_IN_GROUP; i++)
     {
-        this->spawnSwarm(swarmIdx, pos);
+        this->spawnSwarm(swarmIdx, subtile_stack.top());
+        subtile_stack.pop();
 
         swarmIdx++;
     }
@@ -103,7 +155,7 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
     Transform& transform = currScene->getComponent<Transform>(this->swarmIDs[swarmIdx]);
     float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
 
-    transform.position = pos + glm::vec3(tileWidth, 0.f, tileWidth);
+    transform.position = pos + glm::vec3(tileWidth, SwarmComponent::colliderRadius, tileWidth);
 
     //Temporary enemie reset
     SwarmComponent& swarmComp = currScene->getComponent<SwarmComponent>(this->swarmIDs[swarmIdx]);
@@ -182,17 +234,7 @@ Log::write("Killing all enemies outside room...");
                 {
                     enemyOutsideRoom  = true; 
                 }
-            }
-            else 
-            {
-                int id = static_cast<int>(entity);
-                if(this->sceneHandler->getScene()->hasComponents<SwarmComponent>(id))
-                {
-                    
-                    Log::write("Swarm was not killed off ["+std::to_string(id)+"] ()");
-
-                }
-            }
+            }        
 
             if(enemyUnderFloor || enemyOverRoof || enemyOutsideRoom)
             {
@@ -241,8 +283,8 @@ void SpawnHandler::createTank()
     rb.friction = 3.0f;
     rb.mass = 10.0f;
     Transform& transform = this->currScene->getComponent<Transform>(this->tankIDs.back());
-    transform.scale = glm::vec3(3.0f, 3.0f, 3.0f);
-    this->currScene->setComponent<Collider>(this->tankIDs.back(), Collider::createSphere(4.0f*transform.scale.x));
+    transform.scale = glm::vec3(3.0f, 3.0f, 3.0f); //TODO: Remove this line when we have real model 
+    this->currScene->setComponent<Collider>(this->tankIDs.back(), Collider::createSphere(TankComponent::colliderRadius));
     this->aiHandler->createAIEntity(this->tankIDs.back(), "tankFSM");
     TankComponent& tankComp = this->currScene->getComponent<TankComponent>(this->tankIDs.back());
     tankComp.origScaleY = transform.scale.y;
@@ -264,8 +306,8 @@ void SpawnHandler::createLich()
     rb.friction = 3.0f;
     rb.mass = 10.0f;
     Transform& transform = this->currScene->getComponent<Transform>(this->lichIDs.back());
-    transform.scale = glm::vec3(1.0f, 3.0f, 1.0f);
-    this->currScene->setComponent<Collider>(this->lichIDs.back(), Collider::createCapsule(4.0f, 4.0f*transform.scale.y));
+    transform.scale = glm::vec3(1.0f, 3.0f, 1.0f); //TODO: Remove this line when we have real model 
+    this->currScene->setComponent<Collider>(this->lichIDs.back(), Collider::createCapsule(LichComponent::colliderRadius, LichComponent::colliderHeight));
     this->aiHandler->createAIEntity(this->lichIDs.back(), "lichFSM");
     LichComponent& lichComp = this->currScene->getComponent<LichComponent>(this->lichIDs.back());
     lichComp.origScaleY = transform.scale.y;
@@ -283,7 +325,7 @@ void SpawnHandler::createSwarmGroup()
         this->allEntityIDs.push_back(this->swarmIDs.back());
         this->currScene->setComponent<MeshComponent>(this->swarmIDs.back(), swarm);
         this->currScene->setComponent<AiCombatSwarm>(this->swarmIDs.back());
-        this->currScene->setComponent<Collider>(this->swarmIDs.back(), Collider::createSphere(4.0f));
+        this->currScene->setComponent<Collider>(this->swarmIDs.back(), Collider::createSphere(SwarmComponent::colliderRadius));
         this->currScene->setComponent<Rigidbody>(this->swarmIDs.back());
         Rigidbody& rb = this->currScene->getComponent<Rigidbody>(this->swarmIDs.back());
         rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -386,6 +428,7 @@ ImguiLambda SpawnHandler::TankImgui()
 
 ImguiLambda SpawnHandler::LichImgui()
 {
+    
     return [&](FSM* fsm, uint32_t entityId) -> void{
         // Imgui Lich 
         LichFSM* swarmFsm = (LichFSM*)fsm;
@@ -429,6 +472,24 @@ ImguiLambda SpawnHandler::LichImgui()
 ImguiLambda SpawnHandler::SwarmImgui()
 {
     return [&](FSM* fsm, uint32_t entityId) -> void{
+        for(auto ray : debugRays)
+        {
+            this->sceneHandler->getDebugRenderer()->renderLine(
+                ray,
+                ray + glm::vec3(0.0f, 1.0f, 0.0f),
+                glm::vec3(1.0f, 0.0f, 0.0f));
+
+        }
+
+        for(auto ray : tileCornersRays)
+        {
+            this->sceneHandler->getDebugRenderer()->renderLine(
+                ray,
+                ray + glm::vec3(0.0f, 1.0f, 0.0f),
+                glm::vec3(1.0f, 1.0f, 0.0f));
+
+        }
+
         // Imgui Swarm
         SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
 
@@ -470,7 +531,7 @@ ImguiLambda SpawnHandler::SwarmImgui()
             ImGui::InputFloat("lightattackDmg", &lightAttackDmg);		 
             ImGui::Checkbox("inCombat", &inCombat);		            
         };
-        //TEMP             
+        //TEMP          
 
         static bool showEntityId = false;
         ImGui::Checkbox("Show Entity ID", &showEntityId);

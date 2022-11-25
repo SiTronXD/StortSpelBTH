@@ -6,6 +6,7 @@
 
 struct SwarmComponent
 {
+    inline static const uint32_t colliderRadius = 4;
 
 	//Ints
 	int LOW_HEALTH			= 30;

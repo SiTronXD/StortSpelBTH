@@ -54,6 +54,9 @@ struct LichAttack
 
 struct LichComponent
 {
+    inline static const uint32_t colliderRadius = 4;
+    inline static const uint32_t colliderHeight = 12;
+
 	LichComponent() 
     {
         lightning.setStats(ATTACK_STRATEGY::LIGHT);  

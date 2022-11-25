@@ -19,6 +19,8 @@ struct TankFriendTarget
 
 struct TankComponent
 {
+    inline static const uint32_t colliderRadius = 12;
+
 	TankComponent() 
 	{
 		//this->hitCol = Collider::createSphere(4.0f);

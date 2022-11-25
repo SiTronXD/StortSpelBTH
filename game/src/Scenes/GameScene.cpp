@@ -6,6 +6,7 @@
 #include "../Systems/CombatSystem.hpp"
 #include "../Systems/HealthBarSystem.hpp"
 #include "../Systems/MovementSystem.hpp"
+#include "vengine/application/Time.hpp"
 #include "GameOverScene.h"
 
 #ifdef _CONSOLE
@@ -219,7 +220,6 @@ void GameScene::start()
         this->getResourceManager(),this->getUIRenderer());
 }
 
-#include "vengine/application/Time.hpp"
 void GameScene::update()
 {    
     if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))

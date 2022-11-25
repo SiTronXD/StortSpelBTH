@@ -19,7 +19,7 @@ public:
     inline static const float PERCENTAGE_LICHS   = 0.25f;
     inline static const float PERCENTAGE_SWARMG  = 0.75f;
 
-    const float enemiesPerTiles = 1.0;
+    const float enemiesPerTiles = 0.10f;
 
     inline static const int NR_BLOBS_IN_GROUP = 3;
 
@@ -50,6 +50,10 @@ private:
     std::vector<int> lichIDs;
     std::vector<int> tankIDs;
     std::vector<SwarmGroup*> swarmGroups;
+
+    std::vector<glm::vec3> debugRays;
+    std::vector<glm::vec3> tileCornersRays;
+
 
     uint32_t fontTextureIndex;
 
