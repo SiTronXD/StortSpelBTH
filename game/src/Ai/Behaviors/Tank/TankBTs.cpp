@@ -87,10 +87,6 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 			playerRB.velocity.y += tankComp.humpYForce;
 			toRemove.push_back(i);
 		}
-		else
-		{
-			int test = 0;
-		}
 	}
 	for(auto r: toRemove)
 	{

@@ -39,6 +39,7 @@ struct SwarmComponent
 	bool grounded				= true;
 	bool shieldedByTank			= false;
 	bool idleIgnoreCol			= false;
+	bool attackGoRight			= false;
 	bool rotateLeft				= false;
 	//Timers					
 	float groundTimer			= 0.0f;
@@ -60,7 +61,10 @@ struct SwarmComponent
 	std::vector<SwarmGroup*> groupsInSight;
 
 
-	SwarmComponent() {};
+	SwarmComponent() 
+	{
+		attackGoRight = rand()%2;
+	};
 
 	float getGroupHealth(Scene* scene)
 	{

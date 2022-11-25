@@ -487,23 +487,78 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 	BTStatus ret = BTStatus::Running;
 
 	
-
+	int player_id = getPlayerID();
 	Collider& entityCollider = getTheScene()->getComponent<Collider>(entityID);
-	Collider& playerCollider = getTheScene()->getComponent<Collider>(getPlayerID());
+	Collider& playerCollider = getTheScene()->getComponent<Collider>(player_id);
 	Transform& entityTransform = getTheScene()->getComponent<Transform>(entityID);
-	Transform& playerTransform = getTheScene()->getComponent<Transform>(getPlayerID());
+	Transform& playerTransform = getTheScene()->getComponent<Transform>(player_id);
 	SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(entityID);
 	Rigidbody& rigidbody = getTheScene()->getComponent<Rigidbody>(entityID);
     
+	entityTransform.updateMatrix();
+	glm::vec3 from = playerTransform.position;
+	from = from + playerTransform.up() * 3.0f;
+	glm::vec3 to = entityTransform.position;
+	float maxDist = glm::length(to - from);
+	glm::vec3 dir = glm::normalize(to - from);
+	Ray rayToPlayer{from, dir};    
+	Ray rayRight{to, entityTransform.right()};    
+	Ray rayLeft{to, entityTransform.right()};    
+	float left_right_maxDist = entityCollider.radius + 1.5f;
+    RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, maxDist);
+	BehaviorTree::sceneHandler->getPhysicsEngine()->renderDebugShapes(true);
+	BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(from, to, glm::vec3(1.0f, 0.0f, 0.0f));
+	if(rp.hit)
+	{
+		if(!getTheScene()->getComponent<Collider>(rp.entity).isTrigger &&
+			rp.entity != entityID)
+		{
+			entityTransform.updateMatrix();
 
-    entityTransform.rotation.y = lookAtY(entityTransform, playerTransform);
+			if(swarmComp.attackGoRight)
+			{
+				dir -= entityTransform.right();
+				//Check if we collide on right side
+				RayPayload r_right = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayRight, left_right_maxDist);
+				BehaviorTree::sceneHandler->getPhysicsEngine()->renderDebugShapes(true);
+				BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(rayRight.pos, rayRight.pos + rayRight.dir * left_right_maxDist, glm::vec3(1.0f, 0.0f, 0.0f));
+				if(r_right.hit && !getTheScene()->getComponent<Collider>(r_right.entity).isTrigger)
+				{
+					swarmComp.attackGoRight = false;
+					dir += entityTransform.right();
+				}
+			}
+			else
+			{
+				dir += entityTransform.right();
+				//Check if we collide on left side
+				RayPayload r_left = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayLeft, left_right_maxDist);
+				BehaviorTree::sceneHandler->getPhysicsEngine()->renderDebugShapes(true);
+				BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(rayLeft.pos, rayLeft.pos - rayLeft.dir * left_right_maxDist, glm::vec3(1.0f, 0.0f, 0.0f));
+				if(r_left.hit && !getTheScene()->getComponent<Collider>(r_left.entity).isTrigger)
+				{
+					swarmComp.attackGoRight = true;
+					dir -= entityTransform.right();
+				}
+			}
+
+		}
+	}
+
+	rotateTowards(entityID, playerTransform.position, swarmComp.idleRotSpeed, 5.0f);
+	glm::normalize(dir);
+	dir.y = 0;
+    float tempYvel =  rigidbody.velocity.y;
+    rigidbody.velocity = -dir * swarmComp.speed;
+    rigidbody.velocity.y = tempYvel;
+
+ /*   entityTransform.rotation.y = lookAtY(entityTransform, playerTransform);
 	entityTransform.updateMatrix();    
 
 	glm::vec3 newPlayerPos = playerTransform.position;
 	newPlayerPos = newPlayerPos + playerTransform.up() * 3.0f;
-	
     
-    glm::vec3 entityPos	= entityTransform.position;
+    glm::vec3& entityPos	= entityTransform.position;
     glm::vec3 dirEntityToPlayer = glm::normalize(newPlayerPos - entityTransform.position);
     float distEntityToPlayer	= glm::length(newPlayerPos - entityPos);
     
@@ -513,17 +568,19 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 	//TODO: saftybeak is bad stuff, fix this shit
     while(!canSeePlayer) 
     {
+		newPlayerPos = playerTransform.position;
+		newPlayerPos = newPlayerPos + playerTransform.up() * 3.0f;
         dirEntityToPlayer = glm::normalize(newPlayerPos - entityPos);
         distEntityToPlayer	= glm::length(newPlayerPos - entityPos);
         Ray rayToPlayer{entityPos, dirEntityToPlayer};    
         RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, distEntityToPlayer);
 
 		//Draw ray
-		/*BehaviorTree::sceneHandler->getPhysicsEngine()->renderDebugShapes(true);
+		BehaviorTree::sceneHandler->getPhysicsEngine()->renderDebugShapes(true);
 		BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
 		entityPos,
 		entityPos + dirEntityToPlayer * distEntityToPlayer,
-		glm::vec3(1.0f, 0.0f, 0.0f));*/
+		glm::vec3(1.0f, 0.0f, 0.0f));
 
         if (rp.hit)
         {    
@@ -561,6 +618,7 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
     float tempYvel =  rigidbody.velocity.y;
     rigidbody.velocity = dirEntityToPlayer * swarmComp.speed;
     rigidbody.velocity.y = tempYvel;
+*/
 
 
 	if (closeEnoughToPlayer(entityID) == BTStatus::Success)
