@@ -314,7 +314,27 @@ void SpawnHandler::updateImgui()
     ImGui::Begin("SpawnHandler Info");
         if(ImGui::BeginTabBar("Enemies")){
 
+
             if(ImGui::BeginTabItem("Enemies")){
+                if(ImGui::Button("Kill all"))
+                {
+                    this->sceneHandler->getScene()->getSceneReg().view<SwarmComponent>(entt::exclude<Inactive>).each(
+                        [&](SwarmComponent& swarmComp){
+                            swarmComp.life = 0;
+                        }
+                    );
+                    this->sceneHandler->getScene()->getSceneReg().view<LichComponent>(entt::exclude<Inactive>).each(
+                        [&](LichComponent& lichComp){
+                            lichComp.life = 0;
+                        }
+                    );
+                    this->sceneHandler->getScene()->getSceneReg().view<TankComponent>(entt::exclude<Inactive>).each(
+                        [&](TankComponent& tankComp){
+                            tankComp.life = 0;
+                        }
+                    );                         
+                }
+                ImGui::Separator();
                 ImGui::Text("# Enimies Total : %d", (int)this->nrOfEnemiesPerRoom);
                 ImGui::Text("# Swarm groups: %d", this->nrOfGroups_inRoom);
                 ImGui::Text("# Swarms      : %d", this->nrOfSwarms_inRoom);
