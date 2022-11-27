@@ -572,34 +572,34 @@ void TilePicker::init(const std::vector<TileInfo>& freeTileInfos)
 
     // Store temp ptrs to free Tiles, store old array structure
     for (size_t i = 0; i < freeTileInfos.size(); i++)
-        {
-            tempTilePtrs.push_back(&freeTileInfos[i]);
-            ogNeighbourhood.insert({i, &freeTileInfos[i]});
-        }
+    {
+        tempTilePtrs.push_back(&freeTileInfos[i]);
+        ogNeighbourhood.insert({i, &freeTileInfos[i]});
+    }
 
     // Randomize order of temp ptrs
     std::shuffle(tempTilePtrs.begin(), tempTilePtrs.end(), randomEngine);
 
     // Store randomized ptrs to unusedTileInfos
     for (auto& tileInfo : tempTilePtrs)
-        {
-            this->unusedTileInfos.push_back(tileInfo);
-        }
+    {
+        this->unusedTileInfos.push_back(tileInfo);
+    }
 
     // Store status of tiles
     for (auto& tileInfo : this->unusedTileInfos)
-        {
-            this->freeTiles.insert({tileInfo, true});
-        }
+    {
+        this->freeTiles.insert({tileInfo, true});
+    }
 }
 size_t TilePicker::size() const
 {
     size_t c = 0;
     for (auto t : unusedTileInfos)
-        {
-            if (t)
-                c++;
-        }
+    {
+        if (t)
+            c++;
+    }
     return c;
 }
 const TileInfo* TilePicker::getRandomEmptyTile()
@@ -626,25 +626,27 @@ TilePicker::getRandomEmptyNeighbouringTiles(const int nr)
     unusedTileInfos.remove(currNeighbour);
 
     while (neigbhourhood.size() < nr)
+    {
+
+        newPossibleNeighbours =
+            getPossibleNeighbours(currNeighbour, possibleNeigbhours);
+
+        // abort if no possible neigbhour exists...
+        if (newPossibleNeighbours.size() == 0)
         {
-
-            newPossibleNeighbours =
-                getPossibleNeighbours(currNeighbour, possibleNeigbhours);
-
-            // abort if no possible neigbhour exists...
-            if (newPossibleNeighbours.size() == 0)
-                {
-                    std::cout << "\n\nCould not retrieve required amount of "
-                                 "tiles...\n";
-                    break;
-                }
-
-            currNeighbour =
-                newPossibleNeighbours[rand() % newPossibleNeighbours.size()];
-            possibleNeigbhours[currNeighbour] = true;
-            neigbhourhood.push_back(currNeighbour);
-            unusedTileInfos.remove(currNeighbour);
+            std::cout << "\n\nCould not retrieve required amount of "
+                            "tiles...\n";
+            break;
         }
+
+        currNeighbour =
+            newPossibleNeighbours[rand() % newPossibleNeighbours.size()];
+        possibleNeigbhours[currNeighbour] = true;
+        neigbhourhood.push_back(currNeighbour);
+        unusedTileInfos.remove(currNeighbour);        
+            unusedTileInfos.remove(currNeighbour);
+        unusedTileInfos.remove(currNeighbour);        
+    }
     usedTiles.insert(usedTiles.end(), neigbhourhood.begin(),neigbhourhood.end());
 
     return neigbhourhood;
@@ -659,20 +661,20 @@ std::vector<const TileInfo*> TilePicker::getPossibleNeighbours(
     possibleNeigbhours.insert({currentNeighbour, true});
 
     for (auto n : getFreeNeighbours(currentNeighbour))
-        {
-            // Set false if not part of neigbhours yet
-            possibleNeigbhours.insert({n, false});
-        }
+    {
+        // Set false if not part of neigbhours yet
+        possibleNeigbhours.insert({n, false});
+    }
 
     // Get only Possible Neighbours
     std::vector<const TileInfo*> pickNeighbor;
     for (auto n : possibleNeigbhours)
-        {
-            if (!n.second)
-                {
-                    pickNeighbor.push_back(n.first);
-                }
-        }
+    {
+        if (!n.second)
+            {
+                pickNeighbor.push_back(n.first);
+            }
+    }
 
     return pickNeighbor;
 }
@@ -681,24 +683,24 @@ std::vector<const TileInfo*> TilePicker::getFreeNeighbours(const TileInfo* tile)
     std::vector<const TileInfo*> freeNeighbours;
 
     if (this->freeTiles[this->ogNeighbourhood[tile->idRightOf()]])
-        {
-            freeNeighbours.push_back(this->ogNeighbourhood[tile->idRightOf()]);
-        }
+    {
+        freeNeighbours.push_back(this->ogNeighbourhood[tile->idRightOf()]);
+    }
 
     if (this->freeTiles[this->ogNeighbourhood[tile->idLeftOf()]])
-        {
-            freeNeighbours.push_back(this->ogNeighbourhood[tile->idLeftOf()]);
-        }
+    {
+        freeNeighbours.push_back(this->ogNeighbourhood[tile->idLeftOf()]);
+    }
 
     if (this->freeTiles[this->ogNeighbourhood[tile->idDownOf()]])
-        {
-            freeNeighbours.push_back(this->ogNeighbourhood[tile->idDownOf()]);
-        }
+    {
+        freeNeighbours.push_back(this->ogNeighbourhood[tile->idDownOf()]);
+    }
 
     if (this->freeTiles[this->ogNeighbourhood[tile->idUpOf()]])
-        {
-            freeNeighbours.push_back(this->ogNeighbourhood[tile->idUpOf()]);
-        }
+    {
+        freeNeighbours.push_back(this->ogNeighbourhood[tile->idUpOf()]);
+    }
 
     return freeNeighbours;
 }
