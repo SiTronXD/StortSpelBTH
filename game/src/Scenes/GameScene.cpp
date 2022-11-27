@@ -3,8 +3,8 @@
 #include "../Systems/AiCombatSystem.hpp"
 #include "../Systems/AiMovementSystem.hpp"
 #include "../Systems/CameraMovementSystem.hpp"
-//#include "../Systems/CombatSystem.hpp"
 #include "../Systems/HealthBarSystem.hpp"
+#include "../Systems/HealSystem.hpp"
 #include "../Systems/MovementSystem.hpp"
 #include "../Network/NetworkHandlerGame.h"
 #include "GameOverScene.h"
@@ -132,7 +132,12 @@ void GameScene::start()
         this->getPhysicsEngine(),
         this->getUIRenderer(),
         this->getScriptHandler(),
-        this->networkHandler);
+        this->networkHandler
+    );
+    this->createSystem<HealSystem>(
+        this->playerID,
+        this
+    );
 
     if (this->networkHandler->hasServer())
     {

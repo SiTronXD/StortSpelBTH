@@ -15,7 +15,7 @@ enum class GameEvent
 	PICKUP_ITEM, // Client -> Server: Want to pick up item. Server -> Client: Pick up the item
 	SET_ITEM_ID, // Client -> Server: Set entity ID to store in server scene
 	USE_HEAL, // Client -> Server: Want to use heal. Server -> Client: Spawn heal entity
-	SPAWN_ENEMY,//Type, ServerID, Position,  
+	SPAWN_ENEMY, // Type, ServerID, Position,  
 
 	ROOM_CLEAR,
 	SPAWN_PORTAL,
@@ -46,6 +46,8 @@ private:
 
 	Entity player; // Own player
 	std::vector<Entity> playerEntities; // Other players connected
+	std::vector<Entity> swords; // Other player swords
+
     std::map<int, Entity> serverEntities;
 	std::vector<Entity> itemIDs;
 
@@ -65,9 +67,13 @@ private:
 
 	int perkMeshes[PerkType::emptyPerk];
 	int abilityMeshes[AbilityType::emptyAbility];
+	int healAreaMesh;
+	int swordMesh;
 
 	Entity spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	Entity spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
+	Entity spawnHealArea(glm::vec3 pos);
+
 	Entity spawnEnemy(const int& type, const glm::vec3& pos);
 public:
 	void init();
@@ -89,5 +95,6 @@ public:
 	void spawnItemRequest(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	void spawnItemRequest(AbilityType type, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	void pickUpItemRequest(Entity itemEntity, ItemType type);
+	void useHealAbilityRequest(glm::vec3 position);
 };
 

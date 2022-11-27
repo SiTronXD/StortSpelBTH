@@ -81,6 +81,19 @@ Entity NetworkHandlerGame::spawnEnemy(const int& type, const glm::vec3& pos) {
     return e;
 }
 
+Entity NetworkHandlerGame::spawnHealArea(glm::vec3 pos)
+{
+	Scene* scene = this->sceneHandler->getScene();
+	Entity heal = scene->createEntity();
+
+	scene->setComponent<MeshComponent>(heal, this->healAreaMesh);
+	scene->setComponent<PointLight>(heal, { glm::vec3(0.f, 10.f, 0.f), glm::vec3(9.f, 7.f, 9.f) });
+	scene->setComponent<HealArea>(heal);
+	scene->getComponent<Transform>(heal).position = pos;
+
+	return heal;
+}
+
 void NetworkHandlerGame::setCombatSystem(CombatSystem* system)
 {
 	combatSystem = system;
@@ -95,6 +108,8 @@ void NetworkHandlerGame::init()
 	this->perkMeshes[4] = this->resourceManger->addMesh("assets/models/Perk_Stamina.obj");
 	this->abilityMeshes[0] = this->resourceManger->addMesh("assets/models/KnockbackAbility.obj");
 	this->abilityMeshes[1] = this->resourceManger->addMesh("assets/models/KnockbackAbility.obj");
+	this->healAreaMesh = this->resourceManger->addMesh("assets/models/HealingAbility.obj");
+	this->swordMesh = this->resourceManger->addMesh("assets/models/MainSword.fbx", "assets/textures");
 }
 
 void NetworkHandlerGame::cleanup()
@@ -142,6 +157,10 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		this->sceneHandler->getScene()->removeEntity(this->itemIDs[i0]);
 		std::swap(this->itemIDs[i0], this->itemIDs[this->itemIDs.size() - 1]);
 		this->itemIDs.pop_back();
+		break;
+	case GameEvent::USE_HEAL :
+		v0 = this->getVec(tcpPacket);
+		this->spawnHealArea(v0);
 		break;
     case GameEvent::SPAWN_ENEMY:
         tcpPacket >> i0 >> i1;
@@ -249,6 +268,13 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 		tcpPacket >> si0 >> si1 >> si2 >> sf0;
 		serverScene->deleteItem(clientID, si0, (ItemType)si1, si2, sf0);
 		break;
+
+	case GameEvent::USE_HEAL:
+		sv0 = this->getVec(tcpPacket);
+		packet << (int)GameEvent::USE_HEAL;
+		this->sendVec(packet, sv0);
+		server->sendToAllClientsTCP(packet);
+		break;
 	default:
 		packet << event;
 		server->sendToAllClientsTCP(packet);
@@ -292,6 +318,10 @@ void NetworkHandlerGame::onDisconnect(int index)
 		Entity ID = this->playerEntities[index];
 		this->playerEntities.erase(this->playerEntities.begin() + index);
 		this->sceneHandler->getScene()->removeEntity(ID);
+
+		Entity swordID = this->swords[index];
+		this->swords.erase(this->swords.begin() + index);
+		this->sceneHandler->getScene()->removeEntity(swordID);
 	}
 }
 
@@ -304,6 +334,7 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 {
 	int size = this->otherPlayersServerId.size();
 	this->playerEntities.resize(size);
+	this->swords.resize(size);
 	this->playerPosLast.resize(size);
 	this->playerPosCurrent.resize(size);
 	float angle = 360.0f / (size + 1);
@@ -317,6 +348,10 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 		scene->setComponent<MeshComponent>(this->playerEntities[i], playerMesh);
 		scene->setComponent<AnimationComponent>(this->playerEntities[i]);
 		scene->setComponent<Collider>(this->playerEntities[i], Collider::createCapsule(2, 11, glm::vec3(0, 7.3, 0)));
+
+		// Sword
+		this->swords[i] = scene->createEntity();
+		scene->setComponent<MeshComponent>(this->swords[i], swordMesh);
 
 		// Set Position
 		Transform& t = scene->getComponent<Transform>(this->playerEntities[i]);
@@ -355,6 +390,7 @@ void NetworkHandlerGame::updatePlayer()
 void NetworkHandlerGame::interpolatePositions()
 {
 	Scene* scene = this->sceneHandler->getScene();
+	UIRenderer* UI = this->sceneHandler->getUIRenderer();
 	this->timer += Time::getDT();
 
 	float percent = this->timer / UPDATE_RATE;
@@ -362,6 +398,16 @@ void NetworkHandlerGame::interpolatePositions()
 	{
 		Transform& t = scene->getComponent<Transform>(this->playerEntities[i]);
 		t.position = this->playerPosLast[i] + percent * (this->playerPosCurrent[i] - this->playerPosLast[i]);
+		UI->renderString(this->otherPlayers[i].second, t.position + glm::vec3(0.0f, 20.0f, 0.0f) + t.forward(), glm::vec2(150.0f));
+
+		// Put sword in characters hand and keep updating it
+		scene->getComponent<Transform>(this->swords[i]).setMatrix(
+			this->resourceManger->getJointTransform(
+				scene->getComponent<Transform>(this->playerEntities[i]),
+				scene->getComponent<MeshComponent>(this->playerEntities[i]),
+				scene->getComponent<AnimationComponent>(this->playerEntities[i]),
+				"mixamorig:RightHand") * glm::translate(glm::mat4(1.f), glm::vec3(0.f, 1.f, 0.f)) *
+			glm::rotate(glm::mat4(1.f), glm::radians(-90.f), glm::vec3(0.f, 0.f, 1.f)));
 	}
 }
 
@@ -437,5 +483,20 @@ void NetworkHandlerGame::pickUpItemRequest(Entity itemEntity, ItemType type)
 		{
 			this->combatSystem->pickUpAbility(itemEntity);
 		}
+	}
+}
+
+void NetworkHandlerGame::useHealAbilityRequest(glm::vec3 position)
+{
+	if (!this->playerEntities.empty()) // Multiplayer (send to server)
+	{
+		sf::Packet packet;
+		packet << (int)GameEvent::USE_HEAL;
+		this->sendVec(packet, position);
+		this->sendDataToServerTCP(packet);
+	}
+	else // Singleplayer
+	{
+		this->spawnHealArea(position);
 	}
 }

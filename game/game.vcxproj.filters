@@ -69,6 +69,8 @@
     <ClInclude Include="src\ServerGameModes\NetworkGameScene.h" />
     <ClInclude Include="src\World Handling\SpawnHandler.hpp" />
     <ClInclude Include="src\Components\NetworkCombat.h" />
+    <ClInclude Include="src\Components\HealArea.h" />
+    <ClInclude Include="src\Systems\HealSystem.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
