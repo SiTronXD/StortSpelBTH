@@ -19,16 +19,22 @@ using ImguiLambda = std::function<void(FSM* fsm, uint32_t entityId)>;
 class TilePicker
 {
 private:
+    std::vector<const TileInfo*> usedTiles;
     std::list<const TileInfo*> unusedTileInfos;
     std::map<const TileInfo*, bool> freeTiles; 
     std::map<uint32_t, const TileInfo*> ogNeighbourhood;
+
+    glm::vec3 enemiesMidpoint;
+
+    void calcEnemiesMidpoint();
+
+    const TileInfo* getSpreadTile();
 
     std::vector<const TileInfo*> getPossibleNeighbours(const TileInfo* currentNeighbour,std::unordered_map<const TileInfo*, bool>& possibleNeigbhours);
     std::vector<const TileInfo*> getFreeNeighbours(const TileInfo* tile);
 
 public:
-
-    void init(const std::vector<TileInfo>& freeTileInfos);
+    void   init(const std::vector<TileInfo>& freeTileInfos);
     size_t size() const;
     const TileInfo* getRandomEmptyTile();
     std::vector<const TileInfo*> getRandomEmptyNeighbouringTiles(const int nr);

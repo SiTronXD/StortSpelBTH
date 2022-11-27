@@ -607,10 +607,11 @@ const TileInfo* TilePicker::getRandomEmptyTile()
     const TileInfo* ret = nullptr;
 
     if (this->size() > 0)
-        {
-            ret = unusedTileInfos.front();
-            unusedTileInfos.remove(unusedTileInfos.front());
-        }
+    {
+        ret = getSpreadTile();
+        usedTiles.push_back(ret);
+        unusedTileInfos.remove(ret);
+    }
     return ret;
 }
 std::vector<const TileInfo*>
@@ -621,7 +622,8 @@ TilePicker::getRandomEmptyNeighbouringTiles(const int nr)
     std::vector<const TileInfo*> neigbhourhood;
     std::vector<const TileInfo*> newPossibleNeighbours;
     std::unordered_map<const TileInfo*, bool> possibleNeigbhours;
-    const TileInfo* currNeighbour = unusedTileInfos.front();
+    const TileInfo* currNeighbour = getSpreadTile();
+    unusedTileInfos.remove(currNeighbour);
 
     while (neigbhourhood.size() < nr)
         {
@@ -643,6 +645,7 @@ TilePicker::getRandomEmptyNeighbouringTiles(const int nr)
             neigbhourhood.push_back(currNeighbour);
             unusedTileInfos.remove(currNeighbour);
         }
+    usedTiles.insert(usedTiles.end(), neigbhourhood.begin(),neigbhourhood.end());
 
     return neigbhourhood;
 }
@@ -704,4 +707,39 @@ void TilePicker::clean()
     unusedTileInfos.clear();
     freeTiles.clear();
     ogNeighbourhood.clear();
+}
+void TilePicker::calcEnemiesMidpoint()
+{
+    glm::vec3 tempMid{0.f, 0.f, 0.f};
+    if (usedTiles.size() != 0)
+    {
+        for (auto t : usedTiles)
+            {
+                tempMid += t->getPos();
+            }
+        enemiesMidpoint = {
+            tempMid.x / usedTiles.size(),
+            tempMid.y / usedTiles.size(),
+            tempMid.z / usedTiles.size()};
+    }
+}
+
+const TileInfo* TilePicker::getSpreadTile()
+{
+    calcEnemiesMidpoint(); 
+
+    std::vector<const TileInfo*> possibleTiles{this->unusedTileInfos.begin(), this->unusedTileInfos.end()}; 
+
+    const TileInfo* furthest = possibleTiles.front();
+    float prevFurthest = 0.f;
+    for(auto p : possibleTiles)
+    {
+        float dist = glm::length(p->getPos() - this->enemiesMidpoint);
+        if( dist > prevFurthest)
+        {
+            prevFurthest = dist;
+            furthest = p;
+        }
+    }
+    return furthest;
 }
