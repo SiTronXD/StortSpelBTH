@@ -75,8 +75,11 @@ void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
     currScene->setActive(this->tankIDs[tankIdx]);
     Transform& transform = currScene->getComponent<Transform>(this->tankIDs[tankIdx]);
     
-    float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
-    transform.position = pos + glm::vec3(tileWidth, TankComponent::colliderRadius, tileWidth);
+    // float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;    
+    // transform.position = pos + glm::vec3(tileWidth, TankComponent::colliderRadius, tileWidth);
+    transform.position = pos;// + glm::vec3(RoomHandler::TILE_WIDTH/2, TankComponent::colliderRadius, RoomHandler::TILE_WIDTH/2);
+
+    debugRays.push_back({pos, {1.f,1.f,0.5f}});
 
     //Reset
     TankComponent& tankComp = currScene->getComponent<TankComponent>(this->tankIDs[tankIdx]);
@@ -88,8 +91,11 @@ void SpawnHandler::spawnLich(int lichIdx, const glm::vec3& pos)
 {
     currScene->setActive(this->lichIDs[lichIdx]);
     Transform& transform = currScene->getComponent<Transform>(this->lichIDs[lichIdx]);
-    float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
-    transform.position = pos + glm::vec3(tileWidth, LichComponent::colliderHeight, tileWidth);
+    // float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
+    // transform.position = pos + glm::vec3(tileWidth, LichComponent::colliderHeight, tileWidth);
+    transform.position = pos;// + glm::vec3(RoomHandler::TILE_WIDTH/2, LichComponent::colliderHeight, RoomHandler::TILE_WIDTH/2);
+
+    debugRays.push_back({pos, {1.f,1.f,0.f}});
 
     //Reset
     LichComponent& lichComp = currScene->getComponent<LichComponent>(this->lichIDs[lichIdx]);
@@ -97,65 +103,28 @@ void SpawnHandler::spawnLich(int lichIdx, const glm::vec3& pos)
     transform.scale.y = lichComp.origScaleY;
 }
 
-void SpawnHandler::spawnSwarmGroup(const int swarmStartIdx, const glm::vec3& pos)
+uint32_t SpawnHandler::spawnSwarmGroup(const int swarmStartIdx, std::vector<const TileInfo*> tileInfos)
 {
     int swarmIdx = swarmStartIdx;
 
-    // Find free random positions for SwarmBlobs within tile...
-    
-    static const float padding = 5.f;
-    static const float swarmBlobWidth = SwarmComponent::colliderRadius * 2 + padding;
-    static const float nrOfSubTiles_x = RoomHandler::TILE_WIDTH / swarmBlobWidth;
-    static const float nrOfSubTiles_z = RoomHandler::TILE_WIDTH / swarmBlobWidth;
-    static const glm::vec3 tileCorner = glm::vec3( (RoomHandler::TILE_WIDTH/2.f),0.f,(RoomHandler::TILE_WIDTH/2.f));
-    static const glm::vec3 initialSubtilePos_offset = glm::vec3(
-            tileCorner.x/nrOfSubTiles_x/2.f,
-            0.f,
-            tileCorner.z/nrOfSubTiles_z/2.f);
-    
-    glm::vec3 initialSubtilePos = pos + (tileCorner - initialSubtilePos_offset);
-
-    std::vector<Ray> rays(nrOfSubTiles_z*nrOfSubTiles_x); 
-
-    
-
-    std::deque<glm::vec3> subtiles;
-    for(int i = 0; i < nrOfSubTiles_z; i++)
+    for(auto tile : tileInfos)
     {
-        for(int j = 0; j < nrOfSubTiles_x; j++)
-        {
-            subtiles.emplace_back(
-                initialSubtilePos.x - i * swarmBlobWidth,
-                0,
-                initialSubtilePos.z + j * swarmBlobWidth
-            );
-            this->debugRays.emplace_back(
-                initialSubtilePos.x - i * swarmBlobWidth,
-                0,
-                initialSubtilePos.z + j * swarmBlobWidth);
-        }
-    }
-    std::stack<glm::vec3> subtile_stack{std::move(subtiles)};
-    
-    
-    // 
-    for(size_t i = 0; i < SpawnHandler::NR_BLOBS_IN_GROUP; i++)
-    {
-        this->spawnSwarm(swarmIdx, subtile_stack.top());
-        subtile_stack.pop();
-
+        spawnSwarm(swarmIdx, tile->getPos());
         swarmIdx++;
     }
-
+    return tileInfos.size();
 }
 
 void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
 {
     currScene->setActive(this->swarmIDs[swarmIdx]);
     Transform& transform = currScene->getComponent<Transform>(this->swarmIDs[swarmIdx]);
-    float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
+    // float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
 
-    transform.position = pos + glm::vec3(tileWidth, SwarmComponent::colliderRadius, tileWidth);
+    //transform.position = pos + glm::vec3(tileWidth, SwarmComponent::colliderRadius, tileWidth);
+    transform.position = pos;// + glm::vec3(RoomHandler::TILE_WIDTH/2, SwarmComponent::colliderRadius, RoomHandler::TILE_WIDTH/2);
+
+    debugRays.push_back({pos, {1.f,0.f,0.f}});
 
     //Temporary enemie reset
     SwarmComponent& swarmComp = currScene->getComponent<SwarmComponent>(this->swarmIDs[swarmIdx]);
