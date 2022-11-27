@@ -42,7 +42,7 @@ public:
     inline static const int MAX_NR_OF_ENEMIES = 100;
     inline static const float PERCENTAGE_TANKS   = 0.10f;
     inline static const float PERCENTAGE_LICHS   = 0.25f;
-    inline static const float PERCENTAGE_SWARMG  = 0.75f;
+    inline static const float PERCENTAGE_SWARMS  = 0.75f;
 
     const float enemiesPerTiles = 0.10f;
 
@@ -50,18 +50,20 @@ public:
 
     inline static const int MAX_NR_TANKS        = MAX_NR_OF_ENEMIES * PERCENTAGE_TANKS;
     inline static const int MAX_NR_LICHS        = MAX_NR_OF_ENEMIES * PERCENTAGE_LICHS;
-    inline static const int MAX_NR_SWARMGROUPS  = (MAX_NR_OF_ENEMIES * PERCENTAGE_SWARMG)/NR_BLOBS_IN_GROUP;
+    inline static const int MAX_NR_SWARMGROUPS  = (MAX_NR_OF_ENEMIES * PERCENTAGE_SWARMS)/NR_BLOBS_IN_GROUP;
 private:
-    RoomHandler*     roomHandler;
-    GameScene*       currScene;
-    SceneHandler*    sceneHandler;
-    AIHandler*       aiHandler;
-    ResourceManager* resourceManager;
-    UIRenderer*      uiRenderer;
+    RoomHandler*     roomHandler      = nullptr;
+    GameScene*       currScene        = nullptr;
+    SceneHandler*    sceneHandler     = nullptr;
+    AIHandler*       aiHandler        = nullptr;
+    ResourceManager* resourceManager  = nullptr;
+    UIRenderer*      uiRenderer       = nullptr;
 
 
     float nrOfEnemiesPerRoom = 0; // Set based on nr of Tile per room
 
+    // Data for imgui
+    int nrOfTilesInRoom = 0;
 
     // Enemies in current Room
     int nrOfTanks_inRoom  = 0;
@@ -76,15 +78,14 @@ private:
     std::vector<int> tankIDs;
     std::vector<SwarmGroup*> swarmGroups;
 
-    std::vector<glm::vec3> debugRays;
-    std::vector<glm::vec3> tileCornersRays;
-
+    struct pos_col{glm::vec3 pos; glm::vec3 col;};
+    std::vector<pos_col> debugRays;
 
     uint32_t fontTextureIndex;
 
     void spawnTank( const int tankIdx,  const glm::vec3& pos);
     void spawnLich( const int lichIdx,  const glm::vec3& pos);
-    void spawnSwarmGroup(const int swarmStartIdx, const glm::vec3& pos); //TODO: Do we need to have a vector of pos; say 2 to let a swarm spawn over two tiles?
+    uint32_t spawnSwarmGroup(const int swarmStartIdx, std::vector<const TileInfo*> tileInfo); //TODO: Do we need to have a vector of pos; say 2 to let a swarm spawn over two tiles?
     void spawnSwarm(const int swarmIdx, const glm::vec3& pos);
 
     void createTank();
@@ -128,5 +129,5 @@ public:
 
     bool allDead();
 
-    
+    void updateImgui();
 };

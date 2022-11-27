@@ -9,7 +9,10 @@
             "request": "launch",
             "name": "Debug",
             "program": "${command:cmake.launchTargetPath}",
-            "args": [],
+            "args": [
+                //Seed 
+                //"1669568097" // spawn on same pos
+            ],
             "cwd": "${workspaceFolder}/game"
         }
 

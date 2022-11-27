@@ -11,63 +11,41 @@ void SpawnHandler::spawnEnemiesIntoRoom()
     int lichIdx         = 0;
     int tankIdx         = 0;
     int counter         = 0;
-    this->nrOfEnemiesPerRoom  = enemiesPerTiles; //TODO: Make random when not debugging
+    this->nrOfEnemiesPerRoom  = enemiesPerTiles;
 
-    static auto randomEngine = std::default_random_engine{};    
+    TilePicker tilePicker;
+    tilePicker.init(this->roomHandler->getFreeTileInfos());
     
-    const std::vector<TileInfo>& tileInfos = this->roomHandler->getFreeTileInfos();
-    std::deque<const TileInfo*> tilePtrs;
-    for(auto& tileInfo : tileInfos){tilePtrs.push_back(&tileInfo);}
-    std::shuffle(tilePtrs.begin(),tilePtrs.end(), randomEngine);
-
-    std::stack<const TileInfo*> unusedTileInfos(tilePtrs);
-    
-    this->nrOfEnemiesPerRoom *= tileInfos.size();
-
+    this->nrOfEnemiesPerRoom *= tilePicker.size();
     this->nrOfEnemiesPerRoom = std::clamp((int)this->nrOfEnemiesPerRoom, 0 , SpawnHandler::MAX_NR_OF_ENEMIES);
 
-    this->nrOfTanks_inRoom  = std::clamp((int)(tileInfos.size() * enemiesPerTiles *PERCENTAGE_TANKS), 0, MAX_NR_TANKS);
-    this->nrOfLichs_inRoom  = std::clamp((int)(tileInfos.size() * enemiesPerTiles *PERCENTAGE_LICHS), 0, MAX_NR_LICHS);
-    this->nrOfGroups_inRoom = std::clamp((int)(tileInfos.size() * enemiesPerTiles *PERCENTAGE_SWARMG),0, MAX_NR_SWARMGROUPS);
+    this->nrOfTanks_inRoom  = std::clamp((int)(tilePicker.size() * enemiesPerTiles *PERCENTAGE_TANKS), 0, MAX_NR_TANKS);
+    this->nrOfLichs_inRoom  = std::clamp((int)(tilePicker.size() * enemiesPerTiles *PERCENTAGE_LICHS), 0, MAX_NR_LICHS);
+    int tempNrOfSwarms      = std::clamp((int)(tilePicker.size() * enemiesPerTiles *PERCENTAGE_SWARMS),0, NR_BLOBS_IN_GROUP*MAX_NR_SWARMGROUPS);
+    this->nrOfGroups_inRoom = tempNrOfSwarms / SpawnHandler::NR_BLOBS_IN_GROUP;
+    this->nrOfSwarms_inRoom = nrOfGroups_inRoom * SpawnHandler::NR_BLOBS_IN_GROUP;
+    this->nrOfEnemiesPerRoom = this->nrOfSwarms_inRoom+this->nrOfLichs_inRoom+this->nrOfTanks_inRoom;
 
+    // Imgui data...
+    this->nrOfTilesInRoom = tilePicker.size();
 
-    for(auto tile : tileInfos)
-    {
-        glm::vec3 cpy = tile.getPos();
-        tileCornersRays.push_back(cpy + glm::vec3((RoomHandler::TILE_WIDTH/2.f),0.f, (RoomHandler::TILE_WIDTH/2.f)));
-        tileCornersRays.push_back(cpy + glm::vec3((RoomHandler::TILE_WIDTH/2.f),0.f, -(RoomHandler::TILE_WIDTH/2.f)));
-        tileCornersRays.push_back(cpy + glm::vec3(-(RoomHandler::TILE_WIDTH/2.f),0.f, (RoomHandler::TILE_WIDTH/2.f)));
-        tileCornersRays.push_back(cpy + glm::vec3(-(RoomHandler::TILE_WIDTH/2.f),0.f, -(RoomHandler::TILE_WIDTH/2.f)));
-
+    // Spawn Tanks
+    for(size_t i = 0; i < nrOfTanks_inRoom; i++){
+        this->spawnTank(tankIdx, tilePicker.getRandomEmptyTile()->getPos());
+        tankIdx++;
     }
 
-
-    while(this->nrOfEnemiesPerRoom > counter) 
-    {
-
-        auto& tileInfo = unusedTileInfos.top();
-                    
-        if(tankIdx < this->nrOfTanks_inRoom)
-        {
-            this->spawnTank(tankIdx, tileInfo->getPos());
-            tankIdx++;
-        }
-        else if(lichIdx < this->nrOfLichs_inRoom)
-        {
-            this->spawnLich(lichIdx, tileInfo->getPos());
-            lichIdx++;
-        }
-        else if(swarmIdx < this->nrOfGroups_inRoom)
-        {
-            this->spawnSwarmGroup(swarmIdx, tileInfo->getPos());
-            swarmIdx += SpawnHandler::NR_BLOBS_IN_GROUP;
-            counter  += SpawnHandler::NR_BLOBS_IN_GROUP - 1;
-        }
-
-        counter++;        
-        unusedTileInfos.pop();
-    
+    // Spawn Lichs
+    for(size_t i = 0; i < nrOfLichs_inRoom; i++){
+        this->spawnLich(lichIdx, tilePicker.getRandomEmptyTile()->getPos());
+        lichIdx++;
     }
+
+    // Spawn Swarms
+    for(size_t i = 0; i < nrOfGroups_inRoom; i++){
+        swarmIdx += this->spawnSwarmGroup(swarmIdx, tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP));        
+    }
+
 }
 
 void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
