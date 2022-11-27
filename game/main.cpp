@@ -23,7 +23,16 @@ int main(int argc, char* argv[])
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif // _WIN32 && _DEBUG
 
-    srand((unsigned int)time(0));
+    uint32_t seed = (unsigned int)time(0);
+#ifdef _CONSOLE 
+    if(argc > 1)
+    {
+        seed = (uint32_t)std::stoi(argv[1]);
+    }
+    Log::write("Seed was: " + std::to_string(seed));
+#endif
+
+    srand(seed);
     {
         Engine engine;
         //engine.run("Presumed Dead", "", new RoomTesting());
