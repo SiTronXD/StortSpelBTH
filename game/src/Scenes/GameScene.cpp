@@ -242,6 +242,7 @@ void GameScene::update()
     }
 
     this->aiHandler->update(Time::getDT());
+    this->spawnHandler.updateImgui();
 
     if (this->spawnHandler.allDead() && this->newRoomFrame)
     {

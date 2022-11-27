@@ -331,6 +331,40 @@ bool SpawnHandler::allDead()
 //////////////////////////////////////////////////////
 //////////////////////////////////////////////////////
 
+void SpawnHandler::updateImgui()
+{
+    ImGui::Begin("SpawnHandler Info");
+        if(ImGui::BeginTabBar("Enemies")){
+
+            if(ImGui::BeginTabItem("Enemies")){
+                ImGui::Text("# Enimies Total : %d", (int)this->nrOfEnemiesPerRoom);
+                ImGui::Text("# Swarm groups: %d", this->nrOfGroups_inRoom);
+                ImGui::Text("# Swarms      : %d", this->nrOfSwarms_inRoom);
+                ImGui::Text("# Tanks       : %d", this->nrOfTanks_inRoom );
+                ImGui::Text("# Lichs       : %d", this->nrOfLichs_inRoom );
+                
+                ImGui::EndTabItem();
+            }
+
+            if(ImGui::BeginTabItem("Tiles")){
+                for(auto ray : debugRays)
+                {
+                    this->sceneHandler->getDebugRenderer()->renderLine(
+                        ray.pos,
+                        ray.pos + glm::vec3(0.0f, 1.0f, 0.0f),
+                        ray.col);
+
+                }
+                ImGui::Text("# Active Tiles : %d", this->nrOfTilesInRoom);
+                
+                ImGui::EndTabItem();
+            }
+            ImGui::EndTabBar();
+        }
+
+    ImGui::End();
+}
+
 ImguiLambda SpawnHandler::TankImgui()
 {
    
