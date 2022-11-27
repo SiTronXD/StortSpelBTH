@@ -602,3 +602,143 @@ ImguiLambda SpawnHandler::SwarmImgui()
     };            
 }
 
+void TilePicker::init(const std::vector<TileInfo>& freeTileInfos)
+{
+    static auto randomEngine = std::default_random_engine{};
+    std::deque<const TileInfo*> tempTilePtrs;
+
+    // Store temp ptrs to free Tiles, store old array structure
+    for (size_t i = 0; i < freeTileInfos.size(); i++)
+        {
+            tempTilePtrs.push_back(&freeTileInfos[i]);
+            ogNeighbourhood.insert({i, &freeTileInfos[i]});
+        }
+
+    // Randomize order of temp ptrs
+    std::shuffle(tempTilePtrs.begin(), tempTilePtrs.end(), randomEngine);
+
+    // Store randomized ptrs to unusedTileInfos
+    for (auto& tileInfo : tempTilePtrs)
+        {
+            this->unusedTileInfos.push_back(tileInfo);
+        }
+
+    // Store status of tiles
+    for (auto& tileInfo : this->unusedTileInfos)
+        {
+            this->freeTiles.insert({tileInfo, true});
+        }
+}
+size_t TilePicker::size() const
+{
+    size_t c = 0;
+    for (auto t : unusedTileInfos)
+        {
+            if (t)
+                c++;
+        }
+    return c;
+}
+const TileInfo* TilePicker::getRandomEmptyTile()
+{
+    const TileInfo* ret = nullptr;
+
+    if (this->size() > 0)
+        {
+            ret = unusedTileInfos.front();
+            unusedTileInfos.remove(unusedTileInfos.front());
+        }
+    return ret;
+}
+std::vector<const TileInfo*>
+TilePicker::getRandomEmptyNeighbouringTiles(const int nr)
+{
+
+    //TODO do not use while loop here...
+    std::vector<const TileInfo*> neigbhourhood;
+    std::vector<const TileInfo*> newPossibleNeighbours;
+    std::unordered_map<const TileInfo*, bool> possibleNeigbhours;
+    const TileInfo* currNeighbour = unusedTileInfos.front();
+
+    while (neigbhourhood.size() < nr)
+        {
+
+            newPossibleNeighbours =
+                getPossibleNeighbours(currNeighbour, possibleNeigbhours);
+
+            // abort if no possible neigbhour exists...
+            if (newPossibleNeighbours.size() == 0)
+                {
+                    std::cout << "\n\nCould not retrieve required amount of "
+                                 "tiles...\n";
+                    break;
+                }
+
+            currNeighbour =
+                newPossibleNeighbours[rand() % newPossibleNeighbours.size()];
+            possibleNeigbhours[currNeighbour] = true;
+            neigbhourhood.push_back(currNeighbour);
+            unusedTileInfos.remove(currNeighbour);
+        }
+
+    return neigbhourhood;
+}
+std::vector<const TileInfo*> TilePicker::getPossibleNeighbours(
+    const TileInfo* currentNeighbour,
+    std::unordered_map<const TileInfo*, bool>& possibleNeigbhours
+)
+{
+
+    // Set true if picked
+    possibleNeigbhours.insert({currentNeighbour, true});
+
+    for (auto n : getFreeNeighbours(currentNeighbour))
+        {
+            // Set false if not part of neigbhours yet
+            possibleNeigbhours.insert({n, false});
+        }
+
+    // Get only Possible Neighbours
+    std::vector<const TileInfo*> pickNeighbor;
+    for (auto n : possibleNeigbhours)
+        {
+            if (!n.second)
+                {
+                    pickNeighbor.push_back(n.first);
+                }
+        }
+
+    return pickNeighbor;
+}
+std::vector<const TileInfo*> TilePicker::getFreeNeighbours(const TileInfo* tile)
+{
+    std::vector<const TileInfo*> freeNeighbours;
+
+    if (this->freeTiles[this->ogNeighbourhood[tile->idRightOf()]])
+        {
+            freeNeighbours.push_back(this->ogNeighbourhood[tile->idRightOf()]);
+        }
+
+    if (this->freeTiles[this->ogNeighbourhood[tile->idLeftOf()]])
+        {
+            freeNeighbours.push_back(this->ogNeighbourhood[tile->idLeftOf()]);
+        }
+
+    if (this->freeTiles[this->ogNeighbourhood[tile->idDownOf()]])
+        {
+            freeNeighbours.push_back(this->ogNeighbourhood[tile->idDownOf()]);
+        }
+
+    if (this->freeTiles[this->ogNeighbourhood[tile->idUpOf()]])
+        {
+            freeNeighbours.push_back(this->ogNeighbourhood[tile->idUpOf()]);
+        }
+
+    return freeNeighbours;
+}
+void TilePicker::clean()
+{
+    unusedTileInfos.clear();
+    freeTiles.clear();
+    ogNeighbourhood.clear();
+}

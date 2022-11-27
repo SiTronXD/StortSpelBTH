@@ -6,10 +6,35 @@
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
 
+#include <list>
+#include <vector>
+
 
 class GameScene;
 
 using ImguiLambda = std::function<void(FSM* fsm, uint32_t entityId)>;
+
+
+
+class TilePicker
+{
+private:
+    std::list<const TileInfo*> unusedTileInfos;
+    std::map<const TileInfo*, bool> freeTiles; 
+    std::map<uint32_t, const TileInfo*> ogNeighbourhood;
+
+    std::vector<const TileInfo*> getPossibleNeighbours(const TileInfo* currentNeighbour,std::unordered_map<const TileInfo*, bool>& possibleNeigbhours);
+    std::vector<const TileInfo*> getFreeNeighbours(const TileInfo* tile);
+
+public:
+
+    void init(const std::vector<TileInfo>& freeTileInfos);
+    size_t size() const;
+    const TileInfo* getRandomEmptyTile();
+    std::vector<const TileInfo*> getRandomEmptyNeighbouringTiles(const int nr);
+
+    void clean();
+};
 
 class SpawnHandler
 {
