@@ -471,25 +471,7 @@ ImguiLambda SpawnHandler::LichImgui()
 
 ImguiLambda SpawnHandler::SwarmImgui()
 {
-    return [&](FSM* fsm, uint32_t entityId) -> void{
-        for(auto ray : debugRays)
-        {
-            this->sceneHandler->getDebugRenderer()->renderLine(
-                ray,
-                ray + glm::vec3(0.0f, 1.0f, 0.0f),
-                glm::vec3(1.0f, 0.0f, 0.0f));
-
-        }
-
-        for(auto ray : tileCornersRays)
-        {
-            this->sceneHandler->getDebugRenderer()->renderLine(
-                ray,
-                ray + glm::vec3(0.0f, 1.0f, 0.0f),
-                glm::vec3(1.0f, 1.0f, 0.0f));
-
-        }
-
+    return [&](FSM* fsm, uint32_t entityId) -> void{    
         // Imgui Swarm
         SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
 
