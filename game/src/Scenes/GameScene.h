@@ -67,5 +67,6 @@ public:
 
 private:
 
+    void imguiUpdate();
   void createPortal();
 };

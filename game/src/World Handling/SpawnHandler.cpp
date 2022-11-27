@@ -516,17 +516,6 @@ ImguiLambda SpawnHandler::SwarmImgui()
             uiRenderer->renderString(std::to_string(entityId), entityPos3, glm::vec2(20, 20)); 
         }    
 
-        std::string playerString = "playerID";
-        int playerID;
-        this->sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
-        auto& playerCombat = this->sceneHandler->getScene()->getComponent<Combat>(playerID);
-        if(ImGui::Button("Kill Player")){
-            playerCombat.health = 0; 
-        }
-        if(ImGui::Button("INVINCIBLE Player")){
-            playerCombat.health = INT_MAX; 
-        }
-        ImGui::Separator();
         ImGui::Separator();
         entityImguiWindow(swarmFSM, entityId);
 
@@ -643,8 +632,6 @@ TilePicker::getRandomEmptyNeighbouringTiles(const int nr)
             newPossibleNeighbours[rand() % newPossibleNeighbours.size()];
         possibleNeigbhours[currNeighbour] = true;
         neigbhourhood.push_back(currNeighbour);
-        unusedTileInfos.remove(currNeighbour);        
-            unusedTileInfos.remove(currNeighbour);
         unusedTileInfos.remove(currNeighbour);        
     }
     usedTiles.insert(usedTiles.end(), neigbhourhood.begin(),neigbhourhood.end());

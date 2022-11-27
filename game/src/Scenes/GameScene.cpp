@@ -243,6 +243,7 @@ void GameScene::update()
 
     this->aiHandler->update(Time::getDT());
     this->spawnHandler.updateImgui();
+    this->imguiUpdate();
 
     if (this->spawnHandler.allDead() && this->newRoomFrame)
     {
@@ -513,6 +514,23 @@ void GameScene::onCollisionExit(Entity e1, Entity e2)
     this->getComponent<SwarmComponent>(e2).touchedFriend = false;
   }
 
+}
+
+void GameScene::imguiUpdate()
+{
+    ImGui::Begin("Game Scene");
+    std::string playerString = "playerID";
+    int playerID;
+    getScriptHandler()->getGlobal(playerID, playerString);
+    auto& playerCombat = getComponent<Combat>(playerID);
+    if(ImGui::Button("INVINCIBLE Player")){
+        playerCombat.health = INT_MAX;         
+    }
+    if(ImGui::Button("Kill Player")){
+        playerCombat.health = 0; 
+    }
+
+    ImGui::End();
 }
 
 void GameScene::createPortal()
