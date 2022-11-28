@@ -1,5 +1,5 @@
 --local playerMesh = resources.addMesh("assets/models/Amogus/source/1.fbx")
-local playerMesh = resources.addAnimations({ "assets/models/Character/CharIdle.fbx", "assets/models/Character/CharRun.fbx",
+local playerMesh = resources.addAnimations({ "assets/models/Character/CharIdle.fbx", "assets/models/Character/CharRun.fbx", 
 "assets/models/Character/CharDodge.fbx", "assets/models/Character/CharOutwardAttack.fbx", "assets/models/Character/CharHeavyAttack.fbx", 
 "assets/models/Character/CharSpinAttack.fbx", "assets/models/Character/CharKnockbackAttack.fbx", 
 "assets/models/Character/CharInwardAttack.fbx", "assets/models/Character/CharSlashAttack.fbx" }, "assets/textures/playerMesh")
@@ -17,10 +17,15 @@ playerID = scene.createEntity()
 scene.setComponent(playerID, CompType.Mesh, playerMesh)
 local playerAnim = 
 { 
+	animationIndex = 0,
 	timer = 0.0, 
 	timeScale = 0.0
 }
-scene.setComponent(playerID, CompType.Animation, playerAnim)
+scene.setComponent(playerID, CompType.Animation, {})
+local anim = scene.getComponent(playerID, CompType.Animation)
+anim[0] = playerAnim
+scene.setComponent(playerID, CompType.Animation, anim)
+
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
 scene.setComponent(playerID, CompType.Collider, { type = ColliderType.Capsule, radius = 2, height = 11, offset = vector.new(0, 7.3, 0) })
 scene.setComponent(playerID, CompType.Rigidbody, { mass = 1, gravityMult = 5, rotFactor = vector.fill(0), friction = 0.1 })
