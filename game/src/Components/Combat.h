@@ -48,8 +48,10 @@ struct Combat
 	float hpMultiplier = 1.f;
 	float staminaMultiplier = 1.f;
 	float movementMultiplier = 1.f;
+	float totalMoveMulti = 1.f;
 	float dmgMultiplier = 1.f;
 	float attackSpeedMultiplier = 1.f;
+	float totalAtkSpeedMulti = 1.f;
 	float animationMultiplier[6] = { 1.2f, 1.f, 2.1f, 2.1f, 2.1f, 1.f };
 
 	// Abilities

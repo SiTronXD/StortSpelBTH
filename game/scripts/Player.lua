@@ -47,9 +47,9 @@ function script:init()
     self.jumpTimer = 0
     self.active = true
 
-    self.activeAnimation = {idle = 1, run = 2, sprint = 3, dodge = 3, 
-        lightAttack = 4, heavyAttack = 5, spinCombo = 6, mixCombo = 7, 
-        heavyCombo = 8, knockback = 9}
+    self.activeAnimation = {idle = 1, run = 2, sprint = 3, dodge = 4, 
+        lightAttack = 5, heavyAttack = 6, spinCombo = 7, mixCombo = 8, 
+        heavyCombo = 9, knockback = 10}
     self.currentAnimation = 1
     self.idleAnimTime = 1.0
     self.runAnimTime = 0.7
@@ -204,14 +204,14 @@ function script:update(dt)
             end
         end
     end
-    
+
     if (input.isKeyDown(Keys.SHIFT))
     then
         if (self.animTimer < 0.0)
         then
             if (self.isSprinting and self.moveDir ~= vector(0))
             then
-                if self.currentAnimation ~= self.activeAnimation.sprint
+                if self.currentAnimation ~= self.activeAnimation.sprint and not self.isDodging
                 then
                     scene.setAnimation(self.ID, "run", "")
                     local anim = scene.getComponent(self.ID, CompType.Animation)
@@ -223,7 +223,7 @@ function script:update(dt)
         end
     end
     
-    if (not self.isSprinting and not self.isDodging)
+    if (not self.isSprinting)
     then
         if (self.animTimer < 0.0)
         then

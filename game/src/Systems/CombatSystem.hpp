@@ -6,6 +6,8 @@
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
 #include <string>
 
+enum SoundEnum { takeDmg, swingSword };
+
 class CombatSystem : public System
 {
 private:
@@ -18,6 +20,13 @@ private:
 	Entity playerID;
 	Entity swordID;
 	Entity heal;
+
+	Entity otherSound;
+	Entity playerSound;
+	Entity moveSound;
+	std::vector<uint32_t> attackSounds;
+	std::vector<uint32_t> moveSounds;
+	std::vector<uint32_t> otherSounds;
 
 	int swordMesh;
 	int perkMeshes[5];
@@ -39,6 +48,16 @@ public:
 			combat.combos.emplace_back("Light Light Light ");
 			combat.combos.emplace_back("Light Heavy Light ");
 			combat.combos.emplace_back("Heavy Light Heavy ");
+
+			this->otherSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/OufSound.ogg"));
+			this->attackSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/SwishSound.ogg"));
+			this->moveSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/RunningSound.ogg"));
+			this->playerSound = this->scene->createEntity();
+			this->otherSound = this->scene->createEntity();
+			this->moveSound = this->scene->createEntity();
+			this->scene->setComponent<AudioSource>(this->playerSound, this->attackSounds[0]);
+			this->scene->setComponent<AudioSource>(this->otherSound, this->otherSounds[0]);
+			this->scene->setComponent<AudioSource>(this->moveSound, this->moveSounds[0]);
 
 			this->swordID = this->scene->createEntity();
 			this->swordMesh = this->resourceMng->addMesh("assets/models/MainSword.fbx", "assets/textures");
@@ -68,6 +87,12 @@ public:
 			checkAbilityCollision(combat);
 			decreaseTimers(combat, deltaTime);
 			updateSwordPos();
+
+			int temp = Input::isKeyDown(Keys::W) ? 1 : Input::isKeyDown(Keys::S) ? 1 : Input::isKeyDown(Keys::A) ? 1 : Input::isKeyDown(Keys::D) ? 1 : 0;
+			if (temp == 1)
+			{
+				playerEffectSound(this->moveSounds[0], this->scene->getComponent<Transform>(this->playerID).position, this->moveSound);
+			}
 
 			if (checkActiveAttack(combat) != noActive)
 			{
@@ -189,20 +214,20 @@ public:
 			{
 				if (scene->hasComponents<SwarmComponent>(hitID[i]))
 				{
+					this->canHit = true;
 					for (size_t j = 0; j < this->hitEnemies.size(); j++)
 					{
 						if (this->hitEnemies[j] == hitID[i])
 						{
 							this->canHit = false;
-						}
-						else
-						{
-							this->canHit = true;
+							j = this->hitEnemies.size();
 						}
 					}
 					if (this->canHit == true)
 					{
+						Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
 						SwarmComponent& enemy = this->scene->getComponent<SwarmComponent>(hitID[i]);
+						playerEffectSound(this->otherSounds[takeDmg], enemyTrans.position, this->otherSound);
 						enemy.life -= (int)combat.dmgArr[combat.activeAttack];
 						hitEnemy(combat, hitID[i]);
 					}
@@ -278,6 +303,8 @@ public:
 			}
 			else
 			{
+				playerEffectSound(this->attackSounds[0], 
+					this->scene->getComponent<Transform>(this->playerID).position, this->playerSound);
 				setupAttack("lightAttack", 4, combat.lightAttackCd, combat.animationMultiplier[lightActive]);
 				return true;
 			}
@@ -462,20 +489,24 @@ public:
 		if (doUpgrade)
 		{
 			setDefaultAtttackSpeed(combat);
-			combat.attackSpeedMultiplier -= perk.multiplier;
-			for (size_t i = 0; i < 6; i++)
-			{
-				combat.animationMultiplier[i] += perk.multiplier;
-			}
-			if (combat.attackSpeedMultiplier < 0.3f)
+			combat.totalAtkSpeedMulti -= perk.multiplier;
+			if (combat.totalAtkSpeedMulti < 0.3f)
 			{
 				combat.attackSpeedMultiplier = 0.3f;
-				combat.animationMultiplier[0] = 1.9f;
-				combat.animationMultiplier[1] = 1.7f;
-				combat.animationMultiplier[2] = 2.8f;
-				combat.animationMultiplier[3] = 2.8f;
-				combat.animationMultiplier[4] = 2.8f;
-				combat.animationMultiplier[5] = 1.7f;
+				combat.animationMultiplier[0] = 2.8f;
+				combat.animationMultiplier[1] = 2.4f;
+				combat.animationMultiplier[2] = 4.6f;
+				combat.animationMultiplier[3] = 4.6f;
+				combat.animationMultiplier[4] = 4.6f;
+				combat.animationMultiplier[5] = 2.4f;
+			}
+			else
+			{
+				combat.attackSpeedMultiplier -= perk.multiplier;
+				for (size_t i = 0; i < 6; i++)
+				{
+					combat.animationMultiplier[i] += perk.multiplier + perk.multiplier;
+				}
 			}
 		}
 		combat.lightAttackCd *= combat.attackSpeedMultiplier;
@@ -493,66 +524,51 @@ public:
 		if (doUpgrade)
 		{
 			setDefaultMovementSpeed(combat);
-			combat.movementMultiplier += perk.multiplier;
-			if (combat.movementMultiplier > 1.5f)
+			combat.totalMoveMulti += perk.multiplier;
+			if (combat.totalMoveMulti > 2.f)
 			{
-				combat.movementMultiplier = 1.5f;
-				moveTimers[0] = 1.5f;
-				moveTimers[1] = 1.2f;
-				moveTimers[2] = 1.7f;
-				moveTimers[3] = 3.5f;
+				combat.movementMultiplier = 2.f;
+				moveTimers[0] = 2.f;
+				moveTimers[1] = 1.4f;
+				moveTimers[2] = 2.4f;
+				//moveTimers[3] = 6.f;
 				this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
-				this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
+				//this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
 			}
 			else
 			{
+				combat.movementMultiplier += perk.multiplier;
 				this->script->getScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
 				this->script->getScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
 				this->script->getScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
-				this->script->getScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
-				for (size_t i = 0; i < 4; i++)
-				{
-					moveTimers[i] += perk.multiplier;
-				}
+				//this->script->getScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
+				moveTimers[0] += perk.multiplier;
+				moveTimers[1] += perk.multiplier;
+				moveTimers[2] += perk.multiplier;
+				//moveTimers[3] += perk.multiplier;
 				this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
-				this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
+				//this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
 			}
 		}
-		else
-		{
-			int maxSpeed = 0;
-			int sprintSpeed = 0;
-			int dodgeSpeed = 0;
-			this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
-			this->script->getScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
-			this->script->getScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
-			float tempMaxSpeed = (float)maxSpeed * combat.movementMultiplier;
-			float tempSprintSpeed = (float)sprintSpeed * combat.movementMultiplier;
-			float tempDodgeSpeed = (float)dodgeSpeed * combat.movementMultiplier;
-			maxSpeed = (int)tempMaxSpeed;
-			sprintSpeed = (int)tempSprintSpeed;
-			dodgeSpeed = (int)tempDodgeSpeed;
-			this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
-			this->script->setScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
-			this->script->setScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
-
-			this->script->getScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
-			this->script->getScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
-			this->script->getScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
-			this->script->getScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
-			for (size_t i = 0; i < 4; i++)
-			{
-				moveTimers[i] += perk.multiplier;
-			}
-			this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
-			this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
-			this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
-			this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
-		}
+		int maxSpeed = 0;
+		int sprintSpeed = 0;
+		int dodgeSpeed = 0;
+		this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
+		this->script->getScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
+		this->script->getScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
+		float tempMaxSpeed = (float)maxSpeed * combat.movementMultiplier;
+		float tempSprintSpeed = (float)sprintSpeed * combat.movementMultiplier;
+		float tempDodgeSpeed = (float)dodgeSpeed * combat.movementMultiplier;
+		maxSpeed = (int)tempMaxSpeed;
+		sprintSpeed = (int)tempSprintSpeed;
+		dodgeSpeed = (int)tempDodgeSpeed;
+		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
+		this->script->setScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
+		this->script->setScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
 	}
 
 	void updateStamina(Combat& combat, Perks& perk, bool doUpgrade = true)
@@ -720,13 +736,15 @@ public:
 				break;
 			case attackSpeedUpPerk:
 				setDefaultAtttackSpeed(combat);
-				combat.attackSpeedMultiplier += perk.multiplier;
+				combat.totalAtkSpeedMulti += perk.multiplier;
+				combat.attackSpeedMultiplier = glm::clamp(combat.totalAtkSpeedMulti, 0.3f, 1.f);
 				updateAttackSpeed(combat, perk, false);
 				spawnPerk(perk);
 				break;
 			case movementUpPerk:
 				setDefaultMovementSpeed(combat);
-				combat.movementMultiplier -= perk.multiplier;
+				combat.totalMoveMulti -= perk.multiplier;
+				combat.movementMultiplier = glm::clamp(combat.totalMoveMulti, 1.f, 2.f);
 				updateMovementSpeed(combat, perk, false);
 				spawnPerk(perk);
 				break;
@@ -831,9 +849,6 @@ public:
 
 					if (Input::isKeyPressed(Keys::E))
 					{
-						glm::vec3 pos = this->scene->getComponent<Transform>(hitID[i]).position;
-						Perks& perk = this->scene->getComponent<Perks>(hitID[i]);
-
 						this->uiRenderer->renderString(
 							PERK_NAMES[perk.perkType] + " boost of " + std::to_string((int)((perk.multiplier + 1) * 100.0f)) + "%",
 							pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f));
@@ -924,6 +939,16 @@ public:
 				}
 			}
 		}
+	}
+
+	void playerEffectSound(uint32_t effect, glm::vec3 pos, Entity& soundSource)
+	{
+		Transform& soundTrans = this->scene->getComponent<Transform>(soundSource);
+		soundTrans.position = pos;
+		AudioSource& sound = this->scene->getComponent<AudioSource>(soundSource);
+		sound.setBuffer(effect);
+		sound.setVolume(10.f);
+		sound.play();
 	}
 
 	void decreaseTimers(Combat& combat, float deltaTime)

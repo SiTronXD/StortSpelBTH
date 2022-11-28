@@ -42,8 +42,8 @@ void GameOverScene::init()
 		glm::uvec2(16, 16)
 	);
 
-	this->setBloomBufferLerpAlpha(0.558);
-	this->setBloomNumMipLevels(6);
+	this->setBloomBufferLerpAlpha(0.340);
+	this->setBloomNumMipLevels(7);
 
 	this->cam = this->createEntity();
 	Transform& camTrans = this->getComponent<Transform>(this->cam);
@@ -99,8 +99,9 @@ void GameOverScene::init()
 			this->crystals[i]), 0.5f, "sinMulti");
 	}
 
-	this->getResourceManager()->getMaterial(this->getComponent<MeshComponent>(
-		this->crystals[0]), 0).emissionColor = glm::vec3(0.431f, 1.624f, 0.130f);
+	Material& crystalMat = this->getResourceManager()->getMaterial(this->getComponent<MeshComponent>(this->crystals[0]), 0);
+	crystalMat.emissionColor = glm::vec3(0.431f, 1.624f, 0.130f);
+	crystalMat.glowMapTextureIndex = this->getResourceManager()->addTexture("vengine_assets/textures/DefaultEmission.png");
 
 	// GENERATE TREES
 	float treeOffset = 12.f;
