@@ -145,6 +145,24 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
         v0 = this->getVec(tcpPacket);
         serverEnteties.insert(std::pair<int, int>(i1, spawnEnemy(i0, v0)));
 		break;
+    case GameEvent::PUSH_PLAYER://can't confimr yet if this works
+        tcpPacket >> i0; 
+		v0 = this->getVec(tcpPacket);
+        this->sceneHandler->getScene()->getComponent<Rigidbody>(player).velocity = v0;
+        this->sceneHandler->getScriptHandler()->setScriptComponentValue(
+            this->sceneHandler->getScene()->getComponent<Script>(player),
+            1.0f,
+            "pushTimer"
+        );
+        break;
+    case GameEvent::PLAYER_SETHP:
+        tcpPacket >> i0 >> i1;
+        if (i0 == ID)
+        {
+			this->sceneHandler->getScene()->getComponent<Combat>(player).health = i1;   
+		}
+		//else give hp to other players visually
+		break;
 	default:
 		break;
 	}
@@ -251,6 +269,24 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 		tcpPacket >> si0;
 		serverScene->deleteItem(clientID, si0);
 		break;
+    case GameEvent::MONSTER_TAKE_DAMAGE:
+		serverScene = server->getScene<ServerGameMode>();
+		tcpPacket >> si0 >> si1 >> sf0;
+		//get how they should take damage
+        std::cout << "monster take damage" << std::endl;
+        if (serverScene->hasComponents<SwarmComponent>(si0))
+        {
+			serverScene->getComponent<SwarmComponent>(si0).life -= si1;  
+		}
+        else if (serverScene->hasComponents<TankComponent>(si0))
+        {
+			serverScene->getComponent<TankComponent>(si0).life -= si1;  
+		}
+        else if (serverScene->hasComponents<LichComponent>(si0))
+        {
+			serverScene->getComponent<LichComponent>(si0).life -= si1;  
+		}
+		break;
 	default:
 		packet << event;
 		server->sendToAllClientsTCP(packet);
@@ -294,6 +330,20 @@ void NetworkHandlerGame::onDisconnect(int index)
 		Entity ID = this->playerEntities[index];
 		this->playerEntities.erase(this->playerEntities.begin() + index);
 		this->sceneHandler->getScene()->removeEntity(ID);
+	}
+}
+
+void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
+{
+    for (auto it = serverEnteties.begin(); it != serverEnteties.end(); ++it)
+    {
+        if (it->second == entityID)
+        {
+			//probably need where from
+            sf::Packet p;
+            p << (int)GameEvent::MONSTER_TAKE_DAMAGE << it->first << damage << knockBack;
+            sendDataToServerTCP(p);
+		}
 	}
 }
 

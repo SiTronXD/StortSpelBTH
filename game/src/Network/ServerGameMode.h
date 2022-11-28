@@ -23,6 +23,7 @@ private:
 	// itemIDs[ItemIndex][ClientID]
 	std::vector<std::vector<Entity>> itemIDs;
     std::vector<int> entities;
+    std::vector<NetworkCombat> lastPlayerHps;
 
 	AIHandler aiHandler;
     SpawnHandler spawnHandler;
@@ -37,6 +38,12 @@ private:
 	virtual void init() override;
 	void update(float dt) override;
 	virtual void onDisconnect(int index) override;
+
+	virtual void onTriggerStay(Entity e1, Entity e2) override;
+    virtual void onTriggerEnter(Entity e1, Entity e2) override;
+    virtual void onCollisionEnter(Entity e1, Entity e2) override;
+    virtual void onCollisionStay(Entity e1, Entity e2) override;
+    virtual void onCollisionExit(Entity e1, Entity e2) override;
 
 	// Returns itemID
 	int spawnItem(ItemType type, int otherType, float multiplier = 0.0f);

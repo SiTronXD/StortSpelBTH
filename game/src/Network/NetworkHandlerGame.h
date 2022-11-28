@@ -15,7 +15,11 @@ enum class GameEvent
 	PICKUP_ITEM, // Client -> Server: Want to pick up item. Server -> Client: Pick up the item
 	SET_ITEM_ID, // Client -> Server: Set entity ID to store in server scene
 	USE_HEAL, // Client -> Server: Want to use heal. Server -> Client: Spawn heal entity
-	SPAWN_ENEMY,//Type, ServerID, Position,  
+	SPAWN_ENEMY,//Type, ServerID, Position,
+	PLAYER_TAKE_DAMAGE, //What player, how much damage
+	PLAYER_SETHP, //what player, how much hp
+	PUSH_PLAYER, //what player, direction
+	MONSTER_TAKE_DAMAGE,
 
 	ROOM_CLEAR,
 	SPAWN_PORTAL,
@@ -46,7 +50,7 @@ private:
 
 	Entity player; // Own player
 	std::vector<Entity> playerEntities; // Other players connected
-    std::map<int, Entity> serverEnteties;
+    std::map<int, Entity> serverEnteties;//serverID, ID on this client
 
 	// Interpolation of other transforms
 	std::vector<glm::vec3> playerPosLast;
@@ -79,6 +83,8 @@ public:
 	virtual void handleTCPEventServer(Server* server, int clientID, sf::Packet& tcpPacket, int event) override;
 	virtual void handleUDPEventServer(Server* server, int clientID, sf::Packet& udpPacket, int event) override;
 	virtual void onDisconnect(int index) override;
+
+	void sendHitOn(int entityID, int damage, float knockBack);
 
 	void setPlayerEntity(Entity player);
 	void createOtherPlayers(int playerMesh);

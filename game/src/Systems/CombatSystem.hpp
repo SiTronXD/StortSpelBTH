@@ -213,52 +213,48 @@ public:
 			swordTrans.updateMatrix();
 			std::vector<int> hitID = physics->testContact(this->scene->getComponent<Collider>(this->swordID),
 				swordTrans.position);
-
-			for (size_t i = 0; i < hitID.size(); i++)
-			{
-				if (scene->hasComponents<SwarmComponent>(hitID[i]))
+			if (this->scene->getNetworkHandler()->isConnected())
+            {
+				for (size_t i = 0; i < hitID.size(); i++) 
 				{
 					for (size_t j = 0; j < this->hitEnemies.size(); j++)
 					{
 						if (this->hitEnemies[j] == hitID[i])
 						{
-							this->canHit = false;
+						    this->canHit = false;
 						}
 						else
 						{
-							this->canHit = true;
+						    this->canHit = true;
 						}
 					}
-					if (this->canHit == true)
-					{
-						SwarmComponent& enemy = this->scene->getComponent<SwarmComponent>(hitID[i]);
-						enemy.life -= (int)combat.dmgArr[combat.activeAttack];
-						Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(hitID[i]);
-						Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
-						Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
-						glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
-						enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * combat.knockbackArr[combat.activeAttack];
-						this->hitEnemies.emplace_back(hitID[i]);
-					}
+                    if (canHit)
+                    {
+						((NetworkHandlerGame*)this->scene->getNetworkHandler())->sendHitOn(hitID[i], (int)combat.dmgArr[combat.activeAttack], combat.knockbackArr[combat.activeAttack]);
+                        this->hitEnemies.emplace_back(hitID[i]);
+                    }
 				}
-				else if (scene->hasComponents<TankComponent>(hitID[i]))
+            }
+            else
+            {
+				for (size_t i = 0; i < hitID.size(); i++)
 				{
-					for (size_t j = 0; j < this->hitEnemies.size(); j++)
+					if (scene->hasComponents<SwarmComponent>(hitID[i]))
 					{
-						if (this->hitEnemies[j] == hitID[i])
+						for (size_t j = 0; j < this->hitEnemies.size(); j++)
 						{
-							this->canHit = false;
+							if (this->hitEnemies[j] == hitID[i])
+							{
+								this->canHit = false;
+							}
+							else
+							{
+								this->canHit = true;
+							}
 						}
-						else
+						if (this->canHit == true)
 						{
-							this->canHit = true;
-						}
-					}
-					if (this->canHit == true)
-					{
-						TankComponent& enemy = this->scene->getComponent<TankComponent>(hitID[i]);
-						if (enemy.canBeHit)
-						{
+							SwarmComponent& enemy = this->scene->getComponent<SwarmComponent>(hitID[i]);
 							enemy.life -= (int)combat.dmgArr[combat.activeAttack];
 							Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(hitID[i]);
 							Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
@@ -266,6 +262,34 @@ public:
 							glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
 							enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * combat.knockbackArr[combat.activeAttack];
 							this->hitEnemies.emplace_back(hitID[i]);
+						}
+					}
+					else if (scene->hasComponents<TankComponent>(hitID[i]))
+					{
+						for (size_t j = 0; j < this->hitEnemies.size(); j++)
+						{
+							if (this->hitEnemies[j] == hitID[i])
+							{
+								this->canHit = false;
+							}
+							else
+							{
+								this->canHit = true;
+							}
+						}
+						if (this->canHit == true)
+						{
+							TankComponent& enemy = this->scene->getComponent<TankComponent>(hitID[i]);
+							if (enemy.canBeHit)
+							{
+								enemy.life -= (int)combat.dmgArr[combat.activeAttack];
+								Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(hitID[i]);
+								Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
+								Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
+								glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+								enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * combat.knockbackArr[combat.activeAttack];
+								this->hitEnemies.emplace_back(hitID[i]);
+							}
 						}
 					}
 				}

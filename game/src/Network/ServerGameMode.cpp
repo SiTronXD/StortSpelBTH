@@ -29,6 +29,7 @@ void ServerGameMode::init()
         this->getUIRenderer()//this shall be nullptr
     );
 
+    lastPlayerHps.resize(this->getPlayerSize());
     for (int i = 0; i < this->getPlayerSize(); i++)
     {
         this->setComponent<NetworkCombat>(getPlayer(i));
@@ -120,6 +121,21 @@ void ServerGameMode::makeDataSendToClient()
                 });
         }
     }
+    //Check for updates in player hp and change it it should
+    for (int i = 0; i < getPlayerSize(); i++)
+    {
+        if (this->getComponent<NetworkCombat>(getPlayer(i)).health != lastPlayerHps[i].health) 
+        {
+            //send that player new hp
+            this->addEvent(
+                {(int)GameEvent::PLAYER_SETHP,
+                 getPlayer(i),
+                 this->getComponent<NetworkCombat>(getPlayer(i)).health}
+            );
+            //change lastPlayerHps
+            lastPlayerHps[i].health = this->getComponent<NetworkCombat>(getPlayer(i)).health;
+        }
+    }
 
     //DEBUG
      //get the position and rotation of monsters
@@ -148,6 +164,132 @@ void ServerGameMode::onDisconnect(int index)
 	{
 		this->itemIDs[i].erase(this->itemIDs[i].begin() + index);
 	}
+}
+
+void ServerGameMode::onTriggerStay(Entity e1, Entity e2) {
+    Entity player = isAPlayer(e1) ? e1 : isAPlayer(e2) ? e2 : -1;
+	
+	if (player -= -1) // player triggered a trigger :]
+	{
+		Entity other = e1 == player ? e2 : e1;
+    
+		//if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
+		//{
+		//	this->switchScene(new GameScene(), "scripts/gamescene.lua");
+		//}
+	}}
+
+void ServerGameMode::onTriggerEnter(Entity e1, Entity e2) {
+  Entity ground = e1 == this->roomHandler.getFloor()   ? e1
+                  : e2 == this->roomHandler.getFloor() ? e2
+                                                       : -1;
+  Entity perk = this->hasComponents<Perks>(e1)   ? e1
+                : this->hasComponents<Perks>(e2) ? e2
+                                                 : -1;
+  Entity ability = this->hasComponents<Abilities>(e1)   ? e1
+                   : this->hasComponents<Abilities>(e2) ? e2
+                                                        : -1;
+   
+	if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<SwarmComponent>(e2))
+	{
+		SwarmComponent& s1 = this->getComponent<SwarmComponent>(e1);
+		SwarmComponent& s2 = this->getComponent<SwarmComponent>(e2);
+		s1.touchedFriend = true;
+		s1.friendTouched = this->getComponent<Transform>(e2).position;
+		s2.touchedFriend = true;
+		s2.friendTouched = this->getComponent<Transform>(e1).position;
+	}
+	else if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<TankComponent>(e2))
+	{
+		SwarmComponent& s1 = this->getComponent<SwarmComponent>(e1);
+		TankComponent& s2 = this->getComponent<TankComponent>(e2);
+		s1.touchedFriend = true;
+		s1.friendTouched = this->getComponent<Transform>(e2).position;
+	}
+	else if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<LichComponent>(e2))
+	{
+		SwarmComponent& s1 = this->getComponent<SwarmComponent>(e1);
+		TankComponent& s2 = this->getComponent<TankComponent>(e2);
+		s1.touchedFriend = true;
+		s1.friendTouched = this->getComponent<Transform>(e2).position;
+	}
+	else if(this->hasComponents<SwarmComponent>(e2) && this->hasComponents<TankComponent>(e1))
+	{
+		SwarmComponent& s2 = this->getComponent<SwarmComponent>(e2);
+		TankComponent& s1 = this->getComponent<TankComponent>(e1);
+		s2.touchedFriend = true;
+		s2.friendTouched = this->getComponent<Transform>(e1).position;
+	}
+	else if(this->hasComponents<SwarmComponent>(e2) && this->hasComponents<LichComponent>(e1))
+	{
+		SwarmComponent& s2 = this->getComponent<SwarmComponent>(e2);
+		TankComponent& s1 = this->getComponent<TankComponent>(e1);
+		s2.touchedFriend = true;
+		s2.friendTouched = this->getComponent<Transform>(e1).position;
+	}
+}
+
+void ServerGameMode::onCollisionEnter(Entity e1, Entity e2) {
+  if (this->hasComponents<SwarmComponent>(e1) &&
+  this->hasComponents<SwarmComponent>(e2))
+  {
+    this->getComponent<SwarmComponent>(e1).touchedFriend = true;
+    this->getComponent<SwarmComponent>(e2).touchedFriend = true;
+  }
+}
+
+void ServerGameMode::onCollisionStay(Entity e1, Entity e2) {
+    Entity player = isAPlayer(e1) ? e1 : isAPlayer(e2) ? e2 : -1;
+
+  if (player != -1)  // player triggered a trigger :]
+  {
+    Entity other = e1 == player ? e2 : e1;
+    if (this->hasComponents<SwarmComponent>(other))
+    {
+      auto& swarmComp = this->getComponent<SwarmComponent>(other);
+      if (swarmComp.inAttack)
+        {
+          auto& aiCombat = this->getComponent<AiCombatSwarm>(other);
+          swarmComp.inAttack = false;
+          swarmComp.touchedPlayer = true;
+          //aiCombat.timer = aiCombat.lightAttackTime;
+          this->getComponent<NetworkCombat>(player).health -=
+              (int)aiCombat.lightHit;
+          //this->addEvent({GameEvent::});
+            
+          Log::write("WAS HIT", BT_FILTER);
+        }
+    }
+    else if (this->hasComponents<TankComponent>(other))
+    {
+      auto& tankComp = this->getComponent<TankComponent>(other);
+      if (tankComp.canAttack)
+      {
+        auto& aiCombat = this->getComponent<AiCombatTank>(other);
+        tankComp.canAttack = false;
+        this->getComponent<NetworkCombat>(player).health -=
+            (int)aiCombat.directHit;
+            
+        Log::write("WAS HIT", BT_FILTER);
+      }
+    }
+  }
+
+  if (this->hasComponents<SwarmComponent>(e1) &&
+      this->hasComponents<SwarmComponent>(e2))
+  {
+    this->getComponent<SwarmComponent>(e1).touchedFriend = true;
+    this->getComponent<SwarmComponent>(e2).touchedFriend = true;
+  }
+}
+
+void ServerGameMode::onCollisionExit(Entity e1, Entity e2) {
+  if (this->hasComponents<SwarmComponent>(e1) &&
+  this->hasComponents<SwarmComponent>(e2))
+  {
+    this->getComponent<SwarmComponent>(e1).touchedFriend = false;
+    this->getComponent<SwarmComponent>(e2).touchedFriend = false;
+  }
 }
 
 int ServerGameMode::spawnItem(ItemType type, int otherType, float multiplier)
