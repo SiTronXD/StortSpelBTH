@@ -85,6 +85,7 @@ private:
 	std::vector<Room> rooms;
 	std::vector<Entity> pathEntities;
 	Entity floor;
+	Entity doorLamps[4];
 
 	// Room Updating
 	int activeIndex = 0;
@@ -92,17 +93,19 @@ private:
 	void closeDoors(int index);
 	void activateRoom(int index);
 	void deactivateRoom(int index);
+	void placeDoorLamps();
 
 	// Mesh IDs
 	std::vector<uint32_t> oneXOneMeshIds;
 	std::vector<std::pair<uint32_t, uint32_t>> oneXTwoMeshIds;
 	std::vector<std::pair<uint32_t, uint32_t>> twoXTwoMeshIds;
 	std::vector<uint32_t> borderMeshIds;
-	uint32_t innerBorderMesh;
-	uint32_t rockMeshId;
-	uint32_t rockFenceMeshId;
-	uint32_t doorMeshID;
-	uint32_t tileFloorMeshId;
+	int innerBorderMesh;
+	int rockMeshId;
+	int rockFenceMeshId;
+	int doorMeshID;
+	int tileFloorMeshId;
+	int lampMeshId;
 
 	// Other
 	void createFloor();
