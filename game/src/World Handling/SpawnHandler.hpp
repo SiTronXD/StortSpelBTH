@@ -33,11 +33,14 @@ private:
     std::vector<const TileInfo*> getPossibleNeighbours(const TileInfo* currentNeighbour,std::unordered_map<const TileInfo*, bool>& possibleNeigbhours);
     std::vector<const TileInfo*> getFreeNeighbours(const TileInfo* tile);
 
+    void updateFreeTiles();
+
 public:
     void   init(const std::vector<TileInfo>& freeTileInfos);
     size_t size() const;
     const TileInfo* getRandomEmptyTile();
     std::vector<const TileInfo*> getRandomEmptyNeighbouringTiles(const int nr);
+    const TileInfo* getRandomFreeTileFarAwayFrom(const TileInfo* tile);
 
     void clean();
 };

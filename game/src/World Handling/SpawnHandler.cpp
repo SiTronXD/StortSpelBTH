@@ -641,6 +641,7 @@ const TileInfo* TilePicker::getRandomEmptyTile()
         ret = getSpreadTile();
         usedTiles.push_back(ret);
         unusedTileInfos.remove(ret);
+        this->freeTiles[ret] = false;
     }
     return ret;
 }
@@ -652,8 +653,11 @@ TilePicker::getRandomEmptyNeighbouringTiles(const int nr)
     std::vector<const TileInfo*> neigbhourhood;
     std::vector<const TileInfo*> newPossibleNeighbours;
     std::unordered_map<const TileInfo*, bool> possibleNeigbhours;
-    const TileInfo* currNeighbour = getSpreadTile();
-    unusedTileInfos.remove(currNeighbour);
+    
+    const TileInfo* currNeighbour = getSpreadTile();    
+    possibleNeigbhours[currNeighbour] = true;
+    neigbhourhood.push_back(currNeighbour);
+    unusedTileInfos.remove(currNeighbour);  
 
     while (neigbhourhood.size() < nr)
     {
@@ -664,8 +668,7 @@ TilePicker::getRandomEmptyNeighbouringTiles(const int nr)
         // abort if no possible neigbhour exists...
         if (newPossibleNeighbours.size() == 0)
         {
-            std::cout << "\n\nCould not retrieve required amount of "
-                            "tiles...\n";
+            Log::warning("Could not retrieve required amount of tiles...");
             break;
         }
 
@@ -676,6 +679,8 @@ TilePicker::getRandomEmptyNeighbouringTiles(const int nr)
         unusedTileInfos.remove(currNeighbour);        
     }
     usedTiles.insert(usedTiles.end(), neigbhourhood.begin(),neigbhourhood.end());
+
+    this->updateFreeTiles();
 
     return neigbhourhood;
 }
@@ -759,6 +764,7 @@ const TileInfo* TilePicker::getSpreadTile()
     calcEnemiesMidpoint(); 
 
     std::vector<const TileInfo*> possibleTiles{this->unusedTileInfos.begin(), this->unusedTileInfos.end()}; 
+    // TODO: Randomize vector^ 
 
     const TileInfo* furthest = possibleTiles.front();
     float prevFurthest = 0.f;
@@ -772,4 +778,12 @@ const TileInfo* TilePicker::getSpreadTile()
         }
     }
     return furthest;
+}
+
+void TilePicker::updateFreeTiles()
+{
+    for(auto usedTile : this->usedTiles)
+    {
+        this->freeTiles[usedTile] = false; 
+    }
 }
