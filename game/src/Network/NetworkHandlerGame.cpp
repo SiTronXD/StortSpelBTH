@@ -366,15 +366,43 @@ void NetworkHandlerGame::onDisconnect(int index)
 
 void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
 {
-    for (auto it = serverEntities.begin(); it != serverEntities.end(); ++it)
+    if (this->isConnected())
     {
-        if (it->second == entityID)
+		for (auto it = serverEntities.begin(); it != serverEntities.end(); ++it)
+		{
+		    if (it->second == entityID)
+		    {
+				//need to send knock back
+				sf::Packet p;
+				p << (int)GameEvent::MONSTER_TAKE_DAMAGE << it->first << damage << knockBack;
+				sendDataToServerTCP(p);
+                return;
+			}
+		}
+	}
+	else
+    {
+		bool isEnemy = false;
+		if (sceneHandler->getScene()->hasComponents<SwarmComponent>(entityID)) {
+			SwarmComponent& enemy = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+                  enemy.life -= damage;
+                  isEnemy = true;
+		}
+		else if (sceneHandler->getScene()->hasComponents<TankComponent>(entityID)) {
+			TankComponent& enemy = sceneHandler->getScene()->getComponent<TankComponent>(entityID);
+                  enemy.life -= damage;
+                  isEnemy = true;
+		}
+		//if (sceneHandler->getScene()->hasComponents<LichComponent>(entityID)) {
+		//
+		//}
+		if (isEnemy)
         {
-			//probably need where from
-            sf::Packet p;
-            p << (int)GameEvent::MONSTER_TAKE_DAMAGE << it->first << damage << knockBack;
-            sendDataToServerTCP(p);
-            return;
+            Rigidbody& enemyRB = sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
+			Transform& enemyTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+			Transform& playerTrans = sceneHandler->getScene()->getComponent<Transform>(player);
+			glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+			enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * knockBack;
 		}
 	}
 }
