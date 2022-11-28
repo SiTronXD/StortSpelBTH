@@ -57,9 +57,9 @@ struct LichComponent
     inline static const uint32_t colliderRadius = 4;
     inline static const uint32_t colliderHeight = 12;
 
-    inline static const uint32_t graveHeight = 4;
-    inline static const uint32_t graveWidth = 3;
-    inline static const uint32_t graveDepth = 2;
+    inline static const uint32_t graveHeight = 8;
+    inline static const uint32_t graveWidth = 6;
+    inline static const uint32_t graveDepth = 4;
 
     inline static const uint32_t alterHeight = 8;
     inline static const uint32_t alterWidth = 3;
@@ -88,6 +88,8 @@ struct LichComponent
     float tempRotAngle			= 0.0f;//Dont touch!
     float creepRotSpeed         = 60.0f;
     float huntRotSpeed          = 60.0f;
+    float plunderDuration       = 4.f; 
+    float timeSincePlunderBegin = 0.f; 
         //Alert
     float origScaleY			= 1.0f;
 	float alertScale			= 1.5f;
@@ -98,6 +100,9 @@ struct LichComponent
     float peronalSpaceRadius    = 70.0f; // To close! I will initiate hunt!
     float attackRadius          = 60.0f; // I'm actually able to shoot at you!
     float nonoRadius            = 40.0f; // Too close, I will back away from you! (while shooting) 
+
+    float closeToGrave          = 10.f + LichComponent::graveWidth;
+    float closeToAlter          = 10.f + LichComponent::alterWidth;
         //Stats
     float maxMana               = 100.0f;
     float mana                  = maxMana;
@@ -118,6 +123,8 @@ struct LichComponent
     bool regeningMana           = false;
     bool chargingAttack         = true;
     bool tempAttack             = false;//For testing strategy picker
+
+    bool carryingBones = false;
 
     // Movement Locations
     Entity alterID;

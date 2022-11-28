@@ -162,16 +162,28 @@ void LichBT::registerEntityComponents(Entity entityId)
 
 BTStatus LichBT::plunder(Entity entityID)
 {
-    return BTStatus::Failure;
+    BTStatus ret = BTStatus::Running;
+
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    
+    if(lichComp.timeSincePlunderBegin + lichComp.plunderDuration < Time::getTimeSinceStart())
+    {
+        lichComp.carryingBones = true; 
+        lichComp.numBones = 1; 
+        ret = BTStatus::Success;
+    }
+
+    return ret;
 }
 
 BTStatus LichBT::goToGrave(Entity entityID)
 {
 
+    BTStatus ret = BTStatus::Running;
     Transform& lichTrans    = getTheScene()->getComponent<Transform>(entityID);
     Rigidbody& lichRb       = getTheScene()->getComponent<Rigidbody>(entityID);
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-    Transform& graveTrans    = getTheScene()->getComponent<Transform>(lichComp.graveID);
+    Transform& graveTrans   = getTheScene()->getComponent<Transform>(lichComp.graveID);
 
     glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, graveTrans.position);
 
@@ -179,12 +191,33 @@ BTStatus LichBT::goToGrave(Entity entityID)
     lichRb.velocity = moveDir * lichComp.speed;
     rotateTowards(entityID, graveTrans.position, lichComp.speed);
 
-    return BTStatus::Failure;
+    float distToGrave = glm::length(graveTrans.position - lichTrans.position);
+
+    if(distToGrave < lichComp.closeToGrave)
+    {
+        ret = BTStatus::Success;
+        lichComp.timeSincePlunderBegin = Time::getTimeSinceStart();
+    }
+
+    return ret;
 }
 
 BTStatus LichBT::goToAlter(Entity entityID)
 {
-    return BTStatus::Failure;
+    BTStatus ret = BTStatus::Running;
+    Transform& lichTrans    = getTheScene()->getComponent<Transform>(entityID);
+    Rigidbody& lichRb       = getTheScene()->getComponent<Rigidbody>(entityID);
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    Transform& alterTrans   = getTheScene()->getComponent<Transform>(lichComp.alterID);
+
+    glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, alterTrans.position);
+
+	moveDir = glm::normalize(moveDir);
+    lichRb.velocity = moveDir * lichComp.speed;
+    rotateTowards(entityID, alterTrans.position, lichComp.speed);
+
+
+    return ret;
 }
 
 BTStatus LichBT::dropOffBones(Entity entityID)
@@ -206,6 +239,46 @@ BTStatus LichBT::carryingBones(Entity entityID)
     }
     return ret;
 }
+
+BTStatus LichBT::closeToGrave(Entity entityID)
+{
+    BTStatus ret = BTStatus::Failure;
+    Transform& lichTrans    = getTheScene()->getComponent<Transform>(entityID);
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    Transform& graveTrans   = getTheScene()->getComponent<Transform>(lichComp.graveID);
+    float distToGrave = glm::length(graveTrans.position - lichTrans.position);
+
+    if(distToGrave < lichComp.closeToGrave)
+    {
+        ret = BTStatus::Success;        
+    }
+    else
+    {
+        lichComp.timeSincePlunderBegin = Time::getTimeSinceStart();
+    }
+    return ret;
+}
+
+BTStatus LichBT::closeToAlter(Entity entityID)
+{
+    BTStatus ret = BTStatus::Failure;
+    Transform& lichTrans    = getTheScene()->getComponent<Transform>(entityID);
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    Transform& alterTrans   = getTheScene()->getComponent<Transform>(lichComp.alterID);
+    float distToAlter = glm::length(alterTrans.position - lichTrans.position);
+
+    if(distToAlter < lichComp.closeToAlter)
+    {
+        ret = BTStatus::Success;        
+    }
+    else
+    {
+        lichComp.timeSincePlunderBegin = Time::getTimeSinceStart();
+    }
+    return ret;
+}
+
+
 
 BTStatus LichBT::creepyLook(Entity entityID)
 {
@@ -597,16 +670,41 @@ BTStatus LichBT::alerted(Entity entityID)
 
 void Lich_idle::start()
 {
-    Sequence* keepOnPlunder = c.c.sequence();
+    Selector* pickDestination = c.c.selector();
 
+    Sequence* checkIfBonesExists = c.c.sequence();
+    Selector* plunderInProgress = c.c.selector();
+
+    Condition* hasBones = c.l.condition("HasBones", LichBT::carryingBones);
+    Selector* returningWithBones = c.c.selector();
+    Sequence* plunderIfCloseToGrave = c.c.sequence();
     Task* goToGrave     = c.l.task("Go to grave", LichBT::goToGrave);
-    Task* plunderGrave  = c.l.task("Plunder grave", LichBT::plunder);
+
+    Sequence* leaveBonesIfCloseToAlter = c.c.sequence();
     Task* goToAlter     = c.l.task("Go to Alter", LichBT::goToAlter);
+    Condition* isCloseToGrave = c.l.condition("close to Grave", LichBT::closeToGrave);
+    Task* plunderGrave  = c.l.task("Plunder grave", LichBT::plunder);
+
+    Condition* isCloseToAlter = c.l.condition("close to Alter", LichBT::closeToAlter);
     Task* dropOffBones  = c.l.task("Drop off bones at alter", LichBT::dropOffBones);
 
-    keepOnPlunder->addLeafs({goToGrave,plunderGrave,goToAlter,dropOffBones});
+    pickDestination->addCompositors({checkIfBonesExists, plunderInProgress});
+    
+    checkIfBonesExists->addFallback({{hasBones},returningWithBones});
+    plunderInProgress->addCompositor(plunderIfCloseToGrave);
+    plunderInProgress->addLeaf(goToGrave);
 
-    this->setRoot(keepOnPlunder);
+    returningWithBones->addCompositor(leaveBonesIfCloseToAlter);
+    returningWithBones->addLeaf(goToAlter);
+
+    plunderIfCloseToGrave->addLeafs({isCloseToGrave, plunderGrave});
+
+    leaveBonesIfCloseToAlter->addLeafs({isCloseToAlter, dropOffBones});
+
+
+
+
+    this->setRoot(pickDestination);
 }
 
 void Lich_alerted::start()
