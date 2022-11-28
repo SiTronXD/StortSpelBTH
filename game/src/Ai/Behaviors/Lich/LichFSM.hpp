@@ -56,7 +56,7 @@ struct LichComponent
 {
     inline static const uint32_t colliderRadius = 4;
     inline static const uint32_t colliderHeight = 12;
-    
+
     inline static const uint32_t graveHeight = 4;
     inline static const uint32_t graveWidth = 3;
     inline static const uint32_t graveDepth = 2;
@@ -94,9 +94,9 @@ struct LichComponent
 	float alertAnimSpeed		= 3.0f;
 	float alertTempYpos			= 0.0f;
         //Radius
-    float sightRadius           = 150.0f; // I'll just look at you
-    float peronalSpaceRadius    = 90.0f; // To close! I will initiate hunt!
-    float attackRadius          = 70.0f; // I'm actually able to shoot at you!
+    float sightRadius           = 80.0f; // I'll just look at you
+    float peronalSpaceRadius    = 70.0f; // To close! I will initiate hunt!
+    float attackRadius          = 60.0f; // I'm actually able to shoot at you!
     float nonoRadius            = 40.0f; // Too close, I will back away from you! (while shooting) 
         //Stats
     float maxMana               = 100.0f;
@@ -120,8 +120,8 @@ struct LichComponent
     bool tempAttack             = false;//For testing strategy picker
 
     // Movement Locations
-    glm::vec3 alterPos;
-    glm::vec3 gravePos;
+    Entity alterID;
+    Entity graveID;
 
 
     bool isDead(){return life<=0;}
@@ -197,7 +197,7 @@ protected:
 			{"dead", new Lich_dead}
         });
 
-		addEntityTransition("idle",     LichFSM::idle_to_creep,        "creep");
+		// addEntityTransition("idle",     LichFSM::idle_to_creep,        "creep");
 		addEntityTransition("creep",    LichFSM::creep_to_alerted,     "alerted");
 		addEntityTransition("alerted",  LichFSM::alert_to_hunt,        "hunt");
 		addEntityTransition("hunt",     LichFSM::hunt_to_idle,         "idle");

@@ -167,6 +167,18 @@ BTStatus LichBT::plunder(Entity entityID)
 
 BTStatus LichBT::goToGrave(Entity entityID)
 {
+
+    Transform& lichTrans    = getTheScene()->getComponent<Transform>(entityID);
+    Rigidbody& lichRb       = getTheScene()->getComponent<Rigidbody>(entityID);
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    Transform& graveTrans    = getTheScene()->getComponent<Transform>(lichComp.graveID);
+
+    glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, graveTrans.position);
+
+	moveDir = glm::normalize(moveDir);
+    lichRb.velocity = moveDir * lichComp.speed;
+    rotateTowards(entityID, graveTrans.position, lichComp.speed);
+
     return BTStatus::Failure;
 }
 

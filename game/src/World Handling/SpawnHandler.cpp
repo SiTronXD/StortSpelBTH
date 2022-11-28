@@ -30,23 +30,46 @@ void SpawnHandler::spawnEnemiesIntoRoom()
     // Imgui data...
     this->nrOfTilesInRoom = this->tilePicker.size();
 
-    // Spawn Tanks
-    for(size_t i = 0; i < nrOfTanks_inRoom; i++){
-        this->spawnTank(tankIdx, this->tilePicker.getRandomEmptyTile()->getPos());
-        tankIdx++;
-    }
+    if(SpawnHandler::USE_DEBUG)
+    {
+        // Spawn Tanks
+        for(size_t i = 0; i < NR_TANK_DBG; i++){
+            this->spawnTank(tankIdx, this->tilePicker.getRandomEmptyTile()->getPos());
+            tankIdx++;
+        }
 
-    // Spawn Lichs
-    for(size_t i = 0; i < nrOfLichs_inRoom; i++){
-        // this->spawnLich(lichIdx, tilePicker.getRandomEmptyTile()->getPos());        
-        lichIdx += this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2));        
-    }
+        // Spawn Lichs
+        for(size_t i = 0; i < NR_LICH_DBG; i++){
+                 
+            lichIdx += this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2));        
+        }
 
-    // Spawn Swarms
-    for(size_t i = 0; i < nrOfGroups_inRoom; i++){
-        swarmIdx += this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP));        
-    }
+        // Spawn Swarms
+        for(size_t i = 0; i < NR_SWARM_GROUPS_DBG; i++){
+            swarmIdx += this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP));        
+        }
 
+    }
+    else 
+    {
+        // Spawn Tanks
+        for(size_t i = 0; i < nrOfTanks_inRoom; i++){
+            this->spawnTank(tankIdx, this->tilePicker.getRandomEmptyTile()->getPos());
+            tankIdx++;
+        }
+
+        // Spawn Lichs
+        for(size_t i = 0; i < nrOfLichs_inRoom; i++){
+            
+            lichIdx += this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2));        
+        }
+
+        // Spawn Swarms
+        for(size_t i = 0; i < nrOfGroups_inRoom; i++){
+            swarmIdx += this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP));        
+        }
+
+    }
 
     initTanks();
     this->tilePicker.clean();
@@ -328,6 +351,9 @@ void SpawnHandler::createLich()
         this->currScene->setComponent<Collider>(graveID, Collider::createBox(
             glm::vec3{LichComponent::graveWidth,LichComponent::graveHeight,LichComponent::graveDepth})
             );
+
+        this->currScene->getComponent<LichComponent>(this->lichIDs.back()).graveID = graveID;
+
         this->currScene->setInactive(graveID);
 
         //Create Alter
@@ -337,6 +363,9 @@ void SpawnHandler::createLich()
         this->currScene->setComponent<Collider>(alterID, Collider::createBox(
             glm::vec3{LichComponent::alterWidth,LichComponent::alterHeight,LichComponent::alterDepth})
             );
+        
+        this->currScene->getComponent<LichComponent>(this->lichIDs.back()).alterID = alterID;
+
         this->currScene->setInactive(alterID);
 
     }
