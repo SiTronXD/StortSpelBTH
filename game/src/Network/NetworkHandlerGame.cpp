@@ -374,6 +374,7 @@ void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
             sf::Packet p;
             p << (int)GameEvent::MONSTER_TAKE_DAMAGE << it->first << damage << knockBack;
             sendDataToServerTCP(p);
+            return;
 		}
 	}
 }

@@ -187,6 +187,7 @@ public:
 						if (this->hitEnemies[j] == hitID[i])
 						{
 						    this->canHit = false;
+                            break;
 						}
 						else
 						{
