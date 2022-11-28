@@ -105,12 +105,11 @@ void GameScene::start()
     this->networkHandler->setPlayerEntity(playerID);
     this->networkHandler->createOtherPlayers(this->getComponent<MeshComponent>(playerID).meshID);
 
-        //TODO : was it okay to make this in to start?
     if (networkHandler->isConnected())
     {
-        //GET SEED FROM SERVER
-        srand(69);
-        roomHandler.generate(rand());
+        int seed = this->networkHandler->getSeed();
+        Log::write("Seed from server: " + std::to_string(seed));
+        roomHandler.generate(seed);
     }
     else
     {

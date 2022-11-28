@@ -8,17 +8,17 @@ class CombatSystem;
 enum class GameEvent
 {
 	EMPTY = (int)NetworkEvent::END + 1,
+	SEED, // Client -> Server: Request seed, Server -> Client: Seed to use
 	UPDATE_PLAYER, // Positions and animations
-	UPDATE_MONSTER, // how many enemies, What enemy, Position, rotation and animation udp
+	UPDATE_MONSTER, // How many enemies, What enemy, Position, rotation and animation udp
 	SPAWN_ITEM, // Client -> Server: Want to spawn item. Server -> Client: Spawn item in scene
 	DELETE_ITEM, // Server -> Client: Remove item from scene
 	PICKUP_ITEM, // Client -> Server: Want to pick up item. Server -> Client: Pick up the item
-	SET_ITEM_ID, // Client -> Server: Set entity ID to store in server scene
 	USE_HEAL, // Client -> Server: Want to use heal. Server -> Client: Spawn heal entity
-	SPAWN_ENEMY,//Type, ServerID, Position,
-	PLAYER_TAKE_DAMAGE, //What player, how much damage
-	PLAYER_SETHP, //what player, how much hp
-	PUSH_PLAYER, //what player, direction
+	SPAWN_ENEMY,// Type, ServerID, Position,
+	PLAYER_TAKE_DAMAGE, // What player, how much damage
+	PLAYER_SETHP, // What player, how much hp
+	PUSH_PLAYER, // What player, direction
 	MONSTER_TAKE_DAMAGE,
 
 	ROOM_CLEAR,
@@ -45,6 +45,7 @@ public:
 private:
 	static const float UPDATE_RATE;
 	float timer = 0.0f;
+	int seed = -1;
 
 	CombatSystem* combatSystem;
 
@@ -84,6 +85,7 @@ public:
 	void cleanup();
 
 	void setCombatSystem(CombatSystem* system);
+	int getSeed();
 
 	virtual void handleTCPEventClient(sf::Packet& tcpPacket, int event) override;
 	virtual void handleUDPEventClient(sf::Packet& udpPacket, int event) override;
