@@ -45,6 +45,12 @@ public:
     void clean();
 };
 
+struct LichObjects
+{
+    uint32_t graveID;
+    uint32_t alterID;
+};
+
 class SpawnHandler
 {
 public:
@@ -87,13 +93,17 @@ private:
     std::vector<int> tankIDs;
     std::vector<SwarmGroup*> swarmGroups;
 
+    std::unordered_map<uint32_t, LichObjects> lichObjects;
+
     struct pos_col{glm::vec3 pos; glm::vec3 col;};
     std::vector<pos_col> debugRays;
 
     uint32_t fontTextureIndex;
 
+    TilePicker tilePicker;
+
     void spawnTank( const int tankIdx,  const glm::vec3& pos);
-    void spawnLich( const int lichIdx,  const glm::vec3& pos);
+    uint32_t spawnLich( const int lichIdx, std::vector<const TileInfo*> tileInfos);
     uint32_t spawnSwarmGroup(const int swarmStartIdx, std::vector<const TileInfo*> tileInfo); //TODO: Do we need to have a vector of pos; say 2 to let a swarm spawn over two tiles?
     void spawnSwarm(const int swarmIdx, const glm::vec3& pos);
     void initTanks();

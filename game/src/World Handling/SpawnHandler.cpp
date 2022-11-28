@@ -15,41 +15,41 @@ void SpawnHandler::spawnEnemiesIntoRoom()
     int counter         = 0;
     this->nrOfEnemiesPerRoom  = enemiesPerTiles;
 
-    TilePicker tilePicker;
-    tilePicker.init(this->roomHandler->getFreeTileInfos());
+    this->tilePicker.init(this->roomHandler->getFreeTileInfos());
     
-    this->nrOfEnemiesPerRoom *= tilePicker.size();
+    this->nrOfEnemiesPerRoom *= this->tilePicker.size();
     this->nrOfEnemiesPerRoom = std::clamp((int)this->nrOfEnemiesPerRoom, 0 , SpawnHandler::MAX_NR_OF_ENEMIES);
 
-    this->nrOfTanks_inRoom  = std::clamp((int)(tilePicker.size() * enemiesPerTiles *PERCENTAGE_TANKS), 0, MAX_NR_TANKS);
-    this->nrOfLichs_inRoom  = std::clamp((int)(tilePicker.size() * enemiesPerTiles *PERCENTAGE_LICHS), 0, MAX_NR_LICHS);
-    int tempNrOfSwarms      = std::clamp((int)(tilePicker.size() * enemiesPerTiles *PERCENTAGE_SWARMS),0, NR_BLOBS_IN_GROUP*MAX_NR_SWARMGROUPS);
+    this->nrOfTanks_inRoom  = std::clamp((int)(this->tilePicker.size() * enemiesPerTiles *PERCENTAGE_TANKS), 0, MAX_NR_TANKS);
+    this->nrOfLichs_inRoom  = std::clamp((int)(this->tilePicker.size() * enemiesPerTiles *PERCENTAGE_LICHS), 0, MAX_NR_LICHS);
+    int tempNrOfSwarms      = std::clamp((int)(this->tilePicker.size() * enemiesPerTiles *PERCENTAGE_SWARMS),0, NR_BLOBS_IN_GROUP*MAX_NR_SWARMGROUPS);
     this->nrOfGroups_inRoom = tempNrOfSwarms / SpawnHandler::NR_BLOBS_IN_GROUP;
     this->nrOfSwarms_inRoom = nrOfGroups_inRoom * SpawnHandler::NR_BLOBS_IN_GROUP;
     this->nrOfEnemiesPerRoom = this->nrOfSwarms_inRoom+this->nrOfLichs_inRoom+this->nrOfTanks_inRoom;
 
     // Imgui data...
-    this->nrOfTilesInRoom = tilePicker.size();
+    this->nrOfTilesInRoom = this->tilePicker.size();
 
     // Spawn Tanks
     for(size_t i = 0; i < nrOfTanks_inRoom; i++){
-        this->spawnTank(tankIdx, tilePicker.getRandomEmptyTile()->getPos());
+        this->spawnTank(tankIdx, this->tilePicker.getRandomEmptyTile()->getPos());
         tankIdx++;
     }
 
     // Spawn Lichs
     for(size_t i = 0; i < nrOfLichs_inRoom; i++){
-        this->spawnLich(lichIdx, tilePicker.getRandomEmptyTile()->getPos());
-        lichIdx++;
+        // this->spawnLich(lichIdx, tilePicker.getRandomEmptyTile()->getPos());        
+        lichIdx += this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2));        
     }
 
     // Spawn Swarms
     for(size_t i = 0; i < nrOfGroups_inRoom; i++){
-        swarmIdx += this->spawnSwarmGroup(swarmIdx, tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP));        
+        swarmIdx += this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP));        
     }
 
 
     initTanks();
+    this->tilePicker.clean();
 }
 
 void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
@@ -61,7 +61,7 @@ void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
     // transform.position = pos + glm::vec3(tileWidth, TankComponent::colliderRadius, tileWidth);
     transform.position = pos;// + glm::vec3(RoomHandler::TILE_WIDTH/2, TankComponent::colliderRadius, RoomHandler::TILE_WIDTH/2);
 
-    debugRays.push_back({pos, {1.f,1.f,0.5f}});
+    debugRays.push_back({pos, {0.1f,0.5f,0.5f}});
 
     //Reset
     TankComponent& tankComp = currScene->getComponent<TankComponent>(this->tankIDs[tankIdx]);
@@ -69,20 +69,51 @@ void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
     transform.scale.y = tankComp.origScaleY;
 }
 
-void SpawnHandler::spawnLich(int lichIdx, const glm::vec3& pos)
+uint32_t SpawnHandler::spawnLich(int lichIdx, std::vector<const TileInfo*> tileInfos)
 {
-    currScene->setActive(this->lichIDs[lichIdx]);
-    Transform& transform = currScene->getComponent<Transform>(this->lichIDs[lichIdx]);
-    // float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
-    // transform.position = pos + glm::vec3(tileWidth, LichComponent::colliderHeight, tileWidth);
-    transform.position = pos;// + glm::vec3(RoomHandler::TILE_WIDTH/2, LichComponent::colliderHeight, RoomHandler::TILE_WIDTH/2);
+    //Make sure we only try to create Lich if we have one tile for Lich, and one for alter
+    if(tileInfos.size() == 2)
+    {
+        currScene->setActive(this->lichIDs[lichIdx]);
+        const int alterID = this->lichObjects[this->lichIDs[lichIdx]].alterID;
+        const int graveID = this->lichObjects[this->lichIDs[lichIdx]].graveID;
+        currScene->setActive(alterID);
+        currScene->setActive(graveID);
 
-    debugRays.push_back({pos, {1.f,1.f,0.f}});
+        const auto& lichPos = tileInfos[0];
+        const auto& alterPos = tileInfos[1];
 
-    //Reset
-    LichComponent& lichComp = currScene->getComponent<LichComponent>(this->lichIDs[lichIdx]);
-    lichComp.life = lichComp.FULL_HEALTH;
-    transform.scale.y = lichComp.origScaleY;
+        Transform& transform = currScene->getComponent<Transform>(this->lichIDs[lichIdx]);
+        // float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
+        // transform.position = pos + glm::vec3(tileWidth, LichComponent::colliderHeight, tileWidth);
+        transform.position = lichPos->getPos();// + glm::vec3(RoomHandler::TILE_WIDTH/2, LichComponent::colliderHeight, RoomHandler::TILE_WIDTH/2);
+
+        debugRays.push_back({lichPos->getPos(), {1.f,1.f,0.f}});
+
+        //Reset
+        LichComponent& lichComp = currScene->getComponent<LichComponent>(this->lichIDs[lichIdx]);
+        lichComp.life = lichComp.FULL_HEALTH;
+        transform.scale.y = lichComp.origScaleY;
+
+        // Place Alter 
+        Transform& alterTransform = currScene->getComponent<Transform>(alterID);
+        alterTransform.position = alterPos->getPos();
+
+        // Place Grave 
+        Transform& graveTransform = currScene->getComponent<Transform>(graveID);
+        graveTransform.position = this->tilePicker.getRandomFreeTileFarAwayFrom(alterPos)->getPos(); 
+
+        debugRays.push_back({alterPos->getPos(), {1.f,0.f,1.f}});
+        debugRays.push_back({graveTransform.position, {0.5f,0.f,0.5f}});
+        
+
+        // Returns number of created Liches...
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 uint32_t SpawnHandler::spawnSwarmGroup(const int swarmStartIdx, std::vector<const TileInfo*> tileInfos)
@@ -257,11 +288,11 @@ void SpawnHandler::createTank()
 
 void SpawnHandler::createLich()
 {
-    static int lich = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
-
+    
+    // Create Lich
     this->lichIDs.push_back(this->currScene->createEntity());
     this->allEntityIDs.push_back(this->lichIDs.back());
-    this->currScene->setComponent<MeshComponent>(this->lichIDs.back(), lich);
+
     this->currScene->setComponent<Rigidbody>(this->lichIDs.back());
     Rigidbody& rb = this->currScene->getComponent<Rigidbody>(this->lichIDs.back());
     rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -276,6 +307,40 @@ void SpawnHandler::createLich()
     lichComp.origScaleY = transform.scale.y;
     this->currScene->setInactive(this->lichIDs.back());
     lichComp.life = 0;
+    
+
+    if(this->sceneHandler->getNetworkHandler()->getClient() != nullptr && this->sceneHandler->getNetworkHandler()->getClient()->isConnected())
+    {
+        // TODO: add network support... 
+    }
+    else
+    {
+        static int lich = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
+        static int grave = this->resourceManager->addMesh("assets/models/grave.obj");
+        static int alter = this->resourceManager->addMesh("assets/models/alter.obj");
+
+        this->currScene->setComponent<MeshComponent>(this->lichIDs.back(), lich);
+
+        //Create Grave
+        auto& graveID = this->lichObjects[this->lichIDs.back()].graveID = this->currScene->createEntity();
+
+        this->currScene->setComponent<MeshComponent>(graveID, grave);
+        this->currScene->setComponent<Collider>(graveID, Collider::createBox(
+            glm::vec3{LichComponent::graveWidth,LichComponent::graveHeight,LichComponent::graveDepth})
+            );
+        this->currScene->setInactive(graveID);
+
+        //Create Alter
+        auto& alterID = this->lichObjects[this->lichIDs.back()].alterID = this->currScene->createEntity();
+
+        this->currScene->setComponent<MeshComponent>(alterID, alter);
+        this->currScene->setComponent<Collider>(alterID, Collider::createBox(
+            glm::vec3{LichComponent::alterWidth,LichComponent::alterHeight,LichComponent::alterDepth})
+            );
+        this->currScene->setInactive(alterID);
+
+    }
+        
 }
 
 void SpawnHandler::createSwarmGroup()
@@ -786,4 +851,27 @@ void TilePicker::updateFreeTiles()
     {
         this->freeTiles[usedTile] = false; 
     }
+}
+const TileInfo* TilePicker::getRandomFreeTileFarAwayFrom(const TileInfo* tile)
+{
+    std::vector<const TileInfo*> possibleTiles{
+        this->unusedTileInfos.begin(), this->unusedTileInfos.end()};
+    
+    // TODO: Randomize vector^ 
+
+    const TileInfo* furthest = possibleTiles.front();
+    float prevFurthest = 0.f;
+    for (auto p : possibleTiles)
+    {
+        float dist = glm::length(p->getPos() - tile->getPos());
+        if (dist > prevFurthest)
+            {
+                prevFurthest = dist;
+                furthest = p;
+            }
+    }
+    usedTiles.push_back(furthest);
+    unusedTileInfos.remove(furthest);
+
+    return furthest;
 }

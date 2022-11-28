@@ -56,6 +56,14 @@ struct LichComponent
 {
     inline static const uint32_t colliderRadius = 4;
     inline static const uint32_t colliderHeight = 12;
+    
+    inline static const uint32_t graveHeight = 4;
+    inline static const uint32_t graveWidth = 3;
+    inline static const uint32_t graveDepth = 2;
+
+    inline static const uint32_t alterHeight = 8;
+    inline static const uint32_t alterWidth = 3;
+    inline static const uint32_t alterDepth = 3;
 
 	LichComponent() 
     {
@@ -110,6 +118,11 @@ struct LichComponent
     bool regeningMana           = false;
     bool chargingAttack         = true;
     bool tempAttack             = false;//For testing strategy picker
+
+    // Movement Locations
+    glm::vec3 alterPos;
+    glm::vec3 gravePos;
+
 
     bool isDead(){return life<=0;}
 
