@@ -211,12 +211,11 @@ public:
 					    this->canHit = false;
 			            break;
 					}
-					else
-					{
-                        this->networkHandler->sendHitOn(hitID[i], (int)combat.dmgArr[combat.activeAttack], combat.knockbackArr[combat.activeAttack]);
-                        this->hitEnemies.emplace_back(hitID[i]);
-					    this->canHit = true;
-					}
+				}
+				if (this->canHit)
+				{
+					this->networkHandler->sendHitOn(hitID[i], (int)combat.dmgArr[combat.activeAttack], combat.knockbackArr[combat.activeAttack]);
+					this->hitEnemies.emplace_back(hitID[i]);
 				}
 			}
 		}
