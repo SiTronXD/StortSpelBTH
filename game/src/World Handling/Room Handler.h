@@ -16,11 +16,15 @@ class RoomHandler
 public:
 	static const float TILE_WIDTH;
 	static const uint32_t TILES_BETWEEN_ROOMS;
+	static const uint32_t DECO_ENTITY_CHANCE;
+	
 	static const uint32_t NUM_BORDER;
 	static const uint32_t NUM_ONE_X_ONE;
 	static const uint32_t NUM_ONE_X_TWO;
 	static const uint32_t NUM_TWO_X_TWO;
-	static const uint32_t DECO_ENTITY_CHANCE;
+
+	static const glm::vec3 DOOR_LAMP_COLOUR;
+	static const float DOOR_LAMP_INTENSITY;
 private:
   public:
 
@@ -96,17 +100,19 @@ private:
 	void deactivateRoom(int index);
 	void placeDoorLamps();
 
-	// Mesh IDs
-	std::vector<uint32_t> oneXOneMeshIds;
-	std::vector<std::pair<uint32_t, uint32_t>> oneXTwoMeshIds;
-	std::vector<std::pair<uint32_t, uint32_t>> twoXTwoMeshIds;
-	std::vector<uint32_t> borderMeshIds;
+	// Resource IDs
+	std::vector<int> oneXOneMeshIds;
+	std::vector<std::pair<int, int>> oneXTwoMeshIds;
+	std::vector<std::pair<int, int>> twoXTwoMeshIds;
+	std::vector<int> borderMeshIds;
 	int innerBorderMesh;
 	int rockMeshId;
 	int rockFenceMeshId;
 	int doorMeshID;
 	int tileFloorMeshId;
 	int lampMeshId;
+	int lampDiffuseId;
+	int lampGlowId;
 
 	// Other
 	void createFloor();
