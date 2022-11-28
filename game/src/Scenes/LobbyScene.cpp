@@ -115,14 +115,14 @@ void LobbyScene::update()
     {
         this->playersNames.clear();
         this->activePlayers = netPlayers.size() + 1;
-        this->getComponent<AnimationComponent>(this->players[0]).timer = 0.0f;
+        this->getComponent<AnimationComponent>(this->players[0]).aniSlots[0].timer = 0.0f;
         for (int i = 0; i < netPlayers.size(); i++)
         {
             this->setActive(this->players[i + 1]);
             this->playersNames.push_back(
                 this->getNetworkHandler()->getPlayers()[i].second
             );
-            this->getComponent<AnimationComponent>(this->players[i + 1]).timer = 0.0f;
+            this->getComponent<AnimationComponent>(this->players[i + 1]).aniSlots[0].timer = 0.0f;
         }
         for (int i = this->activePlayers; i < MAX_PLAYER_COUNT; i++)
         {

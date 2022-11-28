@@ -366,22 +366,22 @@ public:
 
 	void healPlayer(Combat& combat, float deltaTime)
 	{
-		Transform& healTrans = this->scene->getComponent<Transform>(this->heal);
-		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
-		if (combat.health < combat.maxHealth)
-		{
-			glm::vec3 playerToHeal = healTrans.position - playerTrans.position;
-			float distSqrd = glm::dot(playerToHeal, playerToHeal);
-			if (distSqrd < combat.healRadius * combat.healRadius)
-			{
-				combat.hpRegenConverter += combat.hpRegen * deltaTime;
-				if (combat.hpRegenConverter > 1.f)
-				{
-					combat.health += (int)(combat.hpRegenConverter);
-					combat.hpRegenConverter -= 1.f;
-				}
-			}
-		}
+		//Transform& healTrans = this->scene->getComponent<Transform>(this->heal);
+		//Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
+		//if (combat.health < combat.maxHealth)
+		//{
+		//	glm::vec3 playerToHeal = healTrans.position - playerTrans.position;
+		//	float distSqrd = glm::dot(playerToHeal, playerToHeal);
+		//	if (distSqrd < combat.healRadius * combat.healRadius)
+		//	{
+		//		combat.hpRegenConverter += combat.hpRegen * deltaTime;
+		//		if (combat.hpRegenConverter > 1.f)
+		//		{
+		//			combat.health += (int)(combat.hpRegenConverter);
+		//			combat.hpRegenConverter -= 1.f;
+		//		}
+		//	}
+		//}
 	}
 
 	// Executes combo attack.

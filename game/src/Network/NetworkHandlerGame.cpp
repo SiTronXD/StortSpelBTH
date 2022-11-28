@@ -229,8 +229,8 @@ void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 		t->rotation = this->getVec(udpPacket);
 
 		anim = &this->sceneHandler->getScene()->getComponent<AnimationComponent>(this->playerEntities[i1]);
-		udpPacket >> i0 >> anim->timer >> anim->timeScale;
-		anim->animationIndex = (uint32_t)i0;
+        udpPacket >> i0 >> anim->aniSlots[0].timer >> anim->aniSlots[0].timeScale;
+		anim->aniSlots[0].animationIndex = (uint32_t)i0;
 		break;
     case GameEvent::UPDATE_MONSTER:
         // How many monsters we shall update
@@ -432,7 +432,7 @@ void NetworkHandlerGame::updatePlayer()
 		packet << (int)GameEvent::UPDATE_PLAYER <<
 			t.position.x << t.position.y << t.position.z <<
 			t.rotation.x << t.rotation.y << t.rotation.z <<
-			(int)anim.animationIndex << anim.timer << anim.timeScale;
+			(int)anim.aniSlots[0].animationIndex << anim.aniSlots[0].timer << anim.aniSlots[0].timeScale;
 		this->sendDataToServerUDP(packet);
 	}
 }
