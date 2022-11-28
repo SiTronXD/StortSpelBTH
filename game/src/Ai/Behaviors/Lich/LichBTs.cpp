@@ -68,6 +68,93 @@ void LichBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 	//Rotate towards target end
 }
 
+
+//Giving points for attack strategy
+void LichBT::givePointsForPlayerHealth	(Entity entityID, float& l_points, float& i_points, float& f_points)
+{
+    int playerID = getPlayerID();
+    int playerHealth = 0;
+    Combat& playerCombat = getTheScene()->getComponent<Combat>(playerID);
+    playerHealth = playerCombat.health;
+
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+
+    //Points based on player health
+    static const float pointsForPlayerHealth = 1.5f;
+    if(playerHealth <= lichComp.attacks["lightning"].damage){l_points+=pointsForPlayerHealth;}//Player low health
+    else if(playerHealth > lichComp.attacks["lightning"].damage && playerHealth <= lichComp.attacks["ice"].damage){i_points+=pointsForPlayerHealth;}//Player medium health
+    else if(playerHealth > lichComp.attacks["ice"].damage){f_points+=pointsForPlayerHealth;}//Player high health
+}
+void LichBT::givePointsForOwnHealth		(Entity entityID, float& l_points, float& i_points, float& f_points)
+{
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+
+    //Points based on own health
+    //Player damage 50-150
+    static const float pointsForLichHealth = 1.2f;
+    if(lichComp.life <= 50){l_points+=pointsForLichHealth;}//Lich low health
+    else if(lichComp.life > 50 && lichComp.life <= 150) {i_points+=pointsForLichHealth;}//Lich medium health
+    else if(lichComp.life > 150){f_points+=pointsForLichHealth;}//Lich high health
+}
+void LichBT::givePointsForDistance	    (Entity entityID, float& l_points, float& i_points, float& f_points)
+{
+    int playerID = getPlayerID();
+    Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+    Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    float dist = glm::length(playerTrans.position - lichTrans.position);
+
+     //points baes on distance from player
+    static const float pointsForDistance = 1.0f;
+    if(dist <= lichComp.nonoRadius){l_points+=pointsForDistance;}//Close to player
+    else if(dist > lichComp.nonoRadius && dist <= lichComp.peronalSpaceRadius) {i_points+=pointsForDistance;}//Medium distance to player
+    else if(dist > lichComp.peronalSpaceRadius){f_points+=pointsForDistance;}//Far away from player
+}
+void LichBT::setStrategyBasedOnPoints	(Entity entityID, float& l_points, float& i_points, float& f_points)
+{
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    if(l_points > i_points && l_points > f_points && lichComp.attacks["lightning"].manaCost <= lichComp.mana)
+    {
+        if(lichComp.attacks["lightning"].cooldownTimer <= 0.0f)
+        {
+            //Lightning attack!
+            lichComp.curAttack = &lichComp.attacks["lightning"];
+            lichComp.lastAttack = "lightning";
+        }
+    }
+    else  if(i_points > l_points && i_points > f_points && lichComp.attacks["ice"].manaCost <= lichComp.mana)
+    {
+        if(lichComp.attacks["ice"].cooldownTimer <= 0.0f)
+        {
+            //ice attack!
+             lichComp.curAttack = &lichComp.attacks["ice"];
+             lichComp.lastAttack = "ice";
+        }
+    }
+    else  if(f_points > l_points && f_points > i_points && lichComp.attacks["fire"].manaCost <= lichComp.mana)
+    {
+        if(lichComp.attacks["fire"].cooldownTimer <= 0.0f)
+        {
+            //fire attack!
+             lichComp.curAttack = &lichComp.attacks["fire"];
+             lichComp.lastAttack = "fire";
+        }
+    }
+}
+
+bool LichBT::canUseAttack(Entity entityID, std::string attack)
+{
+    bool ret = false;
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    float cost = lichComp.attacks[attack].manaCost;
+    float timer = lichComp.attacks[attack].cooldownTimer;
+    if(lichComp.mana >= cost && timer <= 0.0f)
+    {
+        ret = true;
+    }
+    return ret;
+}
+
 void LichBT::registerEntityComponents(Entity entityId)
 {
     this->addRequiredComponent<LichComponent>(entityId);
@@ -132,6 +219,12 @@ BTStatus LichBT::huntingPlayer(Entity entityID)
     lichRb.velocity = moveDir * lichComp.huntSpeed;
     rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
 
+    float dist = glm::length(playerTrans.position - lichTrans.position);
+    if(dist <= lichComp.sightRadius)
+    {
+        ret = BTStatus::Success;
+    }
+
     return ret;
 }
 
@@ -172,12 +265,17 @@ BTStatus LichBT::notEnoughMana(Entity entityID)
 {
     BTStatus ret = BTStatus::Failure;
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-    if (lichComp.mana < lichComp.lightning.manaCost)
+    if (lichComp.mana < lichComp.attacks["lightning"].manaCost && !lichComp.regeningMana)
+    {
+        ret = BTStatus::Success;
+        lichComp.regeningMana = true;
+    }
+    else if(lichComp.regeningMana)
     {
         ret = BTStatus::Success;
     }
 
-    return BTStatus::Failure;
+    return ret;
 }
 
 BTStatus LichBT::hasStrategy(Entity entityID)
@@ -194,16 +292,17 @@ BTStatus LichBT::hasStrategy(Entity entityID)
 
 BTStatus LichBT::regenerateMana(Entity entityID)
 {
-    BTStatus ret =  BTStatus::Running;
+    BTStatus ret =  BTStatus::Success;
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-    if(lichComp.mana <= lichComp.fire.manaCost)
+    if(lichComp.mana <= lichComp.maxMana)
     {
         lichComp.mana+=lichComp.manaRegenSpeed*get_dt();
     }
     else
     {
-        lichComp.mana = lichComp.maxMana;
-        ret = BTStatus::Success;
+        lichComp.mana = lichComp.mana;
+        lichComp.regeningMana = false;
+        ret = BTStatus::Failure;
     }
 
 
@@ -214,71 +313,32 @@ BTStatus LichBT::pickBestStrategy(Entity entityID)
 {
     BTStatus ret = BTStatus::Success;
 
-    float lightningPoints = 0.0f; 
-    float icePoints = 0.0f;
-    float firePoints = 0.0f;
+    float lightningPoints       = 0.0f;   
+    float icePoints             = 0.0f;
+    float firePoints            = 0.0f;
 
-    int playerID = getPlayerID();
-    int playerHealth = 0;
+    int playerID                = getPlayerID();
+    int playerHealth            = 0;
 
     //singleplayer
-    Combat& playerCombat = getTheScene()->getComponent<Combat>(playerID);
-    playerHealth = playerCombat.health;
+    Combat& playerCombat        = getTheScene()->getComponent<Combat>(playerID);
+    playerHealth                = playerCombat.health;
     
 
-    Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
-    Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
-    float dist = glm::length(playerTrans.position - lichTrans.position);
-    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    Transform& playerTrans      = getTheScene()->getComponent<Transform>(playerID);
+    Transform& lichTrans        = getTheScene()->getComponent<Transform>(entityID);
+    LichComponent& lichComp     = getTheScene()->getComponent<LichComponent>(entityID);
 
-    //Points based on player health
-    static const float pointsForPlayerHealth = 1.5f;
-    if(playerHealth <= lichComp.lightning.damage){lightningPoints+=pointsForPlayerHealth;}//Player low health
-    else if(playerHealth > lichComp.lightning.damage && playerHealth <= lichComp.ice.damage){icePoints+=pointsForPlayerHealth;}//Player medium health
-    else if(playerHealth > lichComp.ice.damage){firePoints+=pointsForPlayerHealth;}//Player high health
+    
 
-    //Points based on own health
-    //Player damage 50-150
-    static const float pointsForLichHealth = 1.2f;
-    if(lichComp.life <= 50){lightningPoints+=pointsForLichHealth;}//Lich low health
-    else if(lichComp.life > 50 && lichComp.life <= 150) {icePoints+=pointsForLichHealth;}//Lich medium health
-    else if(lichComp.life > 150){firePoints+=pointsForLichHealth;}//Lich high health
-
-    //points baes on distance from player
-    static const float pointsForDistance = 1.0f;
-    if(dist <= lichComp.nonoRadius){lightningPoints+=pointsForDistance;}//Close to player
-    else if(dist > lichComp.nonoRadius && dist <= lichComp.peronalSpaceRadius) {icePoints+=pointsForDistance;}//Medium distance to player
-    else if(dist > lichComp.peronalSpaceRadius){firePoints+=pointsForDistance;}//Far away from player
+    givePointsForPlayerHealth   (entityID, lightningPoints, icePoints, firePoints);
+    givePointsForOwnHealth      (entityID, lightningPoints, icePoints, firePoints);
+    givePointsForDistance       (entityID, lightningPoints, icePoints, firePoints);
+   
 
 
-
-    if(lightningPoints > icePoints && lightningPoints > firePoints && lichComp.lightning.manaCost <= lichComp.mana)
-    {
-        if(lichComp.lightning.cooldownTimer <= 0.0f)
-        {
-            //Lightning attack!
-            lichComp.curAttack = &lichComp.lightning;
-            lichComp.lastAttack = "lightning";
-        }
-    }
-    else  if(icePoints > lightningPoints && icePoints > firePoints && lichComp.ice.manaCost <= lichComp.mana)
-    {
-        if(lichComp.ice.cooldownTimer <= 0.0f)
-        {
-            //ice attack!
-             lichComp.curAttack = &lichComp.ice;
-             lichComp.lastAttack = "ice";
-        }
-    }
-    else  if(firePoints > lightningPoints && firePoints > icePoints && lichComp.fire.manaCost <= lichComp.mana)
-    {
-        if(lichComp.fire.cooldownTimer <= 0.0f)
-        {
-            //fire attack!
-             lichComp.curAttack = &lichComp.fire;
-             lichComp.lastAttack = "fire";
-        }
-    }
+    setStrategyBasedOnPoints    (entityID, lightningPoints, icePoints, firePoints);
+   
 
     if( lichComp.curAttack == nullptr)
     {
@@ -294,19 +354,19 @@ BTStatus LichBT::pickRandomStrategy(Entity entityID)
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     std::vector<ATTACK_STRATEGY>validChoises;
 
-    if(lichComp.mana >= lichComp.lightning.manaCost && lichComp.lightning.cooldownTimer <= 0.0f)
+
+    if(canUseAttack(entityID,"lightning"))
     {
         validChoises.push_back(ATTACK_STRATEGY::LIGHT);
     }
-    if(lichComp.mana >= lichComp.ice.manaCost && lichComp.ice.cooldownTimer <= 0.0f)
+    if (canUseAttack(entityID, "ice"))
     {
         validChoises.push_back(ATTACK_STRATEGY::ICE);
     }
-    if(lichComp.mana >= lichComp.fire.manaCost && lichComp.fire.cooldownTimer <= 0.0f)
+    if(canUseAttack(entityID, "fire"))
     {
         validChoises.push_back(ATTACK_STRATEGY::FIRE);
     }
-
 
     if(validChoises.size() > 0)
     {
@@ -314,15 +374,15 @@ BTStatus LichBT::pickRandomStrategy(Entity entityID)
         switch (randStrat)
         {
         case LIGHT:
-            lichComp.curAttack = &lichComp.lightning;
+            lichComp.curAttack = &lichComp.attacks["lightning"];
             lichComp.lastAttack = "lightning";
             break;
         case ICE:
-            lichComp.curAttack = &lichComp.ice;
+            lichComp.curAttack = &lichComp.attacks["ice"];
             lichComp.lastAttack = "ice";
             break;
         case FIRE:
-            lichComp.curAttack = &lichComp.fire;
+            lichComp.curAttack = &lichComp.attacks["fire"];
             lichComp.lastAttack = "fire";
             break;
         }
@@ -362,9 +422,9 @@ BTStatus LichBT::attack(Entity entityID)
         lichComp.curAttack->castTimeTimer = lichComp.curAttack->castTimeTimerOrig;
         lichComp.curAttack->cooldownTimer = lichComp.curAttack->cooldownTimerOrig;
 
-        lichComp.lightning.castTimeTimer = lichComp.lightning.castTimeTimerOrig;
-        lichComp.ice.castTimeTimer = lichComp.ice.castTimeTimerOrig;
-        lichComp.fire.castTimeTimer = lichComp.fire.castTimeTimerOrig;
+        lichComp.attacks["lightning"].castTimeTimer = lichComp.attacks["lightning"].castTimeTimerOrig;
+        lichComp.attacks["ice"].castTimeTimer = lichComp.attacks["ice"].castTimeTimerOrig;
+        lichComp.attacks["fire"].castTimeTimer = lichComp.attacks["fire"].castTimeTimerOrig;
         //Remove current strat
         lichComp.curAttack = nullptr;
 
@@ -401,7 +461,11 @@ BTStatus LichBT::playerNotVisible(Entity entityID)
     Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
     LichComponent lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     float dist = glm::length(playerTrans.position -  lichTrans.position);
-    if(dist > lichComp.sightRadius)
+   /* if(dist > lichComp.sightRadius)
+    {
+        ret = BTStatus::Success;
+    }*/
+    if(dist > lichComp.attackRadius)
     {
         ret = BTStatus::Success;
     }
@@ -598,6 +662,7 @@ void Lich_combat::start()
 
     alwaysTrue->addCompositor(avoidPlayerInNoNoZone);
     attackIfManaExists->addCompositor(regenerateManaIfNeeded);
+
     attackIfManaExists->addCompositor(attackSeq);
 
 

@@ -7,6 +7,8 @@
 
 void SpawnHandler::spawnEnemiesIntoRoom()
 {
+    this->aiHandler->resetEventSystemLastReturn();
+
     int swarmIdx        = 0;
     int lichIdx         = 0;
     int tankIdx         = 0;
@@ -46,6 +48,8 @@ void SpawnHandler::spawnEnemiesIntoRoom()
         swarmIdx += this->spawnSwarmGroup(swarmIdx, tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP));        
     }
 
+
+    initTanks();
 }
 
 void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
@@ -111,6 +115,18 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
     swarmComp.group->inCombat = false;
 
     swarmComp.group->aliveMembers.push(0); 
+
+    swarmComp.setGroupMidPos(this->currScene);
+    swarmComp.setGroupRadius(this->currScene);
+}
+
+void SpawnHandler::initTanks()
+{
+    for(auto t: tankIDs)
+    {
+        TankComponent& tankComp = this->currScene->getComponent<TankComponent>(t);
+		tankComp.setFriends(this->currScene, t);
+    }
 }
 
 
@@ -218,7 +234,7 @@ Log::write("Killing all enemies outside room...");
 
 void SpawnHandler::createTank()
 {
-    static int tank = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
+    static int tank = this->resourceManager->addMesh("assets/models/golem.obj");
     this->tankIDs.push_back(this->currScene->createEntity());
     this->allEntityIDs.push_back(this->tankIDs.back());
     this->currScene->setComponent<MeshComponent>(this->tankIDs.back(), tank);
@@ -437,7 +453,7 @@ ImguiLambda SpawnHandler::LichImgui()
         auto& lichComponent     = this->sceneHandler->getScene()->getComponent<LichComponent>(entityId);
         auto& entiyFSMAgentComp = this->sceneHandler->getScene()->getComponent<FSMAgentComponent>(entityId);
         auto& entityRigidBody   = this->sceneHandler->getScene()->getComponent<Rigidbody>(entityId);
-        int& health             = lichComponent.life;
+        float& health             = lichComponent.life;
         float& mana             = lichComponent.mana;
         float& speed            = lichComponent.speed;
         float& attackRange      = lichComponent.attackRadius;
@@ -462,7 +478,7 @@ ImguiLambda SpawnHandler::LichImgui()
         ImGui::Text(tempStrat.c_str());
         ImGui::Checkbox("Attack", &tempAttack);
         ImGui::SliderFloat("mana", &mana, 0, 100);
-        ImGui::SliderInt("health", &health, 0, lichComponent.FULL_HEALTH);
+        ImGui::SliderFloat("health", &health, 0, lichComponent.FULL_HEALTH);
         ImGui::SliderFloat("speed", &speed, 0, 100);
         ImGui::SliderFloat("gravity", &gravity, 0, 10);
         ImGui::SliderFloat("attackRange", &attackRange, 0, 100);
@@ -482,6 +498,9 @@ ImguiLambda SpawnHandler::SwarmImgui()
             auto& entityAiCombatComponent   = this->sceneHandler->getScene()->getComponent<AiCombatSwarm>(entityId);
             auto& entiyFSMAgentComp         = this->sceneHandler->getScene()->getComponent<FSMAgentComponent>(entityId);
             auto& entityRigidBody           = this->sceneHandler->getScene()->getComponent<Rigidbody>(entityId);
+            auto& entityTransform           = this->sceneHandler->getScene()->getComponent<Transform>(entityId);
+            float& posY                     = entityTransform.position.y;
+            float& rotSpeed                 = entitySwarmComponent.idleRotSpeed;
             int& health            = entitySwarmComponent.life;
             float& jumpForce		=entitySwarmComponent.jumpForce;
             float& jumpForceY		=entitySwarmComponent.jumpY;
@@ -505,6 +524,8 @@ ImguiLambda SpawnHandler::SwarmImgui()
             ImGui::Separator();    
             ImGui::SliderInt("health", &health, 0, 100);
             ImGui::SliderFloat("speed", &speed, 0, 100);
+            ImGui::SliderFloat("pos y", &posY, 0, 15);
+            ImGui::SliderFloat("rot speed", &rotSpeed, 0, 200);
             ImGui::SliderFloat("jumpForce", &jumpForce, 0, 100);
             ImGui::SliderFloat("jumpForceY", &jumpForceY, 0, 100);
              ImGui::SliderFloat("gravity", &gravity, 0, 10);

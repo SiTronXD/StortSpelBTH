@@ -93,6 +93,7 @@ private:
     void spawnLich( const int lichIdx,  const glm::vec3& pos);
     uint32_t spawnSwarmGroup(const int swarmStartIdx, std::vector<const TileInfo*> tileInfo); //TODO: Do we need to have a vector of pos; say 2 to let a swarm spawn over two tiles?
     void spawnSwarm(const int swarmIdx, const glm::vec3& pos);
+    void initTanks();
 
     void createTank();
     void createLich();

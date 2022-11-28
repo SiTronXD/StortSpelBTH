@@ -32,7 +32,7 @@ struct LichAttack
             this->damage = 10;
             this->manaCost = 5.0f;
             this->cooldownTimer = this->cooldownTimerOrig = 2.0f;
-            this->castTimeTimer = this->castTimeTimerOrig = 0.0f;
+            this->castTimeTimer = this->castTimeTimerOrig = 0.5f;
             break;
         case FIRE:
             this->damage = 65;
@@ -59,9 +59,13 @@ struct LichComponent
 
 	LichComponent() 
     {
+        LichAttack lightning, fire, ice;
         lightning.setStats(ATTACK_STRATEGY::LIGHT);  
         fire.setStats(ATTACK_STRATEGY::FIRE);
         ice.setStats(ATTACK_STRATEGY::ICE);
+        attacks.insert({"lightning", lightning});
+        attacks.insert({"ice", ice});
+        attacks.insert({"fire", fire});
     };
 
     //Ints
@@ -69,13 +73,13 @@ struct LichComponent
     int FULL_HEALTH             = 300;  
     int ESCAPE_HEALTH           = FULL_HEALTH / 4; 
     int BACK_TO_FIGHT_HEALTH    = FULL_HEALTH / 2; 
-    int life                    = FULL_HEALTH;    
     int numBones                = 0;
 
     //Floats
+    float life                  = (float)FULL_HEALTH;    
     float tempRotAngle			= 0.0f;//Dont touch!
     float creepRotSpeed         = 60.0f;
-    float huntRotSpeed         = 60.0f;
+    float huntRotSpeed          = 60.0f;
         //Alert
     float origScaleY			= 1.0f;
 	float alertScale			= 1.5f;
@@ -89,7 +93,7 @@ struct LichComponent
         //Stats
     float maxMana               = 100.0f;
     float mana                  = maxMana;
-    float manaRegenSpeed        = 2.0f;
+    float manaRegenSpeed        = 5.0f;
     float healthRegenSpeed      = 2.0f;
     float deathAnimSpeed        = 3.0f;
     float huntSpeed             = 60.0f;
@@ -103,6 +107,7 @@ struct LichComponent
     bool shieldedByTank         = false;
     bool alertAtTop				= false;
 	bool alertDone				= false;
+    bool regeningMana           = false;
     bool chargingAttack         = true;
     bool tempAttack             = false;//For testing strategy picker
 
@@ -110,9 +115,10 @@ struct LichComponent
 
     //Combat stuff
     LichAttack* curAttack       = nullptr;
-    LichAttack lightning;
+    std::unordered_map<std::string, LichAttack> attacks;
+   /* LichAttack lightning;
     LichAttack fire;
-    LichAttack ice;
+    LichAttack ice;*/
 
     std::string lastAttack      = "";
 };

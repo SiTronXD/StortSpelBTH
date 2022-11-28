@@ -87,10 +87,6 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 			playerRB.velocity.y += tankComp.humpYForce;
 			toRemove.push_back(i);
 		}
-		else
-		{
-			int test = 0;
-		}
 	}
 	for(auto r: toRemove)
 	{
@@ -99,6 +95,58 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 
 
 	updateCanBeHit(entityID);
+}
+
+void TankBT::giveFriendsHealth(Entity entityID)
+{
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	if(tankComp.friendHealTimer <= 0)
+	{
+		tankComp.friendHealTimer = tankComp.friendHealTimerOrig;
+		for(auto& f: tankComp.friendsInSight)
+		{
+		    if(f.second.type == "Swarm")
+		    {
+				SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(f.first);
+				for(auto& g: swarmComp.group->members)
+				{
+					SwarmComponent& swarmGroupComp = getTheScene()->getComponent<SwarmComponent>(g);
+					swarmGroupComp.shieldedByTank = true;
+				
+					int toAdd = tankComp.friendHealthRegen;
+					if((swarmGroupComp.life + toAdd) > swarmGroupComp.FULL_HEALTH)
+					{
+						swarmGroupComp.life = swarmGroupComp.FULL_HEALTH;
+					}
+					else
+					{
+						swarmGroupComp.life += (int)toAdd;
+					}
+				}
+		        
+		    }
+		    else if(f.second.type == "Lich")
+		    {
+				LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(f.first);
+		        lichComp.shieldedByTank = true;
+				float toAdd = tankComp.friendHealthRegen;
+				if((lichComp.life + toAdd) > lichComp.FULL_HEALTH)
+				{
+					lichComp.life = lichComp.FULL_HEALTH;
+				}
+				else
+				{
+					lichComp.life += toAdd;
+				}
+
+		    }
+		}
+
+	}
+	else
+	{
+		tankComp.friendHealTimer -= get_dt();
+	}
 }
 
 float TankBT::get_dt()
@@ -587,49 +635,7 @@ BTStatus TankBT::HoldShield(Entity entityID)
 	BTStatus ret = BTStatus::Failure;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 
-	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
-	if(tankComp.friendHealTimer <= 0)
-	{
-		tankComp.friendHealTimer = tankComp.friendHealTimerOrig;
-		for(auto& f: tankComp.friendsInSight)
-		{
-		    if(f.second.type == "Swarm")
-		    {
-				SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(f.first);
-		        swarmComp.shieldedByTank = true;
-				
-				int toAdd = tankComp.friendHealthRegen;
-				if((swarmComp.life + toAdd) > swarmComp.FULL_HEALTH)
-				{
-					swarmComp.life = swarmComp.FULL_HEALTH;
-				}
-				else
-				{
-					swarmComp.life += (int)toAdd;
-				}
-		    }
-		    else if(f.second.type == "Lich")
-		    {
-				LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(f.first);
-		        lichComp.shieldedByTank = true;
-				float toAdd = tankComp.friendHealthRegen;
-				if((lichComp.life + toAdd) > lichComp.FULL_HEALTH)
-				{
-					lichComp.life = lichComp.FULL_HEALTH;
-				}
-				else
-				{
-					lichComp.life += toAdd;
-				}
-
-		    }
-		}
-
-	}
-	else
-	{
-		tankComp.friendHealTimer -= get_dt();
-	}
+	giveFriendsHealth(entityID);
 	
 
 	int playerID = getPlayerID();

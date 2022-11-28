@@ -53,6 +53,13 @@ class LichBT : public BehaviorTree
 	static float	get_dt();
 	static Scene*	getTheScene();
 	static void rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision = 5.0f);
+
+	static void givePointsForPlayerHealth	(Entity entityID, float& l_points, float& i_points, float& f_points);
+	static void givePointsForOwnHealth		(Entity entityID, float& l_points, float& i_points, float& f_points);
+	static void givePointsForDistance	    (Entity entityID, float& l_points, float& i_points, float& f_points);
+	static void setStrategyBasedOnPoints	(Entity entityID, float& l_points, float& i_points, float& f_points);
+
+	static bool canUseAttack				(Entity entityID, std::string attack);
 };
 
 class Lich_idle : public LichBT
