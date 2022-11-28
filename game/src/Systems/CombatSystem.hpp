@@ -2,6 +2,7 @@
 
 #include <vengine.h>
 #include "../Components/Combat.h"
+#include "../Components/HealthComp.h"
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../Network/NetworkHandlerGame.h"
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
@@ -11,7 +12,6 @@
 class CombatSystem : public System
 {
 private:
-
 	Scene* scene;
 	ResourceManager* resourceMng;
 	PhysicsEngine* physics;
@@ -78,10 +78,6 @@ public:
 				dealDamage(combat);
 			}
 
-			if (combat.isHealing)
-			{
-				healPlayer(combat, deltaTime);
-			}
             // Check if player is trying to attack
             if (Input::isMouseButtonPressed(Mouse::LEFT))
                 {
@@ -121,11 +117,6 @@ public:
 
 		return false;
 	}
-
-	int getHealth(Combat& combat)
-	{
-		return combat.health;
-	};
 
 	ActiveAttack checkActiveAttack(Combat& combat)
 	{
@@ -397,26 +388,6 @@ public:
 		return false;
 	}
 
-	void healPlayer(Combat& combat, float deltaTime)
-	{
-		//Transform& healTrans = this->scene->getComponent<Transform>(this->heal);
-		//Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
-		//if (combat.health < combat.maxHealth)
-		//{
-		//	glm::vec3 playerToHeal = healTrans.position - playerTrans.position;
-		//	float distSqrd = glm::dot(playerToHeal, playerToHeal);
-		//	if (distSqrd < combat.healRadius * combat.healRadius)
-		//	{
-		//		combat.hpRegenConverter += combat.hpRegen * deltaTime;
-		//		if (combat.hpRegenConverter > 1.f)
-		//		{
-		//			combat.health += (int)(combat.hpRegenConverter);
-		//			combat.hpRegenConverter -= 1.f;
-		//		}
-		//	}
-		//}
-	}
-
 	// Executes combo attack.
 	void comboAttack(Combat& combat, int idx)
 	{
@@ -457,18 +428,18 @@ public:
 		return false;
 	};
 
-	void updateHealth(Combat& combat, Perks& perk, bool doUpgrade = true)
+	void updateHealth(Combat& combat, HealthComp& healthComp, Perks& perk, bool doUpgrade = true)
 	{
 		if (doUpgrade)
 		{
-			setDefaultHp(combat);
+			setDefaultHp(combat, healthComp);
 			combat.hpMultiplier += perk.multiplier;
 		}
-		float tempHp = (float)combat.maxHealth * combat.hpMultiplier;
-		combat.maxHealth = (int)tempHp;
+		float tempHp = (float)healthComp.maxHealth * combat.hpMultiplier;
+		healthComp.maxHealth = (int)tempHp;
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		this->script->setScriptComponentValue(playerScript, combat.maxHealth, "maxHealth");
-		combat.health = std::min(combat.health, combat.maxHealth);
+		this->script->setScriptComponentValue(playerScript, healthComp.maxHealth, "maxHealth");
+		healthComp.health = std::min(healthComp.health, healthComp.maxHealth);
 	}
 
 	void updateDmg(Combat& combat, Perks& perk, bool doUpgrade = true)
@@ -585,12 +556,12 @@ public:
 		this->script->setScriptComponentValue(playerScript, currentStam, "currentStamina");
 	}
 
-	void setDefaultHp(Combat& combat)
+	void setDefaultHp(Combat& combat, HealthComp& healthComp)
 	{
-		float tempHp = (float)combat.maxHealth / combat.hpMultiplier;
-		combat.maxHealth = (int)(tempHp + 0.5f);
+		float tempHp = (float)healthComp.maxHealth / combat.hpMultiplier;
+		healthComp.maxHealth = (int)(tempHp + 0.5f);
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		this->script->setScriptComponentValue(playerScript, combat.maxHealth, "maxHealth");
+		this->script->setScriptComponentValue(playerScript, healthComp.maxHealth, "maxHealth");
 	}
 
 	void setDefaultDmg(Combat& combat)
@@ -681,14 +652,15 @@ public:
 		if (perk.perkType != emptyPerk)
 		{
 			Transform& t = this->scene->getComponent<Transform>(this->playerID);
+			HealthComp& healthComp = this->scene->getComponent<HealthComp>(this->playerID);
 			t.updateMatrix();
 			this->networkHandler->spawnItemRequest(perk.perkType, perk.multiplier, t.position + glm::vec3(0.0f, 8.0f, 0.0f), t.forward());
 			switch (perk.perkType)
 			{
 			case hpUpPerk:
-				setDefaultHp(combat);
+				setDefaultHp(combat, healthComp);
 				combat.hpMultiplier -= perk.multiplier;
-				updateHealth(combat, perk, false);
+				updateHealth(combat, healthComp, perk, false);
 				break;
 			case dmgUpPerk:
 				setDefaultDmg(combat);
@@ -825,6 +797,7 @@ public:
 		if (this->scene->hasComponents<Perks>(entity))
 		{
 			Combat& combat = this->scene->getComponent<Combat>(this->playerID);
+			HealthComp& healthComp = this->scene->getComponent<HealthComp>(this->playerID);
 			Perks& perk = this->scene->getComponent<Perks>(entity);
 			for (size_t j = 0; j < 4; j++)
 			{
@@ -834,7 +807,7 @@ public:
 					switch (combat.perks[j].perkType)
 					{
 					case hpUpPerk:
-						updateHealth(combat, combat.perks[j]);
+						updateHealth(combat, healthComp, combat.perks[j]);
 						break;
 					case dmgUpPerk:
 						updateDmg(combat, combat.perks[j]);

@@ -4,17 +4,14 @@
 #include <vector>
 #include <chrono>
 #include "glm/glm.hpp"
-#include "../Components/Perks.h"
-#include "../Components/Abilities.h"
-#include "../Components/NetworkCombat.h"
+#include "Perks.h"
+#include "Abilities.h"
+#include "HealthComp.h"
 
 enum ActiveAttack { lightActive, heavyActive, comboActive1, comboActive2, comboActive3, knockbackActive, noActive };
 
-struct Combat : public NetworkCombat
+struct Combat
 {
-	//int maxHealth = 100;
-	//int health = 100;
-	
 	// Damage for each kind of hit
     // 0 = Light Hit
     // 1 = Heavy Hit
@@ -55,12 +52,6 @@ struct Combat : public NetworkCombat
 
     // Abilities
     Abilities ability;
-
-    // Healing Values
-    bool isHealing = false;
-    float healRadius = 28.f;
-    float hpRegen = 10.f;
-    float hpRegenConverter = 0.f;
 
     // Knockback values for each attack
     // Starting with:

@@ -1,5 +1,5 @@
 #include "ServerGameMode.h"
-#include "../Components/NetworkCombat.h"
+#include "../Components/HealthComp.h"
 
 ServerGameMode::~ServerGameMode()
 {
@@ -32,7 +32,7 @@ void ServerGameMode::init()
     lastPlayerHps.resize(this->getPlayerSize());
     for (int i = 0; i < this->getPlayerSize(); i++)
     {
-        this->setComponent<NetworkCombat>(getPlayer(i));
+        this->setComponent<HealthComp>(getPlayer(i));
     }
 }
 
@@ -124,16 +124,16 @@ void ServerGameMode::makeDataSendToClient()
     //Check for updates in player hp and change it it should
     for (int i = 0; i < getPlayerSize(); i++)
     {
-        if (this->getComponent<NetworkCombat>(getPlayer(i)).health != lastPlayerHps[i].health) 
+        if (this->getComponent<HealthComp>(getPlayer(i)).health != lastPlayerHps[i].health)
         {
             //send that player new hp
             this->addEvent(
                 {(int)GameEvent::PLAYER_SETHP,
                  getPlayer(i),
-                 this->getComponent<NetworkCombat>(getPlayer(i)).health}
+                 this->getComponent<HealthComp>(getPlayer(i)).health}
             );
             //change lastPlayerHps
-            lastPlayerHps[i].health = this->getComponent<NetworkCombat>(getPlayer(i)).health;
+            lastPlayerHps[i].health = this->getComponent<HealthComp>(getPlayer(i)).health;
         }
     }
 
@@ -253,7 +253,7 @@ void ServerGameMode::onCollisionStay(Entity e1, Entity e2) {
           swarmComp.inAttack = false;
           swarmComp.touchedPlayer = true;
           //aiCombat.timer = aiCombat.lightAttackTime;
-          this->getComponent<NetworkCombat>(player).health -=
+          this->getComponent<HealthComp>(player).health -=
               (int)aiCombat.lightHit;
           //this->addEvent({GameEvent::});
             
@@ -267,7 +267,7 @@ void ServerGameMode::onCollisionStay(Entity e1, Entity e2) {
       {
         auto& aiCombat = this->getComponent<AiCombatTank>(other);
         tankComp.canAttack = false;
-        this->getComponent<NetworkCombat>(player).health -=
+        this->getComponent<HealthComp>(player).health -=
             (int)aiCombat.directHit;
             
         Log::write("WAS HIT", BT_FILTER);

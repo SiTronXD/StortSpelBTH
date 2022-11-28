@@ -2,7 +2,6 @@
 #include "vengine.h"
 #include "LichBTs.hpp"
 
-
 struct LichComponent
 {
 	LichComponent() {};
