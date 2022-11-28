@@ -97,11 +97,6 @@ Entity NetworkHandlerGame::spawnHealArea(glm::vec3 pos)
 	return heal;
 }
 
-void NetworkHandlerGame::setCombatSystem(CombatSystem* system)
-{
-	combatSystem = system;
-}
-
 void NetworkHandlerGame::init()
 {
 	this->perkMeshes[0] = this->resourceManger->addMesh("assets/models/Perk_Hp.obj");
@@ -119,11 +114,36 @@ void NetworkHandlerGame::cleanup()
 {
 }
 
+int NetworkHandlerGame::getSeed()
+{
+	if (this->hasServer())
+	{
+		sf::Packet packet;
+		packet << (int)GameEvent::SEED;
+		this->sendDataToServerTCP(packet);
+	}
+
+	this->seed = -1;
+	while (this->seed == -1)
+	{
+		this->update();
+	}
+	return this->seed;
+}
+
+void NetworkHandlerGame::setCombatSystem(CombatSystem* system)
+{
+	combatSystem = system;
+}
+
 void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 {
 	sf::Packet packet;
 	switch ((GameEvent)event)
 	{
+	case GameEvent::SEED:
+		tcpPacket >> this->seed;
+		break;
 	case GameEvent::SPAWN_ITEM:
 		tcpPacket >> i0 >> i1 >> i2 >> f0;
 		v0 = this->getVec(tcpPacket);
@@ -271,6 +291,11 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 	ServerGameMode* serverScene;
 	switch ((GameEvent)event)
 	{
+	case GameEvent::SEED:
+		srand((unsigned int)time(0));
+		packet << (int)GameEvent::SEED << (int)rand();
+		server->sendToAllClientsTCP(packet);
+		break;
 	case GameEvent::SPAWN_ITEM:
 		serverScene = server->getScene<ServerGameMode>();
 		tcpPacket >> si0 >> si1 >> sf0;
