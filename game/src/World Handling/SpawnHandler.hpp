@@ -21,7 +21,7 @@ class TilePicker
 {
 private:
 
-    std::random_device randomDev;
+    std::mt19937 randomDev;
 
     std::vector<const TileInfo*> usedTiles;
     std::list<const TileInfo*> unusedTileInfos;
@@ -40,6 +40,8 @@ private:
     void updateFreeTiles();
 
 public:
+    TilePicker() : randomDev(69){}//TODO: Use same seed as game...
+        
     void   init(const std::vector<TileInfo>& freeTileInfos);
     size_t size() const;
     const TileInfo* getRandomEmptyTile();
