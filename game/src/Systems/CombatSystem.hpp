@@ -92,12 +92,6 @@ public:
 			decreaseTimers(combat, deltaTime);
 			updateSwordPos();
 
-			int temp = Input::isKeyDown(Keys::W) ? 1 : Input::isKeyDown(Keys::S) ? 1 : Input::isKeyDown(Keys::A) ? 1 : Input::isKeyDown(Keys::D) ? 1 : 0;
-			if (temp == 1)
-			{
-				playerEffectSound(this->moveSounds[0], this->scene->getComponent<Transform>(this->playerID).position, this->moveSound);
-			}
-
 			if (checkActiveAttack(combat) != noActive)
 			{
 				dealDamage(combat);
@@ -137,6 +131,10 @@ public:
                 {
                     removeAbility(combat, combat.ability);
                 }
+			//if (this->scene->getAnimationStatus(this->playerID, "").animationName == "run" && !this->scene->getComponent<AudioSource>(this->moveSound).isPlaying())
+			//{
+			//	playerEffectSound(this->moveSounds[0], this->scene->getComponent<Transform>(this->playerID).position, this->moveSound, 10.f);
+			//}
 		};
 		view.each(foo);
 
@@ -222,9 +220,6 @@ public:
 					}
 					if (this->canHit == true)
 					{
-						Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
-						playerEffectSound(this->otherSounds[takeDmg], enemyTrans.position, this->otherSound);
-						
                         this->networkHandler->sendHitOn(hitID[i], (int)combat.dmgArr[combat.activeAttack], combat.knockbackArr[combat.activeAttack]);
                         this->hitEnemies.emplace_back(hitID[i]);
 					}
@@ -249,6 +244,9 @@ public:
 						}
 						if (this->canHit == true)
 						{
+							Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
+							playerEffectSound(this->otherSounds[takeDmg], enemyTrans.position, this->otherSound, 12.f);
+
 							SwarmComponent& enemy = this->scene->getComponent<SwarmComponent>(hitID[i]);
 							enemy.life -= (int)combat.dmgArr[combat.activeAttack];
 							hitEnemy(combat, hitID[i]);
@@ -272,9 +270,11 @@ public:
 							TankComponent& enemy = this->scene->getComponent<TankComponent>(hitID[i]);
 							if (enemy.canBeHit)
 							{
+								Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
+								playerEffectSound(this->otherSounds[takeDmg], enemyTrans.position, this->otherSound, 12.f);
+
 								enemy.life -= (int)combat.dmgArr[combat.activeAttack];
 								Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(hitID[i]);
-								Transform& enemyTrans = this->scene->getComponent<Transform>(hitID[i]);
 								Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
 								glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
 								enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * combat.knockbackArr[combat.activeAttack];
@@ -332,7 +332,7 @@ public:
 			else
 			{
 				playerEffectSound(this->attackSounds[0], 
-					this->scene->getComponent<Transform>(this->playerID).position, this->playerSound);
+					this->scene->getComponent<Transform>(this->playerID).position, this->playerSound, 7.f);
 				setupAttack("lightAttack", 4, combat.lightAttackCd, combat.animationMultiplier[lightActive]);
 				return true;
 			}
@@ -894,13 +894,13 @@ public:
 		}
 	}
 
-	void playerEffectSound(uint32_t effect, glm::vec3 pos, Entity& soundSource)
+	void playerEffectSound(uint32_t effect, glm::vec3 pos, Entity& soundSource, float volume)
 	{
 		Transform& soundTrans = this->scene->getComponent<Transform>(soundSource);
 		soundTrans.position = pos;
 		AudioSource& sound = this->scene->getComponent<AudioSource>(soundSource);
 		sound.setBuffer(effect);
-		sound.setVolume(10.f);
+		sound.setVolume(volume);
 		sound.play();
 	}
 	
