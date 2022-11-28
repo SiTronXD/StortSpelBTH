@@ -187,7 +187,7 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 	RayPayload rpRight = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayForwardRight, maxDist);
 
 	////Draw ray
-	//BehaviorTree::sceneHandler->getPhysicsEngine()->renderDebugShapes(true);
+	
 	//glm::vec3 red = glm::vec3(1.0f, 0.0f, 0.0f);
 	//glm::vec3 green = glm::vec3(0.0f, 1.0f, 0.0f);
 	//glm::vec3 blue = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -506,8 +506,8 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 	Ray rayLeft{to, entityTransform.right()};    
 	float left_right_maxDist = entityCollider.radius + 1.5f;
     RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, maxDist);
-	BehaviorTree::sceneHandler->getPhysicsEngine()->renderDebugShapes(true);
-	BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(from, to, glm::vec3(1.0f, 0.0f, 0.0f));
+	
+	
 	if(rp.hit)
 	{
 		if(!getTheScene()->getComponent<Collider>(rp.entity).isTrigger &&
@@ -520,8 +520,7 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 				dir -= entityTransform.right();
 				//Check if we collide on right side
 				RayPayload r_right = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayRight, left_right_maxDist);
-				BehaviorTree::sceneHandler->getPhysicsEngine()->renderDebugShapes(true);
-				BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(rayRight.pos, rayRight.pos + rayRight.dir * left_right_maxDist, glm::vec3(1.0f, 0.0f, 0.0f));
+				
 				if(r_right.hit && !getTheScene()->getComponent<Collider>(r_right.entity).isTrigger)
 				{
 					swarmComp.attackGoRight = false;
@@ -533,8 +532,7 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 				dir += entityTransform.right();
 				//Check if we collide on left side
 				RayPayload r_left = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayLeft, left_right_maxDist);
-				BehaviorTree::sceneHandler->getPhysicsEngine()->renderDebugShapes(true);
-				BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(rayLeft.pos, rayLeft.pos - rayLeft.dir * left_right_maxDist, glm::vec3(1.0f, 0.0f, 0.0f));
+				
 				if(r_left.hit && !getTheScene()->getComponent<Collider>(r_left.entity).isTrigger)
 				{
 					swarmComp.attackGoRight = true;
@@ -576,7 +574,7 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
         RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, distEntityToPlayer);
 
 		//Draw ray
-		BehaviorTree::sceneHandler->getPhysicsEngine()->renderDebugShapes(true);
+		
 		BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
 		entityPos,
 		entityPos + dirEntityToPlayer * distEntityToPlayer,
