@@ -1,4 +1,4 @@
-local playerMesh = resources.addAnimations({ "assets/models/Character/CharIdle.fbx", "assets/models/Character/CharRun.fbx",
+local playerMesh = resources.addAnimations({ "assets/models/Character/CharIdle.fbx", "assets/models/Character/CharRun.fbx", 
 "assets/models/Character/CharDodge.fbx", "assets/models/Character/CharOutwardAttack.fbx", "assets/models/Character/CharHeavyAttack.fbx", 
 "assets/models/Character/CharSpinAttack.fbx", "assets/models/Character/CharKnockbackAttack.fbx", 
 "assets/models/Character/CharInwardAttack.fbx", "assets/models/Character/CharSlashAttack.fbx" }, "assets/textures/playerMesh")
@@ -16,10 +16,15 @@ playerID = scene.createEntity()
 scene.setComponent(playerID, CompType.Mesh, playerMesh)
 local playerAnim = 
 { 
+	animationIndex = 0,
 	timer = 0.0, 
 	timeScale = 0.0
 }
-scene.setComponent(playerID, CompType.Animation, playerAnim)
+scene.setComponent(playerID, CompType.Animation, {})
+local anim = scene.getComponent(playerID, CompType.Animation)
+anim[0] = playerAnim
+scene.setComponent(playerID, CompType.Animation, anim)
+
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
 scene.setComponent(playerID, CompType.Collider, { type = ColliderType.Capsule, radius = 2, height = 11, offset = vector.new(0, 7.3, 0) })
 scene.setComponent(playerID, CompType.Rigidbody, { mass = 1, gravityMult = 5, rotFactor = vector.fill(0), friction = 0.1 })
@@ -48,6 +53,16 @@ scene.getComponent(uiID, CompType.Script).perkSlotTextureID =
 	resources.addTexture("assets/textures/UI/perkSlot.png", pixelArtSettings)
 scene.getComponent(uiID, CompType.Script).crosshairTextureID = 
 	resources.addTexture("assets/textures/UI/crosshair.png", pixelArtSettings)
+scene.getComponent(uiID, CompType.Script).uiHpMidTexID = 
+	resources.addTexture("assets/textures/UI/UIBarMid.png")
+scene.getComponent(uiID, CompType.Script).uiHpSideTexID = 
+	resources.addTexture("assets/textures/UI/UIBarSide.png")
+scene.getComponent(uiID, CompType.Script).uiStamMidTexID = 
+	resources.addTexture("assets/textures/UI/UIBarMid.png")
+scene.getComponent(uiID, CompType.Script).uiStamSideTexID = 
+	resources.addTexture("assets/textures/UI/UIBarSide.png")
+scene.getComponent(uiID, CompType.Script).uiBorderTexID = 
+	resources.addTexture("assets/textures/UI/UIBorder.png")
 
 --[[local p = scene.createPrefab("scripts/prefabs/prefab.lua")
 

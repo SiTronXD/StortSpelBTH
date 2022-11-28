@@ -11,7 +11,8 @@ private:
         Play = 1, 
         Settings = 2,
         HowToPlay = 3,
-        Quit = 4
+        LevelEdit = 4,
+        Quit = 5
     };
 
     State state;
@@ -27,6 +28,7 @@ private:
     int playButton;
     int joinGameButton;
     int settingsButton;
+    int levelEditButton;
     int quitButton;
     int howToPlayButton;
 

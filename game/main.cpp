@@ -9,7 +9,8 @@
 #include "vengine.h"
 #include "src/Scenes/MainMenu.h"
 #include "src/Scenes/GameScene.h"
-//#include "src/Scenes/CreateAPuzzle.h"
+#include "src/Scenes/GameOverScene.h"
+#include "src/Scenes/LevelEditor.h"
 #include "src/Scenes/NetworkAI.h"
 #include "src/Scenes/LobbyScene.h"
 #include "src/Network/NetworkHandlerGame.h"
@@ -30,8 +31,9 @@ int main(int argc, char* argv[])
         Engine engine;
         engine.setCustomNetworkHandler(new NetworkHandlerGame());
         //engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
-        //engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
-        engine.run("Presumed Dead", "", new LobbyScene());
+        //engine.run("Presumed Dead", "scripts/GameOverScene.lua", new GameOverScene());
+        //engine.run("Presumed Dead", "scripts/levelEditor.lua", new LevelEditor());
+        engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
     }
 
     return EXIT_SUCCESS;
