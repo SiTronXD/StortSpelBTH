@@ -22,6 +22,7 @@ public:
 	static const uint32_t NUM_TWO_X_TWO;
 	static const uint32_t DECO_ENTITY_CHANCE;
 private:
+  public:
 
 	// Helper structs
 	struct RoomExitPoint
@@ -132,4 +133,6 @@ public:
 	int getNumRooms() const;
 
 	Entity getFloor() const;
+
+	std::vector<std::vector<glm::vec3>> getPathFindingPoints();
 };

@@ -17,7 +17,7 @@ bool SwarmFSM::idle_alerted(Entity entityID)
 		return false;
 	}
 
-    float swarmPlayerLen = getEntityDist(entityID, getPlayerID(sceneHandler));
+    float swarmPlayerLen = getEntityDist(entityID, getPlayerID(sceneHandler, entityID));
 
 	if (swarmPlayerLen <= enemySwarmComp.sightRadius || 
 		enemySwarmComp.group->inCombat)
@@ -63,7 +63,7 @@ bool SwarmFSM::idle_escape(Entity entityID)
 		return false;
 	}
     
-	float swarmPlayerLen = getEntityDist(entityID, getPlayerID(sceneHandler));
+	float swarmPlayerLen = getEntityDist(entityID, getPlayerID(sceneHandler, entityID));
 	float groupHealth = enemySwarmComp.getGroupHealth(FSM::sceneHandler->getScene());
 
 	if (swarmPlayerLen <= enemySwarmComp.sightRadius && 
@@ -84,7 +84,7 @@ bool SwarmFSM::combat_idle(Entity entityID)
 		return false;
 	}
 
-	Entity playerID = getPlayerID(sceneHandler);
+	Entity playerID = getPlayerID(sceneHandler, entityID);
 
 	Transform& playerTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(playerID);
 	Transform& enemyTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(entityID);
@@ -209,7 +209,7 @@ bool SwarmFSM::escape_idle(Entity entityID)
 	Rigidbody& enemyRb = FSM::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
 
     float velAbs = abs(glm::length(enemyRb.velocity));
-    float swarmPlayerDist = getEntityDist(entityID, getPlayerID(sceneHandler));
+    float swarmPlayerDist = getEntityDist(entityID, getPlayerID(sceneHandler, entityID));
 	float groupHealth = enemySwarmComp.getGroupHealth(FSM::sceneHandler->getScene());
 
 	if (swarmPlayerDist > enemySwarmComp.sightRadius &&
@@ -263,7 +263,7 @@ bool SwarmFSM::escape_combat(Entity entityID)
 	Transform& enemyTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(entityID);
     Transform& playerTransform =
         FSM::sceneHandler->getScene()->getComponent<Transform>(
-            getPlayerID(sceneHandler)
+            getPlayerID(sceneHandler, entityID)
         );
 
     float velAbs = abs(glm::length(enemyRb.velocity));

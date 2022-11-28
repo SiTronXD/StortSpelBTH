@@ -18,23 +18,10 @@ function script:init()
     self.shakeTimer    = 0
     self.shakeDuration = 0.3
     self.shakeScalar   = 0.3
-    self.active        = true
-    
-    input.setHideCursor(self.active)   
 end
 
 function script:update(dt)
-    -- Set and use active
-    if (input.isKeyPressed(Keys.ESCAPE)) then
-        self.active = not self.active
-        input.setHideCursor(self.active)
-    end
-    
-    if (not self.active) then
-        return
-    end
-
-    self.shaking = input.isKeyDown(Keys.Q)
+    --self.shaking = input.isKeyDown(Keys.Q)
 
     -- Change camera distance
     self.distAcc = (self.distAcc - input.getScrollWheelDelta() * 0.5) * 0.01 ^ dt
@@ -49,7 +36,7 @@ function script:update(dt)
     rotInput.y = -input.getMouseDelta().x
 
     -- Rotate camera
-    local camRot = self.transform.rotation + vector.fill(self.sens) * rotInput * dt
+    local camRot = self.transform.rotation + vector.fill(self.sens) * rotInput * core.btoi(not paused) * dt
 
     -- Limit camera angle
     camRot.x = math.min(camRot.x, self.maxXRot)

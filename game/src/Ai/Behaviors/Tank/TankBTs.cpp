@@ -1,5 +1,6 @@
 #include "TankBTs.hpp"
 #include "TankFSM.hpp"
+#include "../../../Network/ServerGameMode.h"
 
 Scene* TankBT::getTheScene()
 {
@@ -8,7 +9,7 @@ Scene* TankBT::getTheScene()
 
 void TankBT::updateCanBeHit(Entity entityID)
 {
-	int playerID = getPlayerID();
+    int playerID = getPlayerID(entityID);
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
@@ -47,7 +48,7 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 		tankComp.groundHumpTimer -= get_dt();
 	}
 
-	int playerID = getPlayerID();
+	int playerID = getPlayerID(entityID);
 	
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	Collider& playerCol = getTheScene()->getComponent<Collider>(playerID);
@@ -75,17 +76,39 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 		else if(tankComp.humps[i] >= minHitDist && tankComp.humps[i] <= maxHitDist && playerGrounded)
 		{
 			//PlayerHit!
-			Script& playerScript = getTheScene()->getComponent<Script>(playerID);
-			BehaviorTree::sceneHandler->getScriptHandler()->setScriptComponentValue(playerScript , 1.0f, "pushTimer");
 			glm::vec3 to = playerTrans.position;
 			glm::normalize(to);
 			AiCombatTank& aiCombat = getTheScene()->getComponent<AiCombatTank>(entityID);
-			getTheScene()->getComponent<Combat>(playerID).health -= (int)aiCombat.humpHit;
+			getTheScene()->getComponent<HealthComp>(playerID).health -= (int)aiCombat.humpHit;
 
-			glm::vec3 dir = glm::normalize(to - tankTrans.position);
-			playerRB.velocity = dir * tankComp.humpForce;
-			playerRB.velocity.y += tankComp.humpYForce;
-			toRemove.push_back(i);
+			//single player
+			if (dynamic_cast<NetworkSceneHandler*>(BehaviorTree::sceneHandler) == nullptr) 
+			{
+				Script& playerScript = getTheScene()->getComponent<Script>(playerID);
+				BehaviorTree::sceneHandler->getScriptHandler()->setScriptComponentValue(playerScript , 1.0f, "pushTimer");
+
+                glm::vec3 dir = glm::normalize(to - tankTrans.position);
+                playerRB.velocity = dir * tankComp.humpForce;
+                playerRB.velocity.y += tankComp.humpYForce;
+                
+			}
+            else
+            {
+				//send pushPlayer
+                glm::vec3 dir = glm::normalize(to - tankTrans.position);
+                dir *= tankComp.humpForce;
+                dir.y += tankComp.humpYForce;
+				//trust that push timer never changes
+                ((NetworkSceneHandler*)BehaviorTree::sceneHandler)
+                    ->getScene()
+                    ->addEvent({(int)GameEvent::PUSH_PLAYER, playerID}, 
+						{
+						dir.x,
+						dir.y,
+						dir.z
+						});
+			}
+            toRemove.push_back(i);
 		}
 		else
 		{
@@ -106,11 +129,19 @@ float TankBT::get_dt()
     return BehaviorTree::sceneHandler->getAIHandler()->getDeltaTime();
 }
 
-int TankBT::getPlayerID()
+int TankBT::getPlayerID(int entityID)
 {
+	// if network exist take player from there
+    NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+    if (s != nullptr && entityID != -1)
+        {
+            return s->getNearestPlayer(entityID);
+        }
+
+    // else find player from script
     int playerID = -1;
-    std::string playerId_str = "playerID";
-    BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(playerID, playerId_str);
+    std::string playerString = "playerID";
+    sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
     return playerID;
 }
 
@@ -366,7 +397,7 @@ BTStatus TankBT::playerInPersonalSpace(Entity entityID)
 	BTStatus ret = BTStatus::Failure;
 
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
-    int playerID = getPlayerID();
+    int playerID = getPlayerID(entityID);
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
     float tank_player_dist	= glm::length(playerTrans.position - tankTrans.position);
@@ -392,7 +423,7 @@ BTStatus TankBT::playerOutsidePersonalSpace(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
-    int playerID = getPlayerID();
+    int playerID = getPlayerID(entityID);
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
     float tank_player_dist	= glm::length(playerTrans.position - tankTrans.position);
@@ -407,7 +438,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 {
 	BTStatus ret = BTStatus::Running;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
-	int playerID			= getPlayerID();
+	int playerID			= getPlayerID(entityID);
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
 	Collider& tankCol = getTheScene()->getComponent<Collider>(entityID);
@@ -632,7 +663,7 @@ BTStatus TankBT::HoldShield(Entity entityID)
 	}
 	
 
-	int playerID = getPlayerID();
+	int playerID = getPlayerID(entityID);
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	rotateTowards(entityID, playerTrans.position, tankComp.shildRotSpeed, 5.0f);
 
@@ -648,7 +679,7 @@ BTStatus TankBT::playAlertAnim(Entity entityID)
 	BTStatus ret = BTStatus::Running;
 
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
-	int playerID = getPlayerID();
+    int playerID = getPlayerID(entityID);
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 	Transform& tankTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Collider& tankCol = sceneHandler->getScene()->getComponent<Collider>(entityID);
@@ -721,11 +752,11 @@ BTStatus TankBT::die(Entity entityID)
 {
 	BTStatus ret = BTStatus::Failure;
 
-	int playerID = getPlayerID();
-	Combat& playerCombat = sceneHandler->getScene()->getComponent<Combat>(playerID);
-	if (playerCombat.health <= (playerCombat.maxHealth - 10))
+	int playerID = getPlayerID(entityID);
+	HealthComp& playerHealth = sceneHandler->getScene()->getComponent<HealthComp>(playerID);
+	if (playerHealth.health <= (playerHealth.maxHealth - 10))
 	{
-		playerCombat.health += 10;
+		playerHealth.health += 10;
 	}
 
 	getTheScene()->setInactive(entityID);
