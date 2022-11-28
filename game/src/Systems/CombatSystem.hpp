@@ -82,6 +82,40 @@ public:
 			{
 				healPlayer(combat, deltaTime);
 			}
+            // Check if player is trying to attack
+            if (Input::isMouseButtonPressed(Mouse::LEFT))
+                {
+                    lightAttack(combat);
+                }
+            else if (Input::isMouseButtonPressed(Mouse::RIGHT))
+                {
+                    heavyAttack(combat);
+                }
+            else if (Input::isKeyPressed(Keys::F))
+                {
+                    useAbility(combat);
+                }
+            // Check if player wants to drop a perk
+            if (Input::isKeyPressed(Keys::ONE))
+                {
+                    removePerk(combat, combat.perks[0]);
+                }
+            if (Input::isKeyPressed(Keys::TWO))
+                {
+                    removePerk(combat, combat.perks[1]);
+                }
+            if (Input::isKeyPressed(Keys::THREE))
+                {
+                    removePerk(combat, combat.perks[2]);
+                }
+            if (Input::isKeyPressed(Keys::FOUR))
+                {
+                    removePerk(combat, combat.perks[3]);
+                }
+            if (Input::isKeyPressed(Keys::FIVE))
+                {
+                    removeAbility(combat, combat.ability);
+                }
 		};
 		view.each(foo);
 
@@ -170,9 +204,8 @@ public:
 					}
 					if (this->canHit == true)
 					{
-						SwarmComponent& enemy = this->scene->getComponent<SwarmComponent>(hitID[i]);
-						enemy.life -= (int)combat.dmgArr[combat.activeAttack];
-						hitEnemy(combat, hitID[i]);
+                        ((NetworkHandlerGame*)this->scene->getNetworkHandler())->sendHitOn(hitID[i], (int)combat.dmgArr[combat.activeAttack], combat.knockbackArr[combat.activeAttack]);
+                        this->hitEnemies.emplace_back(hitID[i]);
 					}
 				}
             }
