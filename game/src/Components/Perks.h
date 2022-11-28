@@ -7,7 +7,7 @@ enum PerkType : int
 	attackSpeedUpPerk = 2,
 	movementUpPerk = 3,
 	staminaUpPerk = 4,
-	emptyPerk = 5
+	emptyPerk = 5,
 };
 
 const static std::vector<std::string> PERK_NAMES

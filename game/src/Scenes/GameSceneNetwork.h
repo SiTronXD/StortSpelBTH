@@ -1,14 +1,13 @@
 #pragma once
-#pragma once
 
 #include <cmath>
-
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
 #include "../World Handling/Room Handler.h"
 #include "vengine.h"
 
+//THIS IS ON THE CLIENT SIDE!!!
 class GameSceneNetwork : public Scene
 {
 private:
@@ -59,3 +58,4 @@ private:
 
   void createPortal();
 };
+

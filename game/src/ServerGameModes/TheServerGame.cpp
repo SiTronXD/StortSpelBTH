@@ -58,6 +58,7 @@ void TheServerGame::update(float dt)
 
 void TheServerGame::aiExample()
 {
+    /*
   auto a = [&](FSM* fsm, uint32_t entityId) -> void
   {
     SwarmFSM* swarmFSM = (SwarmFSM*)fsm;
@@ -239,5 +240,5 @@ void TheServerGame::aiExample()
               this->getComponent<SwarmComponent>(this->enemyIDs.back());
           swarmComp.life = 100.0f;
         }
-    }
+    }*/
 }

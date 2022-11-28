@@ -45,7 +45,6 @@ function script:init()
     self.animTimer = -1
     self.onGround = false
     self.jumpTimer = 0
-    self.active = true
 
     self.activeAnimation = {idle = 1, run = 2, sprint = 3, dodge = 4, 
         lightAttack = 5, heavyAttack = 6, spinCombo = 7, mixCombo = 8, 
@@ -58,12 +57,7 @@ function script:init()
 end
 
 function script:update(dt)
-    -- Set and use active
-    if (input.isKeyPressed(Keys.ESCAPE)) then
-        self.active = not self.active
-    end
-
-    if (not self.active) then
+    if (paused) then
         return
     end
 
@@ -117,6 +111,7 @@ function script:update(dt)
         if (self.currentStamina > 0 and self.useStamina == true and self.moveDir ~= vector(0))
         then
             self.isSprinting = true
+            self.currentAnimation = self.activeAnimation.sprint
             self.currentSpeed = self.moveDir:normalize() * self.sprintSpeed
             self.currentStamina = self.currentStamina - (self.sprintStamDrain * dt)
             self.staminaTimer = self.staminaRegenCd
