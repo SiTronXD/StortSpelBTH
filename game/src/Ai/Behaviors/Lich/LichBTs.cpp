@@ -1,15 +1,32 @@
 #include "LichBTs.hpp"
 #include "LichFSM.hpp"
 //#include "../../../Components/Combat.h"
-#include "../../../Components/AiCombatLich.hpp"
 //#include "../../../Components/Perks.h" //TODO: Adam, add the perk stuff to Lich... ? 
 #include <limits>
+
+
+Scene* LichBT::getTheScene()
+{
+    return BehaviorTree::sceneHandler->getScene();
+}
+
+float LichBT::get_dt()
+{
+    return BehaviorTree::sceneHandler->getAIHandler()->getDeltaTime();
+}
+
+int LichBT::getPlayerID()
+{
+    int playerID = -1;
+    std::string playerId_str = "playerID";
+    BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(playerID, playerId_str);
+    return playerID;
+}
 
 
 void LichBT::registerEntityComponents(Entity entityId)
 {
     this->addRequiredComponent<LichComponent>(entityId);
-    addRequiredComponent<AiCombatLich>(entityId);
 }
 
 BTStatus LichBT::plunder(Entity entityID)
@@ -59,6 +76,13 @@ BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
 
 BTStatus LichBT::hasMana(Entity entityID)
 {
+    BTStatus ret = BTStatus::Failure;
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    if(lichComp.mana > 0)
+    {
+        ret = BTStatus::Success;
+    }
+
     return BTStatus::Failure;
 }
 
@@ -104,7 +128,19 @@ BTStatus LichBT::playDeathAnim(Entity entityID)
 
 BTStatus LichBT::die(Entity entityID)
 {
-    return BTStatus::Failure;
+   BTStatus ret = BTStatus::Failure;
+
+	int playerID = getPlayerID();
+   //TODO : this was changed from combat to networkCombat see if it works
+	NetworkCombat& playerCombat = sceneHandler->getScene()->getComponent<NetworkCombat>(playerID);
+	if (playerCombat.health <= (playerCombat.maxHealth - 10))
+	{
+		playerCombat.health += 10;
+	}
+
+	getTheScene()->setInactive(entityID);
+
+	return ret;
 }
 
 BTStatus LichBT::alerted(Entity entityID)

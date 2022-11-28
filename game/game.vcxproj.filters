@@ -6,7 +6,6 @@
     <ClCompile Include="src\World Handling\Room Handler.cpp" />
     <ClCompile Include="src\World Handling\Room Layout.cpp" />
     <ClCompile Include="src\ServerGameModes\TheServerGame.cpp" />
-    <ClCompile Include="src\Scenes\NetworkAI.cpp" />
     <ClCompile Include="src\Scenes\MainMenu.cpp" />
     <ClCompile Include="src\Scenes\GameOverScene.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmBTs.cpp" />
@@ -19,10 +18,15 @@
     <ClCompile Include="src\Scenes\LobbyScene.cpp" />
     <ClCompile Include="src\Scenes\logInScene.cpp" />
     <ClCompile Include="src\Scenes\GameSceneNetwork.cpp" />
+    <ClCompile Include="src\Network\NetworkHandlerGame.cpp" />
+    <ClCompile Include="src\Network\ServerGameMode.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Lich\LichBTs.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Lich\LichFSM.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Tank\TankFSM.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Tank\TankBTs.cpp" />
+    <ClCompile Include="src\ServerGameModes\NetworkLobbyScene.cpp" />
+    <ClCompile Include="src\ServerGameModes\NetworkGameScene.cpp" />
+    <ClCompile Include="src\World Handling\SpawnHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -35,7 +39,6 @@
     <ClInclude Include="src\Scenes\GameScene.h" />
     <ClInclude Include="src\Systems\AiCombatSystem.hpp" />
     <ClInclude Include="src\Systems\AiMovementSystem.hpp" />
-    <ClInclude Include="src\Scenes\NetworkAI.h" />
     <ClInclude Include="src\ServerGameModes\TheServerGame.h" />
     <ClInclude Include="src\Systems\CameraMovementSystem.hpp" />
     <ClInclude Include="src\Systems\CombatSystem.hpp" />
@@ -58,6 +61,8 @@
     <ClInclude Include="src\Scenes\LobbyScene.h" />
     <ClInclude Include="src\Scenes\logInScene.h" />
     <ClInclude Include="src\Scenes\GameSceneNetwork.h" />
+    <ClInclude Include="src\Network\NetworkHandlerGame.h" />
+    <ClInclude Include="src\Network\ServerGameMode.h" />
     <ClInclude Include="src\Ai\Behaviors\Lich\LichBTs.hpp" />
     <ClInclude Include="src\Ai\Behaviors\Lich\LichFSM.hpp" />
     <ClInclude Include="src\Ai\Behaviors\Tank\TankFSM.hpp" />
@@ -65,6 +70,12 @@
     <ClInclude Include="src\Components\AiCombatSwarm.h" />
     <ClInclude Include="src\Components\AICombatTank.hpp" />
     <ClInclude Include="src\Ai\Behaviors\Tank\TankBTs.hpp" />
+    <ClInclude Include="src\ServerGameModes\NetworkLobbyScene.h" />
+    <ClInclude Include="src\ServerGameModes\NetworkGameScene.h" />
+    <ClInclude Include="src\World Handling\SpawnHandler.hpp" />
+    <ClInclude Include="src\Components\NetworkCombat.h" />
+    <ClInclude Include="src\Components\HealArea.h" />
+    <ClInclude Include="src\Systems\HealSystem.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
