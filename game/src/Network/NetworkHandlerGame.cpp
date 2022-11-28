@@ -97,11 +97,6 @@ Entity NetworkHandlerGame::spawnHealArea(glm::vec3 pos)
 	return heal;
 }
 
-void NetworkHandlerGame::setCombatSystem(CombatSystem* system)
-{
-	combatSystem = system;
-}
-
 void NetworkHandlerGame::init()
 {
 	this->perkMeshes[0] = this->resourceManger->addMesh("assets/models/Perk_Hp.obj");
@@ -119,11 +114,36 @@ void NetworkHandlerGame::cleanup()
 {
 }
 
+int NetworkHandlerGame::getSeed()
+{
+	if (this->hasServer())
+	{
+		sf::Packet packet;
+		packet << (int)GameEvent::SEED;
+		this->sendDataToServerTCP(packet);
+	}
+
+	this->seed = -1;
+	while (this->seed == -1)
+	{
+		this->update();
+	}
+	return this->seed;
+}
+
+void NetworkHandlerGame::setCombatSystem(CombatSystem* system)
+{
+	combatSystem = system;
+}
+
 void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 {
 	sf::Packet packet;
 	switch ((GameEvent)event)
 	{
+	case GameEvent::SEED:
+		tcpPacket >> this->seed;
+		break;
 	case GameEvent::SPAWN_ITEM:
 		tcpPacket >> i0 >> i1 >> i2 >> f0;
 		v0 = this->getVec(tcpPacket);
@@ -271,6 +291,11 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 	ServerGameMode* serverScene;
 	switch ((GameEvent)event)
 	{
+	case GameEvent::SEED:
+		srand((unsigned int)time(0));
+		packet << (int)GameEvent::SEED << (int)rand();
+		server->sendToAllClientsTCP(packet);
+		break;
 	case GameEvent::SPAWN_ITEM:
 		serverScene = server->getScene<ServerGameMode>();
 		tcpPacket >> si0 >> si1 >> sf0;
@@ -366,15 +391,43 @@ void NetworkHandlerGame::onDisconnect(int index)
 
 void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
 {
-    for (auto it = serverEntities.begin(); it != serverEntities.end(); ++it)
+    if (this->isConnected())
     {
-        if (it->second == entityID)
+		for (auto it = serverEntities.begin(); it != serverEntities.end(); ++it)
+		{
+		    if (it->second == entityID)
+		    {
+				//need to send knock back
+				sf::Packet p;
+				p << (int)GameEvent::MONSTER_TAKE_DAMAGE << it->first << damage << knockBack;
+				sendDataToServerTCP(p);
+                return;
+			}
+		}
+	}
+	else
+    {
+		bool isEnemy = false;
+		if (sceneHandler->getScene()->hasComponents<SwarmComponent>(entityID)) {
+			SwarmComponent& enemy = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+                  enemy.life -= damage;
+                  isEnemy = true;
+		}
+		else if (sceneHandler->getScene()->hasComponents<TankComponent>(entityID)) {
+			TankComponent& enemy = sceneHandler->getScene()->getComponent<TankComponent>(entityID);
+                  enemy.life -= damage;
+                  isEnemy = true;
+		}
+		//if (sceneHandler->getScene()->hasComponents<LichComponent>(entityID)) {
+		//
+		//}
+		if (isEnemy)
         {
-			//probably need where from
-            sf::Packet p;
-            p << (int)GameEvent::MONSTER_TAKE_DAMAGE << it->first << damage << knockBack;
-            sendDataToServerTCP(p);
-            return;
+            Rigidbody& enemyRB = sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
+			Transform& enemyTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+			Transform& playerTrans = sceneHandler->getScene()->getComponent<Transform>(player);
+			glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+			enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * knockBack;
 		}
 	}
 }
