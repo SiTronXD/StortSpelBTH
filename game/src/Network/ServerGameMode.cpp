@@ -15,7 +15,7 @@ void ServerGameMode::init()
 	    srand(time(NULL));
 	#endif
 
-    this->roomSeed = rand();
+    this->roomSeed = 123;//rand();
     aiHandler.init(this->getSceneHandler());
     this->getSceneHandler()->setAIHandler(&aiHandler);
     roomHandler.init(this, this->getResourceManager(), false);
