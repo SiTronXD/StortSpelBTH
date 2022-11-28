@@ -11,6 +11,7 @@
             "program": "${command:cmake.launchTargetPath}",
             "args": [
                 //Seed 
+                "1669633684"
                 // "1669568097" // spawn on same pos
                 //"1669574558" // Alot of enemies...
             ],
