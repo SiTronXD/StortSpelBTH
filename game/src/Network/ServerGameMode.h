@@ -47,7 +47,7 @@ private:
 
 	// Returns itemID
 	int spawnItem(ItemType type, int otherType, float multiplier = 0.0f);
-	void deleteItem(int playerID, Entity ID);
+	void deleteItem(int playerID, int index, ItemType type, int otherType, float multiplier = 0.0f);
 	void setEntityID(int itemID, int playerID, Entity ID);
 	Entity getEntityID(int itemID, int playerID);
     int spawnEnemy(int type = -1, glm::vec3 position = glm::vec3(0,-100,0));

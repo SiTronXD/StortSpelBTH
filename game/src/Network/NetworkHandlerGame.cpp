@@ -8,7 +8,7 @@ const float NetworkHandlerGame::UPDATE_RATE = ServerUpdateRate;
 Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir)
 {
 	Scene* scene = this->sceneHandler->getScene();
-	Perks perk{ .multiplier = 0.2f, .perkType = type };
+	Perks perk{ .multiplier = multiplier, .perkType = type };
 
 	Entity e = scene->createEntity();
 	scene->setComponent<MeshComponent>(e, perkMeshes[type]);
@@ -81,6 +81,19 @@ Entity NetworkHandlerGame::spawnEnemy(const int& type, const glm::vec3& pos) {
     return e;
 }
 
+Entity NetworkHandlerGame::spawnHealArea(glm::vec3 pos)
+{
+	Scene* scene = this->sceneHandler->getScene();
+	Entity heal = scene->createEntity();
+
+	scene->setComponent<MeshComponent>(heal, this->healAreaMesh);
+	scene->setComponent<PointLight>(heal, { glm::vec3(0.f, 10.f, 0.f), glm::vec3(9.f, 7.f, 9.f) });
+	scene->setComponent<HealArea>(heal);
+	scene->getComponent<Transform>(heal).position = pos;
+
+	return heal;
+}
+
 void NetworkHandlerGame::setCombatSystem(CombatSystem* system)
 {
 	combatSystem = system;
@@ -95,6 +108,8 @@ void NetworkHandlerGame::init()
 	this->perkMeshes[4] = this->resourceManger->addMesh("assets/models/Perk_Stamina.obj");
 	this->abilityMeshes[0] = this->resourceManger->addMesh("assets/models/KnockbackAbility.obj");
 	this->abilityMeshes[1] = this->resourceManger->addMesh("assets/models/KnockbackAbility.obj");
+	this->healAreaMesh = this->resourceManger->addMesh("assets/models/HealingAbility.obj");
+	this->swordMesh = this->resourceManger->addMesh("assets/models/MainSword.fbx", "assets/textures");
 }
 
 void NetworkHandlerGame::cleanup()
@@ -104,7 +119,6 @@ void NetworkHandlerGame::cleanup()
 void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 {
 	sf::Packet packet;
-	Entity e;
 	switch ((GameEvent)event)
 	{
 	case GameEvent::SPAWN_ITEM:
@@ -113,37 +127,45 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		v1 = this->getVec(tcpPacket);
 		if ((ItemType)i1 == ItemType::PERK)
 		{
-			e = this->spawnItem((PerkType)i2, f0, v0, v1);
+			this->itemIDs.push_back(this->spawnItem((PerkType)i2, f0, v0, v1));
 		}
 		else
 		{
-			e = this->spawnItem((AbilityType)i2, v0, v1);
+			this->itemIDs.push_back(this->spawnItem((AbilityType)i2, v0, v1));
 		}
-
-		packet << (int)GameEvent::SET_ITEM_ID << i0 << e;
-		this->sendDataToServerTCP(packet);
 		break;
 	case GameEvent::PICKUP_ITEM:
-		// EntityID -> ItemType
+		// Index -> ItemType
 		tcpPacket >> i0 >> i1;
-		if ((ItemType)i1 == ItemType::PERK)
+		if (this->sceneHandler->getScene()->entityValid(this->itemIDs[i0]))
 		{
-			this->combatSystem->pickupPerk(i0);
-		}
-		else
-		{
-			this->combatSystem->pickUpAbility(i0);
+			if ((ItemType)i1 == ItemType::PERK)
+			{
+				this->combatSystem->pickupPerk(this->itemIDs[i0]);
+			}
+			else
+			{
+				this->combatSystem->pickUpAbility(this->itemIDs[i0]);
+			}
+			std::swap(this->itemIDs[i0], this->itemIDs[this->itemIDs.size() - 1]);
+			this->itemIDs.pop_back();
 		}
 		break;
 	case GameEvent::DELETE_ITEM:
-		// EntityID -> ItemType
+		// Index -> ItemType
 		tcpPacket >> i0 >> i1;
-		this->sceneHandler->getScene()->removeEntity(i0);
+		this->sceneHandler->getScene()->removeEntity(this->itemIDs[i0]);
+		std::swap(this->itemIDs[i0], this->itemIDs[this->itemIDs.size() - 1]);
+		this->itemIDs.pop_back();
+		break;
+	case GameEvent::USE_HEAL :
+		v0 = this->getVec(tcpPacket);
+		this->spawnHealArea(v0);
 		break;
     case GameEvent::SPAWN_ENEMY:
         tcpPacket >> i0 >> i1;
         v0 = this->getVec(tcpPacket);
-        serverEnteties.insert(std::pair<int, int>(i1, spawnEnemy(i0, v0)));
+		serverEntities.insert(std::pair<int, int>(i1, spawnEnemy(i0, v0)));
 		break;
     case GameEvent::PUSH_PLAYER://can't confimr yet if this works
         tcpPacket >> i0; 
@@ -211,25 +233,25 @@ void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 		anim->animationIndex = (uint32_t)i0;
 		break;
     case GameEvent::UPDATE_MONSTER:
-        //how many monsters we shall update
+        // How many monsters we shall update
         udpPacket >> i0;
         for (int i = 0; i < i0; i++)
         {
-			//the monster id on server side
+			// The monster id on server side
 			udpPacket >> i1;
 
-			if (serverEnteties.find(i1) == serverEnteties.end())
+			if (serverEntities.find(i1) == serverEntities.end())
             {
 				udpPacket.clear();
                 break;
 			}
-			//get and set position and rotation
+			// Get and set position and rotation
             v0 = getVec(udpPacket);
             v1 = getVec(udpPacket);
-            sceneHandler->getScene()->getComponent<Transform>(serverEnteties.find(i1)->second).position = v0;
-            sceneHandler->getScene()->getComponent<Transform>(serverEnteties.find(i1)->second).rotation = v1;
+            sceneHandler->getScene()->getComponent<Transform>(serverEntities.find(i1)->second).position = v0;
+            sceneHandler->getScene()->getComponent<Transform>(serverEntities.find(i1)->second).rotation = v1;
 
-			//get and set animation // don't know how this should be made
+			// Get and set animation // don't know how this should be made
 			//anim = &this->sceneHandler->getScene()->getComponent<AnimationComponent>(serverEnteties.find(i1)->second);
 			//udpPacket >> i2 >> anim->timer >> anim->timeScale;
 			//anim->animationIndex = (uint32_t)i2;
@@ -259,15 +281,17 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 		this->sendVec(packet, sv1);
 		server->sendToAllClientsTCP(packet);
 		break;
-	case GameEvent::SET_ITEM_ID:
-		serverScene = server->getScene<ServerGameMode>();
-		tcpPacket >> si0 >> si1;
-		serverScene->setEntityID(si0, clientID, si1);
-		break;
 	case GameEvent::PICKUP_ITEM:
 		serverScene = server->getScene<ServerGameMode>();
-		tcpPacket >> si0;
-		serverScene->deleteItem(clientID, si0);
+		tcpPacket >> si0 >> si1 >> si2 >> sf0;
+		serverScene->deleteItem(clientID, si0, (ItemType)si1, si2, sf0);
+		break;
+
+	case GameEvent::USE_HEAL:
+		sv0 = this->getVec(tcpPacket);
+		packet << (int)GameEvent::USE_HEAL;
+		this->sendVec(packet, sv0);
+		server->sendToAllClientsTCP(packet);
 		break;
     case GameEvent::MONSTER_TAKE_DAMAGE:
 		serverScene = server->getScene<ServerGameMode>();
@@ -330,6 +354,10 @@ void NetworkHandlerGame::onDisconnect(int index)
 		Entity ID = this->playerEntities[index];
 		this->playerEntities.erase(this->playerEntities.begin() + index);
 		this->sceneHandler->getScene()->removeEntity(ID);
+
+		Entity swordID = this->swords[index];
+		this->swords.erase(this->swords.begin() + index);
+		this->sceneHandler->getScene()->removeEntity(swordID);
 	}
 }
 
@@ -356,6 +384,7 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 {
 	int size = this->otherPlayersServerId.size();
 	this->playerEntities.resize(size);
+	this->swords.resize(size);
 	this->playerPosLast.resize(size);
 	this->playerPosCurrent.resize(size);
 	float angle = 360.0f / (size + 1);
@@ -369,6 +398,10 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 		scene->setComponent<MeshComponent>(this->playerEntities[i], playerMesh);
 		scene->setComponent<AnimationComponent>(this->playerEntities[i]);
 		scene->setComponent<Collider>(this->playerEntities[i], Collider::createCapsule(2, 11, glm::vec3(0, 7.3, 0)));
+
+		// Sword
+		this->swords[i] = scene->createEntity();
+		scene->setComponent<MeshComponent>(this->swords[i], swordMesh);
 
 		// Set Position
 		Transform& t = scene->getComponent<Transform>(this->playerEntities[i]);
@@ -407,6 +440,7 @@ void NetworkHandlerGame::updatePlayer()
 void NetworkHandlerGame::interpolatePositions()
 {
 	Scene* scene = this->sceneHandler->getScene();
+	UIRenderer* UI = this->sceneHandler->getUIRenderer();
 	this->timer += Time::getDT();
 
 	float percent = this->timer / UPDATE_RATE;
@@ -414,6 +448,16 @@ void NetworkHandlerGame::interpolatePositions()
 	{
 		Transform& t = scene->getComponent<Transform>(this->playerEntities[i]);
 		t.position = this->playerPosLast[i] + percent * (this->playerPosCurrent[i] - this->playerPosLast[i]);
+		UI->renderString(this->otherPlayers[i].second, t.position + glm::vec3(0.0f, 20.0f, 0.0f) + t.forward(), glm::vec2(150.0f));
+
+		// Put sword in characters hand and keep updating it
+		scene->getComponent<Transform>(this->swords[i]).setMatrix(
+			this->resourceManger->getJointTransform(
+				scene->getComponent<Transform>(this->playerEntities[i]),
+				scene->getComponent<MeshComponent>(this->playerEntities[i]),
+				scene->getComponent<AnimationComponent>(this->playerEntities[i]),
+				"mixamorig:RightHand") * glm::translate(glm::mat4(1.f), glm::vec3(0.f, 1.f, 0.f)) *
+			glm::rotate(glm::mat4(1.f), glm::radians(-90.f), glm::vec3(0.f, 0.f, 1.f)));
 	}
 }
 
@@ -453,9 +497,31 @@ void NetworkHandlerGame::pickUpItemRequest(Entity itemEntity, ItemType type)
 {
 	if (!this->playerEntities.empty()) // Multiplayer (send to server)
 	{
+		int index = -1;
+		for (int i = 0; i < this->itemIDs.size(); i++)
+		{
+			if (this->itemIDs[i] == itemEntity)
+			{
+				index = i;
+				break;
+			}
+		}
 		sf::Packet packet;
-		packet << (int)GameEvent::PICKUP_ITEM << itemEntity;
-		this->sendDataToServerTCP(packet);
+		packet << (int)GameEvent::PICKUP_ITEM << index;
+
+		Scene* scene = this->sceneHandler->getScene();
+		if (scene->hasComponents<Perks>(itemEntity))
+		{
+			Perks& perk = scene->getComponent<Perks>(itemEntity);
+			packet << (int)ItemType::PERK << perk.perkType << perk.multiplier;
+			this->sendDataToServerTCP(packet);
+		}
+		else if (scene->hasComponents<Abilities>(itemEntity))
+		{
+			Abilities& ability = scene->getComponent<Abilities>(itemEntity);
+			packet << (int)ItemType::ABILITY << ability.abilityType << 0.0f;
+			this->sendDataToServerTCP(packet);
+		}
 	}
 	else // Singleplayer
 	{
@@ -467,5 +533,20 @@ void NetworkHandlerGame::pickUpItemRequest(Entity itemEntity, ItemType type)
 		{
 			this->combatSystem->pickUpAbility(itemEntity);
 		}
+	}
+}
+
+void NetworkHandlerGame::useHealAbilityRequest(glm::vec3 position)
+{
+	if (!this->playerEntities.empty()) // Multiplayer (send to server)
+	{
+		sf::Packet packet;
+		packet << (int)GameEvent::USE_HEAL;
+		this->sendVec(packet, position);
+		this->sendDataToServerTCP(packet);
+	}
+	else // Singleplayer
+	{
+		this->spawnHealArea(position);
 	}
 }

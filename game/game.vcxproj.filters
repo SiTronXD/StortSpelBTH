@@ -69,12 +69,13 @@
     <ClInclude Include="src\ServerGameModes\NetworkGameScene.h" />
     <ClInclude Include="src\World Handling\SpawnHandler.hpp" />
     <ClInclude Include="src\Components\NetworkCombat.h" />
+    <ClInclude Include="src\Components\HealArea.h" />
+    <ClInclude Include="src\Systems\HealSystem.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
     <None Include="src\Scripts\Prefab.lua" />
     <None Include="src\Scripts\Prefabs.lua" />
     <None Include="scripts\moveRock.lua" />
-    <None Include="scripts\loadBlob.lua" />
   </ItemGroup>
 </Project>

@@ -50,7 +50,10 @@ private:
 
 	Entity player; // Own player
 	std::vector<Entity> playerEntities; // Other players connected
-    std::map<int, Entity> serverEnteties;//serverID, ID on this client
+	std::vector<Entity> swords; // Other player swords
+
+    std::map<int, Entity> serverEntities;
+	std::vector<Entity> itemIDs;
 
 	// Interpolation of other transforms
 	std::vector<glm::vec3> playerPosLast;
@@ -68,9 +71,13 @@ private:
 
 	int perkMeshes[PerkType::emptyPerk];
 	int abilityMeshes[AbilityType::emptyAbility];
+	int healAreaMesh;
+	int swordMesh;
 
 	Entity spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	Entity spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
+	Entity spawnHealArea(glm::vec3 pos);
+
 	Entity spawnEnemy(const int& type, const glm::vec3& pos);
 public:
 	void init();
@@ -94,5 +101,6 @@ public:
 	void spawnItemRequest(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	void spawnItemRequest(AbilityType type, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	void pickUpItemRequest(Entity itemEntity, ItemType type);
+	void useHealAbilityRequest(glm::vec3 position);
 };
 

@@ -6,6 +6,8 @@
 #include "../Network/NetworkHandlerGame.h"
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
 
+#include "../Components/HealArea.h"
+
 class CombatSystem : public System
 {
 private:
@@ -18,7 +20,6 @@ private:
 	NetworkHandlerGame* networkHandler;
 	Entity playerID;
 	Entity swordID;
-	Entity heal;
 	const bool* paused;
 
 	int swordMesh;
@@ -32,7 +33,7 @@ public:
 
 	CombatSystem(Scene* scene, ResourceManager* resourceMng, Entity playerID, const bool* paused,
 		PhysicsEngine* physics, UIRenderer* uiRenderer, ScriptHandler* script, NetworkHandlerGame* networkHandler)
-		: scene(scene), resourceMng(resourceMng), playerID(playerID), heal(-1), paused(paused),
+		: scene(scene), resourceMng(resourceMng), playerID(playerID), paused(paused),
 		swordID(-1), physics(physics), uiRenderer(uiRenderer), script(script), networkHandler(networkHandler)
 	{
 		this->networkHandler->setCombatSystem(this);
@@ -84,26 +85,6 @@ public:
 					this->scene->getComponent<AnimationComponent>(this->playerID),
 					"mixamorig:RightHand") * glm::translate(glm::mat4(1.f), glm::vec3(0.f, 1.f, 0.f)) * 
 				glm::rotate(glm::mat4(1.f), glm::radians(-90.f), glm::vec3(0.f, 0.f, 1.f)));
-
-			if (combat.isHealing)
-			{
-				Transform& healTrans = this->scene->getComponent<Transform>(this->heal);
-				Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
-				if (combat.health < combat.maxHealth)
-				{
-					glm::vec3 playerToHeal = healTrans.position - playerTrans.position;
-					float distSqrd = glm::dot(playerToHeal, playerToHeal);
-					if (distSqrd < combat.healRadius * combat.healRadius)
-					{
-						combat.hpRegenConverter += combat.hpRegen * deltaTime;
-						if (combat.hpRegenConverter > 1.f)
-						{
-							combat.health += (int)(combat.hpRegenConverter);
-							combat.hpRegenConverter -= 1.f;
-						}
-					}
-				}
-			}
 
 			if (!*this->paused)
 			{
@@ -412,16 +393,11 @@ public:
 		{
 			if (checkActiveAttack(combat) == noActive)
 			{
-				combat.healTimer = combat.healCd;
-				combat.isHealing = true;
 				combat.ability.abilityType = emptyAbility;
 
-				this->heal = this->scene->createEntity();
-				this->scene->setComponent<MeshComponent>(this->heal, this->abilityMeshes[healAbility]);
-				this->scene->setComponent<PointLight>(this->heal, { glm::vec3(0.f, 10.f, 0.f), glm::vec3(9.f, 7.f, 9.f) });
-				Transform& healTrans = this->scene->getComponent<Transform>(this->heal);
-				Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
-				healTrans.position = glm::vec3(playerTrans.position.x, 0.f, playerTrans.position.z);
+				glm::vec3& pos = this->scene->getComponent<Transform>(this->playerID).position;
+				pos.y = 0.0f;
+				this->networkHandler->useHealAbilityRequest(pos);
 
 				return true;
 			}
@@ -696,45 +672,6 @@ public:
 		Entity newPerk = this->scene->createEntity();
 		this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[perk.perkType]);
 		setupPerkSpawn(newPerk, perk);
-
-		/*switch (perk.perkType)
-		{
-		case hpUpPerk:
-		{
-			Entity newPerk = this->scene->createEntity();
-			this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[hpUpPerk]);
-			setupPerkSpawn(newPerk, perk);
-		}
-		break;
-		case dmgUpPerk:
-		{
-			Entity newPerk = this->scene->createEntity();
-			this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[dmgUpPerk]);
-			setupPerkSpawn(newPerk, perk);
-		}
-		break;
-		case attackSpeedUpPerk:
-		{
-			Entity newPerk = this->scene->createEntity();
-			this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[attackSpeedUpPerk]);
-			setupPerkSpawn(newPerk, perk);
-		}
-		break;
-		case movementUpPerk:
-		{
-			Entity newPerk = this->scene->createEntity();
-			this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[movementUpPerk]);
-			setupPerkSpawn(newPerk, perk);
-		}
-		break;
-		case staminaUpPerk:
-		{
-			Entity newPerk = this->scene->createEntity();
-			this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[staminaUpPerk]);
-			setupPerkSpawn(newPerk, perk);
-		}
-		break;
-		}*/
 	}
 
 	void removePerk(Combat& combat, Perks& perk)
@@ -823,17 +760,6 @@ public:
 			t.updateMatrix();
 			this->networkHandler->spawnItemRequest(ability.abilityType, t.position + glm::vec3(0.0f, 8.0f, 0.0f), t.forward());
 			combat.ability.abilityType = emptyAbility;
-			/*switch (ability.abilityType)
-			{
-			case knockbackAbility:
-				spawnAbility(ability);
-				combat.ability.abilityType = emptyAbility;
-				break;
-			case healAbility:
-				spawnAbility(ability);
-				combat.ability.abilityType = emptyAbility;
-				break;
-			}*/
 		}
 	}
 
@@ -971,15 +897,6 @@ public:
 		{
 			combat.comboOrder.clear();
 			combat.comboClearTimer = 0.f;
-		}
-		if (combat.healTimer > 0.f)
-		{
-			combat.healTimer -= deltaTime;
-		}
-		else
-		{
-			combat.isHealing = false;
-			this->scene->removeEntity(this->heal);
 		}
 	}
 };

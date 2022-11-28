@@ -299,6 +299,7 @@ SET ERRORLEVEL=0</Command>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
     <ClInclude Include="Components\Movement.h" />
+    <ClInclude Include="src\Components\HealArea.h" />
     <ClInclude Include="src\Components\NetworkCombat.h" />
     <ClInclude Include="src\Network\ServerGameMode.h" />
     <ClInclude Include="src\Components\Abilities.h" />
@@ -332,6 +333,7 @@ SET ERRORLEVEL=0</Command>
     <ClInclude Include="src\ServerGameModes\TheServerGame.h" />
     <ClInclude Include="src\Systems\CameraMovementSystem.hpp" />
     <ClInclude Include="src\Systems\CombatSystem.hpp" />
+    <ClInclude Include="src\Systems\HealSystem.hpp" />
     <ClInclude Include="src\Systems\HealthBarSystem.hpp" />
     <ClInclude Include="src\Systems\MovementSystem.hpp" />
     <ClInclude Include="src\World Handling\Room Generator.h" />
@@ -352,7 +354,6 @@ SET ERRORLEVEL=0</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
-    <None Include="scripts\loadBlob.lua" />
     <None Include="src\Scripts\Prefab.lua" />
     <None Include="src\Scripts\Prefabs.lua" />
   </ItemGroup>

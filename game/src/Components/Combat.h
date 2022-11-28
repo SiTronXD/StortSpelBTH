@@ -31,7 +31,6 @@ struct Combat : public NetworkCombat
 	float comboHeavyCd = 1.f;
 	float comboMixCd = 1.f;
 	float knockbackCd = 2.f;
-	float healCd = 10.f;
 
 	// Different types of combos aviable
 	std::string comboOrder;
@@ -40,7 +39,6 @@ struct Combat : public NetworkCombat
 	// Timers to clear combo. Too long time between attacks = Combo cleared
 	float attackTimer = 0.f;
 	float knockbackTimer = 0.f;
-	float healTimer = 0.f;
 	float comboClearTimer = 0.f;
 	float comboClearDelay = 2.f;
 
@@ -55,12 +53,6 @@ struct Combat : public NetworkCombat
 
 	// Abilities
 	Abilities ability;
-
-	// Healing Values
-	bool isHealing = false;
-	float healRadius = 28.f;
-	float hpRegen = 10.f;
-	float hpRegenConverter = 0.f;
 
 	// Knockback values for each attack
 	// Starting with:
