@@ -62,22 +62,25 @@ Entity NetworkHandlerGame::spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 
 Entity NetworkHandlerGame::spawnEnemy(const int& type, const glm::vec3& pos) {
     int e = sceneHandler->getScene()->createEntity();
     switch (type)
-        {
-            case 0:
-				//load blob
-                sceneHandler->getScene()->setScriptComponent(e, "scripts/loadBlob.lua");
-                break;
-            case 1:
-				//load lich
-                sceneHandler->getScene()->setScriptComponent(e, "scripts/loadBlob.lua");
-                break;
-            case 2:
-				//load tank
-                sceneHandler->getScene()->setScriptComponent(e, "scripts/loadBlob.lua");
-                break;
-            default:
-                break;
-        }
+	{
+	case 0:
+		// Load blob
+		this->sceneHandler->getScene()->setScriptComponent(e, "scripts/loadBlob.lua");
+		this->sceneHandler->getScene()->setComponent<SwarmComponent>(e);
+		break;
+	case 1:
+		// Load lich
+		this->sceneHandler->getScene()->setScriptComponent(e, "scripts/loadBlob.lua");
+		this->sceneHandler->getScene()->setComponent<LichComponent>(e);
+		break;
+	case 2:
+		// Load tank
+		this->sceneHandler->getScene()->setScriptComponent(e, "scripts/loadBlob.lua");
+		this->sceneHandler->getScene()->setComponent<TankComponent>(e);
+		break;
+	default:
+		break;
+	}
     return e;
 }
 
@@ -167,7 +170,7 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
         v0 = this->getVec(tcpPacket);
 		serverEntities.insert(std::pair<int, int>(i1, spawnEnemy(i0, v0)));
 		break;
-    case GameEvent::PUSH_PLAYER://can't confimr yet if this works
+    case GameEvent::PUSH_PLAYER: // Can't confirm yet if this works
         tcpPacket >> i0; 
 		v0 = this->getVec(tcpPacket);
         this->sceneHandler->getScene()->getComponent<Rigidbody>(player).velocity = v0;
@@ -181,9 +184,9 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
         tcpPacket >> i0 >> i1;
         if (i0 == ID)
         {
-			this->sceneHandler->getScene()->getComponent<Combat>(player).health = i1;   
+			this->sceneHandler->getScene()->getComponent<HealthComp>(player).health = i1;   
 		}
-		//else give hp to other players visually
+		// Else give hp to other players visually
 		break;
 	default:
 		break;
@@ -296,7 +299,7 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
     case GameEvent::MONSTER_TAKE_DAMAGE:
 		serverScene = server->getScene<ServerGameMode>();
 		tcpPacket >> si0 >> si1 >> sf0;
-		//get how they should take damage
+		// Get how they should take damage
         std::cout << "monster take damage" << std::endl;
         if (serverScene->hasComponents<SwarmComponent>(si0))
         {
@@ -463,7 +466,7 @@ void NetworkHandlerGame::interpolatePositions()
 
 void NetworkHandlerGame::spawnItemRequest(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir)
 {
-	if (!this->playerEntities.empty()) // Multiplayer (send to server)
+	if (this->isConnected()) // Multiplayer (send to server)
 	{
 		sf::Packet packet;
 		packet << (int)GameEvent::SPAWN_ITEM << (int)ItemType::PERK << type << multiplier;
@@ -479,7 +482,7 @@ void NetworkHandlerGame::spawnItemRequest(PerkType type, float multiplier, glm::
 
 void NetworkHandlerGame::spawnItemRequest(AbilityType type, glm::vec3 pos, glm::vec3 shootDir)
 {
-	if (!this->playerEntities.empty()) // Multiplayer (send to server)
+	if (this->isConnected()) // Multiplayer (send to server)
 	{
 		sf::Packet packet;
 		packet << (int)GameEvent::SPAWN_ITEM << (int)ItemType::ABILITY << type << 0.0f;
@@ -495,7 +498,7 @@ void NetworkHandlerGame::spawnItemRequest(AbilityType type, glm::vec3 pos, glm::
 
 void NetworkHandlerGame::pickUpItemRequest(Entity itemEntity, ItemType type)
 {
-	if (!this->playerEntities.empty()) // Multiplayer (send to server)
+	if (this->isConnected()) // Multiplayer (send to server)
 	{
 		int index = -1;
 		for (int i = 0; i < this->itemIDs.size(); i++)
@@ -538,7 +541,7 @@ void NetworkHandlerGame::pickUpItemRequest(Entity itemEntity, ItemType type)
 
 void NetworkHandlerGame::useHealAbilityRequest(glm::vec3 position)
 {
-	if (!this->playerEntities.empty()) // Multiplayer (send to server)
+	if (this->isConnected()) // Multiplayer (send to server)
 	{
 		sf::Packet packet;
 		packet << (int)GameEvent::USE_HEAL;

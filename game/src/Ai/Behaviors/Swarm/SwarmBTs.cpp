@@ -645,12 +645,11 @@ BTStatus SwarmBT::die(Entity entityID)
 {
     BTStatus ret = BTStatus::Success;
 
-    //TODO : this was changed from combat to networkCombat see if it works
-    NetworkCombat& playerCombat = sceneHandler->getScene()->getComponent<NetworkCombat>(getPlayerID(sceneHandler,entityID));
-    if (playerCombat.health <= (playerCombat.maxHealth - 10))
-        {
-            playerCombat.health += 10;
-        }
+    HealthComp& playerHealth = sceneHandler->getScene()->getComponent<HealthComp>(getPlayerID(sceneHandler,entityID));
+    if (playerHealth.health <= (playerHealth.maxHealth - 10))
+    {
+        playerHealth.health += 10;
+    }
 
 	int spawnLoot = rand() % 10;
 	if (spawnLoot < 2)

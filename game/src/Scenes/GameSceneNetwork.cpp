@@ -205,9 +205,9 @@ void GameSceneNetwork::update()
     {
         this->newRoomFrame = true;
     }
-    if (this->hasComponents<Combat>(this->playerID))
+    if (this->hasComponents<HealthComp>(this->playerID))
     {
-        if (this->getComponent<Combat>(this->playerID).health <= 0.0f)
+        if (this->getComponent<HealthComp>(this->playerID).health <= 0.0f)
         {
             this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
         }
@@ -231,13 +231,9 @@ void GameSceneNetwork::update()
       }
 
     // Render HP bar UI
-    float hpPercent = 1.0f;
-    float maxHpPercent = 1.0f;
-    if (this->hasComponents<Combat>(this->playerID))
-      {
-        hpPercent = playerCombat.health * 0.01f;
-        maxHpPercent = playerCombat.maxHealth * 0.01f;
-      }
+    HealthComp& playerHealth = this->getComponent<HealthComp>(this->playerID);
+    float hpPercent = playerHealth.health * 0.01f;
+    float maxHpPercent = playerHealth.maxHealth * 0.01f;
     float xPos = -720.f;
     float yPos = -500.f;
     float xSize = 1024.f * 0.35f;

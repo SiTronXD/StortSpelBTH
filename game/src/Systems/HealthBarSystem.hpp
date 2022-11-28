@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vengine.h>
+#include "../Components/HealthComp.h"
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 
 class HealthBarSystem : public System

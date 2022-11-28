@@ -89,12 +89,6 @@ void GameScene::init()
     dirLight.shadowMapMinBias = 0.00001f;
     dirLight.shadowMapAngleBias = 0.0004f;
 
-    this->createSystem<HealthBarSystem>(
-        this->hpBarBackgroundTextureID,
-        this->hpBarTextureID,
-        this,
-        this->getUIRenderer()
-        );
 }
 
 void GameScene::start()
@@ -125,6 +119,7 @@ void GameScene::start()
     
     createPortal();
 
+    this->setComponent<HealthComp>(playerID);
     this->setComponent<Combat>(playerID);
     this->createSystem<CombatSystem>(
         this,
@@ -140,8 +135,14 @@ void GameScene::start()
         this->playerID,
         this
     );
+    this->createSystem<HealthBarSystem>(
+        this->hpBarBackgroundTextureID,
+        this->hpBarTextureID,
+        this,
+        this->getUIRenderer()
+        );
 
-    if (this->networkHandler->hasServer())
+    if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {
         this->networkHandler->spawnItemRequest(healAbility, glm::vec3(50.0f, 10.0f, 0.0f));
         this->networkHandler->spawnItemRequest(hpUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 20.0f));
@@ -157,7 +158,7 @@ void GameScene::start()
     this->resumeButton.dimension = glm::vec2(500.0f, 150.0f);
     this->exitButton.dimension = glm::vec2(500.0f, 150.0f);
 
-    //if we are not multiplayer we do this by ourself
+    // If we are not multiplayer we do this by ourself
     if (!networkHandler->isConnected())
     {
         // Ai management
@@ -202,7 +203,7 @@ void GameScene::update()
         // Switch scene if the player is dead
         if (this->hasComponents<Combat>(this->playerID))
         {
-            if (this->getComponent<Combat>(this->playerID).health <= 0.0f)
+            if (this->getComponent<HealthComp>(this->playerID).health <= 0.0f)
             {
                 this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
             }
@@ -224,9 +225,9 @@ void GameScene::update()
 
         // If player is dead make the player not able to move
         // and server shall say if we shall switch scene
-        if (this->hasComponents<Combat>(this->playerID))
+        if (this->hasComponents<HealthComp>(this->playerID))
         {
-            if (this->getComponent<Combat>(this->playerID).health <= 0.0f)
+            if (this->getComponent<HealthComp>(this->playerID).health <= 0.0f)
             {
                 this->networkHandler->disconnectClient(); // TEMP: probably will be in game over scene later
                 this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
@@ -260,13 +261,9 @@ void GameScene::update()
     }
 
     // Render HP bar UI
-    float hpPercent = 1.0f;
-    float maxHpPercent = 1.0f;
-    if (this->hasComponents<Combat>(this->playerID))
-    {
-        hpPercent = playerCombat.health * 0.01f;
-        maxHpPercent = playerCombat.maxHealth * 0.01f;
-    }
+    HealthComp& playerHealth = this->getComponent<HealthComp>(this->playerID);
+    float hpPercent = playerHealth.health * 0.01f;
+    float maxHpPercent = playerHealth.maxHealth * 0.01f;
     float xPos = -600.f;
     float yPos = -472.f;
     float xSize = 1200.f * 0.35f;
@@ -466,7 +463,7 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
           swarmComp.inAttack = false;
           swarmComp.touchedPlayer = true;
           //aiCombat.timer = aiCombat.lightAttackTime;
-          this->getComponent<Combat>(player).health -=
+          this->getComponent<HealthComp>(player).health -=
               (int)aiCombat.lightHit;
             
           Log::write("WAS HIT", BT_FILTER);
@@ -479,7 +476,7 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
       {
         auto& aiCombat = this->getComponent<AiCombatTank>(other);
         tankComp.canAttack = false;
-        this->getComponent<Combat>(player).health -=
+        this->getComponent<HealthComp>(player).health -=
             (int)aiCombat.directHit;
             
         Log::write("WAS HIT", BT_FILTER);
