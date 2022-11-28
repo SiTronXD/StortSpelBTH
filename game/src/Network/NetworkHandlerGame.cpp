@@ -363,7 +363,7 @@ void NetworkHandlerGame::onDisconnect(int index)
 
 void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
 {
-    for (auto it = serverEnteties.begin(); it != serverEnteties.end(); ++it)
+    for (auto it = serverEntities.begin(); it != serverEntities.end(); ++it)
     {
         if (it->second == entityID)
         {
