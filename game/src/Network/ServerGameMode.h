@@ -23,7 +23,7 @@ private:
 	// itemIDs[ItemIndex][ClientID]
 	std::vector<std::vector<Entity>> itemIDs;
     std::vector<int> entities;
-    std::vector<NetworkCombat> lastPlayerHps;
+    std::vector<HealthComp> lastPlayerHps;
 
 	AIHandler aiHandler;
     SpawnHandler spawnHandler;

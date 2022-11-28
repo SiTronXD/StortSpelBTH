@@ -375,12 +375,12 @@ ImguiLambda SpawnHandler::SwarmImgui()
         std::string playerString = "playerID";
         int playerID;
         this->sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
-        auto& playerCombat = this->sceneHandler->getScene()->getComponent<Combat>(playerID);
+        auto& playerHealth = this->sceneHandler->getScene()->getComponent<HealthComp>(playerID);
         if(ImGui::Button("Kill Player")){
-            playerCombat.health = 0; 
+            playerHealth.health = 0;
         }
         if(ImGui::Button("INVINCIBLE Player")){
-            playerCombat.health = INT_MAX; 
+            playerHealth.health = INT_MAX;
         }
         ImGui::Separator();
         ImGui::Separator();
