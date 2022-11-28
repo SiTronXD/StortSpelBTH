@@ -829,10 +829,15 @@ const TileInfo* TilePicker::getSpreadTile()
     calcEnemiesMidpoint(); 
 
     std::vector<const TileInfo*> possibleTiles{this->unusedTileInfos.begin(), this->unusedTileInfos.end()}; 
-    // TODO: Randomize vector^ 
+    std::shuffle(possibleTiles.begin(),possibleTiles.end(),this->randomDev);
+    
+    // pick furthest from 4 random tiles
+    const uint32_t samples = 4;  
 
     const TileInfo* furthest = possibleTiles.front();
     float prevFurthest = 0.f;
+        
+    int c = 0; 
     for(auto p : possibleTiles)
     {
         float dist = glm::length(p->getPos() - this->enemiesMidpoint);
@@ -841,6 +846,8 @@ const TileInfo* TilePicker::getSpreadTile()
             prevFurthest = dist;
             furthest = p;
         }
+        if(samples < c){break;}
+        c++; 
     }
     return furthest;
 }
@@ -856,19 +863,26 @@ const TileInfo* TilePicker::getRandomFreeTileFarAwayFrom(const TileInfo* tile)
 {
     std::vector<const TileInfo*> possibleTiles{
         this->unusedTileInfos.begin(), this->unusedTileInfos.end()};
+
+    std::shuffle(possibleTiles.begin(),possibleTiles.end(),this->randomDev);
     
-    // TODO: Randomize vector^ 
+    // pick furthest from 4 random tiles
+    const uint32_t samples = 4;
 
     const TileInfo* furthest = possibleTiles.front();
     float prevFurthest = 0.f;
+
+    int c = 0; 
     for (auto p : possibleTiles)
     {
         float dist = glm::length(p->getPos() - tile->getPos());
         if (dist > prevFurthest)
-            {
-                prevFurthest = dist;
-                furthest = p;
-            }
+        {
+            prevFurthest = dist;
+            furthest = p;
+        }
+        if(samples < c){break;}
+        c++; 
     }
     usedTiles.push_back(furthest);
     unusedTileInfos.remove(furthest);

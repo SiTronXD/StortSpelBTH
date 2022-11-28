@@ -7,6 +7,7 @@
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
 
 #include <list>
+#include <random>
 #include <vector>
 
 
@@ -19,6 +20,9 @@ using ImguiLambda = std::function<void(FSM* fsm, uint32_t entityId)>;
 class TilePicker
 {
 private:
+
+    std::random_device randomDev;
+
     std::vector<const TileInfo*> usedTiles;
     std::list<const TileInfo*> unusedTileInfos;
     std::map<const TileInfo*, bool> freeTiles; 
