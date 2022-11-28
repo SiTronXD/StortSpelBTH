@@ -290,7 +290,7 @@ void GameScene::update()
     if (this->paused)
     {
         this->getUIRenderer()->setTexture(this->blackTextureIndex);
-        this->getUIRenderer()->renderTexture(glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f), glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
+        this->getUIRenderer()->renderTexture(glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f) * 4.0f, glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
         this->getUIRenderer()->renderTexture(this->resumeButton.position, this->resumeButton.dimension);
         this->getUIRenderer()->renderTexture(this->exitButton.position, this->exitButton.dimension);
         this->getUIRenderer()->renderString("resume", this->resumeButton.position, glm::vec2(50.0f));
