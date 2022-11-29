@@ -7,6 +7,7 @@
 struct SwarmComponent
 {
     inline static const uint32_t colliderRadius = 4;
+    inline static const uint32_t GROUP_RAD_MULTIPLER = 4;
 
 	//Ints
 	int LOW_HEALTH				= 30;
@@ -125,7 +126,7 @@ struct SwarmComponent
 				max = dist;
 			}
 		}
-		this->group->idleRadius = max;
+		this->group->idleRadius = max * SwarmComponent::GROUP_RAD_MULTIPLER;
 	}
 };
 
