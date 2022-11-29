@@ -12,6 +12,8 @@
 #include "src/Scenes/GameOverScene.h"
 #include "src/Scenes/LevelEditor.h"
 #include "src/Scenes/NetworkAI.h"
+#include "src/Scenes/LobbyScene.h"
+#include "src/Network/NetworkHandlerGame.h"
 
 #include <fstream>
 

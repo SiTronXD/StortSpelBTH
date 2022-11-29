@@ -52,7 +52,7 @@ class TankBT : public BehaviorTree
 	static void rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision);
 	static bool rotationDone(Entity entityID, glm::vec3 target, float rotSpeed, float precision);
 
-	static int		getPlayerID();
+	static int		getPlayerID(int entityID = -1);
 	static float	get_dt();
 	static Scene*	getTheScene();
 	static void		updateCanBeHit(Entity entityID);

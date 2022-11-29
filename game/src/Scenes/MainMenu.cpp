@@ -2,6 +2,8 @@
 #include "GameScene.h"
 #include "LevelEditor.h"
 #include "logInScene.h"
+#include "../ServerGameModes/NetworkLobbyScene.h"
+#include "../Network/ServerGameMode.h"
 
 void MainMenu::init()
 {
@@ -183,8 +185,7 @@ void MainMenu::update()
             this->getUIRenderer()->renderString(
                 "loading...", glm::vec2(0.f, 0.f), glm::vec2(100.f, 100.f)
             );
-            //TODO : Change to networkLobbyScene
-            this->getNetworkHandler()->createServer();
+            this->getNetworkHandler()->createServer(new NetworkLobbyScene());
 			this->getSceneHandler()->setScene(new logInScene());
 		}
         if (this->getComponent<UIArea>(joinGameButton).isClicking())

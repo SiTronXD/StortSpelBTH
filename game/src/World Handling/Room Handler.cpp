@@ -1052,3 +1052,6 @@ void RoomHandler::imgui(DebugRenderer* dr)
 }
 #endif // _CONSOLE
 
+std::vector<std::vector<glm::vec3>> RoomHandler::getPathFindingPoints() {
+	return std::vector<std::vector<glm::vec3>>();
+}
