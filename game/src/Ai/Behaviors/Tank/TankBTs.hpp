@@ -62,6 +62,7 @@ class TankBT : public BehaviorTree
 	static void		deactivateHump(Entity entityID, uint32_t what);
 	static void		updateHump(Entity entityID, uint32_t what);
 	static int		numActiveHumps(Entity entityID);
+	static bool		canActivateNewHump(Entity entityID);
 };
 
 

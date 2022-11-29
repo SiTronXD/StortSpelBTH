@@ -78,7 +78,20 @@ void TankBT::updateHump(Entity entityID, uint32_t what)
 	Transform& trans = getTheScene()->getComponent<Transform>(what);
 	trans.scale.x = trans.scale.z = tankComp.humps[what];
 }
-
+bool TankBT::canActivateNewHump(Entity entityID)
+{
+	bool ret = false;
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	for(auto e: tankComp.humpEnteties)
+	{
+		if(!getTheScene()->isActive(e))
+		{
+			ret = true;
+			break;
+		}
+	}
+	return ret;
+}
 void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 {
 	Collider& tankCol = getTheScene()->getComponent<Collider>(entityID);
@@ -88,13 +101,22 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 
 	if(tankComp.groundHumpTimer <= 0)
 	{
-        Log::write("Stomp!", BT_FILTER);
-		uint32_t newHump = activateHump(entityID);
-		Transform& hTrans = getTheScene()->getComponent<Transform>(newHump);
-		hTrans.position = getTheScene()->getComponent<Transform>(entityID).position;
-		hTrans.position.y -= tankCol.radius - 0.5f;
-		tankComp.humps.insert({newHump, 1.0f});
-		tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
+		if(canActivateNewHump(entityID))
+		{
+			
+			Log::write("Stomp!", BT_FILTER);
+			uint32_t newHump = activateHump(entityID);
+			Transform& hTrans = getTheScene()->getComponent<Transform>(newHump);
+			hTrans.position = getTheScene()->getComponent<Transform>(entityID).position;
+			hTrans.position.y -= tankCol.radius - 0.5f;
+			tankComp.humps.insert({newHump, 1.0f});
+			tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
+		}
+		else
+		{
+			std::cout<<"No avaliable humps!\n";
+		}
+       
 	}
 	else
 	{

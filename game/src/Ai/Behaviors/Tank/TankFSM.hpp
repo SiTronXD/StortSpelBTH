@@ -90,7 +90,7 @@ struct TankComponent
 	float alertAnimSpeed			= 3.0f;
 	float alertTempYpos				= 0.0f;
 	float directHit					= 40.0f;
-	float humpHit					= 0.0f;//20.0f;
+	float humpHit					= 20.0f;
 
 	//Bools
     bool isDead(){return life<=0;}
