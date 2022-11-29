@@ -82,9 +82,11 @@ struct LichComponent
     int ESCAPE_HEALTH           = FULL_HEALTH / 4; 
     int BACK_TO_FIGHT_HEALTH    = FULL_HEALTH / 2; 
     int numBones                = 0;
+    int life                    = FULL_HEALTH;    
+
 
     //Floats
-    float life                  = (float)FULL_HEALTH;    
+    float life_float            = 0.0f;
     float tempRotAngle			= 0.0f;//Dont touch!
     float creepRotSpeed         = 60.0f;
     float huntRotSpeed          = 60.0f;
@@ -204,7 +206,7 @@ protected:
 			{"dead", new Lich_dead}
         });
 
-		// addEntityTransition("idle",     LichFSM::idle_to_creep,        "creep");
+		addEntityTransition("idle",     LichFSM::idle_to_creep,        "creep");
 		addEntityTransition("creep",    LichFSM::creep_to_alerted,     "alerted");
 		addEntityTransition("alerted",  LichFSM::alert_to_hunt,        "hunt");
 		addEntityTransition("hunt",     LichFSM::hunt_to_idle,         "idle");

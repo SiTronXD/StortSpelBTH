@@ -527,7 +527,12 @@ BTStatus LichBT::selfHeal(Entity entityID)
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     if(lichComp.life < lichComp.FULL_HEALTH)
     {
-        lichComp.life += get_dt() * lichComp.healthRegenSpeed;
+        lichComp.life_float += get_dt() * lichComp.healthRegenSpeed;
+        if(lichComp.life_float > 1.0f)
+        {
+            lichComp.life++;
+            lichComp.life_float = 0.0f;
+        }
     }
     else
     {

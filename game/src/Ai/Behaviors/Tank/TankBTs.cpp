@@ -129,7 +129,7 @@ void TankBT::giveFriendsHealth(Entity entityID)
 		    {
 				LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(f.first);
 		        lichComp.shieldedByTank = true;
-				float toAdd = tankComp.friendHealthRegen;
+				int toAdd = tankComp.friendHealthRegen;
 				if((lichComp.life + toAdd) > lichComp.FULL_HEALTH)
 				{
 					lichComp.life = lichComp.FULL_HEALTH;

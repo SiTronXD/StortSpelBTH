@@ -73,7 +73,7 @@ struct SwarmComponent
 		int num = 0;
 		for(auto p: group->members)
 		{
-			float health = scene->getComponent<SwarmComponent>(p).life;
+			float health = (float)scene->getComponent<SwarmComponent>(p).life;
 			if(health > 0.0f)
 			{
 				avgHealth += health;
@@ -86,7 +86,7 @@ struct SwarmComponent
 		}
 		return avgHealth;
 	};
-	float getNumAliveInGroup(Scene* scene)
+	int getNumAliveInGroup(Scene* scene)
 	{
 		int ret = 0;
 		for(auto p: group->members)
