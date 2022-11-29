@@ -41,19 +41,19 @@ class RoomGenerator
 {
 public:
     static const uint32_t TWO_X_TWO_CHANCE = 20u; // Percentage
-    static const uint32_t MAX_TWO_X_TWO = 3u;
+    static const uint32_t MAX_TWO_X_TWO = 8u;//3u;
     
     static const uint32_t ONE_X_TWO_CHANCE = 20u; // Percentage
-    static const uint32_t MAX_ONE_X_TWO = 4u;
+    static const uint32_t MAX_ONE_X_TWO = 8u;//4u;
     
     static const uint32_t BIG_TILE_MIN_DIST = 1u;
 
-    static const uint32_t WIDTH_HEIGHT = 40u;
+    static const uint32_t WIDTH_HEIGHT = 50u;//40u;
     static const uint32_t BORDER_SIZE = 3u;
-    static const uint32_t RADIUS = 3u;
+    static const uint32_t RADIUS = 4u;//3u;
     static const uint32_t NUM_BRANCHES = 3u;
-    static const uint32_t BRANCH_DEPTH = 2u;
-    static const uint32_t BRANCH_DIST = 2u;
+    static const uint32_t BRANCH_DEPTH = 3u;//2u;
+    static const uint32_t BRANCH_DIST = 3u;//2u;
     static const uint32_t MAX_ANGLE = 60u;
 private:
     VRandom& random;
