@@ -20,7 +20,7 @@ float lookAtY(const glm::vec3& from, const glm::vec3& to)
     return angle; 
 }
 
-const glm::vec3 getRandomDir(glm::vec3 manipulator)
+const glm::vec3 genRandomDir(const glm::vec3& manipulator)
 {
     return glm::normalize(glm::vec3(
         1/(float)(rand()%100)   * (rand()%2 == 0 ? 1.f : -1.f) * manipulator.x , 

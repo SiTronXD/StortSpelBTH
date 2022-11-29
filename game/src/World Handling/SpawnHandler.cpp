@@ -79,10 +79,8 @@ void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
 {
     currScene->setActive(this->tankIDs[tankIdx]);
     Transform& transform = currScene->getComponent<Transform>(this->tankIDs[tankIdx]);
-    
-    // float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;    
-    // transform.position = pos + glm::vec3(tileWidth, TankComponent::colliderRadius, tileWidth);
-    transform.position = pos;// + glm::vec3(RoomHandler::TILE_WIDTH/2, TankComponent::colliderRadius, RoomHandler::TILE_WIDTH/2);
+        
+    transform.position = pos;
 
     debugRays.push_back({pos, {0.1f,0.5f,0.5f}});
 
@@ -107,9 +105,8 @@ uint32_t SpawnHandler::spawnLich(int lichIdx, std::vector<const TileInfo*> tileI
         const auto& alterPos = tileInfos[1];
 
         Transform& transform = currScene->getComponent<Transform>(this->lichIDs[lichIdx]);
-        // float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
-        // transform.position = pos + glm::vec3(tileWidth, LichComponent::colliderHeight, tileWidth);
-        transform.position = lichPos->getPos();// + glm::vec3(RoomHandler::TILE_WIDTH/2, LichComponent::colliderHeight, RoomHandler::TILE_WIDTH/2);
+        
+        transform.position = lichPos->getPos();
 
         debugRays.push_back({lichPos->getPos(), {1.f,1.f,0.f}});
 
@@ -151,22 +148,24 @@ uint32_t SpawnHandler::spawnSwarmGroup(const int swarmStartIdx, std::vector<cons
     return tileInfos.size();
 }
 
+#include "../Ai/Behaviors/HelperFuncs.hpp"
+
 void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
 {
     currScene->setActive(this->swarmIDs[swarmIdx]);
     Transform& transform = currScene->getComponent<Transform>(this->swarmIDs[swarmIdx]);
-    // float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
-
-    //transform.position = pos + glm::vec3(tileWidth, SwarmComponent::colliderRadius, tileWidth);
-    transform.position = pos;// + glm::vec3(RoomHandler::TILE_WIDTH/2, SwarmComponent::colliderRadius, RoomHandler::TILE_WIDTH/2);
+    
+    transform.position = pos;
 
     debugRays.push_back({pos, {1.f,0.f,0.f}});
-
+    
     //Temporary enemie reset
     SwarmComponent& swarmComp = currScene->getComponent<SwarmComponent>(this->swarmIDs[swarmIdx]);
     transform.scale.y = 1.0f;
     swarmComp.life = swarmComp.FULL_HEALTH;
-    swarmComp.group->inCombat = false;
+    swarmComp.group->inCombat = false;    
+
+    transform.rotation.y = lookAtY(transform.position, transform.position + genRandomDir({1.f,0.f,1.f}));
 
     swarmComp.group->aliveMembers.push(0); 
 
