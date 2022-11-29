@@ -54,6 +54,17 @@ struct LichAttack
 
 struct LichComponent
 {
+    inline static const uint32_t colliderRadius = 4;
+    inline static const uint32_t colliderHeight = 12;
+
+    inline static const uint32_t graveHeight = 8;
+    inline static const uint32_t graveWidth = 6;
+    inline static const uint32_t graveDepth = 4;
+
+    inline static const uint32_t alterHeight = 8;
+    inline static const uint32_t alterWidth = 3;
+    inline static const uint32_t alterDepth = 3;
+
 	LichComponent() 
     {
         LichAttack lightning, fire, ice;
@@ -77,16 +88,21 @@ struct LichComponent
     float tempRotAngle			= 0.0f;//Dont touch!
     float creepRotSpeed         = 60.0f;
     float huntRotSpeed          = 60.0f;
+    float plunderDuration       = 4.f; 
+    float timeSincePlunderBegin = 0.f; 
         //Alert
     float origScaleY			= 1.0f;
 	float alertScale			= 1.5f;
 	float alertAnimSpeed		= 3.0f;
 	float alertTempYpos			= 0.0f;
         //Radius
-    float sightRadius           = 150.0f; // I'll just look at you
-    float peronalSpaceRadius    = 90.0f; // To close! I will initiate hunt!
-    float attackRadius          = 70.0f; // I'm actually able to shoot at you!
+    float sightRadius           = 80.0f; // I'll just look at you
+    float peronalSpaceRadius    = 70.0f; // To close! I will initiate hunt!
+    float attackRadius          = 60.0f; // I'm actually able to shoot at you!
     float nonoRadius            = 40.0f; // Too close, I will back away from you! (while shooting) 
+
+    float closeToGrave          = 10.f + LichComponent::graveWidth;
+    float closeToAlter          = 10.f + LichComponent::alterWidth;
         //Stats
     float maxMana               = 100.0f;
     float mana                  = maxMana;
@@ -107,6 +123,13 @@ struct LichComponent
     bool regeningMana           = false;
     bool chargingAttack         = true;
     bool tempAttack             = false;//For testing strategy picker
+
+    bool carryingBones = false;
+
+    // Movement Locations
+    Entity alterID;
+    Entity graveID;
+
 
     bool isDead(){return life<=0;}
 
@@ -181,7 +204,7 @@ protected:
 			{"dead", new Lich_dead}
         });
 
-		addEntityTransition("idle",     LichFSM::idle_to_creep,        "creep");
+		// addEntityTransition("idle",     LichFSM::idle_to_creep,        "creep");
 		addEntityTransition("creep",    LichFSM::creep_to_alerted,     "alerted");
 		addEntityTransition("alerted",  LichFSM::alert_to_hunt,        "hunt");
 		addEntityTransition("hunt",     LichFSM::hunt_to_idle,         "idle");

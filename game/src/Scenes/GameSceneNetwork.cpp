@@ -187,8 +187,8 @@ void GameSceneNetwork::update()
 		int tankIdx         = 0;
 		int randNumEnemies  = 10;
 		int counter         = 0;
-		const std::vector<glm::vec3>& tiles = roomHandler.getFreeTiles();
-		for (const glm::vec3& tilePos : tiles)
+		const std::vector<glm::vec3>& tileInfos = roomHandler.getFreeTiles();
+		for (const glm::vec3& tilePos : tileInfos)
 		{
 			if (randNumEnemies - counter != 0)
 			{

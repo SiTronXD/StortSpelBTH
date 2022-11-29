@@ -6,6 +6,7 @@
 #include "../Systems/CombatSystem.hpp"
 #include "../Systems/HealthBarSystem.hpp"
 #include "../Systems/MovementSystem.hpp"
+#include "vengine/application/Time.hpp"
 #include "GameOverScene.h"
 
 #ifdef _CONSOLE
@@ -48,7 +49,7 @@ void GameScene::init()
     roomHandler.init(
         this,
         this->getResourceManager(), true);
-    roomHandler.generate(rand());
+    roomHandler.generate(rand());    
     createPortal();
     // simon
     ResourceManager* resourceMng = this->getResourceManager();
@@ -220,17 +221,29 @@ void GameScene::start()
 }
 
 void GameScene::update()
-{
-    // TODO: Move to SpawnHandler ---- 
+{    
     if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
     {
         this->newRoomFrame = true;
+        this->spawnHandler.spawnEnemiesIntoRoom();
 
-        this->spawnHandler.spawnEnemiesIntoRoom();		
+        this->timeWhenEnteredRoom = Time::getTimeSinceStart();
+        this->safetyCleanDone = false; 
+
+    }    
+    if(!this->safetyCleanDone)
+    {
+        
+        if(this->timeWhenEnteredRoom + delayToSafetyDelete < Time::getTimeSinceStart())
+        {
+            this->spawnHandler.killAllEnemiesOutsideRoom();
+            this->safetyCleanDone = true;
+        }
     }
-    // ---- TODO: Move to SpawnHandler ^^^^
 
     this->aiHandler->update(Time::getDT());
+    this->spawnHandler.updateImgui();
+    this->imguiUpdate();
 
     if (this->spawnHandler.allDead() && this->newRoomFrame)
     {
@@ -501,6 +514,23 @@ void GameScene::onCollisionExit(Entity e1, Entity e2)
     this->getComponent<SwarmComponent>(e2).touchedFriend = false;
   }
 
+}
+
+void GameScene::imguiUpdate()
+{
+    ImGui::Begin("Game Scene");
+    std::string playerString = "playerID";
+    int playerID;
+    getScriptHandler()->getGlobal(playerID, playerString);
+    auto& playerCombat = getComponent<Combat>(playerID);
+    if(ImGui::Button("INVINCIBLE Player")){
+        playerCombat.health = INT_MAX;         
+    }
+    if(ImGui::Button("Kill Player")){
+        playerCombat.health = 0; 
+    }
+
+    ImGui::End();
 }
 
 void GameScene::createPortal()

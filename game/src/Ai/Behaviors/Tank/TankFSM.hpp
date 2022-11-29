@@ -19,6 +19,8 @@ struct TankFriendTarget
 
 struct TankComponent
 {
+    inline static const uint32_t colliderRadius = 12;
+
 	TankComponent() 
 	{
 		//this->hitCol = Collider::createSphere(4.0f);
@@ -107,7 +109,7 @@ struct TankComponent
 	float chargeTimer				= huntTimerOrig;
 	float runTimerOrig				= 3.0f;
 	float runTimer					= huntTimerOrig;
-	float groundHumpTimerOrig		= 3000.0f;
+	float groundHumpTimerOrig		= 3.0f;
 	float groundHumpTimer			= huntTimerOrig;
 	float friendHealTimerOrig		= 1.0f;
 	float friendHealTimer			= huntTimerOrig;

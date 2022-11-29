@@ -25,6 +25,9 @@ class LichBT : public BehaviorTree
     static BTStatus goToAlter(Entity entityID);
     static BTStatus dropOffBones(Entity entityID);
     static BTStatus carryingBones(Entity entityID);
+    
+    static BTStatus closeToGrave(Entity entityID);
+    static BTStatus closeToAlter(Entity entityID);
 
 	static BTStatus creepyLook(Entity entityID);
 
