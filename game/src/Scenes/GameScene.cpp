@@ -89,7 +89,6 @@ void GameScene::init()
     dirLight.cascadeDepthScale = 36.952f;
     dirLight.shadowMapMinBias = 0.00001f;
     dirLight.shadowMapAngleBias = 0.0004f;
-
 }
 
 void GameScene::start()
@@ -152,6 +151,15 @@ void GameScene::start()
         this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f));
     }
 
+    MeshComponent& mesh = this->getComponent<MeshComponent>(this->playerID);
+    this->getResourceManager()->makeUniqueMaterials(mesh);
+    this->origMat = mesh.overrideMaterials[0];
+    this->ghostMat = origMat;
+    this->ghostMat.diffuseTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhost.png");
+    this->ghostMat.glowMapTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhostGlow.png");
+    this->ghostMat.emissionColor = glm::vec3(0.0f, 1.0f, 0.35f);
+    this->ghostMat.emissionIntensity = 0.75f;
+
     // Pause menu
     this->resumeButton.position = glm::vec2(0.0f, 100.0f);
     this->exitButton.position = glm::vec2(0.0f, -100.0f);
@@ -201,11 +209,21 @@ void GameScene::update()
         }
 
         // Switch scene if the player is dead
-        if (this->hasComponents<Combat>(this->playerID))
+        if (this->hasComponents<HealthComp>(this->playerID))
         {
-            if (this->getComponent<HealthComp>(this->playerID).health <= 0.0f)
+            HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
+            if (healthComp.health <= 0.0f)
             {
-                this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+                if (this->isGhost)
+                {
+                    this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+                }
+                else
+                {
+                    this->isGhost = true;
+                    healthComp.health = healthComp.maxHealth;
+                    this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = this->ghostMat;
+                }
             }
         }
     }
@@ -227,7 +245,8 @@ void GameScene::update()
         // and server shall say if we shall switch scene
         if (this->hasComponents<HealthComp>(this->playerID))
         {
-            if (this->getComponent<HealthComp>(this->playerID).health <= 0.0f)
+            HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
+            if (healthComp.health <= 0.0f)
             {
                 this->networkHandler->disconnectClient(); // TEMP: probably will be in game over scene later
                 this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
@@ -239,9 +258,12 @@ void GameScene::update()
         this->networkHandler->interpolatePositions();
     }
 
-    this->getUIRenderer()->setTexture(this->ghostOverlayIndex);
-    this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
-        glm::vec4(1.0f, 1.0f, 1.0f, 0.4f + sin(this->timer * 2.0f) * 0.15f));
+    if (this->isGhost)
+    {
+        this->getUIRenderer()->setTexture(this->ghostOverlayIndex);
+        this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
+            glm::vec4(1.0f, 1.0f, 1.0f, 0.4f + sin(this->timer * 2.0f) * 0.15f));
+    }
 
     Combat& playerCombat = this->getComponent<Combat>(this->playerID);
     this->getUIRenderer()->setTexture(

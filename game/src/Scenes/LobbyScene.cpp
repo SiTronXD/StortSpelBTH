@@ -84,12 +84,6 @@ void LobbyScene::init()
             mesh.overrideMaterials[0].tintColor = this->networkHandler->playerColors[i];
         }
     }
-    MeshComponent& mesh = this->getComponent<MeshComponent>(this->players[0]);
-    Material& mat = this->getResourceManager()->getMaterial(mesh, 0);
-    mat.diffuseTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhost.png");
-    mat.glowMapTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhostGlow.png");
-    mat.emissionColor = glm::vec3(0.0f, 1.0f, 0.35f);
-    mat.emissionIntensity = 0.75f;
     this->setActive(this->players[0]);
 
     startButton.position = glm::vec2(0.0f, -400.f);

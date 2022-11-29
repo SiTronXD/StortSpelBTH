@@ -30,6 +30,10 @@ private:
   UIArea resumeButton;
   UIArea exitButton;
 
+  bool isGhost = false;
+  Material origMat;
+  Material ghostMat;
+
   Entity playerID;
   Entity portal;
   Entity perk;
