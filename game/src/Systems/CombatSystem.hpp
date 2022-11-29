@@ -30,6 +30,7 @@ private:
 	std::vector<uint32_t> attackSounds;
 	std::vector<uint32_t> moveSounds;
 	std::vector<uint32_t> otherSounds;
+	uint32_t currentSetBuffer;
 
 	int swordMesh;
 	int perkMeshes[5];
@@ -131,10 +132,10 @@ public:
                 {
                     removeAbility(combat, combat.ability);
                 }
-			//if (this->scene->getAnimationStatus(this->playerID, "").animationName == "run" && !this->scene->getComponent<AudioSource>(this->moveSound).isPlaying())
-			//{
-			//	playerEffectSound(this->moveSounds[0], this->scene->getComponent<Transform>(this->playerID).position, this->moveSound, 10.f);
-			//}
+			if (this->scene->getAnimationStatus(this->playerID, "").animationName == "run" && !this->scene->getComponent<AudioSource>(this->moveSound).isPlaying())
+			{
+				playerEffectSound(this->moveSounds[0], this->scene->getComponent<Transform>(this->playerID).position, this->moveSound, 600.f);
+			}
 		};
 		view.each(foo);
 
