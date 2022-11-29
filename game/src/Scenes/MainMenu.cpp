@@ -27,9 +27,13 @@ void MainMenu::init()
     );
 
     
-	this->backgroundId = this->getResourceManager()->addTexture(
+	this->settingsBackgroundId =
+        this->getResourceManager()->addTexture(
         "assets/textures/UI/settings.png"
     );
+    this->howToPlayBackgroundId =
+        this->getResourceManager()->addTexture("assets/textures/UI/howToPlay.png"
+        );
 
     Transform& tS = this->getComponent<Transform>(signpost);
     tS.position = glm::vec3(18.3f, -6.2f, -12.4f);
@@ -45,14 +49,8 @@ void MainMenu::init()
     );
     DirectionalLight& dirLight =
         this->getComponent<DirectionalLight>(light);
-    dirLight.cascadeSizes[0] = 0.044f;
-    dirLight.cascadeSizes[1] = 0.149f;
-    dirLight.cascadeSizes[2] = 1.0f;
-    dirLight.cascadeDepthScale = 36.952f;
-    dirLight.shadowMapMinBias = 0.00001f;
-    dirLight.shadowMapAngleBias = 0.0004f;
 
-	this->fontTextureId = Scene::getResourceManager()->addTexture("assets/textures/UI/typewriterBitmap.png", { samplerSettings, true });
+	this->fontTextureId = Scene::getResourceManager()->addTexture("assets/textures/UI/font.png", { samplerSettings, true });
 	Scene::getUIRenderer()->setBitmapFont(
 		{
 			"abcdefghij",
@@ -63,7 +61,7 @@ void MainMenu::init()
 			"@%        "
 		},
 		fontTextureId,
-		glm::uvec2(16, 16)
+		glm::uvec2(50, 50)
 	);
 }
 
@@ -94,35 +92,36 @@ void MainMenu::start()
 
   UIArea area{};
   area.position = glm::vec2(-430.f, 415.f);
-  area.dimension = glm::vec2(50 * 10, 50);
+  area.dimension = glm::vec2(60 * 10, 100.f);
   this->setComponent<UIArea>(this->playButton, area);
 
+
   area.position = glm::vec2(-450.f, 230.f);
-  area.dimension = glm::vec2(50 * 10, 50);
+  area.dimension = glm::vec2(60 * 10, 100.f);
   this->setComponent<UIArea>(this->joinGameButton, area);
 
   area.position = glm::vec2(-440.f, 50.f);
-  area.dimension = glm::vec2(50 * 10, 50);
+  area.dimension = glm::vec2(60 * 10, 100.f);
   this->setComponent<UIArea>(this->levelEditButton, area);
 
   area.position = glm::vec2(-450.f, -80.f);
-  area.dimension = glm::vec2(50 * 10, 50);
+  area.dimension = glm::vec2(60 * 10, 100.f);
   this->setComponent<UIArea>(this->settingsButton, area);
 
     area.position = glm::vec2(-450.f, -220.f);
-  area.dimension = glm::vec2(50 * 10, 50);
+  area.dimension = glm::vec2(60 * 10, 100.f);
   this->setComponent<UIArea>(this->howToPlayButton, area);
 
   area.position = glm::vec2(-490.f, -390.f);
-  area.dimension = glm::vec2(50 * 10, 50);
+  area.dimension = glm::vec2(60 * 10, 100.f);
   this->setComponent<UIArea>(this->quitButton, area);
 
   area.position = glm::vec2(-745.f, -360.f);
-  area.dimension = glm::vec2(50 * 4, 50);
+  area.dimension = glm::vec2(38 * 5, 65);
   this->setComponent<UIArea>(this->backButton, area);
 
-  area.position = glm::vec2(0.f, 200.f);
-  area.dimension = glm::vec2(50 * 10, 50);
+  area.position = glm::vec2(0.f, 195.f);
+  area.dimension = glm::vec2(50 * 10, 55);
   this->setComponent<UIArea>(this->fullscreenButton, area);
 
 
@@ -131,54 +130,11 @@ void MainMenu::start()
 
 void MainMenu::update()
 {
-	// Switches next frame to render loading texture
-
-
-    ImGui::Begin("Character transform");
-    Transform& t = this->getComponent<Transform>(character);
-    ImGui::SliderFloat("position X", &t.position.x, -20.f, 20.f);
-    ImGui::SliderFloat("position Y", &t.position.y, -20.f, 20.f);
-    ImGui::SliderFloat("position Z", &t.position.z, -20.f, 20.f);
-
-    ImGui::SliderFloat("rotation X", &t.rotation.x, -180.f, 180.f);
-    ImGui::SliderFloat("rotation Y", &t.rotation.y, -180.f, 180.f);
-    ImGui::SliderFloat("rotation Z", &t.rotation.z, -180.f, 180.f);
-    ImGui::End();
-
-    ImGui::Begin("Signpost transform");
-    Transform& tS = this->getComponent<Transform>(signpost);
-    ImGui::SliderFloat("position X", &tS.position.x, -20.f, 20.f);
-    ImGui::SliderFloat("position Y", &tS.position.y, -20.f, 20.f);
-    ImGui::SliderFloat("position Z", &tS.position.z, -20.f, 20.f);
-                                               
-    ImGui::SliderFloat("rotation X", &tS.rotation.x, -180.f, 180.f);
-    ImGui::SliderFloat("rotation Y", &tS.rotation.y, -180.f, 180.f);
-    ImGui::SliderFloat("rotation Z", &tS.rotation.z, -180.f, 180.f);
-    ImGui::End();
-
-    
-    ImGui::Begin("Point light");
-    PointLight& pL = this->getComponent<PointLight>(light);
-    ImGui::SliderFloat("position X", &pL.color.x, 0.f, 50.f);
-    ImGui::SliderFloat("position Y", &pL.color.y, 0.f, 50.f);
-    ImGui::SliderFloat("position Z", &pL.color.z, 0.f, 50.f);
-
-    ImGui::End();
-
 	switch (this->state)
 	{
 	default:
 		break;
 	case Menu:
-
-		//this->getUIRenderer()->setTexture(this->fontTextureId);
-		//this->getUIRenderer()->renderString("play",         glm::vec2(-430.f, 415.f),  glm::vec2(50.f, 50.f));
-		//this->getUIRenderer()->renderString("join game",    glm::vec2(-450.f, 230.f),  glm::vec2(50.f, 50.f));
-		//this->getUIRenderer()->renderString("level editor",     glm::vec2(-440.f, 50.f),    glm::vec2(50.f, 50.f));
-		//this->getUIRenderer()->renderString("settings",     glm::vec2(-450.f, -80.f),    glm::vec2(50.f, 50.f));
-        //this->getUIRenderer()->renderString("how to play",  glm::vec2(-450.f, -220.f), glm::vec2(50.f, 50.f));
-		//this->getUIRenderer()->renderString("quit",         glm::vec2(-490.f, -390.f), glm::vec2(50.f, 50.f));
-		
 		if (this->getComponent<UIArea>(playButton).isClicking())
         {
             this->getUIRenderer()->setTexture(this->fontTextureId);
@@ -235,8 +191,10 @@ void MainMenu::update()
 
 void MainMenu::settings()
 {
-    this->getUIRenderer()->setTexture(this->backgroundId);
-    this->getUIRenderer()->renderTexture(glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f));
+    UIRenderer* uiRenderer = this->getUIRenderer();
+
+    uiRenderer->setTexture(this->settingsBackgroundId);
+    uiRenderer->renderTexture(glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f));
 
 	static bool fullscreen = false;
     if (this->getComponent<UIArea>(backButton).isClicking())
@@ -249,17 +207,7 @@ void MainMenu::settings()
         this->getSceneHandler()->getWindow()->setFullscreen(fullscreen);
     }
 
-	UIRenderer* uiRenderer = this->getUIRenderer();
 
-    //uiRenderer->renderString(
-    //    "back",
-    //    glm::vec2(-745, -360),
-    //    glm::vec2(50.0f)
-    //);
-
-    uiRenderer->renderString(
-        "temp switch key: 2", glm::vec2(0.f, 240.f), glm::vec2(15.0f)
-    );
     uiRenderer->renderString(
         fullscreen ? "fullscreen: on" : "fullscreen: off",
         glm::vec2(0.f, 200.f),
@@ -269,7 +217,7 @@ void MainMenu::settings()
     uiRenderer->renderString(
         "volume change disable until sound is happy happy",
         glm::vec2(0.f, 140.f),
-        glm::vec2(15.0f)
+        glm::vec2(25.0f)
     );
     uiRenderer->renderString(
         "volume: " +
@@ -281,23 +229,13 @@ void MainMenu::settings()
 
 void MainMenu::howToPlay()
 {
+    this->getUIRenderer()->setTexture(this->howToPlayBackgroundId);
+    this->getUIRenderer()->renderTexture(
+        glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f)
+    );
+
 	if (this->getComponent<UIArea>(backButton).isClicking())
     {
       this->state = State::Menu;
     }
-
-	UIRenderer* uiRenderer = this->getUIRenderer();
-
-	uiRenderer->setTexture(this->fontTextureId);
-    uiRenderer->renderString("back: 1", glm::vec2(-(1920 / 2) + 200, (1080 / 2) - 100), glm::vec2(50.f, 50.f));
-
-	static const float XPos1 = -500.f;
-    uiRenderer->renderString("-- controls --", glm::vec2(XPos1, 100.f), glm::vec2(50.f, 50.f));
-    uiRenderer->renderString("move: wasd", glm::vec2(XPos1, 0.f), glm::vec2(50.f, 50.f));
-    uiRenderer->renderString("jump: space", glm::vec2(XPos1, -100.f), glm::vec2(50.f, 50.f));
-    uiRenderer->renderString("attack: mouse 1", glm::vec2(XPos1, -200.f), glm::vec2(50.f, 50.f));
-
-	static const float XPos2 = 500.f;
-    uiRenderer->renderString("-- objective --", glm::vec2(XPos2, 100.f), glm::vec2(50.f, 50.f));
-    uiRenderer->renderString("kill everything", glm::vec2(XPos2, 0.f), glm::vec2(50.f, 50.f));
 }
