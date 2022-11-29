@@ -8,14 +8,14 @@ ServerGameMode::~ServerGameMode()
 
 void ServerGameMode::init()
 {
-	//create seed
+	// Create seed
 	#ifdef _CONSOLE
-	    srand(69);
+        this->roomSeed = time(0);
 	#else
-	    srand(time(NULL));
+        this->roomSeed = time(0);
 	#endif
+	srand(this->roomSeed);
 
-    this->roomSeed = 123;//rand();
     aiHandler.init(this->getSceneHandler());
     this->getSceneHandler()->setAIHandler(&aiHandler);
     roomHandler.init(this, this->getResourceManager(), false);
@@ -160,10 +160,7 @@ void ServerGameMode::makeDataSendToClient()
 
 void ServerGameMode::onDisconnect(int index)
 {
-	for (int i = 0; i < this->itemIDs.size(); i++)
-	{
-		this->itemIDs[i].erase(this->itemIDs[i].begin() + index);
-	}
+
 }
 
 void ServerGameMode::onTriggerStay(Entity e1, Entity e2) {
@@ -295,7 +292,6 @@ void ServerGameMode::onCollisionExit(Entity e1, Entity e2) {
 int ServerGameMode::spawnItem(ItemType type, int otherType, float multiplier)
 {
 	this->curItems.push_back({ type, otherType, multiplier });
-	this->itemIDs.push_back(std::vector<Entity>(this->server->getClientCount(), -1));
 	return this->curItems.size() - 1;
 }
 
@@ -318,20 +314,8 @@ void ServerGameMode::deleteItem(int playerID, int index, ItemType type, int othe
         }
 
         std::swap(this->curItems[index], this->curItems[size - 1]);
-        std::swap(this->itemIDs[index], this->itemIDs[size - 1]);
         this->curItems.pop_back();
-        this->itemIDs.pop_back();
     }
-}
-
-void ServerGameMode::setEntityID(int itemID, int playerID, Entity ID)
-{
-	this->itemIDs[itemID][playerID] = ID;
-}
-
-Entity ServerGameMode::getEntityID(int itemID, int playerID)
-{
-	return this->itemIDs[itemID][playerID];
 }
 
 int ServerGameMode::spawnEnemy(int type, glm::vec3 position) 
