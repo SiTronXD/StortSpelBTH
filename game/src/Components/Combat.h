@@ -19,7 +19,7 @@ struct Combat
     // 3 = Mix Combo Hit
     // 4 = Heavy Combo Hit
     // 5 = Knockback Ability Hit
-    float dmgArr[6] = {50.f, 75.f, 50.f, 125.f, 150.f, 25.f};
+    float dmgArr[6] = { 50.f, 75.f, 50.f, 125.f, 150.f, 25.f };
 
     // Amount of time each attack takes
     float lightAttackCd = 1.f;
@@ -50,7 +50,7 @@ struct Combat
 	float dmgMultiplier = 1.f;
 	float attackSpeedMultiplier = 1.f;
 	float totalAtkSpeedMulti = 1.f;
-	float animationMultiplier[6] = { 1.2f, 1.f, 2.1f, 2.1f, 2.1f, 1.f };
+	float animationMultiplier[6] = { 0.807f, 0.957f, 1.816f, 2.1f, 2.1f, 1.f };
 
     // Abilities
     Abilities ability;
@@ -63,7 +63,7 @@ struct Combat
     // 3 = Mix Combo Attack
     // 4 = Heavy Combo Attack
     // 5 = Knockback Ability
-    float knockbackArr[6] = {50.f, 80.f, 120.f, 50.f, 50.f, 100.f};
+    float knockbackArr[6] = { 50.f, 80.f, 120.f, 50.f, 50.f, 100.f };
 
     ActiveAttack activeAttack = noActive;
 };

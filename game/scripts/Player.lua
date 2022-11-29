@@ -42,13 +42,15 @@ function script:init()
     self.isPushed = false;
     self.pushTimer = 0.0
 
-    self.animTimer = -1
+    self.animTimer = -1.0
+    self.wholeBody = false
+    self.isMoving = false
     self.onGround = false
     self.jumpTimer = 0
 
-    self.activeAnimation = {idle = 1, run = 2, sprint = 3, dodge = 4, 
-        lightAttack = 5, heavyAttack = 6, spinCombo = 7, mixCombo = 8, 
-        heavyCombo = 9, knockback = 10}
+    self.activeAnimation = {idle = 1, run = 2, sprint = 3, dodge = 4, attack = 5, moveAttack = 6}
+        --lightAttack = 5, heavyAttack = 6, spinCombo = 7, mixCombo = 8, 
+        --heavyCombo = 9, knockback = 10}
     self.currentAnimation = 1
     self.idleAnimTime = 1.0
     self.runAnimTime = 0.7
@@ -89,6 +91,13 @@ function script:update(dt)
     if not self.isDodging
     then
         self.moveDir = vector(core.btoi(input.isKeyDown(Keys.A)) - core.btoi(input.isKeyDown(Keys.D)), core.btoi(input.isKeyDown(Keys.W)) - core.btoi(input.isKeyDown(Keys.S)), 0)
+
+        if self.moveDir ~= vector(0)
+        then
+            self.isMoving = true
+        else
+            self.isMoving = false
+        end
     end
 
     -- Local vector with speed applied with or without sprint (using stamina)
@@ -193,11 +202,8 @@ function script:update(dt)
         then
             if self.isDodging and self.currentSpeed ~= vector(0) and self.currentAnimation ~= self.activeAnimation.dodge
             then
-                scene.setAnimation(self.ID, "dodge", "")
-                local anim = scene.getComponent(self.ID, CompType.Animation)
+                scene.setAnimation(self.ID, "dodge", "", self.dodgeAnimTime)
                 self.currentAnimation = self.activeAnimation.dodge
-                anim[0].timeScale = self.dodgeAnimTime
-                scene.setComponent(self.ID, CompType.Animation, anim)
                 self.animTimer = 0.6
             end
         end
@@ -211,37 +217,37 @@ function script:update(dt)
             then
                 if self.currentAnimation ~= self.activeAnimation.sprint
                 then
-                    print(WTFFFFFF)
-                    scene.setAnimation(self.ID, "run", "")
-                    local anim = scene.getComponent(self.ID, CompType.Animation)
+                    scene.setAnimation(self.ID, "run", "", self.sprintAnimTime)
                     self.currentAnimation = self.activeAnimation.sprint
-                    anim[0].timeScale = self.sprintAnimTime
-                    scene.setComponent(self.ID, CompType.Animation, anim)
                 end
             end
         end
     end
-    
+
     if (not self.isSprinting)
     then
         if (self.animTimer < 0.0)
         then
-            local curSpdSqrd = self.currentSpeed * self.currentSpeed
-            local curSpdSum = curSpdSqrd.x + curSpdSqrd.y + curSpdSqrd.z
-            if curMoveSum > 0.1 and self.currentAnimation ~= self.activeAnimation.run 
+            if self.moveDir ~= vector(0) and self.currentAnimation ~= self.activeAnimation.run
             then
-                scene.setAnimation(self.ID, "run", "")
-                local anim = scene.getComponent(self.ID, CompType.Animation)
+                scene.blendToAnimation(self.ID, "run", "", 0.4, self.runAnimTime)
                 self.currentAnimation = self.activeAnimation.run
-                anim[0].timeScale = self.runAnimTime
-                scene.setComponent(self.ID, CompType.Animation, anim)
             elseif curMoveSum < 0.1 and self.currentAnimation ~= self.activeAnimation.idle
             then
-                scene.setAnimation(self.ID, "idle", "")
-                local anim = scene.getComponent(self.ID, CompType.Animation)
+                scene.blendToAnimation(self.ID, "idle", "", 0.3, self.idleAnimTime)
                 self.currentAnimation = self.activeAnimation.idle
-                anim[0].timeScale = self.idleAnimTime
-                scene.setComponent(self.ID, CompType.Animation, anim)
+            end
+        else
+            if (self.isMoving and self.currentAnimation ~= self.activeAnimation.run)
+            then
+                scene.blendToAnimation(self.ID, "run", "LowerBody", 0.3, self.runAnimTime)
+                self.currentAnimation = self.activeAnimation.run
+                print("Run")
+            elseif (not self.isMoving and self.currentAnimation ~= self.activeAnimation.idle)
+            then
+                scene.blendToAnimation(self.ID, "idle", "LowerBody", 0.3, self.idleAnimTime)
+                self.currentAnimation = self.activeAnimation.idle
+                print("Idle")
             end
         end
     end
