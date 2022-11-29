@@ -131,10 +131,14 @@ public:
                 {
                     removeAbility(combat, combat.ability);
                 }
-			//if (this->scene->getAnimationStatus(this->playerID, "").animationName == "run" && !this->scene->getComponent<AudioSource>(this->moveSound).isPlaying())
-			//{
-			//	playerEffectSound(this->moveSounds[0], this->scene->getComponent<Transform>(this->playerID).position, this->moveSound, 10.f);
-			//}
+			if (this->scene->getAnimationStatus(this->playerID, "").animationName == "run" && !this->scene->getComponent<AudioSource>(this->moveSound).isPlaying())
+			{
+				playerEffectSound(this->moveSounds[0], this->scene->getComponent<Transform>(this->playerID).position, this->moveSound, 10.f);
+			}
+			else if (this->scene->getAnimationStatus(this->playerID, "").animationName != "run")
+			{
+				this->scene->getComponent<AudioSource>(this->moveSound).stop();
+			}
 		};
 		view.each(foo);
 
@@ -214,6 +218,10 @@ public:
 				}
 				if (this->canHit)
 				{
+					//if (!this->scene->getComponent<AudioSource>(this->otherSound).isPlaying())
+					//{
+					//	playerEffectSound(this->otherSounds[0], this->scene->getComponent<Transform>(hitID[i]).position, this->otherSound, 12.f);
+					//}
 					this->networkHandler->sendHitOn(hitID[i], (int)combat.dmgArr[combat.activeAttack], combat.knockbackArr[combat.activeAttack]);
 					this->hitEnemies.emplace_back(hitID[i]);
 				}
@@ -833,7 +841,7 @@ public:
 		Transform& soundTrans = this->scene->getComponent<Transform>(soundSource);
 		soundTrans.position = pos;
 		AudioSource& sound = this->scene->getComponent<AudioSource>(soundSource);
-		sound.setBuffer(effect);
+		//sound.setBuffer(effect);
 		sound.setVolume(volume);
 		sound.play();
 	}
