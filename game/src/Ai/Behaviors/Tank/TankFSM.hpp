@@ -69,9 +69,9 @@ struct TankComponent
 	//Floats
 	float idleSpeed					= 10.0f;
 	float shieldSpeed				= 5.0f;
-	float cahargeSpeed				= 120.0f;
-    float sightRadius				= 150.0f; // I'll can attack you
-    float peronalSpaceRadius		= 50.0f; // This is my personal space, get away!
+	float cahargeSpeed				= 200.0f;
+    float sightRadius				= 200.0f; // I'll can attack you
+    float peronalSpaceRadius		= 100.0f; // This is my personal space, get away!
 	float friendVisitRadius			= 15.0f; //When go this close to friends
 	float combatRotSpeed			= 50.0f;
 	float idleRotSpeed				= 40.0f;
@@ -89,6 +89,8 @@ struct TankComponent
 	float alertScale				= 1.5f;
 	float alertAnimSpeed			= 3.0f;
 	float alertTempYpos				= 0.0f;
+	float directHit					= 40.0f;
+	float humpHit					= 0.0f;//20.0f;
 
 	//Bools
     bool isDead(){return life<=0;}
@@ -110,10 +112,11 @@ struct TankComponent
 	float runTimerOrig				= 3.0f;
 	float runTimer					= huntTimerOrig;
 	float groundHumpTimerOrig		= 3.0f;
-	float groundHumpTimer			= huntTimerOrig;
+	float groundHumpTimer			= 0.0f;
 	float friendHealTimerOrig		= 1.0f;
 	float friendHealTimer			= huntTimerOrig;
-	std::vector<float> humps;	//Represents the shockwaves radius fromt the hump attack
+	std::unordered_map<uint32_t, float> humps;	//Represents the shockwaves radius fromt the hump attack
+	std::vector<uint32_t> humpEnteties;
 
 	//Vecs
 	glm::vec3 shieldTargetPos		= glm::vec3(0.0f, 0.0f, 0.0f);
@@ -165,6 +168,7 @@ private:
 
 private:
 	//Helper functions
+	static void		removeHumps(Entity entityID);
 	static void		updateFriendsInSight(Entity entityID);
 	static bool		playerInSight(Entity entityID);
 	static bool		friendlysInFight(Entity entityID);

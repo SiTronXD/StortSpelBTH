@@ -40,7 +40,7 @@ void TankFSM::resetTimers(Entity entityID)
 	tankComp.huntTimer        = tankComp.huntTimerOrig;   
 	tankComp.chargeTimer      = tankComp.chargeTimerOrig; 
 	tankComp.runTimer	      = tankComp.runTimerOrig;    
-	tankComp.groundHumpTimer  = tankComp.groundHumpTimerOrig;     
+	tankComp.groundHumpTimer  = 0.0f;//tankComp.groundHumpTimerOrig;     
 	tankComp.friendHealTimer  = tankComp.friendHealTimerOrig;     
 
 }
@@ -152,6 +152,16 @@ bool TankFSM::friendlysInFight(Entity entityID)
     return false;
 }
 
+void TankFSM::removeHumps(Entity entityID)
+{
+    TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+    tankComp.humps.clear();
+    for(auto h: tankComp.humpEnteties)
+    {
+        getTheScene()->setInactive(h);
+    }
+}
+
 bool TankFSM::idleToAler(Entity entityID)
 {
     if(!falseIfDead(entityID)){return false;}
@@ -240,9 +250,9 @@ bool TankFSM::combatToIdel(Entity entityID)
     if(ret)
     {
         tankComp.inCombat = false;
-        tankComp.humps.clear();
 	    tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
         resetTimers(entityID);
+        removeHumps(entityID);
     }
     return ret;
 }
@@ -261,7 +271,6 @@ bool TankFSM::combatToShield(Entity entityID)
     if(ret)
     {
         tankComp.inCombat = false;
-        tankComp.humps.clear();
         resetTimers(entityID);
     }
 
@@ -327,6 +336,7 @@ bool TankFSM::shieldToIdle(Entity entityID)
         }
         tankComp.canBeHit = true;
         resetTimers(entityID);
+        removeHumps(entityID);
     }
     return ret;
 }

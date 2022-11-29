@@ -30,8 +30,58 @@ void TankBT::updateCanBeHit(Entity entityID)
 	}
 }
 
+int	TankBT::numActiveHumps(Entity entityID)
+{
+	int ret = 0;
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	for(auto e: tankComp.humpEnteties)
+	{
+		if(getTheScene()->isActive(e))
+		{
+			ret++;
+		}
+	}
+	return ret;
+}
+uint32_t TankBT::activateHump(Entity entityID)
+{
+	uint32_t ret = -1;
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	for(auto e: tankComp.humpEnteties)
+	{
+		if(!getTheScene()->isActive(e))
+		{
+			getTheScene()->setActive(e);
+			ret = e;
+			//std::cout<<"New hump!\nNum Humps active: "<<numActiveHumps(entityID)<<"Num actual humps: "<<tankComp.humps.size()<<std::endl;
+			break;
+		}
+	}
+	return ret;
+}
+void TankBT::deactivateHump(Entity entityID, uint32_t what)
+{
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	for(auto e: tankComp.humpEnteties)
+	{
+		if(e == what)
+		{
+			getTheScene()->setInactive(e);
+			//std::cout<<"Removing hump!\n";
+			break;
+		}
+	}
+}
+void TankBT::updateHump(Entity entityID, uint32_t what)
+{
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	Transform& trans = getTheScene()->getComponent<Transform>(what);
+	trans.scale.x = trans.scale.z = tankComp.humps[what];
+}
+
 void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 {
+	Collider& tankCol = getTheScene()->getComponent<Collider>(entityID);
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	tankComp.chargeTimer = tankComp.chargeTimerOrig;
 	tankComp.hasRunTarget = false;
@@ -39,7 +89,11 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 	if(tankComp.groundHumpTimer <= 0)
 	{
         Log::write("Stomp!", BT_FILTER);
-		tankComp.humps.push_back(0.0f);
+		uint32_t newHump = activateHump(entityID);
+		Transform& hTrans = getTheScene()->getComponent<Transform>(newHump);
+		hTrans.position = getTheScene()->getComponent<Transform>(entityID).position;
+		hTrans.position.y -= tankCol.radius - 0.5f;
+		tankComp.humps.insert({newHump, 1.0f});
 		tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
 	}
 	else
@@ -61,36 +115,39 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 
 	rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
 
-	for(int i = 0; i < tankComp.humps.size(); i++)
+	for(auto& h: tankComp.humps)
 	{
-		tankComp.humps[i] += tankComp.humpShockwaveSpeed * get_dt();
+		h.second += tankComp.humpShockwaveSpeed * get_dt();
+
+		updateHump(entityID, h.first);
+
 		float dist = glm::length(playerTrans.position - tankTrans.position);
 		float minHitDist = dist - playerCol.radius;
 		float maxHitDist = dist + playerCol.radius;
 
-		if(tankComp.humps[i] >= maxRad)
+		if(h.second/2.0f >= maxRad)
 		{
-			toRemove.push_back(i);
+			toRemove.push_back(h.first);
 		}
-		else if(tankComp.humps[i] >= minHitDist && tankComp.humps[i] <= maxHitDist && playerGrounded)
+		else if(h.second/2.0f >= minHitDist && h.second/2.0f <= maxHitDist && playerGrounded)
 		{
 			//PlayerHit!
 			Script& playerScript = getTheScene()->getComponent<Script>(playerID);
 			BehaviorTree::sceneHandler->getScriptHandler()->setScriptComponentValue(playerScript , 1.0f, "pushTimer");
 			glm::vec3 to = playerTrans.position;
 			glm::normalize(to);
-			AiCombatTank& aiCombat = getTheScene()->getComponent<AiCombatTank>(entityID);
-			getTheScene()->getComponent<Combat>(playerID).health -= (int)aiCombat.humpHit;
+			getTheScene()->getComponent<Combat>(playerID).health -= (int)tankComp.humpHit;
 
 			glm::vec3 dir = glm::normalize(to - tankTrans.position);
 			playerRB.velocity = dir * tankComp.humpForce;
 			playerRB.velocity.y += tankComp.humpYForce;
-			toRemove.push_back(i);
+			//toRemove.push_back(h.first);
 		}
 	}
 	for(auto r: toRemove)
 	{
-		 tankComp.humps.erase(tankComp.humps.begin() + r);
+		deactivateHump(entityID, r);
+		tankComp.humps.erase(r);
 	}
 
 
@@ -462,7 +519,11 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	Rigidbody& rb = getTheScene()->getComponent<Rigidbody>(entityID);
 
 	tankComp.humps.clear();
-	tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
+	for(auto h: tankComp.humpEnteties)
+	{
+		getTheScene()->setInactive(h);
+	}
+	tankComp.groundHumpTimer = 0.0f;
 
 	//Ray test to avoid detect obstcles
 	//Not really working

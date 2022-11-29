@@ -187,7 +187,6 @@ BTStatus LichBT::goToGrave(Entity entityID)
 
     glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, graveTrans.position);
 
-	moveDir = glm::normalize(moveDir);
     lichRb.velocity = moveDir * lichComp.speed;
     rotateTowards(entityID, graveTrans.position, lichComp.speed);
 

@@ -307,6 +307,24 @@ void SpawnHandler::createTank()
     tankComp.origScaleY = transform.scale.y;
     this->currScene->setInactive(this->tankIDs.back());
     tankComp.life = 0;
+
+
+    if(this->sceneHandler->getNetworkHandler()->getClient() != nullptr && this->sceneHandler->getNetworkHandler()->getClient()->isConnected())
+    {
+        // TODO: add network support... 
+    }
+    else
+    {
+       
+       static int tankHump = this->resourceManager->addMesh("assets/models/hump.obj");
+       for(int i = 0; i < 10; i++)
+       {
+           int ent = this->currScene->createEntity();
+           this->currScene->setComponent<MeshComponent>(ent, tankHump);
+           this->currScene->setInactive(ent);
+           tankComp.humpEnteties.push_back(ent);
+       }
+    }
 }
 
 void SpawnHandler::createLich()
