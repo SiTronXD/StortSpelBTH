@@ -324,8 +324,8 @@ void RoomHandler::generate(uint32_t seed)
 		{
 			Entity entity = this->createBorderEntity(roomGen.getInnerBorder(j).position, true);
 			curRoom.objects.emplace_back(entity);
-			//this->scene->setComponent<Collider>(entity, Collider::createBox(
-			//	glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH * 3.f, TILE_WIDTH * 0.5f), glm::vec3(0.f, TILE_WIDTH * 3.f, 0.f)));
+			this->scene->setComponent<Collider>(entity, Collider::createBox(
+				glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH * 3.f, TILE_WIDTH * 0.5f), glm::vec3(0.f, TILE_WIDTH * 3.f, 0.f)));
 
 			if (this->useMeshes)
 			{
