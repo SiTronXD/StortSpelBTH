@@ -237,17 +237,15 @@ function script:update(dt)
                 scene.blendToAnimation(self.ID, "idle", "", 0.3, self.idleAnimTime)
                 self.currentAnimation = self.activeAnimation.idle
             end
-        else
+        elseif (self.wholeBody == false)
             if (self.isMoving and self.currentAnimation ~= self.activeAnimation.run)
             then
                 scene.blendToAnimation(self.ID, "run", "LowerBody", 0.3, self.runAnimTime)
                 self.currentAnimation = self.activeAnimation.run
-                print("Run")
             elseif (not self.isMoving and self.currentAnimation ~= self.activeAnimation.idle)
             then
                 scene.blendToAnimation(self.ID, "idle", "LowerBody", 0.3, self.idleAnimTime)
                 self.currentAnimation = self.activeAnimation.idle
-                print("Idle")
             end
         end
     end
