@@ -73,6 +73,7 @@ void GameScene::init()
     this->hpBarBackgroundTextureID = resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
     this->hpBarTextureID = resourceMng->addTexture("assets/textures/UI/hpBar.png");
     this->blackTextureIndex = resourceMng->addTexture("assets/textures/blackTex.png");
+    this->ghostOverlayIndex = resourceMng->addTexture("assets/textures/UI/GhostUI.png");
 
     // Temporary light
     this->dirLightEntity = this->createEntity();
@@ -238,6 +239,10 @@ void GameScene::update()
         this->networkHandler->interpolatePositions();
     }
 
+    this->getUIRenderer()->setTexture(this->ghostOverlayIndex);
+    this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
+        glm::vec4(1.0f, 1.0f, 1.0f, 0.4f + sin(this->timer * 2.0f) * 0.15f));
+
     Combat& playerCombat = this->getComponent<Combat>(this->playerID);
     this->getUIRenderer()->setTexture(
         abilityTextures[playerCombat.ability.abilityType]
@@ -290,7 +295,7 @@ void GameScene::update()
     if (this->paused)
     {
         this->getUIRenderer()->setTexture(this->blackTextureIndex);
-        this->getUIRenderer()->renderTexture(glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f) * 4.0f, glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
+        this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
         this->getUIRenderer()->renderTexture(this->resumeButton.position, this->resumeButton.dimension);
         this->getUIRenderer()->renderTexture(this->exitButton.position, this->exitButton.dimension);
         this->getUIRenderer()->renderString("resume", this->resumeButton.position, glm::vec2(50.0f));
@@ -308,6 +313,10 @@ void GameScene::update()
             this->networkHandler->deleteServer();
             this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
         }
+    }
+    else
+    {
+        this->timer += Time::getDT();
     }
 
 #ifdef _CONSOLE

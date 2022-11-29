@@ -24,6 +24,8 @@ private:
   AIHandler* aiHandler = nullptr;
   NetworkHandlerGame* networkHandler;
 
+  // Timer that "stops" if paused
+  float timer = 0.0f;
   bool paused = false;
   UIArea resumeButton;
   UIArea exitButton;
@@ -50,6 +52,7 @@ private:
   uint32_t perkTextures[6];
   uint32_t fontTextureIndex;
   uint32_t blackTextureIndex;
+  uint32_t ghostOverlayIndex;
 
   uint32_t hpBarBackgroundTextureID;
   uint32_t hpBarTextureID;
