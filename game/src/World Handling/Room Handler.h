@@ -23,8 +23,11 @@ public:
 	static const uint32_t NUM_ONE_X_TWO;
 	static const uint32_t NUM_TWO_X_TWO;
 
+	static const glm::vec3 DOOR_LAMP_OFFSET;
 	static const glm::vec3 DOOR_LAMP_COLOUR;
 	static const float DOOR_LAMP_INTENSITY;
+	static const float FLICKER_INTERVAL;
+	static const int FLICKER_INTENSITY;
 private:
   public:
 
@@ -119,6 +122,7 @@ private:
 	void reset();
 	VRandom* random; // Created and deleted in generate()
 	bool useMeshes; // Required by server
+	float flickerTimer = 0.f;
 
 public:
 	RoomHandler();

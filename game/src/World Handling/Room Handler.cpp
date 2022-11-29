@@ -13,9 +13,12 @@ const uint32_t RoomHandler::NUM_BORDER = 1;
 const uint32_t RoomHandler::NUM_ONE_X_ONE = 3;
 const uint32_t RoomHandler::NUM_ONE_X_TWO = 2;
 const uint32_t RoomHandler::NUM_TWO_X_TWO = 1;
+
+const glm::vec3 RoomHandler::DOOR_LAMP_OFFSET = glm::vec3(-12.f, 21.5f, 30.5f);
 const glm::vec3 RoomHandler::DOOR_LAMP_COLOUR = glm::vec3(0.94f, 0.28f, 0.05f);
 const float RoomHandler::DOOR_LAMP_INTENSITY = 5000.f;
-
+const float RoomHandler::FLICKER_INTERVAL = 0.05f;
+const int RoomHandler::FLICKER_INTENSITY = 30;
 
 RoomHandler::RoomHandler()
 	:scene(nullptr), resourceMan(nullptr), activeIndex(0), 
@@ -116,6 +119,19 @@ void RoomHandler::roomCompleted()
 
 bool RoomHandler::playerNewRoom(Entity player, PhysicsEngine* physicsEngine)
 {
+	// Light flicker
+	flickerTimer += Time::getDT();
+	if (flickerTimer >= FLICKER_INTERVAL)
+	{
+		flickerTimer = 0.f;
+		for (int i = 0; i < 4; i++)
+		{
+			PointLight& light = this->scene->getComponent<PointLight>(this->doorLamps[i]);
+			light.color = DOOR_LAMP_COLOUR * DOOR_LAMP_INTENSITY;
+			light.color += rand() % FLICKER_INTENSITY * (rand() % 2 ? 1.f : -1.f);
+		}
+	}
+
 	Room& curRoom = this->rooms[this->activeIndex];
 	if (!curRoom.finished)
 	{
@@ -308,8 +324,8 @@ void RoomHandler::generate(uint32_t seed)
 		{
 			Entity entity = this->createBorderEntity(roomGen.getInnerBorder(j).position, true);
 			curRoom.objects.emplace_back(entity);
-			this->scene->setComponent<Collider>(entity, Collider::createBox(
-				glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH * 3.f, TILE_WIDTH * 0.5f), glm::vec3(0.f, TILE_WIDTH * 3.f, 0.f)));
+			//this->scene->setComponent<Collider>(entity, Collider::createBox(
+			//	glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH * 3.f, TILE_WIDTH * 0.5f), glm::vec3(0.f, TILE_WIDTH * 3.f, 0.f)));
 
 			if (this->useMeshes)
 			{
@@ -394,7 +410,7 @@ void RoomHandler::generate(uint32_t seed)
 		this->scene->setComponent<PointLight>(this->doorLamps[i]);
 		PointLight& light = this->scene->getComponent<PointLight>(this->doorLamps[i]);
 		light.color = DOOR_LAMP_COLOUR * DOOR_LAMP_INTENSITY;
-		light.positionOffset = glm::vec3(-12.f, 21.5f, 30.5f);
+		light.positionOffset = DOOR_LAMP_OFFSET;
 	}
 	this->activeIndex = 0;
 	this->placeDoorLamps();
@@ -1113,20 +1129,23 @@ void RoomHandler::imgui(DebugRenderer* dr)
 			}
 		}
 
-		static glm::vec3 lampOffset{-12.f, 21.5f, 30.5f};
-		static glm::vec3 colour{0.94f, 0.28f, 0.05f};
-		static float intensity = 5000.f;
+		//static glm::vec3 lampOffset{-12.f, 21.5f, 30.5f};
+		//static glm::vec3 colour{0.94f, 0.28f, 0.05f};
+		//static float intensity = 5000.f;
 
-		ImGui::Separator();
-		ImGui::ColorEdit3("Lamp colour", &colour.x);
-		ImGui::DragFloat("Intensity", &intensity, 10.f);
-		ImGui::DragFloat3("Lamp offset", &lampOffset.x, 0.01f);
+		//ImGui::Separator();
+		//ImGui::ColorEdit3("Lamp colour", &colour.x);
+		//ImGui::DragFloat("Intensity", &intensity, 10.f);
+		//ImGui::DragFloat3("Lamp offset", &lampOffset.x, 0.01f);
+		//ImGui::DragFloat("Flicker offset", &flickerInt, 0.05f);
+		//ImGui::DragFloat("Flicker interval", &flickerInterval, 0.05f);
+		//ImGui::DragInt("Flicker int", &flickerInt2, 1);
 
-		for (int i = 0; i < 4; i++)
-		{
-			this->scene->getComponent<PointLight>(this->doorLamps[i]).color = colour * intensity;
-			this->scene->getComponent<PointLight>(this->doorLamps[i]).positionOffset = lampOffset;
-		}
+		//for (int i = 0; i < 4; i++)
+		//{
+		//	this->scene->getComponent<PointLight>(this->doorLamps[i]).color = colour * intensity;
+		//	this->scene->getComponent<PointLight>(this->doorLamps[i]).positionOffset = lampOffset;
+		//}
 
 
 	}
