@@ -75,8 +75,12 @@ void TankBT::deactivateHump(Entity entityID, uint32_t what)
 void TankBT::updateHump(Entity entityID, uint32_t what)
 {
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+
+	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	Transform& trans = getTheScene()->getComponent<Transform>(what);
 	trans.scale.x = trans.scale.z = tankComp.humps[what];
+	trans.position.x = tankTrans.position.x;
+	trans.position.z = tankTrans.position.z;
 }
 bool TankBT::canActivateNewHump(Entity entityID)
 {
@@ -291,20 +295,15 @@ void TankBT::giveFriendsHealth(Entity entityID)
 		    if(f.second.type == "Swarm")
 		    {
 				SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(f.first);
-				for(auto& g: swarmComp.group->members)
+				swarmComp.shieldedByTank = true;
+				int toAdd = tankComp.friendHealthRegen;
+				if((swarmComp.life + toAdd) > swarmComp.FULL_HEALTH)
 				{
-					SwarmComponent& swarmGroupComp = getTheScene()->getComponent<SwarmComponent>(g);
-					swarmGroupComp.shieldedByTank = true;
-				
-					int toAdd = tankComp.friendHealthRegen;
-					if((swarmGroupComp.life + toAdd) > swarmGroupComp.FULL_HEALTH)
-					{
-						swarmGroupComp.life = swarmGroupComp.FULL_HEALTH;
-					}
-					else
-					{
-						swarmGroupComp.life += (int)toAdd;
-					}
+					swarmComp.life = swarmComp.FULL_HEALTH;
+				}
+				else
+				{
+					swarmComp.life += toAdd;
 				}
 		        
 		    }
@@ -707,14 +706,12 @@ BTStatus TankBT::getNearestGroupToPlayer(Entity entityID)
 		if(f.second.type == "Swarm")
 		{
 			SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(f.first);
-			for(auto g: swarmComp.group->members)
+			if(swarmComp.inCombat)
 			{
-				if(getTheScene()->getComponent<SwarmComponent>(g).group->inCombat)
-				{
-					average += getTheScene()->getComponent<Transform>(g).position;
-					num++;
-				}
+				average += getTheScene()->getComponent<Transform>(f.first).position;
+				num++;
 			}
+			
 		}
 		else if(f.second.type == "Lich")
 		{

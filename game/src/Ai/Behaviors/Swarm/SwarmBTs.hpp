@@ -28,7 +28,6 @@ struct SwarmGroup
 	std::stack<uint32_t> aliveMembers;
 
 	bool isInGroup(Entity entityID){if(std::find(members.begin(), members.end(), entityID) != members.end()){return true;}return false;}
-	
 };
 
 

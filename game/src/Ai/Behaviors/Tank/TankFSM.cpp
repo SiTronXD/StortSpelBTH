@@ -54,7 +54,6 @@ void TankFSM::updateFriendsInSight(Entity entityID)
     Transform& tankTransform = scene->getComponent<Transform>(entityID);
 
     std::vector<int> toRemove;
-    std::vector<int> toAddID;
     std::vector<TankFriend> toAddData;
     for(auto f: tankComp.allFriends)
     {
@@ -64,17 +63,6 @@ void TankFSM::updateFriendsInSight(Entity entityID)
             SwarmComponent& swarmComp = scene->getComponent<SwarmComponent>(f.first);
             if(swarmComp.life <= 0)
             {
-                
-                for(auto g: swarmComp.group->members)
-                {
-                    if(scene->getComponent<SwarmComponent>(g).life > 0)
-                    {
-                        toAddID.push_back(g);
-                        toAddData.push_back({f.second.type, f.second.visited});
-                        break;
-                    }
-                }
-                
                 toRemove.push_back(f.first);
                 continue;
             }
@@ -87,6 +75,11 @@ void TankFSM::updateFriendsInSight(Entity entityID)
                 toRemove.push_back(f.first);
                 continue;
             }
+        }
+        else if(f.second.type == "")
+        {
+            toRemove.push_back(f.first);
+            continue;
         }
 
         //Update friends in sight
@@ -101,10 +94,6 @@ void TankFSM::updateFriendsInSight(Entity entityID)
     for(auto r: toRemove)
     {
         tankComp.allFriends.erase(r);
-    }
-    for(int i = 0; i < toAddID.size(); i++)
-    {
-        tankComp.allFriends.insert({toAddID[i],{toAddData[i].type, toAddData[i].visited}});
     }
 }
 
@@ -140,7 +129,7 @@ bool TankFSM::friendlysInFight(Entity entityID)
         }
         else if(theScene->hasComponents<LichComponent>(f.first))
         {
-             if(theScene->getComponent<LichComponent>(f.first).inCombat)
+            if(theScene->getComponent<LichComponent>(f.first).inCombat)
             {
                 return true;
             }
@@ -328,10 +317,9 @@ bool TankFSM::shieldToIdle(Entity entityID)
             {
                 getTheScene()->getComponent<SwarmComponent>(f.first).shieldedByTank = false;
             }
-            else
+            else if(f.second.type == "Lich")
             {
                 getTheScene()->getComponent<LichComponent>(f.first).shieldedByTank = false;
-
             }
         }
         tankComp.canBeHit = true;

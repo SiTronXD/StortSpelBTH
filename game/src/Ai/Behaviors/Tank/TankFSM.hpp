@@ -36,18 +36,7 @@ struct TankComponent
             int entityid = (int)entity;
             if(scene->isActive(entityid) && entityid != entityID)
             {
-				bool found = false;
-				for(auto g: comp.group->members)
-				{
-					if(tankComp.allFriends.find(g) != tankComp.allFriends.end())
-					{
-						found = true;
-					}
-				}
-				if(!found)
-				{
-					tankComp.allFriends.insert({entityid, {"Swarm", false}});
-				}
+				tankComp.allFriends.insert({entityid, {"Swarm", false}});
             }        
         };
         auto lichLamda = [&](const auto& entity, LichComponent& comp, Transform& trans) {
@@ -69,9 +58,9 @@ struct TankComponent
 	//Floats
 	float idleSpeed					= 10.0f;
 	float shieldSpeed				= 5.0f;
-	float cahargeSpeed				= 0.0f;//200.0f;
+	float cahargeSpeed				= 200.0f;
     float sightRadius				= 200.0f; // I'll can attack you
-    float peronalSpaceRadius		= 0.0f;//100.0f; // This is my personal space, get away!
+    float peronalSpaceRadius		= 100.0f; // This is my personal space, get away!
 	float friendVisitRadius			= 15.0f; //When go this close to friends
 	float combatRotSpeed			= 50.0f;
 	float idleRotSpeed				= 40.0f;
@@ -108,7 +97,7 @@ struct TankComponent
 	float alertTimer				= alertTimerOrig;
 	float huntTimerOrig				= 0.5f;
 	float huntTimer					= huntTimerOrig;
-	float chargeTimerOrig			= 90000000.0f;//2.5f;
+	float chargeTimerOrig			= 2.5f;
 	float chargeTimer				= huntTimerOrig;
 	float runTimerOrig				= 3.0f;
 	float runTimer					= huntTimerOrig;
