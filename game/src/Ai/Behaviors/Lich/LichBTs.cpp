@@ -263,8 +263,6 @@ BTStatus LichBT::dropOffBones(Entity entityID)
     {
         lichComp.carryingBones = false; 
         lichComp.numBones = 0; 
-    lichComp.numBones = 0;
-        lichComp.numBones = 0; 
         ret = BTStatus::Success;
     }
     return ret;
