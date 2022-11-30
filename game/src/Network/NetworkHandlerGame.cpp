@@ -208,6 +208,20 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		}
 		// Else give hp to other players visually
 		break;
+    case GameEvent::INACTIVATE:
+        tcpPacket >> i0;
+        if (serverEntities.find(i0) != serverEntities.end())
+        {
+            this->sceneHandler->getScene()->setInactive(serverEntities.find(i0)->second);
+		}
+		break;
+    case GameEvent::ACTIVATE:
+        tcpPacket >> i0;
+        if (serverEntities.find(i0) != serverEntities.end())
+        {
+            this->sceneHandler->getScene()->setActive(serverEntities.find(i0)->second);
+		}
+		break;
 	default:
 		break;
 	}

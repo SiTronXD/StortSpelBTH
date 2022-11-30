@@ -3,6 +3,7 @@
 //#include "../../../Components/Combat.h"
 //#include "../../../Components/Perks.h" //TODO: Adam, add the perk stuff to Lich... ? 
 #include <limits>
+#include "../../../Network/ServerGameMode.h"
 
 
 Scene* LichBT::getTheScene()
@@ -139,6 +140,11 @@ BTStatus LichBT::die(Entity entityID)
 	}
 
 	getTheScene()->setInactive(entityID);
+    ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
+    if (serverScene != nullptr) 
+    {
+        serverScene->addEvent({(int)GameEvent::INACTIVATE, entityID});
+    }
 
 	return ret;
 }

@@ -653,8 +653,9 @@ BTStatus SwarmBT::die(Entity entityID)
         playerHealth.health += 10;
     }
     int spawnLoot = rand() % 10;
+    ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
 
-    if (sceneHandler->getScene()->getNetworkHandler() == nullptr)
+    if (serverScene != nullptr)
     {
         int itemID, type = -1, otherType;
         float multiplier;
@@ -672,7 +673,6 @@ BTStatus SwarmBT::die(Entity entityID)
         }
         if (type != -1)
         {
-                std::cout << "spawn perk online" << std::endl;
             glm::vec3 spawnPos = sceneHandler->getScene()->getComponent<Transform>(entityID).position;
             glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
             ServerGameMode* serverScene = (ServerGameMode*)((NetworkSceneHandler*)sceneHandler)->getScene();
@@ -738,6 +738,10 @@ BTStatus SwarmBT::die(Entity entityID)
     SwarmGroup* swarmGroup = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID).group;
     swarmGroup->aliveMembers.pop();
 
+    if (serverScene != nullptr) 
+    {
+        serverScene->addEvent({(int)GameEvent::INACTIVATE, entityID});
+    }
     sceneHandler->getScene()->setInactive(entityID);
 
     return ret;
