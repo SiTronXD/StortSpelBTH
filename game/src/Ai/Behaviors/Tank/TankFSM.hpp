@@ -69,9 +69,9 @@ struct TankComponent
 	//Floats
 	float idleSpeed					= 10.0f;
 	float shieldSpeed				= 5.0f;
-	float cahargeSpeed				= 200.0f;
+	float cahargeSpeed				= 0.0f;//200.0f;
     float sightRadius				= 200.0f; // I'll can attack you
-    float peronalSpaceRadius		= 100.0f; // This is my personal space, get away!
+    float peronalSpaceRadius		= 0.0f;//100.0f; // This is my personal space, get away!
 	float friendVisitRadius			= 15.0f; //When go this close to friends
 	float combatRotSpeed			= 50.0f;
 	float idleRotSpeed				= 40.0f;
@@ -101,13 +101,14 @@ struct TankComponent
 	bool alertAtTop					= false;
 	bool alertDone					= false;
 	bool canAttack					= false;
+	bool attackGoRight				= false;
 
 	//Timers
 	float alertTimerOrig			= 1.0f;
 	float alertTimer				= alertTimerOrig;
 	float huntTimerOrig				= 0.5f;
 	float huntTimer					= huntTimerOrig;
-	float chargeTimerOrig			= 2.5f;
+	float chargeTimerOrig			= 90000000.0f;//2.5f;
 	float chargeTimer				= huntTimerOrig;
 	float runTimerOrig				= 3.0f;
 	float runTimer					= huntTimerOrig;

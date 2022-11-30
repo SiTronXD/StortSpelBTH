@@ -175,6 +175,110 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 
 	updateCanBeHit(entityID);
 }
+void TankBT::drawRaySimple(Ray& ray, float dist, glm::vec3 color)
+{
+	//Draw ray
+	BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
+	ray.pos,
+	ray.pos + ray.dir * dist,
+	glm::vec3(1.0f, 0.0f, 0.0f));
+}
+
+bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
+{
+	bool ret = true;
+	bool somethingInTheWay = false;
+	bool canGoForward=true;	
+	bool canGoRight=true;
+	bool canGoLeft=true;
+
+	int player_id = getPlayerID();
+	Collider& entityCollider = getTheScene()->getComponent<Collider>(entityID);
+	Collider& playerCollider = getTheScene()->getComponent<Collider>(player_id);
+	Transform& entityTransform = getTheScene()->getComponent<Transform>(entityID);
+	Transform& playerTransform = getTheScene()->getComponent<Transform>(player_id);
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+    
+	entityTransform.updateMatrix();
+	glm::vec3 from = playerTransform.position;
+	from = from + playerTransform.up() * 3.0f;
+	glm::vec3 to = entityTransform.position;
+	float maxDist = glm::length(to - from);
+	glm::vec3 dir = glm::normalize(from - to);
+	Ray rayToPlayer{from, -dir};    
+	Ray rayRight{to, entityTransform.right()};    
+	Ray rayLeft{to, -entityTransform.right()};    
+	float left_right_maxDist = entityCollider.radius + 3.0f;
+    RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, maxDist);
+	drawRaySimple(rayToPlayer, maxDist);
+	if(rp.hit)
+	{
+		
+		if(!getTheScene()->getComponent<Collider>(rp.entity).isTrigger &&
+			rp.entity != entityID)
+		{
+			ret = false;
+			somethingInTheWay = true;
+			entityTransform.updateMatrix();
+
+			RayPayload r_right= BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayRight, left_right_maxDist);
+			RayPayload r_left = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayLeft, left_right_maxDist);
+			RayPayload r_forward = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, left_right_maxDist);
+			drawRaySimple(rayToPlayer, left_right_maxDist);
+			drawRaySimple(rayRight, left_right_maxDist);
+			drawRaySimple(rayLeft, left_right_maxDist);
+
+			if(r_forward.hit && !getTheScene()->getComponent<Collider>(r_forward.entity).isTrigger)
+			{
+				canGoForward = false;
+			}
+			if(r_right.hit && !getTheScene()->getComponent<Collider>(r_right.entity).isTrigger)
+			{
+				canGoRight = false;
+				tankComp.attackGoRight = false;
+			}
+			if(r_left.hit && !getTheScene()->getComponent<Collider>(r_left.entity).isTrigger)
+			{
+				canGoLeft = false;
+				tankComp.attackGoRight = true;
+			}
+
+		}
+	}
+
+	if(somethingInTheWay)
+	{
+		ret = false;
+		dir = glm::vec3(0.0f, 0.0f, 0.0f);
+		entityTransform.updateMatrix();
+
+		if(canGoForward)
+		{
+			dir += -entityTransform.forward();
+		}
+
+		if(canGoRight && tankComp.attackGoRight)
+		{
+			dir += entityTransform.right();
+		}
+		else if(canGoLeft && !tankComp.attackGoRight)
+		{
+			dir -= entityTransform.right();
+		}
+	}
+
+	if(dir == glm::vec3(0.0f, 0.0f, 0.0f))
+	{
+		dir = glm::vec3(1.0f, 0.0f, 0.0f);
+	}
+	rotateTowards(entityID, playerTransform.position, tankComp.idleRotSpeed, 5.0f);
+	glm::normalize(dir);
+	dir.y = 0;
+	moveDir = dir;
+
+
+	return ret;
+}
 
 void TankBT::giveFriendsHealth(Entity entityID)
 {
@@ -547,63 +651,12 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	}
 	tankComp.groundHumpTimer = 0.0f;
 
-	//Ray test to avoid detect obstcles
-	//Not really working
-	/*glm::vec3 dirEntityTargetPosToPlayer = glm::normalize(playerTrans.position - tankTrans.position);
-	float distEntityTargetPosToPlayer = glm::length(playerTrans.position - tankTrans.position);
-	Ray rayToPlayerMid{tankTrans.position, dirEntityTargetPosToPlayer};    
-	Ray rayToPlayerLeft{tankTrans.position - (tankTrans.right() * tankCol.radius), dirEntityTargetPosToPlayer};    
-	Ray rayToPlayerRight{tankTrans.position + (tankTrans.right() * tankCol.radius) , dirEntityTargetPosToPlayer};    
-    RayPayload rp1 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayerMid, distEntityTargetPosToPlayer+10.f);
-    RayPayload rp2 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayerLeft, distEntityTargetPosToPlayer+10.f);
-    RayPayload rp3 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayerRight, distEntityTargetPosToPlayer+10.f);
-
-	BehaviorTree::sceneHandler->getPhysicsEngine()->renderDebugShapes(true);
-	BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
-	    rayToPlayerMid.pos,
-	    rayToPlayerMid.pos + rayToPlayerMid.dir * distEntityTargetPosToPlayer,
-	    glm::vec3(1.0f, 0.0f, 0.0f)
-	);
-	BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
-	    rayToPlayerLeft.pos,
-	    rayToPlayerMid.pos + rayToPlayerLeft.dir * distEntityTargetPosToPlayer,
-	    glm::vec3(1.0f, 0.0f, 0.0f)
-	);
-	BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
-	    rayToPlayerRight.pos,
-	    rayToPlayerMid.pos + rayToPlayerRight.dir * distEntityTargetPosToPlayer,
-	    glm::vec3(1.0f, 0.0f, 0.0f)
-	);
-
-	if(rp1.hit || rp2.hit || rp3.hit)
+	glm::vec3 dir;
+	if(!rayChecking(entityID, dir))
 	{
-		bool r1Hit = false;
-		bool r2Hit = false;
-		bool r3Hit = false;
-		if(rp1.entity == playerID || rp1.entity == entityID || rp1.hit == -1)
-		{
-			r1Hit = true;
-		}
-		if(rp2.entity == playerID || rp2.entity == entityID || rp2.hit == -1)
-		{
-			r2Hit = true;
-		}
-		if(rp3.entity == playerID || rp3.entity == entityID || rp3.hit == -1)
-		{
-			r3Hit = true;
-		}
-
-		if(r1Hit && r2Hit && r3Hit)
-		{
-			int test = 0;
-		}
-		else
-		{
-			rb.velocity = pathFindingManager.getDirTo(tankTrans.position, playerTrans.position) * tankComp.idleSpeed;
-			return ret;
-		}
-		
-	}*/
+		rb.velocity = dir * tankComp.idleSpeed;
+		return ret;
+	}
 
 
 	if(!tankComp.hasRunTarget && (tankComp.chargeTimer > 0.0f || !rotationDone(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f)))

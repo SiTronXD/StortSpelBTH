@@ -67,10 +67,10 @@ class SwarmBT : public BehaviorTree
 	static int		getPlayerID();
 	static float	get_dt();
 	static Scene*	getTheScene();
-	static void rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision);
+	static void		rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision);
 	//Idel ray special cases
-	static bool outsideRadius(Entity entityID);
-	static bool stuckInCorner(RayPayload& rp_left, RayPayload& rp_right, RayPayload& rp_forward);
+	static bool		outsideRadius(Entity entityID);
+	static bool		stuckInCorner(RayPayload& rp_left, RayPayload& rp_right, RayPayload& rp_forward);
 
 };
 
