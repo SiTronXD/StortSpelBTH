@@ -142,6 +142,39 @@ void LichBT::setStrategyBasedOnPoints	(Entity entityID, float& l_points, float& 
     }
 }
 
+Entity LichBT::getFreeOrb(Entity entityID, ATTACK_STRATEGY type)
+{
+    int projectileID = -1;
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    if(lichComp.curAttack->type == ATTACK_STRATEGY::FIRE){
+
+        for(size_t i = 0; i < LichComponent::NR_FIRE_ORBS;i++)
+        {
+            if(!getTheScene()->isActive(lichComp.fireOrbs[i]))
+            {projectileID = lichComp.fireOrbs[i]; getTheScene()->setActive(lichComp.fireOrbs[i]); break;}
+        }
+    }
+    else if(lichComp.curAttack->type == ATTACK_STRATEGY::ICE)
+    {
+
+        for(size_t i = 0; i < LichComponent::NR_ICE_ORBS;i++)
+        {
+            if(!getTheScene()->isActive(lichComp.iceOrbs[i]))
+            {projectileID = lichComp.iceOrbs[i]; getTheScene()->setActive(lichComp.iceOrbs[i]); break;}
+        }
+    }
+    else if(lichComp.curAttack->type == ATTACK_STRATEGY::LIGHT)
+    {
+        for(size_t i = 0; i < LichComponent::NR_LIGHT_ORBS;i++)
+        {
+            if(!getTheScene()->isActive(lichComp.lightOrbs[i]))
+            {projectileID = lichComp.lightOrbs[i]; getTheScene()->setActive(lichComp.lightOrbs[i]); break;}
+
+        }
+    }
+    return projectileID;
+}
+
 bool LichBT::canUseAttack(Entity entityID, std::string attack)
 {
     bool ret = false;

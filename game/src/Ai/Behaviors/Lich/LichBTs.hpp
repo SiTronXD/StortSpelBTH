@@ -11,6 +11,7 @@
 
 class LichBT : public BehaviorTree
 {
+    friend class Orb;
    protected:
 	// static int perkMeshes[3];
 	virtual void start() = 0;
@@ -61,6 +62,8 @@ class LichBT : public BehaviorTree
 	static void givePointsForOwnHealth		(Entity entityID, float& l_points, float& i_points, float& f_points);
 	static void givePointsForDistance	    (Entity entityID, float& l_points, float& i_points, float& f_points);
 	static void setStrategyBasedOnPoints	(Entity entityID, float& l_points, float& i_points, float& f_points);
+
+    static Entity getFreeOrb(Entity entityID, ATTACK_STRATEGY type);
 
 	static bool canUseAttack				(Entity entityID, std::string attack);
 };
