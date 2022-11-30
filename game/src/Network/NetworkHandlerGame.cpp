@@ -208,6 +208,23 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		}
 		// Else give hp to other players visually
 		break;
+    case GameEvent::SPAWN_ORB:
+        tcpPacket >> i0 >> i1;
+        serverEntities.insert({i0,spawnOrbs(i1)});
+        
+		break;
+    case GameEvent::THROW_ORB:
+        tcpPacket >> i0;
+        v0 = this->getVec(tcpPacket);
+        v1 = this->getVec(tcpPacket);
+
+        this->sceneHandler->getScene()->setActive(serverEntities[i0]);
+        this->sceneHandler->getScene()->getComponent<Transform>(serverEntities[i0]).position = v0;
+        this->sceneHandler->getScene()->getComponent<Rigidbody>(serverEntities[i0]).velocity = v1;
+        this->sceneHandler->getScene()->getComponent<Orb>(serverEntities[i0]).timeAtCast = Time::getTimeSinceStart();
+
+        
+		break;
     case GameEvent::INACTIVATE:
         tcpPacket >> i0;
         if (serverEntities.find(i0) != serverEntities.end())

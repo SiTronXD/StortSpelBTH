@@ -7,11 +7,19 @@
 #include "../../../Network/ServerGameMode.h"
 #include <limits>
 
-int SwarmBT::getPlayerID()
+int SwarmBT::getPlayerID(Entity entityID)
 {
-	int playerID = -1;
-    std::string playerId_str = "playerID";
-    BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(playerID, playerId_str);
+    // if network exist take player from there
+    NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+    if (s != nullptr)
+        {
+            return s->getNearestPlayer(entityID);
+        }
+
+    // else find player from script
+    int playerID = -1;
+    std::string playerString = "playerID";
+    BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
     return playerID;
 }
 
@@ -103,22 +111,6 @@ bool SwarmBT::stuckInCorner(RayPayload& rp_left, RayPayload& rp_right, RayPayloa
 int SwarmGroup::getNewId = 0;
 int SwarmBT::perkMeshes[] = {0, 0, 0};
 int SwarmBT::abilityMeshes[] = {0, 0};
-
-Entity getPlayerID(SceneHandler* sceneHandler, Entity entityID)
-{
-    // if network exist take player from there
-    NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
-    if (s != nullptr)
-        {
-            return s->getNearestPlayer(entityID);
-        }
-
-    // else find player from script
-    int playerID = -1;
-    std::string playerString = "playerID";
-    sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
-    return playerID;
-}
 
 void removeFromGroup(SwarmComponent& comp, Entity entityID)
 {
@@ -425,7 +417,7 @@ BTStatus SwarmBT::escapeToFriends(Entity entityID)
 BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 {
 	BTStatus ret = BTStatus::Running;
-    int player = getPlayerID(sceneHandler, entityID);
+    int player = getPlayerID(entityID);
 
 	Transform& thisTransform = getTheScene()->getComponent<Transform>(entityID);
 	SwarmComponent& thisSwarmComp = getTheScene()->getComponent<SwarmComponent>(entityID);
@@ -493,7 +485,7 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
     BTStatus ret = BTStatus::Running;
 
 	
-	int player_id = getPlayerID();
+	int player_id = getPlayerID(entityID);
 	Collider& entityCollider = getTheScene()->getComponent<Collider>(entityID);
 	Collider& playerCollider = getTheScene()->getComponent<Collider>(player_id);
 	Transform& entityTransform = getTheScene()->getComponent<Transform>(entityID);
@@ -644,7 +636,7 @@ BTStatus SwarmBT::closeEnoughToPlayer(Entity entityID)
 
 	SwarmComponent& thisSwarmComp = getTheScene()->getComponent<SwarmComponent>(entityID);
 	Transform& thisTransform = getTheScene()->getComponent<Transform>(entityID);
-	Transform& playerTransform = getTheScene()->getComponent<Transform>(getPlayerID());
+	Transform& playerTransform = getTheScene()->getComponent<Transform>(getPlayerID(entityID));
 
     float dist = glm::length(thisTransform.position - playerTransform.position);
     if (dist <= thisSwarmComp.attackRange)
@@ -660,7 +652,7 @@ BTStatus SwarmBT::attack(Entity entityID)
     BTStatus ret = BTStatus::Running;
 
 	Transform& thisTransform = getTheScene()->getComponent<Transform>(entityID);
-	Transform& playerTransform = getTheScene()->getComponent<Transform>(getPlayerID());
+	Transform& playerTransform = getTheScene()->getComponent<Transform>(getPlayerID(entityID));
 	SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(entityID);
 	AiCombatSwarm& combat = getTheScene()->getComponent<AiCombatSwarm>(entityID);
 	Rigidbody& rigidbody = getTheScene()->getComponent<Rigidbody>(entityID);
@@ -732,7 +724,7 @@ BTStatus SwarmBT::die(Entity entityID)
 {
     BTStatus ret = BTStatus::Success;
 
-    HealthComp& playerHealth = sceneHandler->getScene()->getComponent<HealthComp>(getPlayerID(sceneHandler,entityID));
+    HealthComp& playerHealth = sceneHandler->getScene()->getComponent<HealthComp>(getPlayerID(entityID));
     if (playerHealth.health <= (playerHealth.maxHealth - 10))
     {
         playerHealth.health += 10;
@@ -836,7 +828,7 @@ BTStatus SwarmBT::alerted(Entity entityID)
 {
 	BTStatus ret = BTStatus::Running;
 	SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(entityID);
-	Transform& playerTransform = getTheScene()->getComponent<Transform>(getPlayerID());
+	Transform& playerTransform = getTheScene()->getComponent<Transform>(getPlayerID(entityID));
 	Transform& swarmTrans = getTheScene()->getComponent<Transform>(entityID);
 	Collider& swarmCol = getTheScene()->getComponent<Collider>(entityID);
 	float toMove = (swarmCol.radius*2) * (1.0f - swarmComp.alertScale);

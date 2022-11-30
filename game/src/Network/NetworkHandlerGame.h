@@ -3,6 +3,8 @@
 #include <vengine.h>
 #include "../Components/Perks.h"
 #include "../Components/Abilities.h"
+#include "../Ai/Behaviors/Lich/LichBTs.hpp"
+#include "../Ai/Behaviors/Lich/LichFSM.hpp"
 
 class CombatSystem;
 enum class GameEvent
@@ -16,6 +18,8 @@ enum class GameEvent
 	PICKUP_ITEM, // Client -> Server: Want to pick up item. Server -> Client: Pick up the item
 	USE_HEAL, // Client -> Server: Want to use heal. Server -> Client: Spawn heal entity
 	SPAWN_ENEMY,// Type, ServerID, Position,
+    SPAWN_ORB, // id, Type, Position
+    THROW_ORB, // Id, initialPosition, Direction
 	PLAYER_TAKE_DAMAGE, // What player, how much damage
 	PLAYER_SETHP, // What player, how much hp
 	PUSH_PLAYER, // What player, direction
@@ -77,6 +81,48 @@ private:
 	int healAreaMesh;
 	int swordMesh;
 
+    Entity spawnOrbs(int orbType)
+    {
+        Entity orb = this->sceneHandler->getScene()->createEntity();
+        if(orbType == (int)ATTACK_STRATEGY::FIRE)
+        {
+            this->sceneHandler->getScene()->setComponent<Collider>(orb, Collider::createSphere(LichComponent::orbRadius));
+            this->sceneHandler->getScene()->setComponent<Orb>(orb);
+            this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
+            Rigidbody& rb = this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
+            rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+            rb.gravityMult = 0.0f;
+            rb.friction = 3.0f;
+            rb.mass = 10.0f;
+        }
+        else if(orbType == (int)ATTACK_STRATEGY::ICE)
+        {
+            this->sceneHandler->getScene()->setComponent<Collider>(orb, Collider::createSphere(LichComponent::orbRadius));
+            this->sceneHandler->getScene()->setComponent<Orb>(orb);
+            this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
+            Rigidbody& rb = this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
+            rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+            rb.gravityMult = 0.0f;
+            rb.friction = 3.0f;
+            rb.mass = 10.0f;
+
+        }
+        else if(orbType == (int)ATTACK_STRATEGY::LIGHT)
+        {
+            this->sceneHandler->getScene()->setComponent<Collider>(orb, Collider::createSphere(LichComponent::orbRadius));
+            this->sceneHandler->getScene()->setComponent<Orb>(orb);
+            this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
+            Rigidbody& rb = this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
+            rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+            rb.gravityMult = 0.0f;
+            rb.friction = 3.0f;
+            rb.mass = 10.0f;
+        }
+
+        this->sceneHandler->getScene()->setInactive(orb);
+
+        return orb;
+    }
 	Entity spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	Entity spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	Entity spawnHealArea(glm::vec3 pos);

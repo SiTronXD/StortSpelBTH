@@ -132,6 +132,8 @@ struct TankComponent
 class TankFSM : public FSM
 {
 private:
+    static Entity getPlayerID(Entity entityID);
+private:
 	static bool idleToAler(Entity entityID);
 	static bool alertToCombat(Entity entityID);
 	static bool alertToShield(Entity entityID);
@@ -169,7 +171,6 @@ private:
 	static bool		playerInSight(Entity entityID);
 	static bool		friendlysInFight(Entity entityID);
 	static void		resetTimers(Entity entityID);
-	static int		getPlayerID(Entity entityID);
 	static float	get_dt();
 	static Scene*	getTheScene();
 	static bool		falseIfDead(Entity entityID);

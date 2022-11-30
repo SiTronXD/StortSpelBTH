@@ -1,6 +1,21 @@
 #include "TankFSM.hpp"
 #include "../../../Components/Combat.h"
 
+Entity TankFSM::getPlayerID(Entity entityID){
+    // if network exist take player from there
+    NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+    if (s != nullptr)
+    {
+            return s->getNearestPlayer(entityID);
+    }
+
+    // else find player from script
+    int playerID = -1;
+    std::string playerString = "playerID";
+    FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
+    return playerID;
+}
+
 bool TankFSM::falseIfDead(Entity entityID)
 {
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
@@ -20,22 +35,6 @@ Scene* TankFSM::getTheScene()
 float TankFSM::get_dt()
 {
     return FSM::sceneHandler->getAIHandler()->getDeltaTime();
-}
-
-int TankFSM::getPlayerID(Entity entityID)
-{
-    // if network exist take player from there
-    NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
-    if (s != nullptr)
-        {
-            return s->getNearestPlayer(entityID);
-        }
-
-    // else find player from script
-    int playerID = -1;
-    std::string playerString = "playerID";
-    FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
-    return playerID;
 }
 
 void TankFSM::resetTimers(Entity entityID)

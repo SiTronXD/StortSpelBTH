@@ -45,6 +45,7 @@ void MainMenu::start()
   this->quitButton = this->createEntity();
   this->backButton = this->createEntity();
   this->fullscreenButton = this->createEntity();
+  this->howToPlayButton = this->createEntity();
   this->levelEditButton = this->createEntity();
 
   UIArea area{};

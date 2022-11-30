@@ -498,7 +498,7 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
     else if (this->hasComponents<Orb>(other)) 
     {
         auto& orb = this->getComponent<Orb>(other);
-        this->getComponent<Combat>(player).health -=
+        this->getComponent<HealthComp>(player).health -=
             orb.orbPower->damage;
         orb.onCollision(other);
     }
@@ -543,12 +543,12 @@ void GameScene::imguiUpdate()
     std::string playerString = "playerID";
     int playerID;
     getScriptHandler()->getGlobal(playerID, playerString);
-    auto& playerCombat = getComponent<Combat>(playerID);
+    auto& playerHealthComp = getComponent<HealthComp>(playerID);
     if(ImGui::Button("INVINCIBLE Player")){
-        playerCombat.health = INT_MAX;         
+        playerHealthComp.health = INT_MAX;         
     }
     if(ImGui::Button("Kill Player")){
-        playerCombat.health = 0; 
+        playerHealthComp.health = 0; 
     }
 
     ImGui::End();

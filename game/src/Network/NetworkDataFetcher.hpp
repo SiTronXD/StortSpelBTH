@@ -31,6 +31,6 @@ public:
             this->netScene->getPlayer(i);
         }
         
-        this->netScene->addEvent({(int)GameEvents::GetPlayerHP, playerID});
+        // this->netScene->addEvent({(int)GameEvents::GetPlayerHP, playerID});
     }
 };

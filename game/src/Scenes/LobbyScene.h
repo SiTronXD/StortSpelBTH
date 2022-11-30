@@ -13,7 +13,7 @@ private:
 	uint32_t backgroundId;
 	std::string serverIP;
 
-	uint32_t activePlayers;
+	uint32_t activePlayers = 0;
 	std::vector<Entity> players;
 	std::vector<std::string> playersNames;
     int playerModel;

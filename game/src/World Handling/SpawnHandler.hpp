@@ -80,7 +80,7 @@ public:
 
 private:
     RoomHandler*     roomHandler      = nullptr;
-    GameScene*       currScene        = nullptr;
+    Scene*           currScene        = nullptr;
     SceneHandler*    sceneHandler     = nullptr;
     AIHandler*       aiHandler        = nullptr;
     ResourceManager* resourceManager  = nullptr;

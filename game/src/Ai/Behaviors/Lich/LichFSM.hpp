@@ -196,6 +196,8 @@ struct LichComponent
 class LichFSM : public FSM
 {
 private:
+    static Entity getPlayerID(Entity entityID);
+private:
 	static bool idleToCreep(Entity entityID);
 	static bool creepToAlerted(Entity entityID);
     static bool creepToIdle(Entity entityID);
@@ -282,7 +284,6 @@ protected:
 
 
     //Helper functions
-    static int      getPlayerID(Entity entityID);
 	static float	get_dt();
 	static Scene*	getTheScene();
 	static bool		falseIfDead(Entity entityID);

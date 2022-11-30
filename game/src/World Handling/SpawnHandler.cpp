@@ -1,6 +1,7 @@
 #include "SpawnHandler.hpp"
 #include "../Scenes/GameScene.h"
 #include "../Ai/Behaviors/HelperFuncs.hpp"
+#include "../Network/ServerGameMode.h"
 #include <functional>
 #include <stack>
 #include <random>
@@ -340,9 +341,19 @@ void SpawnHandler::createTank()
 void SpawnHandler::createLich()
 {
     
+    ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
+
     // Create Lich
-    this->lichIDs.push_back(this->currScene->createEntity());
-    this->allEntityIDs.push_back(this->lichIDs.back());
+    if(netScene == nullptr)
+    {        
+        this->lichIDs.push_back(this->currScene->createEntity());
+        this->allEntityIDs.push_back(this->lichIDs.back());
+        //TODO :  Move createEntities stuff in here
+    }
+    else
+    {
+        this->lichIDs.push_back(netScene->spawnEnemy(0));
+    }
 
     this->currScene->setComponent<Rigidbody>(this->lichIDs.back());
     Rigidbody& rb = this->currScene->getComponent<Rigidbody>(this->lichIDs.back());
@@ -358,13 +369,29 @@ void SpawnHandler::createLich()
     lichComp.origScaleY = transform.scale.y;
     this->currScene->setInactive(this->lichIDs.back());
     lichComp.life = 0;
+
+    //Create Grave
+    auto& graveID = this->lichObjects[this->lichIDs.back()].graveID = this->currScene->createEntity();
+    this->currScene->setComponent<Collider>(graveID, Collider::createBox(
+        glm::vec3{LichComponent::graveWidth,LichComponent::graveHeight,LichComponent::graveDepth})
+        );
+
+    this->currScene->getComponent<LichComponent>(this->lichIDs.back()).graveID = graveID;
+    this->currScene->setInactive(graveID);
+
+    //Create Alter
+    auto& alterID = this->lichObjects[this->lichIDs.back()].alterID = this->currScene->createEntity();    
+    this->currScene->setComponent<Collider>(alterID, Collider::createBox(
+        glm::vec3{LichComponent::alterWidth,LichComponent::alterHeight,LichComponent::alterDepth})
+        );
+    
+    this->currScene->getComponent<LichComponent>(this->lichIDs.back()).alterID = alterID;
+    this->currScene->setInactive(alterID);
+
+    
     
 
-    if(this->sceneHandler->getNetworkHandler()->getClient() != nullptr && this->sceneHandler->getNetworkHandler()->getClient()->isConnected())
-    {
-        // TODO: add network support... 
-    }
-    else
+    if(netScene == nullptr)
     {
         static int lich = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
         static int grave = this->resourceManager->addMesh("assets/models/grave.obj");
@@ -375,34 +402,27 @@ void SpawnHandler::createLich()
 
         this->currScene->setComponent<MeshComponent>(this->lichIDs.back(), lich);
 
-        //Create Grave
-        auto& graveID = this->lichObjects[this->lichIDs.back()].graveID = this->currScene->createEntity();
-
         this->currScene->setComponent<MeshComponent>(graveID, grave);
-        this->currScene->setComponent<Collider>(graveID, Collider::createBox(
-            glm::vec3{LichComponent::graveWidth,LichComponent::graveHeight,LichComponent::graveDepth})
-            );
-
-        this->currScene->getComponent<LichComponent>(this->lichIDs.back()).graveID = graveID;
-
-        this->currScene->setInactive(graveID);
-
-        //Create Alter
-        auto& alterID = this->lichObjects[this->lichIDs.back()].alterID = this->currScene->createEntity();
-
-        this->currScene->setComponent<MeshComponent>(alterID, alter);
-        this->currScene->setComponent<Collider>(alterID, Collider::createBox(
-            glm::vec3{LichComponent::alterWidth,LichComponent::alterHeight,LichComponent::alterDepth})
-            );
-        
-        this->currScene->getComponent<LichComponent>(this->lichIDs.back()).alterID = alterID;
+        this->currScene->setComponent<MeshComponent>(alterID, alter);                
 
         // Create Orbs
+        for(size_t i = 0; i < LichComponent::NR_FIRE_ORBS;i++)
+        {
+            this->currScene->setComponent<MeshComponent>(lichComp.fireOrbs[i], fireOrb_mesh);            
+        }
+        for(size_t i = 0; i < LichComponent::NR_ICE_ORBS;i++)
+        {
+            this->currScene->setComponent<MeshComponent>(lichComp.iceOrbs[i], iceOrb_mesh);
+        }
+        for(size_t i = 0; i < LichComponent::NR_LIGHT_ORBS;i++)
+        {
+            this->currScene->setComponent<MeshComponent>(lichComp.lightOrbs[i], lightOrb_mesh);
+        }
 
+        // Create Orbs
         for(size_t i = 0; i < LichComponent::NR_FIRE_ORBS;i++)
         {
             lichComp.fireOrbs[i] = this->currScene->createEntity();
-            this->currScene->setComponent<MeshComponent>(lichComp.fireOrbs[i], fireOrb_mesh);
             this->currScene->setComponent<Collider>(lichComp.fireOrbs[i], Collider::createSphere(LichComponent::orbRadius));
             this->currScene->setComponent<Orb>(lichComp.fireOrbs[i]);
             this->currScene->setInactive(lichComp.fireOrbs[i]);
@@ -416,7 +436,6 @@ void SpawnHandler::createLich()
         for(size_t i = 0; i < LichComponent::NR_ICE_ORBS;i++)
         {
             lichComp.iceOrbs[i] = this->currScene->createEntity();
-            this->currScene->setComponent<MeshComponent>(lichComp.iceOrbs[i], iceOrb_mesh);
             this->currScene->setComponent<Collider>(lichComp.iceOrbs[i], Collider::createSphere(LichComponent::orbRadius));
             this->currScene->setComponent<Orb>(lichComp.iceOrbs[i]);
             this->currScene->setInactive(lichComp.iceOrbs[i]);
@@ -430,7 +449,6 @@ void SpawnHandler::createLich()
         for(size_t i = 0; i < LichComponent::NR_LIGHT_ORBS;i++)
         {
             lichComp.lightOrbs[i] = this->currScene->createEntity();
-            this->currScene->setComponent<MeshComponent>(lichComp.lightOrbs[i], lightOrb_mesh);
             this->currScene->setComponent<Collider>(lichComp.lightOrbs[i], Collider::createSphere(LichComponent::orbRadius));
             this->currScene->setComponent<Orb>(lichComp.lightOrbs[i]);
             this->currScene->setInactive(lichComp.lightOrbs[i]);
@@ -440,11 +458,30 @@ void SpawnHandler::createLich()
             rb.gravityMult = 0.0f;
             rb.friction = 3.0f;
             rb.mass = 10.0f;
+        }       
+    }
+    else
+    {
+        netScene->addEvent({(int)GameEvent::INACTIVATE, lichIDs.back()});
+        
+        // Create Orbs
+        for(size_t i = 0; i < LichComponent::NR_FIRE_ORBS;i++)
+        {
+            lichComp.fireOrbs[i] = this->currScene->createEntity();
+            netScene->addEvent({(int)GameEvent::SPAWN_ORB, lichComp.fireOrbs[i], (int)ATTACK_STRATEGY::FIRE});
         }
+        for(size_t i = 0; i < LichComponent::NR_ICE_ORBS;i++)
+        {
+            lichComp.iceOrbs[i] = this->currScene->createEntity();
+            netScene->addEvent({(int)GameEvent::SPAWN_ORB, lichComp.iceOrbs[i], (int)ATTACK_STRATEGY::ICE});
 
+        }
+        for(size_t i = 0; i < LichComponent::NR_LIGHT_ORBS;i++)
+        {
+            lichComp.lightOrbs[i] = this->currScene->createEntity();
+            netScene->addEvent({(int)GameEvent::SPAWN_ORB, lichComp.lightOrbs[i], (int)ATTACK_STRATEGY::LIGHT});
 
-        this->currScene->setInactive(alterID);
-
+        }      
     }
         
 }

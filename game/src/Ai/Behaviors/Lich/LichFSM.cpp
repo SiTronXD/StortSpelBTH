@@ -2,12 +2,8 @@
 #include "../../../Components/Combat.h"
 
 
-<<<<<<<
-int	LichFSM::getPlayerID()
-=======
 
 int	LichFSM::getPlayerID(Entity entityID)
->>>>>>>
 {
     // if network exist take player from there
     NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
@@ -134,8 +130,8 @@ bool LichFSM::huntToIdle(Entity entityID)
     if(!falseIfDead(entityID)){return false;}
     int playerID = getPlayerID(entityID);         
     bool ret = false;
-    auto playerCombat = getTheScene()->getComponent<Combat>(playerID);
-    if(playerCombat.health <= 0)
+    auto playerHealth = getTheScene()->getComponent<HealthComp>(playerID);
+    if(playerHealth.health <= 0)
     {
         ret = true;
     }
@@ -149,18 +145,16 @@ bool LichFSM::huntToCombat(Entity entityID)
     if(!falseIfDead(entityID)){return false;}
 
     updateAttackColldowns(entityID);
-    int playerID = getPlayerID(entityID);  
-    auto playerHealth = getTheScene()->getComponent<HealthComp>(playerID);
-    if(playerHealth.health > 0){return true;}
 
-    int playerID        = getPlayerID();  
-    auto playerCombat   = getTheScene()->getComponent<Combat>(playerID);
+    int playerID        = getPlayerID(entityID);  
+    auto playerHealth = getTheScene()->getComponent<HealthComp>(playerID);
+    // auto playerCombat   = getTheScene()->getComponent<Combat>(playerID);
     auto playerTrans    = getTheScene()->getComponent<Transform>(playerID);
     auto lichTrans      = getTheScene()->getComponent<Transform>(entityID);
     auto lichComp       = getTheScene()->getComponent<LichComponent>(entityID);
 
     float dist = glm::length(playerTrans.position - lichTrans.position);
-    if(playerCombat.health > 0 &&   dist <= lichComp.sightRadius)
+    if(playerHealth.health > 0 &&   dist <= lichComp.sightRadius)
     {
         return true;
     }
@@ -212,11 +206,11 @@ bool LichFSM::combatToEscape(Entity entityID)
     updateAttackColldowns(entityID);
     bool ret = false;
 
-    int playerID = getPlayerID();  
-    auto playerCombat   = getTheScene()->getComponent<Combat>(playerID);   
+    int playerID = getPlayerID(entityID);  
+    auto playerHealth   = getTheScene()->getComponent<HealthComp>(playerID);   
 
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-    if(lichComp.life <= lichComp.ESCAPE_HEALTH && playerCombat.health > 0)
+    if(lichComp.life <= lichComp.ESCAPE_HEALTH && playerHealth.health > 0)
     {
         ret = true;
     }
@@ -241,14 +235,14 @@ bool LichFSM::combatToHunt(Entity entityID)
 {
     if(!falseIfDead(entityID)){return false;}
     bool ret = false;
-    int playerID = getPlayerID();  
-    Combat playerCombat     = getTheScene()->getComponent<Combat>(playerID);
+    int playerID = getPlayerID(entityID);  
+    HealthComp playerHealth     = getTheScene()->getComponent<HealthComp>(playerID);
     LichComponent lichComp  = getTheScene()->getComponent<LichComponent>(entityID);
     Transform playerTrans   = getTheScene()->getComponent<Transform>(playerID);
     Transform lichTrans     = getTheScene()->getComponent<Transform>(entityID);
 
     float dist = glm::length(playerTrans.position - lichTrans.position);
-    if(dist > lichComp.sightRadius && playerCombat.health > 0 && lichComp.life > lichComp.ESCAPE_HEALTH)
+    if(dist > lichComp.sightRadius && playerHealth.health > 0 && lichComp.life > lichComp.ESCAPE_HEALTH)
     {
         ret = true;
     }
@@ -286,7 +280,7 @@ bool LichFSM::creepToIdle(Entity entityID)
         {
             return false;
         }
-    int playerID = getPlayerID();
+    int playerID = getPlayerID(entityID);
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
     auto lichComp = getTheScene()->getComponent<LichComponent>(entityID);

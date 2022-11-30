@@ -62,7 +62,7 @@ class LichBT : public BehaviorTree
 
 
 	//Helper funcs
-	static int		getPlayerID();
+	static int		getPlayerID(Entity entityID);
 	static float	get_dt();
 	static Scene*	getTheScene();
 	static void rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision = 5.0f);

@@ -15,7 +15,6 @@
 #include "src/Scenes/LevelEditor.h"
 #endif
 
-#include "src/Scenes/NetworkAI.h"
 #include "src/Scenes/LobbyScene.h"
 #include "src/Network/NetworkHandlerGame.h"
 
@@ -42,9 +41,9 @@ int main(int argc, char* argv[])
     srand(seed);
     {
         Engine engine;
-        // engine.setCustomNetworkHandler(new NetworkHandlerGame());
-        // engine.run("Presumed Dead", "", new LobbyScene());
-        engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
+        engine.setCustomNetworkHandler(new NetworkHandlerGame());
+        engine.run("Presumed Dead", "", new LobbyScene());
+        
     }
 
     return EXIT_SUCCESS;

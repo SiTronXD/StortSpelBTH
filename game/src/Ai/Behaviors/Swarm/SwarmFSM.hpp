@@ -135,6 +135,8 @@ class SwarmFSM : public FSM
 {
 private:
 	static float getEntityDist(Entity one, Entity two);
+    static int   getPlayerID(Entity entityID);
+    
 private:
 	static bool idle_alerted(Entity entityID);
 	static bool alerted_combat(Entity entityID);
