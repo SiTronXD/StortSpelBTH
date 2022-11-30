@@ -488,14 +488,11 @@ BTStatus LichBT::attack(Entity entityID)
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
     if(lichComp.curAttack == nullptr){return ret;}
-    if(lichComp.chargingAttack)
-    {
+
         //Tick down cast time for current strat
+    if(lichComp.curAttack->castTimeTimer > 0.0f)
+    {
         lichComp.curAttack->castTimeTimer -= get_dt();
-        if(lichComp.curAttack->castTimeTimer <= 0.0f)
-        {
-            lichComp.chargingAttack = false;
-        }
     }
     else
     {
@@ -506,10 +503,11 @@ BTStatus LichBT::attack(Entity entityID)
         lichComp.curAttack->castTimeTimer = lichComp.curAttack->castTimeTimerOrig;
         lichComp.curAttack->cooldownTimer = lichComp.curAttack->cooldownTimerOrig;
 
-        lichComp.attacks["lightning"].castTimeTimer = lichComp.attacks["lightning"].castTimeTimerOrig;
+        /*lichComp.attacks["lightning"].castTimeTimer = lichComp.attacks["lightning"].castTimeTimerOrig;
         lichComp.attacks["ice"].castTimeTimer = lichComp.attacks["ice"].castTimeTimerOrig;
-        lichComp.attacks["fire"].castTimeTimer = lichComp.attacks["fire"].castTimeTimerOrig;
+        lichComp.attacks["fire"].castTimeTimer = lichComp.attacks["fire"].castTimeTimerOrig;*/
         //Remove current strat
+        std::cout<<"Current attack: "<<(int)lichComp.curAttack->type<<std::endl;
         lichComp.curAttack = nullptr;
 
         //Shoot projectile!
