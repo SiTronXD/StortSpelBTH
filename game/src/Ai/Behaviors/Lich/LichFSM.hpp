@@ -103,6 +103,9 @@ struct LichComponent
     inline static const uint32_t NR_ICE_ORBS   = 20;
     inline static const uint32_t NR_FIRE_ORBS  = 20;
     inline static const uint32_t NR_LIGHT_ORBS = 20;
+
+    inline static const float spellForce = 175;
+
 	LichComponent() 
     {
         LichAttack lightning, fire, ice;
