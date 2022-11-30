@@ -45,6 +45,7 @@ function script:init()
     self.animTimer = -1.0
     self.wholeBody = false
     self.isMoving = false
+    self.canMove = true
     self.onGround = false
     self.jumpTimer = 0
 
@@ -169,8 +170,10 @@ function script:update(dt)
     -- Apply to rigidbody velocity
     local rb = scene.getComponent(self.ID, CompType.Rigidbody)
     local y = rb.velocity.y
-    if not self.isPushed then
+    if not self.isPushed and self.canMove then
         rb.velocity = self.currentSpeed
+    elseif not self.canMove then
+        rb.velocity = vector(0)
     end
 
     -- Apply jump via acceleration
@@ -230,21 +233,22 @@ function script:update(dt)
         then
             if self.moveDir ~= vector(0) and self.currentAnimation ~= self.activeAnimation.run
             then
-                scene.blendToAnimation(self.ID, "run", "", 0.4, self.runAnimTime)
+                scene.blendToAnimation(self.ID, "run", "", 0.3, self.runAnimTime)
                 self.currentAnimation = self.activeAnimation.run
             elseif curMoveSum < 0.1 and self.currentAnimation ~= self.activeAnimation.idle
             then
-                scene.blendToAnimation(self.ID, "idle", "", 0.3, self.idleAnimTime)
+                scene.blendToAnimation(self.ID, "idle", "", 0.2, self.idleAnimTime)
                 self.currentAnimation = self.activeAnimation.idle
             end
         elseif (self.wholeBody == false)
+        then
             if (self.isMoving and self.currentAnimation ~= self.activeAnimation.run)
             then
                 scene.blendToAnimation(self.ID, "run", "LowerBody", 0.3, self.runAnimTime)
                 self.currentAnimation = self.activeAnimation.run
             elseif (not self.isMoving and self.currentAnimation ~= self.activeAnimation.idle)
             then
-                scene.blendToAnimation(self.ID, "idle", "LowerBody", 0.3, self.idleAnimTime)
+                scene.blendToAnimation(self.ID, "idle", "LowerBody", 0.2, self.idleAnimTime)
                 self.currentAnimation = self.activeAnimation.idle
             end
         end

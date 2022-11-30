@@ -288,6 +288,7 @@ public:
 		if (animIdx == 6)
 		{
 			this->script->setScriptComponentValue(playerScript, true, "wholeBody");
+			this->script->setScriptComponentValue(playerScript, false, "canMove");
 			this->scene->blendToAnimation(this->playerID, animName, "", 0.18f, animMultiplier);
 		}
 		else
@@ -527,11 +528,9 @@ public:
 				moveTimers[0] = 2.f;
 				moveTimers[1] = 1.4f;
 				moveTimers[2] = 2.4f;
-				//moveTimers[3] = 6.f;
 				this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
-				//this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
 			}
 			else
 			{
@@ -539,15 +538,12 @@ public:
 				this->script->getScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
 				this->script->getScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
 				this->script->getScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
-				//this->script->getScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
 				moveTimers[0] += perk.multiplier;
 				moveTimers[1] += perk.multiplier;
 				moveTimers[2] += perk.multiplier;
-				//moveTimers[3] += perk.multiplier;
 				this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
-				//this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
 			}
 		}
 		int maxSpeed = 0;
@@ -892,7 +888,7 @@ public:
 		Transform& soundTrans = this->scene->getComponent<Transform>(soundSource);
 		soundTrans.position = pos;
 		AudioSource& sound = this->scene->getComponent<AudioSource>(soundSource);
-		sound.setBuffer(effect);
+		//sound.setBuffer(effect);
 		sound.setVolume(volume);
 		sound.play();
 	}
@@ -916,9 +912,10 @@ public:
 		}
 		else if (combat.attackTimer < 0.f)
 		{
-			//Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-			//float timeScale = this->script->getScriptComponentValue(playerScript, timeScale, "runAnimTime");
-			//this->scene->syncedBlendToAnimation(this->playerID, "LowerBody", "UpperBody");
+			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+			this->script->setScriptComponentValue(playerScript, true, "canMove");
+			this->script->setScriptComponentValue(playerScript, 4, "currentAnimation");
+			this->scene->syncedBlendToAnimation(this->playerID, "LowerBody", "UpperBody", 0.3f);
 			combat.attackTimer = 0.f;
 		}
 		if (combat.knockbackTimer > 0.f)
