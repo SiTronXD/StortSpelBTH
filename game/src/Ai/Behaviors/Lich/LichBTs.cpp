@@ -222,10 +222,18 @@ BTStatus LichBT::goToAlter(Entity entityID)
 
 BTStatus LichBT::dropOffBones(Entity entityID)
 {
-    BTStatus ret = BTStatus::Success;
-    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-    lichComp.numBones = 0;
+    BTStatus ret = BTStatus::Success;    
     //TODO: Visualise the boes dropping
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    
+    if(lichComp.timeSinceAlterWaitBegin + lichComp.DropOffDuration < Time::getTimeSinceStart())
+    {
+        lichComp.carryingBones = false; 
+        lichComp.numBones = 0; 
+    lichComp.numBones = 0;
+        lichComp.numBones = 0; 
+        ret = BTStatus::Success;
+    }
     return ret;
 }
 
