@@ -31,6 +31,35 @@ FILE(GLOB_RECURSE GAME_HEADERS CONFIGURE_DEPENDS
     game/*.hpp 
 )
 
+# FILTER AWAY some files
+list(FILTER GAME_SOURCES EXCLUDE REGEX
+    "${VENGINE_SOURCE_DIR}/LevelEditor/.*\\.h$"
+)
+list(FILTER GAME_SOURCES EXCLUDE REGEX
+    "${VENGINE_SOURCE_DIR}/Scenes/LevelEditor\\.h$"
+)
+#  FILTER AWAY some files
+list(FILTER GAME_HEADERS EXCLUDE REGEX
+    "${VENGINE_SOURCE_DIR}/LevelEditor/.*\\.h$"    
+)
+list(FILTER GAME_HEADERS EXCLUDE REGEX
+    "${VENGINE_SOURCE_DIR}/Scenes/LevelEditor\\.h$"
+)
+
+# FILTER AWAY some files
+list(FILTER GAME_SOURCES EXCLUDE REGEX
+    "${VENGINE_SOURCE_DIR}/LevelEditor/.*\\.cpp$"
+)
+list(FILTER GAME_SOURCES EXCLUDE REGEX
+    "${VENGINE_SOURCE_DIR}/Scenes/LevelEditor\\.cpp$"
+)
+#  FILTER AWAY some files
+list(FILTER GAME_HEADERS EXCLUDE REGEX
+    "${VENGINE_SOURCE_DIR}/LevelEditor/.*\\.cpp$"    
+)
+list(FILTER GAME_HEADERS EXCLUDE REGEX
+    "${VENGINE_SOURCE_DIR}/Scenes/LevelEditor\\.cpp$"
+)
 
 
 

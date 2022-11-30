@@ -1,6 +1,8 @@
 #include "MainMenu.h"
 #include "GameScene.h"
+#ifdef WIN32
 #include "LevelEditor.h"
+#endif 
 #include "logInScene.h"
 #include "../ServerGameModes/NetworkLobbyScene.h"
 #include "../Network/ServerGameMode.h"
@@ -145,10 +147,12 @@ void MainMenu::update()
 		this->howToPlay();
 		break;
 
+#ifdef WIN32
 	case LevelEdit:
 		this->switchScene(new LevelEditor(), "scripts/levelEditor.lua");
 		
 		break;
+#endif 
 
 	case Quit:
 		this->getSceneHandler()->getWindow()->close();
