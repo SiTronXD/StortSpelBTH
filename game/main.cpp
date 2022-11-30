@@ -30,8 +30,9 @@ int main(int argc, char* argv[])
     {
         Engine engine;
         //engine.run("Presumed Dead", "", new RoomTesting());
-        engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
-        //engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
+        //engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
+        engine.setCustomNetworkHandler(new NetworkHandlerGame());
+        engine.run("Presumed Dead", "", new LobbyScene());
     }
 
     return EXIT_SUCCESS;
