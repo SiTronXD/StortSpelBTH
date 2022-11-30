@@ -496,6 +496,13 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
         Log::write("WAS HIT", BT_FILTER);
       }
     }
+    else if (this->hasComponents<Orb>(other)) 
+    {
+        auto& orb = this->getComponent<Orb>(other);
+        this->getComponent<Combat>(player).health -=
+            orb.orbPower->damage;
+        orb.onCollision(other);
+    }
   }
 
   if (this->hasComponents<SwarmComponent>(e1) &&
