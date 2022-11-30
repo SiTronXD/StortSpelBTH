@@ -15,9 +15,16 @@ private:
         Quit = 5
     };
 
+    Entity backgroundScene;
+    Entity character;
+    Entity camera;
+    Entity signpost;
+    Entity light;
+
     State state;
     uint32_t fontTextureId;
-    uint32_t backgroundId;
+    uint32_t settingsBackgroundId;
+    uint32_t howToPlayBackgroundId;
     bool startGame;
 
     void howToPlay();
