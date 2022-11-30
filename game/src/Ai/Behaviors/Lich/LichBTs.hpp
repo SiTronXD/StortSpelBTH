@@ -8,7 +8,7 @@
 #include "../HelperFuncs.hpp"
 //#include "ai/PathFinding.h"
 
-enum ATTACK_STRATEGY
+enum class ATTACK_STRATEGY
 {
     NONE    = 0,  
     LIGHT   = 1,

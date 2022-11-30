@@ -19,19 +19,19 @@ struct LichAttack
         this->type = type;
         switch (type)
         {
-        case LIGHT:
+        case ATTACK_STRATEGY::LIGHT:
             this->damage = 10;
             this->manaCost = 5.0f;
             this->cooldownTimer = this->cooldownTimerOrig = 2.0f;
             this->castTimeTimer = this->castTimeTimerOrig = 0.5f;
             break;
-        case FIRE:
+        case ATTACK_STRATEGY::FIRE:
             this->damage = 65;
             this->manaCost = 30.0f;
             this->cooldownTimer = this->cooldownTimerOrig = 14.0f;
             this->castTimeTimer = this->castTimeTimerOrig = 4.0f;
             break;
-        case ICE:
+        case ATTACK_STRATEGY::ICE:
             this->damage = 25;
             this->manaCost = 10.0f;
             this->cooldownTimer = this->cooldownTimerOrig = 7.0f;
