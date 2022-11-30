@@ -1,6 +1,8 @@
 #include "ServerGameMode.h"
 #include "../Components/HealthComp.h"
 
+//#define ROOMDEBUG false
+
 ServerGameMode::~ServerGameMode()
 {
     aiHandler.clean();
@@ -66,6 +68,7 @@ void ServerGameMode::update(float dt)
     makeDataSendToClient();
 
 	//DEBUG ONLY
+#ifdef ROOMDEBUG
     for (int i = 0; i < roomHandler.rooms.size(); i++)
     {
         for (int d = 0; d < 4; d++)
@@ -93,6 +96,7 @@ void ServerGameMode::update(float dt)
 			2.f
 			});
 	}
+#endif  // ROOMDEBUG
 }
 
 void ServerGameMode::makeDataSendToClient() 
@@ -139,23 +143,23 @@ void ServerGameMode::makeDataSendToClient()
 
     //DEBUG
     // Get the position and rotation of monsters
-    for (auto& it : aiHandler.FSMsEntities)
-    {
-        for (int i = 0; i < it.second.size(); ++i)
-        {
-            const Transform &t = this->getComponent<Transform>(it.second[i]);
-            const Collider &c = this->getComponent<Collider>(it.second[i]);
-            this->addEvent({
-                (int)NetworkEvent::DEBUG_DRAW_SPHERE
-                },
-                {
-                t.position.x,
-                t.position.y,
-                t.position.z,
-                c.radius
-                });
-        }
-    }
+    //for (auto& it : aiHandler.FSMsEntities)
+    //{
+    //    for (int i = 0; i < it.second.size(); ++i)
+    //    {
+    //        const Transform &t = this->getComponent<Transform>(it.second[i]);
+    //        const Collider &c = this->getComponent<Collider>(it.second[i]);
+    //        this->addEvent({
+    //            (int)NetworkEvent::DEBUG_DRAW_SPHERE
+    //            },
+    //            {
+    //            t.position.x,
+    //            t.position.y,
+    //            t.position.z,
+    //            c.radius
+    //            });
+    //    }
+    //}
 }
 
 void ServerGameMode::onDisconnect(int index)
