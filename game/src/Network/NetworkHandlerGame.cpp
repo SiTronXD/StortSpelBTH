@@ -292,8 +292,8 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 	switch ((GameEvent)event)
 	{
 	case GameEvent::SEED:
-		srand((unsigned int)time(0));
-		packet << (int)GameEvent::SEED << (int)rand();
+		serverScene = server->getScene<ServerGameMode>();
+		packet << (int)GameEvent::SEED << serverScene->getRoomSeed();
 		server->sendToAllClientsTCP(packet);
 		break;
 	case GameEvent::SPAWN_ITEM:
