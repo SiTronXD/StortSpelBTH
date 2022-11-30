@@ -140,9 +140,9 @@ struct LichComponent
 	float alertAnimSpeed		= 3.0f;
 	float alertTempYpos			= 0.0f;
         //Radius
-    float sightRadius           = 80.0f; // I'll just look at you
-    float peronalSpaceRadius    = 70.0f; // To close! I will initiate hunt!
-    float attackRadius          = 60.0f; // I'm actually able to shoot at you!
+    float sightRadius           = 105.0f; // I'll just look at you
+    float peronalSpaceRadius    = 100.0f; // To close! I will initiate hunt!
+    float attackRadius          = 80.0f; // I'm actually able to shoot at you!
     float nonoRadius            = 40.0f; // Too close, I will back away from you! (while shooting) 
 
     float closeToGrave          = 10.f + LichComponent::graveWidth;
