@@ -31,8 +31,10 @@ private:
   UIArea exitButton;
 
   bool isGhost = false;
-  Material origMat;
-  Material ghostMat;
+  bool hasRespawned = false;
+  float ghostTransitionTimer = 0.0f;
+  Material* origMat;
+  Material* ghostMat;
 
   Entity playerID;
   Entity portal;

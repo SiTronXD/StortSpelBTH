@@ -124,6 +124,7 @@ public:
 
 	void roomCompleted();
 	bool playerNewRoom(Entity player, PhysicsEngine* physicsEngine);
+	void startOver();
 
 	const std::vector<glm::vec3>& getFreeTiles();
 	const Room& getExitRoom() const;

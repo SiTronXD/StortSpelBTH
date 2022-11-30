@@ -15,7 +15,6 @@ void SpawnHandler::spawnEnemiesIntoRoom()
     {
         if (randNumEnemies - counter != 0)
         {
-            
             if(tankIdx < nrOfTanks)
             {
                 this->spawnTank(tankIdx, tile);
@@ -33,6 +32,14 @@ void SpawnHandler::spawnEnemiesIntoRoom()
             }        
             counter++;        
         }
+    }
+}
+
+void SpawnHandler::resetEnemies()
+{
+    for (auto& e : this->allEntityIDs)
+    {
+        this->currScene->setInactive(e);
     }
 }
 

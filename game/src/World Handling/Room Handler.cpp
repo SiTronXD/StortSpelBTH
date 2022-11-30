@@ -172,6 +172,32 @@ bool RoomHandler::playerNewRoom(Entity player, PhysicsEngine* physicsEngine)
 	return false;
 }
 
+// TODO: Fix it pls
+void RoomHandler::startOver()
+{
+	for (size_t i = 0; i < this->rooms.size(); i++)
+	{
+		this->rooms[i].finished = false;
+		this->deactivateRoom(i);
+		for (int j = 0; j < 4; j++)
+		{
+			if (this->rooms[i].doors[j] != -1)
+			{
+				this->scene->setScriptComponent(this->rooms[i].doors[j], "scripts/opendoor.lua");
+#ifndef _DEBUG
+				if (i == 0)
+				{
+					this->activateRoom(this->rooms[0].connectingIndex[j]);
+				}
+#endif // !_DEBUG
+			}
+		}
+	}
+
+	this->activateRoom(0);
+	this->rooms[0].finished = true;
+}
+
 void RoomHandler::generate(uint32_t seed)
 {
 	const glm::vec3 noDoorBoxOffset[] = 

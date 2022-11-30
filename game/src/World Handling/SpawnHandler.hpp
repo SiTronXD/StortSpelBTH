@@ -78,6 +78,7 @@ public:
     }
 
     void spawnEnemiesIntoRoom();
+    void resetEnemies();
 
     void createEntities();
 

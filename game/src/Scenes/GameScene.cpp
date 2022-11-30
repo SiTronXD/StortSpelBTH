@@ -89,6 +89,18 @@ void GameScene::init()
     dirLight.cascadeDepthScale = 36.952f;
     dirLight.shadowMapMinBias = 0.00001f;
     dirLight.shadowMapAngleBias = 0.0004f;
+
+    // Non active Entity with ghostMat
+    Entity ghost = this->createEntity();
+    this->setInactive(ghost);
+    this->setComponent<MeshComponent>(ghost);
+    MeshComponent& ghostMesh = this->getComponent<MeshComponent>(ghost);
+    this->getResourceManager()->makeUniqueMaterials(ghostMesh);
+    this->ghostMat = &ghostMesh.overrideMaterials[0];
+    this->ghostMat->diffuseTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhost.png");
+    this->ghostMat->glowMapTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhostGlow.png");
+    this->ghostMat->emissionColor = glm::vec3(0.0f, 1.0f, 0.35f);
+    this->ghostMat->emissionIntensity = 0.75f;
 }
 
 void GameScene::start()
@@ -153,12 +165,7 @@ void GameScene::start()
 
     MeshComponent& mesh = this->getComponent<MeshComponent>(this->playerID);
     this->getResourceManager()->makeUniqueMaterials(mesh);
-    this->origMat = mesh.overrideMaterials[0];
-    this->ghostMat = origMat;
-    this->ghostMat.diffuseTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhost.png");
-    this->ghostMat.glowMapTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhostGlow.png");
-    this->ghostMat.emissionColor = glm::vec3(0.0f, 1.0f, 0.35f);
-    this->ghostMat.emissionIntensity = 0.75f;
+    this->origMat = &mesh.overrideMaterials[0];
 
     // Pause menu
     this->resumeButton.position = glm::vec2(0.0f, 100.0f);
@@ -181,8 +188,15 @@ void GameScene::start()
 
 void GameScene::update()
 {
+    if (this->isGhost)
+    {
+        this->getUIRenderer()->setTexture(this->ghostOverlayIndex);
+        this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
+            glm::vec4(1.0f, 1.0f, 1.0f, 0.4f + sin(this->timer * 2.0f) * 0.15f));
+    }
+
     if (!networkHandler->isConnected())
-     {   
+    {   
         this->aiHandler->update(Time::getDT());
 
         // TODO: Move to SpawnHandler ---- 
@@ -212,18 +226,50 @@ void GameScene::update()
         if (this->hasComponents<HealthComp>(this->playerID))
         {
             HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
-            if (healthComp.health <= 0.0f)
+            if (healthComp.health <= 0.0f || Input::isKeyPressed(Keys::K))
             {
-                if (this->isGhost)
+                if (this->isGhost && this->hasRespawned)
                 {
                     this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
                 }
-                else
+                else if (!this->isGhost)
                 {
                     this->isGhost = true;
-                    healthComp.health = healthComp.maxHealth;
-                    this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = this->ghostMat;
+                    this->hasRespawned = false;
+                    this->ghostTransitionTimer = 0.0f;
                 }
+            }
+        }
+
+        if (this->isGhost && this->ghostTransitionTimer < 5.0f)
+        {
+            this->ghostTransitionTimer += Time::getDT();
+
+            // Respawn player
+            if (this->ghostTransitionTimer > 1.0f && !this->hasRespawned)
+            {
+                this->hasRespawned = true;
+                HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
+                healthComp.health = healthComp.maxHealth;
+                this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = *this->ghostMat;
+                this->getComponent<Transform>(this->playerID).position = glm::vec3(0.0f, 12.0f, 0.0f);
+                this->getComponent<Rigidbody>(this->playerID).assigned = false; // For some reason this is needed, otherwise the position isn't changed
+                this->roomHandler.startOver();
+                this->spawnHandler.resetEnemies();
+            }
+
+            if (this->ghostTransitionTimer > 1.0f)
+            {
+                this->getUIRenderer()->renderString("one more chance...", glm::vec2(0.0f, 250.0f), glm::vec2(50.0f), 0.0f, StringAlignment::CENTER,
+                    glm::vec4(1.0f, 1.0f, 1.0f, sin(this->ghostTransitionTimer * 0.75f) * 2.0f - 1.0f));
+            }
+
+            // Fade in/out to black
+            if (this->ghostTransitionTimer < 2.75f)
+            {
+                this->getUIRenderer()->setTexture(this->blackTextureIndex);
+                this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
+                    glm::vec4(1.0f, 1.0f, 1.0f, sin(this->ghostTransitionTimer * 2.0f - glm::half_pi<float>() + 1.25f) * 0.5f + 0.5f));
             }
         }
     }
@@ -256,13 +302,6 @@ void GameScene::update()
         // Network
         this->networkHandler->updatePlayer();
         this->networkHandler->interpolatePositions();
-    }
-
-    if (this->isGhost)
-    {
-        this->getUIRenderer()->setTexture(this->ghostOverlayIndex);
-        this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
-            glm::vec4(1.0f, 1.0f, 1.0f, 0.4f + sin(this->timer * 2.0f) * 0.15f));
     }
 
     Combat& playerCombat = this->getComponent<Combat>(this->playerID);
