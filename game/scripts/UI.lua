@@ -59,10 +59,6 @@ function script:update(dt)
 	-- Perks and Ability UI Border
 	uiRenderer.setTexture(self.uiBorderTexID)
 	uiRenderer.renderTexture(vector(0.0, 0.0), vector(1920.0, 1080.0))
-
-	-- Crosshair
-	uiRenderer.setTexture(self.crosshairTextureID)
-	uiRenderer.renderTexture(vector(0, 0), vector.fill(30))
 end
 
 return script

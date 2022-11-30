@@ -16,7 +16,7 @@ Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 
 	Transform& perkTrans = sceneHandler->getScene()->getComponent<Transform>(e);
 	perkTrans.position = pos;
 	perkTrans.scale = glm::vec3(2.0f);
-	scene->setComponent<Collider>(e, Collider::createSphere(2.0f, glm::vec3(0.0f), true));
+	scene->setComponent<Collider>(e, Collider::createSphere(4.0f, glm::vec3(0.0f), true));
 
 	if (shootDir != glm::vec3(0.0f))
 	{
@@ -42,7 +42,7 @@ Entity NetworkHandlerGame::spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 
 	Transform& perkTrans = sceneHandler->getScene()->getComponent<Transform>(e);
 	perkTrans.position = pos;
 	perkTrans.scale = glm::vec3(2.0f);
-	scene->setComponent<Collider>(e, Collider::createSphere(4.0f, glm::vec3(0.0f), true));
+	scene->setComponent<Collider>(e, Collider::createSphere(5.0f, glm::vec3(0.0f), true));
 
 	if (shootDir != glm::vec3(0.0f))
 	{
