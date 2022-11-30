@@ -125,9 +125,12 @@ struct LichComponent
     float life                  = (float)FULL_HEALTH;    
     float tempRotAngle			= 0.0f;//Dont touch!
     float creepRotSpeed         = 60.0f;
-    float huntRotSpeed          = 60.0f;
+    float huntRotSpeed          = 200.0f;
+    float idleTurnSpeed         = 300.0f;
     float plunderDuration       = 4.f; 
+    float DropOffDuration       = 4.f; 
     float timeSincePlunderBegin = 0.f; 
+    float timeSinceAlterWaitBegin = 0.f; 
         //Alert
     float origScaleY			= 1.0f;
 	float alertScale			= 1.5f;
