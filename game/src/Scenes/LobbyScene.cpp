@@ -46,7 +46,7 @@ void LobbyScene::init()
         );
 
     this->fontTextureId = Scene::getResourceManager()->addTexture(
-        "assets/textures/UI/testBitmapFont.png", {samplerSettings, true}
+        "assets/textures/UI/font.png", {samplerSettings, true}
     );
     Scene::getUIRenderer()->setBitmapFont(
         {"abcdefghij",
@@ -56,7 +56,7 @@ void LobbyScene::init()
         "!?,<>:()#^",
         "@%        "},
         this->fontTextureId,
-        glm::vec2(16,16)
+        glm::vec2(50,50)
     );
 
     int camEntity = this->createEntity();
