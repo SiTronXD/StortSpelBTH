@@ -173,6 +173,11 @@ struct LichComponent
 
     bool carryingBones = false;
 
+    // Orbs
+    std::array<Entity, LichComponent::NR_FIRE_ORBS>  fireOrbs;
+    std::array<Entity, LichComponent::NR_ICE_ORBS>   iceOrbs;
+    std::array<Entity, LichComponent::NR_LIGHT_ORBS> lightOrbs;    
+
     // Movement Locations
     Entity alterID;
     Entity graveID;
@@ -251,7 +256,7 @@ protected:
 			{"dead", new Lich_dead}
         });
 
-		// addEntityTransition("idle",     LichFSM::idle_to_creep,        "creep");
+		addEntityTransition("idle",     LichFSM::idle_to_creep,        "creep");
 		addEntityTransition("creep",    LichFSM::creep_to_alerted,     "alerted");
 		addEntityTransition("alerted",  LichFSM::alert_to_hunt,        "hunt");
 		addEntityTransition("hunt",     LichFSM::hunt_to_idle,         "idle");
