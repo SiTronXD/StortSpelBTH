@@ -16,16 +16,7 @@ scene.setMainCamera(cam)
 -- Player
 playerID = scene.createEntity()
 scene.setComponent(playerID, CompType.Mesh, playerMesh)
---local playerAnim = 
---{ 
---	animationIndex = 0,
---	timer = 0.0, 
---	timeScale = 0.0
---}
-
 scene.setComponent(playerID, CompType.Animation, {})
---local anim = scene.getComponent(playerID, CompType.Animation)
---anim[0] = playerAnim
 
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
 scene.setComponent(playerID, CompType.Collider, { type = ColliderType.Capsule, radius = 2, height = 11, offset = vector.new(0, 7.3, 0) })
@@ -35,8 +26,6 @@ scene.getComponent(cam, CompType.Script).playerID = playerID
 local player = scene.getComponent(playerID, CompType.Script)
 player.camID = cam
 player.playerMesh = playerMesh
-
---network.sendPlayer(playerID)
 
 -- UI
 local uiID = scene.createEntity()
