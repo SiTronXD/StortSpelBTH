@@ -214,7 +214,7 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 	Ray rayLeft{to, -entityTransform.right()};    
 	float left_right_maxDist = entityCollider.radius + 3.0f;
     RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, maxDist);
-	drawRaySimple(rayToPlayer, maxDist);
+	//drawRaySimple(rayToPlayer, maxDist);
 	if(rp.hit)
 	{
 		
@@ -228,9 +228,9 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 			RayPayload r_right= BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayRight, left_right_maxDist);
 			RayPayload r_left = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayLeft, left_right_maxDist);
 			RayPayload r_forward = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, left_right_maxDist);
-			drawRaySimple(rayToPlayer, left_right_maxDist);
-			drawRaySimple(rayRight, left_right_maxDist);
-			drawRaySimple(rayLeft, left_right_maxDist);
+			//drawRaySimple(rayToPlayer, left_right_maxDist);
+			//drawRaySimple(rayRight, left_right_maxDist);
+			//drawRaySimple(rayLeft, left_right_maxDist);
 
 			if(r_forward.hit && !getTheScene()->getComponent<Collider>(r_forward.entity).isTrigger)
 			{
@@ -273,7 +273,7 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 
 	if(dir == glm::vec3(0.0f, 0.0f, 0.0f))
 	{
-		dir = glm::vec3(1.0f, 0.0f, 0.0f);
+		dir = -entityTransform.forward();
 	}
 	rotateTowards(entityID, playerTransform.position, tankComp.idleRotSpeed, 5.0f);
 	glm::normalize(dir);

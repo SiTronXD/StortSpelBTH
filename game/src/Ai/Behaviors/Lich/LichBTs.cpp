@@ -67,7 +67,109 @@ void LichBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 	}
 	//Rotate towards target end
 }
+void LichBT::drawRaySimple(Ray& ray, float dist, glm::vec3 color)
+{
+	//Draw ray
+	BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
+	ray.pos,
+	ray.pos + ray.dir * dist,
+	glm::vec3(1.0f, 0.0f, 0.0f));
+}
+bool LichBT::rayChecking(Entity entityID, glm::vec3& moveDir)
+{
+	bool ret = true;
+	bool somethingInTheWay = false;
+	bool canGoForward=true;	
+	bool canGoRight=true;
+	bool canGoLeft=true;
 
+	int player_id = getPlayerID();
+	Collider& entityCollider = getTheScene()->getComponent<Collider>(entityID);
+	Collider& playerCollider = getTheScene()->getComponent<Collider>(player_id);
+	Transform& entityTransform = getTheScene()->getComponent<Transform>(entityID);
+	Transform& playerTransform = getTheScene()->getComponent<Transform>(player_id);
+	LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    
+	entityTransform.updateMatrix();
+	glm::vec3 from = playerTransform.position;
+	from = from + playerTransform.up() * 3.0f;
+	glm::vec3 to = entityTransform.position;
+	float maxDist = glm::length(to - from);
+	glm::vec3 dir = glm::normalize(from - to);
+	Ray rayToPlayer{from, -dir};    
+	Ray rayRight{to, entityTransform.right()};    
+	Ray rayLeft{to, -entityTransform.right()};    
+	float left_right_maxDist = entityCollider.radius + 3.0f;
+    RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, maxDist);
+	//drawRaySimple(rayToPlayer, maxDist);
+	if(rp.hit)
+	{
+		
+		if(!getTheScene()->getComponent<Collider>(rp.entity).isTrigger &&
+			rp.entity != entityID)
+		{
+			ret = false;
+			somethingInTheWay = true;
+			entityTransform.updateMatrix();
+
+			RayPayload r_right= BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayRight, left_right_maxDist);
+			RayPayload r_left = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayLeft, left_right_maxDist);
+			RayPayload r_forward = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, left_right_maxDist);
+			//drawRaySimple(rayToPlayer, left_right_maxDist);
+			//drawRaySimple(rayRight, left_right_maxDist);
+			//drawRaySimple(rayLeft, left_right_maxDist);
+
+			if(r_forward.hit && !getTheScene()->getComponent<Collider>(r_forward.entity).isTrigger)
+			{
+				canGoForward = false;
+			}
+			if(r_right.hit && !getTheScene()->getComponent<Collider>(r_right.entity).isTrigger)
+			{
+				canGoRight = false;
+				lichComp.attackGoRight = false;
+			}
+			if(r_left.hit && !getTheScene()->getComponent<Collider>(r_left.entity).isTrigger)
+			{
+				canGoLeft = false;
+				lichComp.attackGoRight = true;
+			}
+
+		}
+	}
+
+	if(somethingInTheWay)
+	{
+		ret = false;
+		dir = glm::vec3(0.0f, 0.0f, 0.0f);
+		entityTransform.updateMatrix();
+
+		if(canGoForward)
+		{
+			dir += -entityTransform.forward();
+		}
+
+		if(canGoRight && lichComp.attackGoRight)
+		{
+			dir += entityTransform.right();
+		}
+		else if(canGoLeft && !lichComp.attackGoRight)
+		{
+			dir -= entityTransform.right();
+		}
+	}
+
+	if(dir == glm::vec3(0.0f, 0.0f, 0.0f))
+	{
+		dir = -entityTransform.forward();
+	}
+	rotateTowards(entityID, playerTransform.position, lichComp.creepRotSpeed, 5.0f);
+	glm::normalize(dir);
+	dir.y = 0;
+	moveDir = dir;
+
+
+	return ret;
+}
 
 //Giving points for attack strategy
 void LichBT::givePointsForPlayerHealth	(Entity entityID, float& l_points, float& i_points, float& f_points)
@@ -299,6 +401,9 @@ BTStatus LichBT::huntingPlayer(Entity entityID)
     Rigidbody& lichRb = getTheScene()->getComponent<Rigidbody>(entityID);
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, playerTrans.position);
+
+    rayChecking(entityID, moveDir);
+
 	moveDir = glm::normalize(moveDir);
     lichRb.velocity = moveDir * lichComp.huntSpeed;
     rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);

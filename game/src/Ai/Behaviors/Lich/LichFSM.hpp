@@ -125,6 +125,7 @@ struct LichComponent
     bool regeningMana           = false;
     bool chargingAttack         = true;
     bool tempAttack             = false;//For testing strategy picker
+    bool attackGoRight          = false;
 
     bool carryingBones = false;
 
