@@ -111,6 +111,8 @@ void GameScene::start()
     this->networkHandler->init();
     this->networkHandler->setPlayerEntity(playerID);
     this->networkHandler->createOtherPlayers(this->getComponent<MeshComponent>(playerID).meshID);
+    this->networkHandler->setGhostMat(this->ghostMat);
+    this->origMat = this->getResourceManager()->getMaterial(this->getComponent<MeshComponent>(this->playerID), 0);
 
     if (networkHandler->isConnected())
     {
@@ -158,10 +160,6 @@ void GameScene::start()
         this->networkHandler->spawnItemRequest(movementUpPerk, 1.0f, glm::vec3(30.0f, 5.0f, -40.0f));
         this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f));
     }
-
-    MeshComponent& mesh = this->getComponent<MeshComponent>(this->playerID);
-    this->getResourceManager()->makeUniqueMaterials(mesh);
-    this->origMat = &mesh.overrideMaterials[0];
 
     // Pause menu
     this->resumeButton.position = glm::vec2(0.0f, 100.0f);
@@ -579,6 +577,15 @@ void GameScene::onCollisionExit(Entity e1, Entity e2)
     this->getComponent<SwarmComponent>(e2).touchedFriend = false;
   }
 
+}
+
+void GameScene::revivePlayer()
+{
+    this->isGhost = false;
+    this->combatDisabled = false;
+    this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = this->origMat;
+    // Get back only half hp
+    this->getComponent<HealthComp>(this->playerID).health = this->getComponent<HealthComp>(this->playerID).maxHealth / 2;
 }
 
 void GameScene::createPortal()

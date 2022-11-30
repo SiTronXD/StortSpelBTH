@@ -133,12 +133,18 @@ int NetworkHandlerGame::getSeed()
 
 void NetworkHandlerGame::setCombatSystem(CombatSystem* system)
 {
-	combatSystem = system;
+	this->combatSystem = system;
+}
+
+void NetworkHandlerGame::setGhostMat(Material* ghostMat)
+{
+	this->ghostMat = ghostMat;
 }
 
 void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 {
 	sf::Packet packet;
+	Scene* scene = this->sceneHandler->getScene();
 	switch ((GameEvent)event)
 	{
 	case GameEvent::SEED:
@@ -202,11 +208,28 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
         break;
     case GameEvent::PLAYER_SETHP:
         tcpPacket >> i0 >> i1;
-        if (i0 == ID)
+        if (i0 == this->ID)
         {
 			this->sceneHandler->getScene()->getComponent<HealthComp>(player).health = i1;   
 		}
-		// Else give hp to other players visually
+		// Set ghost mat if other player died
+		else if (i1 <= 0.0f)
+		{
+			int index = -1;
+			for (int i = 0; i < this->otherPlayersServerId.size(); i++)
+			{
+				if (this->otherPlayersServerId[i] == i0)
+				{
+					index = i;
+					break;
+				}
+			}
+			if (index != -1)
+			{
+				this->sceneHandler->getScene()->getComponent<MeshComponent>(this->playerEntities[index]).overrideMaterials[0] = *this->ghostMat;
+				this->sceneHandler->getScene()->setInactive(this->swords[index]);
+			}
+		}
 		break;
     case GameEvent::INACTIVATE:
         tcpPacket >> i0;
@@ -220,6 +243,17 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
         if (serverEntities.find(i0) != serverEntities.end())
         {
             this->sceneHandler->getScene()->setActive(serverEntities.find(i0)->second);
+		}
+		break;
+	case GameEvent::ROOM_CLEAR:
+		// Do more important stuff
+
+		// Revive all dead players
+		dynamic_cast<GameScene*>(scene)->revivePlayer();
+		for (int i = 0; i < (int)this->playerEntities.size(); i++)
+		{
+			scene->getComponent<MeshComponent>(this->playerEntities[i]).overrideMaterials[0] = this->origMat;
+			scene->setActive(this->swords[i]);
 		}
 		break;
 	default:
@@ -457,6 +491,9 @@ void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
 void NetworkHandlerGame::setPlayerEntity(Entity player)
 {
 	this->player = player;
+	MeshComponent& mesh = this->sceneHandler->getScene()->getComponent<MeshComponent>(this->player);
+	this->resourceManger->makeUniqueMaterials(mesh);
+	this->origMat = mesh.overrideMaterials[0];
 }
 
 void NetworkHandlerGame::createOtherPlayers(int playerMesh)

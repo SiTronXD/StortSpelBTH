@@ -34,8 +34,8 @@ private:
   bool isGhost = false;
   bool hasRespawned = false;
   float ghostTransitionTimer = 0.0f;
-  Material* origMat; // TODO: Remove
   Material* ghostMat;
+  Material origMat;
 
   Entity playerID;
   Entity portal;
@@ -79,6 +79,9 @@ public:
   virtual void onCollisionEnter(Entity e1, Entity e2) override;
   virtual void onCollisionStay(Entity e1, Entity e2) override;
   virtual void onCollisionExit(Entity e1, Entity e2) override;
+
+  // Multiplayer: revive self
+  void revivePlayer();
 
 private:
 

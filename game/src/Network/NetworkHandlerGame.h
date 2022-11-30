@@ -20,8 +20,8 @@ enum class GameEvent
 	PLAYER_SETHP, // What player, how much hp
 	PUSH_PLAYER, // What player, direction
 	MONSTER_TAKE_DAMAGE,
-	INACTIVATE, //what entity
-	ACTIVATE, //what entity
+	INACTIVATE, // What entity
+	ACTIVATE, // What entity
 
 	ROOM_CLEAR,
 	SPAWN_PORTAL,
@@ -50,8 +50,8 @@ private:
 	int seed = -1;
 
 	CombatSystem* combatSystem;
-	Material* origMat;
 	Material* ghostMat;
+	Material origMat;
 
 	Entity player; // Own player
 	std::vector<Entity> playerEntities; // Other players connected
@@ -89,6 +89,7 @@ public:
 	void cleanup();
 
 	void setCombatSystem(CombatSystem* system);
+	void setGhostMat(Material* ghostMat);
 	int getSeed();
 
 	virtual void handleTCPEventClient(sf::Packet& tcpPacket, int event) override;
