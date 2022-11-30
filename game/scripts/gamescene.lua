@@ -52,6 +52,10 @@ scene.getComponent(uiID, CompType.Script).uiStamSideTexID =
 	resources.addTexture("assets/textures/UI/UIBarSide.png")
 scene.getComponent(uiID, CompType.Script).uiBorderTexID = 
 	resources.addTexture("assets/textures/UI/UIBorder.png")
+scene.getComponent(uiID, CompType.Script).pauseBackgroundTexID = 
+	resources.addTexture("assets/textures/UI/frame.png")
+scene.getComponent(uiID, CompType.Script).buttonTexID = 
+	resources.addTexture("assets/textures/UI/button.png")
 
 --[[local p = scene.createPrefab("scripts/prefabs/prefab.lua")
 

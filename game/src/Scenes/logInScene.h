@@ -6,6 +6,7 @@ class logInScene : public Scene
 private:
 	uint32_t fontTextureId;
 	uint32_t backgroundId;
+	uint32_t buttonId;
 	std::string title;
 	std::string name;
 	std::string ipAddress;
