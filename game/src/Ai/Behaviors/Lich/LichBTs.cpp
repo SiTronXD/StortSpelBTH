@@ -495,15 +495,15 @@ BTStatus LichBT::pickRandomStrategy(Entity entityID)
         ATTACK_STRATEGY randStrat =  validChoises[rand()%validChoises.size()];
         switch (randStrat)
         {
-        case LIGHT:
+        case ATTACK_STRATEGY::LIGHT:
             lichComp.curAttack = &lichComp.attacks["lightning"];
             lichComp.lastAttack = "lightning";
             break;
-        case ICE:
+        case ATTACK_STRATEGY::ICE:
             lichComp.curAttack = &lichComp.attacks["ice"];
             lichComp.lastAttack = "ice";
             break;
-        case FIRE:
+        case ATTACK_STRATEGY::FIRE:
             lichComp.curAttack = &lichComp.attacks["fire"];
             lichComp.lastAttack = "fire";
             break;
@@ -525,15 +525,13 @@ BTStatus LichBT::attack(Entity entityID)
     int playerID = getPlayerID();
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
+
     if(lichComp.curAttack == nullptr){return ret;}
-    if(lichComp.chargingAttack)
+
+    //Tick down cast time for current strategy
+    if(lichComp.curAttack->castTimeTimer > 0.0f)
     {
-        //Tick down cast time for current strat
         lichComp.curAttack->castTimeTimer -= get_dt();
-        if(lichComp.curAttack->castTimeTimer <= 0.0f)
-        {
-            lichComp.chargingAttack = false;
-        }
     }
     else
     {
@@ -543,14 +541,28 @@ BTStatus LichBT::attack(Entity entityID)
         //Reset cast times
         lichComp.curAttack->castTimeTimer = lichComp.curAttack->castTimeTimerOrig;
         lichComp.curAttack->cooldownTimer = lichComp.curAttack->cooldownTimerOrig;
+        
 
-        lichComp.attacks["lightning"].castTimeTimer = lichComp.attacks["lightning"].castTimeTimerOrig;
-        lichComp.attacks["ice"].castTimeTimer = lichComp.attacks["ice"].castTimeTimerOrig;
-        lichComp.attacks["fire"].castTimeTimer = lichComp.attacks["fire"].castTimeTimerOrig;
+        //Pick Projectile 
+        Entity projectileID = LichBT::getFreeOrb(entityID, lichComp.curAttack->type);
+    
+        //Shoot projectile!
+        Orb&        orb      = getTheScene()->getComponent<Orb>(projectileID);
+        Transform&  orbTrans = getTheScene()->getComponent<Transform>(projectileID);
+        Rigidbody&  orbRB = getTheScene()->getComponent<Rigidbody>(projectileID);
+        Transform&  lichTrans = getTheScene()->getComponent<Transform>(entityID);
+                
+        lichTrans.updateMatrix();
+        orbTrans.position = lichTrans.position + (-lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
+        auto spellVector = glm::normalize(playerTrans.position - lichTrans.position) * LichComponent::spellForce;
+        spellVector.y = 0; 
+        orbRB.velocity = spellVector;
+        orb.orbPower = lichComp.curAttack;
+
+        orb.timeAtCast = Time::getTimeSinceStart();
+        
         //Remove current strat
         lichComp.curAttack = nullptr;
-
-        //Shoot projectile!
 
         ret = BTStatus::Success;
        
