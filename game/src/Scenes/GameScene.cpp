@@ -504,7 +504,20 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
         orb.onCollision(other);
     }
   }
+  else 
+  { // Collision between two things that isnt player
+    
+    if(this->hasComponents<Orb>(e1) || this->hasComponents<Orb>(e2))
+    {
+        Entity collidingOrb = this->hasComponents<Orb>(e1) ? e1 : e2; 
+        
+        auto& orb = this->getComponent<Orb>(collidingOrb);        
+        orb.onCollision(collidingOrb);
+        
+    }
+  }
 
+    //Swarm collides with swarm
   if (this->hasComponents<SwarmComponent>(e1) &&
       this->hasComponents<SwarmComponent>(e2))
   {
