@@ -198,6 +198,7 @@ class LichFSM : public FSM
 private:
 	static bool idleToCreep(Entity entityID);
 	static bool creepToAlerted(Entity entityID);
+    static bool creepToIdle(Entity entityID);
     static bool alertToHunt(Entity entityID);
     static bool huntToIdle(Entity entityID);
     static bool huntToCombat(Entity entityID);
@@ -212,6 +213,7 @@ private:
 
 	EntityEvent idle_to_creep{   "idle to creep",      idleToCreep};
 	EntityEvent creep_to_alerted{"creep to alerted",   creepToAlerted};
+	EntityEvent creep_to_idle{   "creep to idle",      creepToIdle};
     EntityEvent alert_to_hunt{   "alert to hunt",      alertToHunt};    
     EntityEvent hunt_to_idle{    "hunt to idle",       huntToIdle};
     EntityEvent hunt_to_combat{  "hunt to combat",     huntToCombat};
@@ -255,6 +257,7 @@ protected:
 
 		addEntityTransition("idle",     LichFSM::idle_to_creep,        "creep");
 		addEntityTransition("creep",    LichFSM::creep_to_alerted,     "alerted");
+		addEntityTransition("creep",    LichFSM::creep_to_idle,        "idle");
 		addEntityTransition("alerted",  LichFSM::alert_to_hunt,        "hunt");
 		addEntityTransition("hunt",     LichFSM::hunt_to_idle,         "idle");
 		addEntityTransition("hunt",     LichFSM::hunt_to_combat,       "combat");

@@ -266,3 +266,22 @@ bool LichFSM::revive(Entity entityID)
 
 	return ret;
 }
+bool LichFSM::creepToIdle(Entity entityID)
+{
+    if (!falseIfDead(entityID))
+        {
+            return false;
+        }
+    int playerID = getPlayerID();
+    Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+    Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
+    auto lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+
+    if (glm::length(playerTrans.position - lichTrans.position) >
+        lichComp.sightRadius)
+        {
+            return true;
+        }
+
+    return false;
+}
