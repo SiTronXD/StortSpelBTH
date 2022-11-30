@@ -71,6 +71,28 @@ struct Orb {
     }
 };
 
+class OrbSystem : public System 
+{
+private:
+    SceneHandler* sceneHandler; 
+public: 
+    OrbSystem(SceneHandler* sceneHandler) : sceneHandler(sceneHandler)
+    {}
+    
+    bool update(entt::registry& reg, float deltaTime)
+    {
+        reg.view<Orb>(entt::exclude<Inactive>).each(
+            [&](const auto& entity, Orb& orb){
+                if(orb.timeAtCast + Orb::LIFE_TIME < Time::getTimeSinceStart() )
+                {
+                    orb.setInactive(static_cast<int>(entity));
+                }
+            }
+        );
+        return false; 
+    }
+};
+
 struct LichComponent
 {
     inline static const uint32_t colliderRadius = 4;
