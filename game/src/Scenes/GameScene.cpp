@@ -218,6 +218,8 @@ void GameScene::start()
     spawnHandler.init(&this->roomHandler, this, 
         this->getSceneHandler(),this->aiHandler,
         this->getResourceManager(),this->getUIRenderer());
+        
+    this->createSystem<OrbSystem>(this->getSceneHandler());
 }
 
 void GameScene::update()
