@@ -34,7 +34,7 @@ void GameScene::init()
     samplerSettings.unnormalizedCoordinates = VK_TRUE;
 
     int fontTextureId = Scene::getResourceManager()->addTexture(
-        "assets/textures/UI/testBitmapFont.png", { samplerSettings, true });
+        "assets/textures/UI/font.png", { samplerSettings, true });
     Scene::getUIRenderer()->setBitmapFont(
         { "abcdefghij",
          "klmnopqrst",
@@ -43,7 +43,7 @@ void GameScene::init()
          "!?,<>:()#^",
          "@%        " },
         fontTextureId,
-        glm::uvec2(16, 16));
+        glm::uvec2(50, 50));
 
     int swarm =
         this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
@@ -107,11 +107,6 @@ void GameScene::start()
 {
     this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, "playerID");
 
-    this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
-    this->getAudioHandler()->setMasterVolume(0.5f);
-    this->getAudioHandler()->setMusicVolume(0.2f);
-    this->getAudioHandler()->playMusic();
-
     this->networkHandler = dynamic_cast<NetworkHandlerGame*>(this->getNetworkHandler());
     this->networkHandler->init();
     this->networkHandler->setPlayerEntity(playerID);
@@ -174,6 +169,11 @@ void GameScene::start()
     this->resumeButton.dimension = glm::vec2(500.0f, 150.0f);
     this->exitButton.dimension = glm::vec2(500.0f, 150.0f);
 
+    this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
+    this->getAudioHandler()->setMasterVolume(0.5f);
+    this->getAudioHandler()->setMusicVolume(0.0f);
+    this->getAudioHandler()->playMusic();
+	
     // If we are not multiplayer we do this by ourself
     if (!networkHandler->isConnected())
     {

@@ -28,7 +28,7 @@ void GameOverScene::init()
 	samplerSettings.filterMode = vk::Filter::eNearest;
 	samplerSettings.unnormalizedCoordinates = VK_TRUE;
 
-	uint32_t fontTextureId = Scene::getResourceManager()->addTexture("assets/textures/UI/testBitmapFont.png", { samplerSettings, true });
+	uint32_t fontTextureId = Scene::getResourceManager()->addTexture("assets/textures/UI/font.png", { samplerSettings, true });
 	Scene::getUIRenderer()->setBitmapFont(
 		{
 			"abcdefghij",
@@ -39,11 +39,11 @@ void GameOverScene::init()
 			"@%        "
 		},
 		fontTextureId,
-		glm::uvec2(16, 16)
+		glm::uvec2(50, 50)
 	);
 
-	this->setBloomBufferLerpAlpha(0.558);
-	this->setBloomNumMipLevels(6);
+	this->setBloomBufferLerpAlpha(0.340);
+	this->setBloomNumMipLevels(7);
 
 	this->cam = this->createEntity();
 	Transform& camTrans = this->getComponent<Transform>(this->cam);
@@ -99,8 +99,9 @@ void GameOverScene::init()
 			this->crystals[i]), 0.5f, "sinMulti");
 	}
 
-	this->getResourceManager()->getMaterial(this->getComponent<MeshComponent>(
-		this->crystals[0]), 0).emissionColor = glm::vec3(0.431f, 1.624f, 0.130f);
+	Material& crystalMat = this->getResourceManager()->getMaterial(this->getComponent<MeshComponent>(this->crystals[0]), 0);
+	crystalMat.emissionColor = glm::vec3(0.431f, 1.624f, 0.130f);
+	crystalMat.glowMapTextureIndex = this->getResourceManager()->addTexture("vengine_assets/textures/DefaultEmission.png");
 
 	// GENERATE TREES
 	float treeOffset = 12.f;
