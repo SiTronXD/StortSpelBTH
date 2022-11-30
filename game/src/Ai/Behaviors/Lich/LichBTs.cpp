@@ -288,7 +288,7 @@ BTStatus LichBT::goToGrave(Entity entityID)
     Transform& graveTrans   = getTheScene()->getComponent<Transform>(lichComp.graveID);
 
     glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, graveTrans.position);
-
+    avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, graveTrans.position, moveDir);
     lichRb.velocity = moveDir * lichComp.speed;
     rotateTowards(entityID, graveTrans.position, lichComp.speed);
 
@@ -312,7 +312,7 @@ BTStatus LichBT::goToAlter(Entity entityID)
     Transform& alterTrans   = getTheScene()->getComponent<Transform>(lichComp.alterID);
 
     glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, alterTrans.position);
-
+    avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, alterTrans.position, moveDir);
 	moveDir = glm::normalize(moveDir);
     lichRb.velocity = moveDir * lichComp.speed;
     rotateTowards(entityID, alterTrans.position, lichComp.speed);

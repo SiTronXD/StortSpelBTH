@@ -59,8 +59,8 @@ struct TankComponent
 	float idleSpeed					= 10.0f;
 	float shieldSpeed				= 5.0f;
 	float cahargeSpeed				= 200.0f;
-    float sightRadius				= 200.0f; // I'll can attack you
-    float peronalSpaceRadius		= 100.0f; // This is my personal space, get away!
+    float sightRadius				= 0.0f;//200.0f; // I'll can attack you
+    float peronalSpaceRadius		= 0.0f;//100.0f; // This is my personal space, get away!
 	float friendVisitRadius			= 15.0f; //When go this close to friends
 	float combatRotSpeed			= 50.0f;
 	float idleRotSpeed				= 40.0f;
