@@ -1,5 +1,6 @@
 #include "SpawnHandler.hpp"
 #include "../Scenes/GameScene.h"
+#include "../Ai/Behaviors/HelperFuncs.hpp"
 #include <functional>
 #include <stack>
 #include <random>
@@ -147,8 +148,6 @@ uint32_t SpawnHandler::spawnSwarmGroup(const int swarmStartIdx, std::vector<cons
     }
     return tileInfos.size();
 }
-
-#include "../Ai/Behaviors/HelperFuncs.hpp"
 
 void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
 {
@@ -340,6 +339,9 @@ void SpawnHandler::createLich()
         static int lich = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
         static int grave = this->resourceManager->addMesh("assets/models/grave.obj");
         static int alter = this->resourceManager->addMesh("assets/models/alter.obj");
+        static int fireOrb_mesh = this->resourceManager->addMesh("assets/models/fire_orb.obj");
+        static int lightOrb_mesh = this->resourceManager->addMesh("assets/models/light_orb.obj");
+        static int iceOrb_mesh = this->resourceManager->addMesh("assets/models/ice_orb.obj");
 
         this->currScene->setComponent<MeshComponent>(this->lichIDs.back(), lich);
 
@@ -364,6 +366,52 @@ void SpawnHandler::createLich()
             );
         
         this->currScene->getComponent<LichComponent>(this->lichIDs.back()).alterID = alterID;
+
+        // Create Orbs
+
+        for(size_t i = 0; i < LichComponent::NR_FIRE_ORBS;i++)
+        {
+            lichComp.fireOrbs[i] = this->currScene->createEntity();
+            this->currScene->setComponent<MeshComponent>(lichComp.fireOrbs[i], fireOrb_mesh);
+            this->currScene->setComponent<Collider>(lichComp.fireOrbs[i], Collider::createSphere(LichComponent::orbRadius));
+            this->currScene->setComponent<Orb>(lichComp.fireOrbs[i]);
+            this->currScene->setInactive(lichComp.fireOrbs[i]);
+            this->currScene->setComponent<Rigidbody>(lichComp.fireOrbs[i]);
+            Rigidbody& rb = this->currScene->getComponent<Rigidbody>(lichComp.fireOrbs[i]);
+            rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+            rb.gravityMult = 0.0f;
+            rb.friction = 3.0f;
+            rb.mass = 10.0f;
+        }
+        for(size_t i = 0; i < LichComponent::NR_ICE_ORBS;i++)
+        {
+            lichComp.iceOrbs[i] = this->currScene->createEntity();
+            this->currScene->setComponent<MeshComponent>(lichComp.iceOrbs[i], iceOrb_mesh);
+            this->currScene->setComponent<Collider>(lichComp.iceOrbs[i], Collider::createSphere(LichComponent::orbRadius));
+            this->currScene->setComponent<Orb>(lichComp.iceOrbs[i]);
+            this->currScene->setInactive(lichComp.iceOrbs[i]);
+            this->currScene->setComponent<Rigidbody>(lichComp.iceOrbs[i]);
+            Rigidbody& rb = this->currScene->getComponent<Rigidbody>(lichComp.iceOrbs[i]);
+            rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+            rb.gravityMult = 0.0f;
+            rb.friction = 3.0f;
+            rb.mass = 10.0f;
+        }
+        for(size_t i = 0; i < LichComponent::NR_LIGHT_ORBS;i++)
+        {
+            lichComp.lightOrbs[i] = this->currScene->createEntity();
+            this->currScene->setComponent<MeshComponent>(lichComp.lightOrbs[i], lightOrb_mesh);
+            this->currScene->setComponent<Collider>(lichComp.lightOrbs[i], Collider::createSphere(LichComponent::orbRadius));
+            this->currScene->setComponent<Orb>(lichComp.lightOrbs[i]);
+            this->currScene->setInactive(lichComp.lightOrbs[i]);
+            this->currScene->setComponent<Rigidbody>(lichComp.lightOrbs[i]);
+            Rigidbody& rb = this->currScene->getComponent<Rigidbody>(lichComp.lightOrbs[i]);
+            rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+            rb.gravityMult = 0.0f;
+            rb.friction = 3.0f;
+            rb.mass = 10.0f;
+        }
+
 
         this->currScene->setInactive(alterID);
 
