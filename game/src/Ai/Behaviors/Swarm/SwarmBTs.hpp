@@ -8,7 +8,7 @@
 
 #include "../HelperFuncs.hpp"
 //#include "ai/PathFinding.h"
-Entity getPlayerID(SceneHandler*sceneHandler);
+Entity getPlayerID(SceneHandler* sceneHandler, Entity entityID);
 
 struct SwarmGroup
 {

@@ -22,11 +22,19 @@ float TankFSM::get_dt()
     return FSM::sceneHandler->getAIHandler()->getDeltaTime();
 }
 
-int TankFSM::getPlayerID()
+int TankFSM::getPlayerID(Entity entityID)
 {
+    // if network exist take player from there
+    NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+    if (s != nullptr)
+        {
+            return s->getNearestPlayer(entityID);
+        }
+
+    // else find player from script
     int playerID = -1;
-    std::string playerId_str = "playerID";
-    FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerId_str);
+    std::string playerString = "playerID";
+    FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
     return playerID;
 }
 
@@ -111,7 +119,7 @@ void TankFSM::updateFriendsInSight(Entity entityID)
 bool TankFSM::playerInSight(Entity entityID)
 {
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
-    int playerID = getPlayerID();
+    int playerID = getPlayerID(entityID);
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
     float tank_player_dist = glm::length(playerTrans.position - tankTrans.position);

@@ -138,7 +138,8 @@ public:
     }
 
     void init(RoomHandler* roomHandler, 
-             GameScene* currentGameScene, 
+             //GameScene* currentGameScene, 
+             Scene* currentGameScene, 
              SceneHandler* sceneHandler, 
              AIHandler* aiHandler,
              ResourceManager* resourceManager,

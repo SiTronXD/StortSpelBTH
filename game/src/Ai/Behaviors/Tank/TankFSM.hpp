@@ -169,7 +169,7 @@ private:
 	static bool		playerInSight(Entity entityID);
 	static bool		friendlysInFight(Entity entityID);
 	static void		resetTimers(Entity entityID);
-	static int		getPlayerID();
+	static int		getPlayerID(Entity entityID);
 	static float	get_dt();
 	static Scene*	getTheScene();
 	static bool		falseIfDead(Entity entityID);

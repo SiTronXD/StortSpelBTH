@@ -79,6 +79,10 @@ void SpawnHandler::spawnEnemiesIntoRoom()
 void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
 {
     currScene->setActive(this->tankIDs[tankIdx]);
+    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
+    {
+        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->tankIDs[tankIdx]});    
+    }
     Transform& transform = currScene->getComponent<Transform>(this->tankIDs[tankIdx]);
         
     transform.position = pos;
@@ -97,6 +101,10 @@ uint32_t SpawnHandler::spawnLich(int lichIdx, std::vector<const TileInfo*> tileI
     if(tileInfos.size() == 2)
     {
         currScene->setActive(this->lichIDs[lichIdx]);
+    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
+    {
+        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->lichIDs[lichIdx]});    
+    }
         const int alterID = this->lichObjects[this->lichIDs[lichIdx]].alterID;
         const int graveID = this->lichObjects[this->lichIDs[lichIdx]].graveID;
         currScene->setActive(alterID);
@@ -152,6 +160,11 @@ uint32_t SpawnHandler::spawnSwarmGroup(const int swarmStartIdx, std::vector<cons
 void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
 {
     currScene->setActive(this->swarmIDs[swarmIdx]);
+    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
+    {
+        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->swarmIDs[swarmIdx]});    
+    }
+
     Transform& transform = currScene->getComponent<Transform>(this->swarmIDs[swarmIdx]);
     
     transform.position = pos;
@@ -196,10 +209,13 @@ void SpawnHandler::createEntities()
 
     //TODO: Cause crash on second run, therefore disabled in distribution... 
 #ifdef _CONSOLE 
+    if (dynamic_cast<NetworkScene*>(currScene) == nullptr)
+    {
+        this->aiHandler->addImguiToFSM("swarmFSM", this->SwarmImgui());
+        this->aiHandler->addImguiToFSM("lichFSM", this->LichImgui());
+        this->aiHandler->addImguiToFSM("tankFSM", this->TankImgui());
+    }
 
-    this->aiHandler->addImguiToFSM("swarmFSM", this->SwarmImgui());
-    this->aiHandler->addImguiToFSM("lichFSM",  this->LichImgui());
-    this->aiHandler->addImguiToFSM("tankFSM",  this->TankImgui());
 #endif 
 
     // Swarm        
@@ -286,10 +302,19 @@ Log::write("Killing all enemies outside room...");
 
 void SpawnHandler::createTank()
 {
+    ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
+    if (netScene == nullptr)
+    {
     static int tank = this->resourceManager->addMesh("assets/models/golem.obj");
     this->tankIDs.push_back(this->currScene->createEntity());
     this->allEntityIDs.push_back(this->tankIDs.back());
     this->currScene->setComponent<MeshComponent>(this->tankIDs.back(), tank);
+    }
+    else
+    {
+        this->tankIDs.push_back(netScene->spawnEnemy(0));
+        this->allEntityIDs.push_back(this->tankIDs.back());
+    }
     this->currScene->setComponent<AiCombatTank>(this->tankIDs.back());
     this->currScene->setComponent<Rigidbody>(this->tankIDs.back());
     Rigidbody& rb = this->currScene->getComponent<Rigidbody>(this->tankIDs.back());
@@ -305,6 +330,11 @@ void SpawnHandler::createTank()
     tankComp.origScaleY = transform.scale.y;
     this->currScene->setInactive(this->tankIDs.back());
     tankComp.life = 0;
+
+    if (netScene != nullptr) 
+    {
+        netScene->addEvent({(int)GameEvent::INACTIVATE, this->tankIDs.back()});
+    }
 }
 
 void SpawnHandler::createLich()
@@ -421,13 +451,21 @@ void SpawnHandler::createLich()
 
 void SpawnHandler::createSwarmGroup()
 {
-    static int swarm = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
+    ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
     this->swarmGroups.push_back(new SwarmGroup); //TODO: Does this work as expected? Do we need to clear (delete contents) this on every init? 
     for (size_t i = 0; i < SpawnHandler::NR_BLOBS_IN_GROUP; i++)
     {
-        this->swarmIDs.push_back(this->currScene->createEntity());
+        if (netScene == nullptr)
+        {
+            this->swarmIDs.push_back(this->currScene->createEntity());
+            static int swarm = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
+            this->currScene->setComponent<MeshComponent>(this->swarmIDs.back(), swarm);
+        }
+        else
+        {
+            this->swarmIDs.push_back(netScene->spawnEnemy(0));
+        }
         this->allEntityIDs.push_back(this->swarmIDs.back());
-        this->currScene->setComponent<MeshComponent>(this->swarmIDs.back(), swarm);
         this->currScene->setComponent<AiCombatSwarm>(this->swarmIDs.back());
         this->currScene->setComponent<Collider>(this->swarmIDs.back(), Collider::createSphere(SwarmComponent::colliderRadius));
         this->currScene->setComponent<Rigidbody>(this->swarmIDs.back());
@@ -441,6 +479,11 @@ void SpawnHandler::createSwarmGroup()
         this->sceneHandler->getScene()->getComponent<SwarmComponent>(this->swarmIDs.back()).group = this->swarmGroups.back();
         SwarmComponent& swarmComp = this->currScene->getComponent<SwarmComponent>(this->swarmIDs.back());
         swarmComp.life = 0;
+
+        if (netScene != nullptr) 
+        {
+            netScene->addEvent({(int)GameEvent::INACTIVATE, this->swarmIDs.back()});
+        }
     }
 }
 

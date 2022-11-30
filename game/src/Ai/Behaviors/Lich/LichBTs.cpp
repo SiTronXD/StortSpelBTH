@@ -3,6 +3,7 @@
 //#include "../../../Components/Combat.h"
 //#include "../../../Components/Perks.h" //TODO: Adam, add the perk stuff to Lich... ? 
 #include <limits>
+#include "../../../Network/ServerGameMode.h"
 
 
 Scene* LichBT::getTheScene()
@@ -651,13 +652,19 @@ BTStatus LichBT::die(Entity entityID)
    BTStatus ret = BTStatus::Failure;
 
 	int playerID = getPlayerID();
-	Combat& playerCombat = sceneHandler->getScene()->getComponent<Combat>(playerID);
-	if (playerCombat.health <= (playerCombat.maxHealth - 10))
+   //TODO : this was changed from combat to networkCombat see if it works
+	HealthComp& playerHealth = sceneHandler->getScene()->getComponent<HealthComp>(playerID);
+	if (playerHealth.health <= (playerHealth.maxHealth - 10))
 	{
-		playerCombat.health += 10;
+        playerHealth.health += 10;
 	}
 
 	getTheScene()->setInactive(entityID);
+    ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
+    if (serverScene != nullptr) 
+    {
+        serverScene->addEvent({(int)GameEvent::INACTIVATE, entityID});
+    }
 
 	return ret;
 }

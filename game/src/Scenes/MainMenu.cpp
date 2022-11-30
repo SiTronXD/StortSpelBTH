@@ -1,7 +1,9 @@
 #include "MainMenu.h"
 #include "GameScene.h"
+#include "LevelEditor.h"
 #include "logInScene.h"
-//#include "vengine/network/ServerGameModes/NetworkLobbyScene.h"
+#include "../ServerGameModes/NetworkLobbyScene.h"
+#include "../Network/ServerGameMode.h"
 
 void MainMenu::init()
 {
@@ -41,6 +43,7 @@ void MainMenu::start()
   this->quitButton = this->createEntity();
   this->backButton = this->createEntity();
   this->fullscreenButton = this->createEntity();
+  this->levelEditButton = this->createEntity();
 
   UIArea area{};
   area.position = glm::vec2(0.f, 200.f);
@@ -71,6 +74,9 @@ void MainMenu::start()
   area.dimension = glm::vec2(50 * 10, 50);
   this->setComponent<UIArea>(this->fullscreenButton, area);
 
+  area.position = glm::vec2(0.f, -300.f);
+  area.dimension = glm::vec2(50 * 10, 50);
+  this->setComponent<UIArea>(this->levelEditButton, area);
 
   Input::setHideCursor(false);
 }
@@ -94,6 +100,7 @@ void MainMenu::update()
 		this->getUIRenderer()->renderString("settings",     glm::vec2(0.f, 0.f),    glm::vec2(50.f, 50.f));
         this->getUIRenderer()->renderString("how to play",  glm::vec2(0.f, -100.f), glm::vec2(50.f, 50.f));
 		this->getUIRenderer()->renderString("quit",         glm::vec2(0.f, -200.f), glm::vec2(50.f, 50.f));
+		this->getUIRenderer()->renderString("level editor", glm::vec2(0.f, -300.f), glm::vec2(50.f, 50.f));
 		
 		if (this->getComponent<UIArea>(playButton).isClicking())
         {
@@ -101,8 +108,7 @@ void MainMenu::update()
             this->getUIRenderer()->renderString(
                 "loading...", glm::vec2(0.f, 0.f), glm::vec2(100.f, 100.f)
             );
-            //TODO : Change to networkLobbyScene
-            this->getNetworkHandler()->createServer();
+            this->getNetworkHandler()->createServer(new NetworkLobbyScene());
 			this->getSceneHandler()->setScene(new logInScene());
 		}
         if (this->getComponent<UIArea>(joinGameButton).isClicking())
@@ -125,6 +131,10 @@ void MainMenu::update()
         {
             this->state = State::Quit;
         }
+        if (this->getComponent<UIArea>(levelEditButton).isClicking())
+          {
+            this->state = State::LevelEdit;
+          }
 
 		break;
 
@@ -133,6 +143,11 @@ void MainMenu::update()
 		break;
 	case HowToPlay:
 		this->howToPlay();
+		break;
+
+	case LevelEdit:
+		this->switchScene(new LevelEditor(), "scripts/levelEditor.lua");
+		
 		break;
 
 	case Quit:

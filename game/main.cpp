@@ -9,8 +9,11 @@
 #include "vengine.h"
 #include "src/Scenes/MainMenu.h"
 #include "src/Scenes/GameScene.h"
-//#include "src/Scenes/CreateAPuzzle.h"
+#include "src/Scenes/GameOverScene.h"
+#include "src/Scenes/LevelEditor.h"
 #include "src/Scenes/NetworkAI.h"
+#include "src/Scenes/LobbyScene.h"
+#include "src/Network/NetworkHandlerGame.h"
 
 #include <fstream>
 
@@ -35,10 +38,9 @@ int main(int argc, char* argv[])
     srand(seed);
     {
         Engine engine;
-        //engine.run("Presumed Dead", "", new RoomTesting());
-        //engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
+        // engine.setCustomNetworkHandler(new NetworkHandlerGame());
+        // engine.run("Presumed Dead", "", new LobbyScene());
         engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
-        //engine.run("Presumed Dead", "", new RoomTesting());
     }
 
     return EXIT_SUCCESS;
