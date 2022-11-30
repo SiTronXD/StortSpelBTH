@@ -52,6 +52,25 @@ struct LichAttack
 
 };
 
+struct Orb {
+    
+    inline static const int LIFE_TIME = 10; 
+    int timeAtCast = 0;
+    LichAttack* orbPower; 
+
+    inline void setInactive(Entity entityID)
+    {        
+        Rigidbody& rb = LichBT::getTheScene()->getComponent<Rigidbody>(entityID);
+        rb.velocity = glm::vec3(0.f,0.f,0.f);
+        LichBT::getTheScene()->setInactive(static_cast<int>(entityID));
+    }
+    inline void onCollision(Entity entityID)
+    {
+        //TODO: Some effect? 
+        this->setInactive(entityID);
+    }
+};
+
 struct LichComponent
 {
     inline static const uint32_t colliderRadius = 4;
