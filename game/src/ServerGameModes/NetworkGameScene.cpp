@@ -69,19 +69,6 @@ void NetworkGameScene::update(float dt)
            this->addEvent({(int)GameEvent::SPAWN_PORTAL});
         }
     }
-
-    for (int i = 0; i < roomHandler.rooms.size(); i++)
-    {
-        for (int d = 0; d < 4; d++)
-        {
-            if (roomHandler.rooms[i].doors[d] != -1)
-            {
-                glm::vec3 dp = this->getComponent<Transform>(roomHandler.rooms[i].doors[d]).position;
-                 addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {dp.x, dp.y, dp.z, 0.f, 0.f, 0.f, 10.f, 10.f, 10.f});
-            }    
-        }
-    }
-
 }
 
 void NetworkGameScene::onTriggerStay(Entity e1, Entity e2)

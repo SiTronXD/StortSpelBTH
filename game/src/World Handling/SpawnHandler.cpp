@@ -39,6 +39,10 @@ void SpawnHandler::spawnEnemiesIntoRoom()
 void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
 {
     currScene->setActive(this->tankIDs[tankIdx]);
+    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
+    {
+        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->tankIDs[tankIdx]});    
+    }
     Transform& transform = currScene->getComponent<Transform>(this->tankIDs[tankIdx]);
     
     float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
@@ -53,6 +57,10 @@ void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
 void SpawnHandler::spawnLich(int lichIdx, const glm::vec3& pos)
 {
     currScene->setActive(this->lichIDs[lichIdx]);
+    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
+    {
+        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->lichIDs[lichIdx]});    
+    }
     Transform& transform = currScene->getComponent<Transform>(this->lichIDs[lichIdx]);
     float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
     transform.position = pos + glm::vec3(tileWidth, 0.f, tileWidth);
@@ -65,6 +73,11 @@ void SpawnHandler::spawnLich(int lichIdx, const glm::vec3& pos)
 void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
 {
     currScene->setActive(this->swarmIDs[swarmIdx]);
+    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
+    {
+        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->swarmIDs[swarmIdx]});    
+    }
+
     Transform& transform = currScene->getComponent<Transform>(this->swarmIDs[swarmIdx]);
     float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
 
@@ -152,6 +165,11 @@ void SpawnHandler::createTank()
     TankComponent& tankComp = this->currScene->getComponent<TankComponent>(this->tankIDs.back());
     tankComp.origScaleY = transform.scale.y;
     this->currScene->setInactive(this->tankIDs.back());
+
+    if (netScene != nullptr) 
+    {
+        netScene->addEvent({(int)GameEvent::INACTIVATE, this->tankIDs.back()});
+    }
 }
 
 void SpawnHandler::createLich()
@@ -179,6 +197,11 @@ void SpawnHandler::createLich()
     this->currScene->setComponent<Collider>(this->lichIDs.back(), Collider::createCapsule(4.0f, 4.0f*transform.scale.y));
     this->aiHandler->createAIEntity(this->lichIDs.back(), "lichFSM");
     this->currScene->setInactive(this->lichIDs.back());
+
+    if (netScene != nullptr) 
+    {
+        netScene->addEvent({(int)GameEvent::INACTIVATE, this->lichIDs.back()});
+    }
 }
 
 void SpawnHandler::createSwarmGroup()
@@ -211,6 +234,11 @@ void SpawnHandler::createSwarmGroup()
         this->sceneHandler->getScene()->getComponent<SwarmComponent>(this->swarmIDs.back()).group = this->swarmGroups.back();
         SwarmComponent& swarmComp = this->currScene->getComponent<SwarmComponent>(this->swarmIDs.back());
         swarmComp.life = 0;
+
+        if (netScene != nullptr) 
+        {
+            netScene->addEvent({(int)GameEvent::INACTIVATE, this->swarmIDs.back()});
+        }
     }
 }
 

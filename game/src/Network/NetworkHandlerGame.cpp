@@ -208,6 +208,20 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		}
 		// Else give hp to other players visually
 		break;
+    case GameEvent::INACTIVATE:
+        tcpPacket >> i0;
+        if (serverEntities.find(i0) != serverEntities.end())
+        {
+            this->sceneHandler->getScene()->setInactive(serverEntities.find(i0)->second);
+		}
+		break;
+    case GameEvent::ACTIVATE:
+        tcpPacket >> i0;
+        if (serverEntities.find(i0) != serverEntities.end())
+        {
+            this->sceneHandler->getScene()->setActive(serverEntities.find(i0)->second);
+		}
+		break;
 	default:
 		break;
 	}
@@ -292,8 +306,8 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 	switch ((GameEvent)event)
 	{
 	case GameEvent::SEED:
-		srand((unsigned int)time(0));
-		packet << (int)GameEvent::SEED << (int)rand();
+		serverScene = server->getScene<ServerGameMode>();
+		packet << (int)GameEvent::SEED << serverScene->getRoomSeed();
 		server->sendToAllClientsTCP(packet);
 		break;
 	case GameEvent::SPAWN_ITEM:
@@ -325,7 +339,6 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 		serverScene = server->getScene<ServerGameMode>();
 		tcpPacket >> si0 >> si1 >> sf0;
 		// Get how they should take damage
-        std::cout << "monster take damage" << std::endl;
         if (serverScene->hasComponents<SwarmComponent>(si0))
         {
 			serverScene->getComponent<SwarmComponent>(si0).life -= si1;  
@@ -338,6 +351,15 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
         {
 			serverScene->getComponent<LichComponent>(si0).life -= si1;  
 		}
+        if (serverScene->hasComponents<Transform>(si0))
+        {
+			sv1 = serverScene->getComponent<Transform>(si0).position;
+			sv2 = serverScene->getComponent<Transform>(serverScene->getPlayer(clientID)).position;
+			sv0 = glm::normalize(sv2 - sv1);
+			serverScene->getComponent<Rigidbody>(si0).velocity = glm::vec3(-sv0.x, 0.f, -sv0.z) * sf0;
+        }
+        
+        
 		break;
 	default:
 		packet << event;
