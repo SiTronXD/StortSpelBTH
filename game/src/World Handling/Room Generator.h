@@ -56,17 +56,11 @@ public:
     static const uint32_t BRANCH_DEPTH = 3u;
     static const uint32_t BRANCH_DIST = 3u;
     static const uint32_t MAX_ANGLE = 60u;
-//private:
+private:
     VRandom& random;
 
     Tile::Type** tiles2D;
     std::vector<Tile> tiles;
-    std::vector<Tile> mainTiles;
-    std::vector<Tile> bigTiles;
-    std::vector<Tile> borders;
-    std::vector<Tile> innerBorders;
-    std::vector<Tile> exitPathsTiles;
-    std::vector<Tile> aiTiles;
 
     glm::ivec2 minMaxPos[4]; // x, -x, z, -z
     glm::ivec2 exitTilesPos[4];
@@ -101,18 +95,6 @@ public:
 
     const glm::ivec2* getMinMax() const;
     const glm::ivec2* getExits() const;
-    const glm::ivec2& getMiddle() const;
-    const glm::ivec2& getSize() const;
 
-    uint32_t getNumMainTiles() const;
-    uint32_t getNumBigTiles() const;
-    uint32_t getNumBorders() const;
-    uint32_t getNumInnerBorders() const;
-    uint32_t getNumExitTiles() const;
-
-    const Tile& getMainTile(uint32_t index) const;
-    const Tile& getBigTile(uint32_t index) const;
-    const Tile& getBorder(uint32_t index) const;
-    const Tile& getInnerBorder(uint32_t index) const;
-    const Tile& getExitTile(uint32_t index) const;
+    const std::vector<Tile>& getTiles() const;
 };

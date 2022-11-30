@@ -11,7 +11,7 @@ const uint32_t RoomHandler::NUM_BORDER = 1;
 const uint32_t RoomHandler::NUM_ONE_X_ONE = 3;
 const uint32_t RoomHandler::NUM_ONE_X_TWO = 2;
 const uint32_t RoomHandler::NUM_TWO_X_TWO = 1;
-const uint32_t RoomHandler::DECO_ENTITY_CHANCE = 300;
+const uint32_t RoomHandler::DECO_ENTITY_CHANCE = 30;
 
 RoomHandler::RoomHandler()
 	:scene(nullptr), resourceMan(nullptr), activeIndex(0), 
@@ -220,10 +220,10 @@ void RoomHandler::generate(uint32_t seed)
 
 		// Save extents, used when moving rooms and creating floor
 		const glm::ivec2* exits = roomGen.getExits();
-		curRoom.extents[LEFT_P]  = std::abs((float)exits[LEFT_P].x)  * TILE_WIDTH;// - TILE_WIDTH * 0.5f;
-		curRoom.extents[RIGHT_P] = std::abs((float)exits[RIGHT_P].x) * TILE_WIDTH;// - TILE_WIDTH * 0.5f;
-		curRoom.extents[UPPER_P] = std::abs((float)exits[UPPER_P].y) * TILE_WIDTH;// - TILE_WIDTH * 0.5f;
-		curRoom.extents[LOWER_P] = std::abs((float)exits[LOWER_P].y) * TILE_WIDTH;// - TILE_WIDTH * 0.5f;
+		curRoom.extents[LEFT_P]  = std::abs((float)exits[LEFT_P].x)  * TILE_WIDTH;
+		curRoom.extents[RIGHT_P] = std::abs((float)exits[RIGHT_P].x) * TILE_WIDTH;
+		curRoom.extents[UPPER_P] = std::abs((float)exits[UPPER_P].y) * TILE_WIDTH;
+		curRoom.extents[LOWER_P] = std::abs((float)exits[LOWER_P].y) * TILE_WIDTH;
 
 		this->createDoors(i, exits);
 		const glm::ivec2* roomMinMax = roomGen.getMinMax();
@@ -259,65 +259,69 @@ void RoomHandler::generate(uint32_t seed)
 			}
 		}
 
-		// Get and save tiles from roomGen
-		const uint32_t numMain = roomGen.getNumMainTiles();
-		for (uint32_t j = 0; j < numMain; j++)
+		Entity entity = -1;
+		const std::vector<Tile>& tiles = roomGen.getTiles();
+		for (const Tile& tile : tiles)
 		{
-			const glm::vec2& tilePos = roomGen.getMainTile(j).position;
-			if (this->random->rand() % 100 < DECO_ENTITY_CHANCE)
+			switch (tile.type)
 			{
-				curRoom.objects.emplace_back(this->createFloorDecoEntity(tilePos, true));
-			}
-
-			curRoom.mainTiles.emplace_back(tilePos.x, 0.f, tilePos.y);
-			curRoom.mainTiles.back() *= TILE_WIDTH;
-		}
-
-		const uint32_t numBig = roomGen.getNumBigTiles();
-		for (uint32_t j = 0; j < numBig; j++)
-		{
-			this->createObjectEntities(roomGen.getBigTile(j), curRoom);
-		}
-
-		const uint32_t numExit = roomGen.getNumExitTiles();
-		for (uint32_t j = 0; j < numExit; j++)
-		{
-			if (this->random->rand() % 100 < DECO_ENTITY_CHANCE)
+			default:
+				break;
+			case Tile::Border:
 			{
-				curRoom.objects.emplace_back(this->createFloorDecoEntity(roomGen.getExitTile(j).position, true));
+				entity = this->createBorderEntity(tile.position, true);
+				curRoom.objects.emplace_back(entity);
+				break;
 			}
-		}
-
-		const uint32_t numBorders = roomGen.getNumBorders();
-		for (uint32_t j = 0; j < numBorders; j++)
-		{
-			curRoom.objects.emplace_back(this->createBorderEntity(roomGen.getBorder(j).position, true));
-			this->scene->getComponent<MeshComponent>(curRoom.objects.back()).meshID = this->oneXOneMeshIds[2];
-		}
-
-		const uint32_t numInnerBorders = roomGen.getNumInnerBorders();
-		for (uint32_t j = 0; j < numInnerBorders; j++)
-		{
-			Entity entity = this->createBorderEntity(roomGen.getInnerBorder(j).position, true);
-			curRoom.objects.emplace_back(entity);
-			this->scene->setComponent<Collider>(entity, Collider::createBox(
-				glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH * 3.f, TILE_WIDTH * 0.5f), glm::vec3(0.f, TILE_WIDTH * 3.f, 0.f)));
-
-			if (this->useMeshes)
+			case Tile::InnerBorder:
 			{
-				this->scene->getComponent<MeshComponent>(entity).meshID = this->innerBorderMesh;
-				//this->scene->getComponent<MeshComponent>(entity).meshID = this->oneXOneMeshIds[1];
-			}
-		}
+				entity = this->createBorderEntity(tile.position, true);
+				curRoom.objects.emplace_back(entity);
+				this->scene->setComponent<Collider>(entity, Collider::createBox(
+					glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH * 3.f, TILE_WIDTH * 0.5f), glm::vec3(0.f, TILE_WIDTH * 3.f, 0.f)));
 
-		for (Tile& tile : roomGen.aiTiles)
-		{
-			Entity entity = this->scene->createEntity();
-			scene->setComponent<MeshComponent>(entity, (int)twoXTwoMeshIds[0].first);
-			scene->getComponent<Transform>(entity).scale *= 0.25f;
-			scene->getComponent<Transform>(entity).position.x = tile.position.x * TILE_WIDTH;
-			scene->getComponent<Transform>(entity).position.z = tile.position.y * TILE_WIDTH;
-			curRoom.objects.emplace_back(entity);
+				if (this->useMeshes)
+				{
+					this->scene->getComponent<MeshComponent>(entity).meshID = this->innerBorderMesh;
+				}
+				break;
+			}
+			case Tile::OneXOne:
+				if (this->random->rand() % 100 < DECO_ENTITY_CHANCE)
+				{
+					curRoom.objects.emplace_back(this->createFloorDecoEntity(tile.position, true));
+				}
+				break;
+
+			case Tile::TwoXOne:
+				this->createObjectEntities(tile, curRoom);
+				break;
+
+			case Tile::OneXTwo:
+				this->createObjectEntities(tile, curRoom);
+				break;
+
+			case Tile::TwoXTwo:
+				this->createObjectEntities(tile, curRoom);
+				break;
+
+			case Tile::Exit:
+				if (this->random->rand() % 100 < DECO_ENTITY_CHANCE)
+				{
+					curRoom.objects.emplace_back(this->createFloorDecoEntity(tile.position, true));
+				}
+				break;
+
+			case Tile::AI:
+				if (this->random->rand() % 100 < DECO_ENTITY_CHANCE)
+				{
+					curRoom.objects.emplace_back(this->createFloorDecoEntity(tile.position, true));
+				}
+				
+				curRoom.mainTiles.emplace_back(tile.position.x, 0.f, tile.position.y);
+				curRoom.mainTiles.back() *= TILE_WIDTH;
+				break;
+			}
 		}
 
 		// Spawn big rock if room isn't start or exit
@@ -391,7 +395,6 @@ void RoomHandler::generate(uint32_t seed)
 	this->verticalConnection.shrink_to_fit();
 
 	this->activeIndex = 0;
-	return;
 	Room& startRoom = this->rooms[this->activeIndex];
 	startRoom.finished = true;
 
@@ -484,13 +487,12 @@ Entity RoomHandler::createFloorDecoEntity(const glm::vec2& pos, bool scalePos)
 {
 	Entity entity = scene->createEntity();
 	Transform& transform = scene->getComponent<Transform>(entity);
-	transform.position.x = pos.x * (scalePos ? TILE_WIDTH : 1.f);// + float((int)this->random->rand() % 12 - 6);
-	transform.position.z = pos.y * (scalePos ? TILE_WIDTH : 1.f);// + float((int)this->random->rand() % 12 - 6);
-	//transform.rotation.y = float(this->random->rand() % 360);
+	transform.position.x = pos.x * (scalePos ? TILE_WIDTH : 1.f) + float((int)this->random->rand() % 12 - 6);
+	transform.position.z = pos.y * (scalePos ? TILE_WIDTH : 1.f) + float((int)this->random->rand() % 12 - 6);
+	transform.rotation.y = float(this->random->rand() % 360);
 	if (this->useMeshes)
 	{
-		//this->scene->setComponent<MeshComponent>(entity, (int)this->oneXOneMeshIds[this->random->rand() % NUM_ONE_X_ONE]);
-		this->scene->setComponent<MeshComponent>(entity, (int)this->oneXOneMeshIds[0]);
+		this->scene->setComponent<MeshComponent>(entity, (int)this->oneXOneMeshIds[this->random->rand() % NUM_ONE_X_ONE]);
 	}
 	else
 	{
@@ -732,7 +734,6 @@ void RoomHandler::surroundPaths(size_t startIdx, const std::vector<glm::vec3>& p
 			if (canPlace)
 			{
 				Entity entity = createBorderEntity({ offsetPos.x, offsetPos.z }, false);
-				this->scene->getComponent<MeshComponent>(entity).meshID = this->oneXOneMeshIds[2];
 				this->pathEntities.emplace_back(entity);
 
 				if (colliders) // switch mesh and create collider for inner-layer borders

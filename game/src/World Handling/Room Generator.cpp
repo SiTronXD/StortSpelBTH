@@ -33,12 +33,7 @@ void RoomGenerator::clear()
 	this->exitTilesPos[UPPER_P] = this->minMaxPos[UPPER_P] = glm::ivec2(-1);
 	this->exitTilesPos[LOWER_P] = this->minMaxPos[LOWER_P] = glm::ivec2(WIDTH_HEIGHT);
 
-	this->mainTiles.clear();
-	this->bigTiles.clear();
-	this->borders.clear();
-	this->innerBorders.clear();
-	this->exitPathsTiles.clear();
-	this->aiTiles.clear();
+	this->tiles.clear();
 
 	for (uint32_t i = 0; i < WIDTH_HEIGHT; i++)
 	{
@@ -221,7 +216,7 @@ void RoomGenerator::findAITiles(bool* doors)
 
 void RoomGenerator::setExits(bool* doors)
 {
-	const glm::ivec2 maxOffsets(2);
+	const glm::ivec2 maxOffsets(4);
 
 	glm::ivec2 doorsPos[4] = 
 	{
@@ -257,7 +252,6 @@ void RoomGenerator::setExits(bool* doors)
 			doorsPos[i] += offsets[i];
 
 			this->drawCircle(doorsPos[i], RADIUS, Tile::Unused, Tile::OneXOne);
-			this->drawCircle(doorsPos[i] + -dirs[i] * (int)RADIUS, RADIUS - 1u, Tile::Unused, Tile::OneXOne);
 
 			doorsPos[i] += dirs[i] * (int)RADIUS;
 
@@ -379,39 +373,39 @@ void RoomGenerator::finalize()
 			default:
 				break;
 			case Tile::Border:
-				this->borders.emplace_back(Tile::Border, fPosition - fMiddle);
+				this->tiles.emplace_back(Tile::Border, fPosition - fMiddle);
 				break;
 			case Tile::InnerBorder:
-				this->innerBorders.emplace_back(Tile::InnerBorder, fPosition - fMiddle);
+				this->tiles.emplace_back(Tile::InnerBorder, fPosition - fMiddle);
 				break;
 
 			case Tile::OneXOne:
-				this->mainTiles.emplace_back(Tile::OneXOne, fPosition - fMiddle);
+				this->tiles.emplace_back(Tile::OneXOne, fPosition - fMiddle);
 				break;
 
 			case Tile::TwoXOne:
-				this->bigTiles.emplace_back(Tile::TwoXOne, (fPosition + glm::vec2(0.5f, 0.f)) - fMiddle);
+				this->tiles.emplace_back(Tile::TwoXOne, (fPosition + glm::vec2(0.5f, 0.f)) - fMiddle);
 				this->getType(iPosition + glm::ivec2(1, 0)) = Tile::Reserved;
 				break;
 
 			case Tile::OneXTwo:
-				this->bigTiles.emplace_back(Tile::OneXTwo, (fPosition + glm::vec2(0.f, 0.5f)) - fMiddle);
+				this->tiles.emplace_back(Tile::OneXTwo, (fPosition + glm::vec2(0.f, 0.5f)) - fMiddle);
 				this->getType(iPosition + glm::ivec2(0, 1)) = Tile::Reserved;
 				break;
 
 			case Tile::TwoXTwo:
-				this->bigTiles.emplace_back(Tile::TwoXTwo, (fPosition + glm::vec2(0.5f)) - fMiddle);
+				this->tiles.emplace_back(Tile::TwoXTwo, (fPosition + glm::vec2(0.5f)) - fMiddle);
 				this->getType(iPosition + glm::ivec2(1, 0)) = Tile::Reserved;
 				this->getType(iPosition + glm::ivec2(0, 1)) = Tile::Reserved;
 				this->getType(iPosition + glm::ivec2(1, 1)) = Tile::Reserved;
 				break;
 
 			case Tile::Exit:
-				this->exitPathsTiles.emplace_back(Tile::Exit, fPosition - fMiddle);
+				this->tiles.emplace_back(Tile::Exit, fPosition - fMiddle);
 				break;
 
 			case Tile::AI:
-				this->aiTiles.emplace_back(Tile::AI, fPosition - fMiddle);
+				this->tiles.emplace_back(Tile::AI, fPosition - fMiddle);
 				break;
 			}
 		}
@@ -545,14 +539,9 @@ const glm::ivec2* RoomGenerator::getExits() const
 	return this->exitTilesPos;
 }
 
-const glm::ivec2& RoomGenerator::getMiddle() const
+const std::vector<Tile>& RoomGenerator::getTiles() const
 {
-	return this->middle;
-}
-
-const glm::ivec2& RoomGenerator::getSize() const
-{
-	return this->size;
+	return this->tiles;
 }
 
 Tile::Type& RoomGenerator::getType(const glm::ivec2& pos)
@@ -569,54 +558,4 @@ bool RoomGenerator::onEdge(const glm::ivec2& pos)
 {
 	return (pos.x == 0 || pos.x == WIDTH_HEIGHT - 1 ||
 			pos.y == 0 || pos.y == WIDTH_HEIGHT - 1);
-}
-
-uint32_t RoomGenerator::getNumMainTiles() const
-{
-	return (int)this->mainTiles.size();
-}
-
-uint32_t RoomGenerator::getNumBigTiles() const
-{
-	return (int)this->bigTiles.size();
-}
-
-uint32_t RoomGenerator::getNumBorders() const
-{
-	return (int)this->borders.size();
-}
-
-uint32_t RoomGenerator::getNumInnerBorders() const
-{
-	return (int)this->innerBorders.size();
-}
-
-uint32_t RoomGenerator::getNumExitTiles() const
-{
-	return (int)this->exitPathsTiles.size();
-}
-
-const Tile& RoomGenerator::getMainTile(uint32_t index) const
-{
-	return this->mainTiles[index];
-}
-
-const Tile& RoomGenerator::getBigTile(uint32_t index) const
-{
-	return this->bigTiles[index];
-}
-
-const Tile& RoomGenerator::getBorder(uint32_t index) const
-{
-	return this->borders[index];
-}
-
-const Tile& RoomGenerator::getInnerBorder(uint32_t index) const
-{
-	return this->innerBorders[index];
-}
-
-const Tile& RoomGenerator::getExitTile(uint32_t index) const
-{
-	return this->exitPathsTiles[index];
 }
