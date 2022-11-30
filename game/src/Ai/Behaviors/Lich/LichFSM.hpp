@@ -106,6 +106,12 @@ struct LichComponent
     inline static const uint32_t alterWidth = 3;
     inline static const uint32_t alterDepth = 3;
 
+    inline static const uint32_t orbRadius  = 3;
+    inline static const uint32_t orbSpawnDistFrom = 5;
+
+    inline static const uint32_t NR_ICE_ORBS   = 20;
+    inline static const uint32_t NR_FIRE_ORBS  = 20;
+    inline static const uint32_t NR_LIGHT_ORBS = 20;
 	LichComponent() 
     {
         LichAttack lightning, fire, ice;
