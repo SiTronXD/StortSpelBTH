@@ -48,6 +48,8 @@ private:
 	int seed = -1;
 
 	CombatSystem* combatSystem;
+	Material* origMat;
+	Material* ghostMat;
 
 	Entity player; // Own player
 	std::vector<Entity> playerEntities; // Other players connected

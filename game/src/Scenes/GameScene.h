@@ -27,13 +27,14 @@ private:
   // Timer that "stops" if paused
   float timer = 0.0f;
   bool paused = false;
+  bool combatDisabled = false;
   UIArea resumeButton;
   UIArea exitButton;
 
   bool isGhost = false;
   bool hasRespawned = false;
   float ghostTransitionTimer = 0.0f;
-  Material* origMat;
+  Material* origMat; // TODO: Remove
   Material* ghostMat;
 
   Entity playerID;

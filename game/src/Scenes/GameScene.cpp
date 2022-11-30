@@ -137,6 +137,7 @@ void GameScene::start()
         this->getResourceManager(),
         this->playerID,
         &this->paused,
+        &this->combatDisabled,
         this->getPhysicsEngine(),
         this->getUIRenderer(),
         this->getScriptHandler(),
@@ -226,7 +227,7 @@ void GameScene::update()
         if (this->hasComponents<HealthComp>(this->playerID))
         {
             HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
-            if (healthComp.health <= 0.0f || Input::isKeyPressed(Keys::K))
+            if (healthComp.health <= 0.0f)
             {
                 if (this->isGhost && this->hasRespawned)
                 {
@@ -292,10 +293,15 @@ void GameScene::update()
         if (this->hasComponents<HealthComp>(this->playerID))
         {
             HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
-            if (healthComp.health <= 0.0f)
+            if (healthComp.health <= 0.0f || Input::isKeyPressed(Keys::K))
             {
-                this->networkHandler->disconnectClient(); // TEMP: probably will be in game over scene later
-                this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+                this->isGhost = true;
+                HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
+                healthComp.health = 0.0f;
+                this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = *this->ghostMat;
+                this->combatDisabled = true;
+                //this->networkHandler->disconnectClient(); // TEMP: probably will be in game over scene later
+                //this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
             }
         }
 
