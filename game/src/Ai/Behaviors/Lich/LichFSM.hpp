@@ -3,15 +3,6 @@
 #include "LichBTs.hpp"
 #include <string>
 
-enum ATTACK_STRATEGY
-{
-    NONE    = 0,  
-    LIGHT   = 1,
-    FIRE    = 2,
-    ICE     = 3,
-    _LAST
-
-};
 
 struct LichAttack
 {
