@@ -189,7 +189,7 @@ BTStatus LichBT::goToGrave(Entity entityID)
 
 	moveDir = glm::normalize(moveDir);
     lichRb.velocity = moveDir * lichComp.speed;
-    rotateTowards(entityID, graveTrans.position, lichComp.speed);
+    rotateTowards(entityID, graveTrans.position, lichComp.idleTurnSpeed);
 
     float distToGrave = glm::length(graveTrans.position - lichTrans.position);
 
@@ -214,7 +214,7 @@ BTStatus LichBT::goToAlter(Entity entityID)
 
 	moveDir = glm::normalize(moveDir);
     lichRb.velocity = moveDir * lichComp.speed;
-    rotateTowards(entityID, alterTrans.position, lichComp.speed);
+    rotateTowards(entityID, alterTrans.position, lichComp.idleTurnSpeed);
 
 
     return ret;
@@ -281,12 +281,10 @@ BTStatus LichBT::closeToAlter(Entity entityID)
     }
     else
     {
-        lichComp.timeSincePlunderBegin = Time::getTimeSinceStart();
+        lichComp.timeSinceAlterWaitBegin = Time::getTimeSinceStart();
     }
     return ret;
 }
-
-
 
 BTStatus LichBT::creepyLook(Entity entityID)
 {
