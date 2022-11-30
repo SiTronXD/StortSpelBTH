@@ -4,4 +4,5 @@ Kd 0.00 0.00 0.00
 Ka 0.00 0.00 0.00
 Tf 1.00 1.00 1.00
 map_Kd assets/textures/lampTex.png
+map_Ke assets/textures/lamp_emission.png
 Ni 1.00

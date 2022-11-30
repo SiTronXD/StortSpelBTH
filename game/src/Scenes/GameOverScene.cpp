@@ -28,7 +28,7 @@ void GameOverScene::init()
 	samplerSettings.filterMode = vk::Filter::eNearest;
 	samplerSettings.unnormalizedCoordinates = VK_TRUE;
 
-	uint32_t fontTextureId = Scene::getResourceManager()->addTexture("assets/textures/UI/testBitmapFont.png", { samplerSettings, true });
+	uint32_t fontTextureId = Scene::getResourceManager()->addTexture("assets/textures/UI/font.png", { samplerSettings, true });
 	Scene::getUIRenderer()->setBitmapFont(
 		{
 			"abcdefghij",
@@ -39,7 +39,7 @@ void GameOverScene::init()
 			"@%        "
 		},
 		fontTextureId,
-		glm::uvec2(16, 16)
+		glm::uvec2(50, 50)
 	);
 
 	this->setBloomBufferLerpAlpha(0.340);
