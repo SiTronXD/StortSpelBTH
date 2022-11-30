@@ -29,10 +29,10 @@ int main(int argc, char* argv[])
     srand((unsigned int)time(0));
     {
         Engine engine;
-        //engine.run("Presumed Dead", "", new RoomTesting());
-        //engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
         engine.setCustomNetworkHandler(new NetworkHandlerGame());
         engine.run("Presumed Dead", "", new LobbyScene());
+        //engine.run("Presumed Dead", "", new RoomTesting());
+        //engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
     }
 
     return EXIT_SUCCESS;
