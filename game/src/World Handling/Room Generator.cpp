@@ -38,6 +38,7 @@ void RoomGenerator::clear()
 	this->borders.clear();
 	this->innerBorders.clear();
 	this->exitPathsTiles.clear();
+	this->aiTiles.clear();
 
 	for (uint32_t i = 0; i < WIDTH_HEIGHT; i++)
 	{
@@ -48,7 +49,7 @@ void RoomGenerator::clear()
 void RoomGenerator::generate(bool* doors)
 {
 	const glm::ivec2 gridMid(WIDTH_HEIGHT / 2);
-	this->drawCircle(gridMid, RADIUS);
+	this->drawCircle(gridMid, RADIUS, Tile::Unused, Tile::OneXOne);
 
 	glm::vec2 fBranch(0);
 	glm::ivec2 iBranch(0);
@@ -62,7 +63,7 @@ void RoomGenerator::generate(bool* doors)
 
 		for (uint32_t j = 0; j < BRANCH_DEPTH; j++)
 		{
-			this->drawCircle(iBranch, RADIUS);
+			this->drawCircle(iBranch, RADIUS, Tile::Unused, Tile::OneXOne);
 			
 			if (MAX_ANGLE != 0)
 			{
@@ -81,10 +82,11 @@ void RoomGenerator::generate(bool* doors)
 	getType(this->middle + glm::ivec2(0, 1)) = Tile::Reserved;
 	getType(this->middle + glm::ivec2(1, 1)) = Tile::Reserved;
 
-	this->setBigTiles();	// Select spots for 1x2/2x1/2x2
-	this->setExits(doors);	// Set doors and make room for them
-	this->setBorders();		// Surround the room with borders
-	this->finalize();		// Finalize, fill Tile vectors and offset room to origo
+	this->setBigTiles();		// Select spots for 1x2/2x1/2x2
+	this->setExits(doors);		// Set doors and make room for them
+	this->setBorders();			// Surround the room with borders
+	this->findAITiles(doors);	// Find tiles that the AI can spawn on
+	this->finalize();			// Finalize, fill Tile vectors and offset room to origo
 }
 
 void RoomGenerator::findMinMax()
@@ -163,9 +165,63 @@ void RoomGenerator::setBigTiles()
 	}
 }
 
+void RoomGenerator::findAITiles(bool* doors)
+{
+	const glm::ivec2 OFFSETS[] =
+	{
+		{ 1,  0},
+		{-1,  0},
+		{ 0,  1},
+		{ 0, -1},
+
+		{ 1,  1},
+		{-1,  1},
+		{ 1, -1},
+		{-1, -1},
+	};
+
+	glm::ivec2 iPosition(0);
+	glm::ivec2 adjacent(0);
+	bool AITile = true;
+	for (iPosition.x = 0; iPosition.x < WIDTH_HEIGHT; iPosition.x++)
+	{
+		for (iPosition.y = 0; iPosition.y < WIDTH_HEIGHT; iPosition.y++)
+		{
+			AITile = true;
+			Tile::Type& curTile = this->getType(iPosition);
+			if (curTile == Tile::OneXOne)
+			{
+				for (int i = 0; i < 8 && AITile; i++)
+				{
+					adjacent = iPosition + OFFSETS[i];
+					if (this->isValid(adjacent))
+					{
+						if (this->getType(adjacent) != Tile::OneXOne && this->getType(adjacent) != Tile::AI)
+						{
+							AITile = false;
+						}
+					}
+				}
+				if (AITile)
+				{
+					curTile = Tile::AI;
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		if (doors[i])
+		{
+			drawCircle(exitTilesPos[i] + OFFSETS[i] * -3, 3, Tile::AI, Tile::OneXOne);
+		}
+	}
+}
+
 void RoomGenerator::setExits(bool* doors)
 {
-	const glm::ivec2 maxOffsets(this->size / 2);
+	const glm::ivec2 maxOffsets(2);
 
 	glm::ivec2 doorsPos[4] = 
 	{
@@ -200,8 +256,8 @@ void RoomGenerator::setExits(bool* doors)
 		{
 			doorsPos[i] += offsets[i];
 
-			this->drawCircle(doorsPos[i], RADIUS);
-			this->drawCircle(doorsPos[i] + -dirs[i] * (int)RADIUS, RADIUS - 1u);
+			this->drawCircle(doorsPos[i], RADIUS, Tile::Unused, Tile::OneXOne);
+			this->drawCircle(doorsPos[i] + -dirs[i] * (int)RADIUS, RADIUS - 1u, Tile::Unused, Tile::OneXOne);
 
 			doorsPos[i] += dirs[i] * (int)RADIUS;
 
@@ -302,9 +358,9 @@ void RoomGenerator::setBorders()
 void RoomGenerator::finalize()
 {
 	const glm::vec2 fMiddle = middle;
-	glm::vec2 fPosition(0.f);
-	glm::ivec2 iPosition(0);
 
+	glm::ivec2 iPosition(0);
+	glm::vec2 fPosition(0.f);
 	for (iPosition.x = 0; iPosition.x < WIDTH_HEIGHT; iPosition.x++)
 	{
 		for (iPosition.y = 0; iPosition.y < WIDTH_HEIGHT; iPosition.y++)
@@ -353,6 +409,10 @@ void RoomGenerator::finalize()
 			case Tile::Exit:
 				this->exitPathsTiles.emplace_back(Tile::Exit, fPosition - fMiddle);
 				break;
+
+			case Tile::AI:
+				this->aiTiles.emplace_back(Tile::AI, fPosition - fMiddle);
+				break;
 			}
 		}
 	}
@@ -364,7 +424,7 @@ void RoomGenerator::finalize()
 	}
 }
 
-void RoomGenerator::drawCircle(const glm::ivec2& center, uint32_t radius)
+void RoomGenerator::drawCircle(const glm::ivec2& center, uint32_t radius, Tile::Type target, Tile::Type placeType)
 {
 	const glm::ivec2 start = center - glm::ivec2((int)radius);
 
@@ -376,14 +436,14 @@ void RoomGenerator::drawCircle(const glm::ivec2& center, uint32_t radius)
 			if (this->isValid(currentPoint))
 			{
 				Tile::Type& curTile = this->getType(currentPoint);
-				if (curTile == Tile::Unused && curTile != Tile::Reserved)
+				if (curTile == target)
 				{
 					// check if tile is within radius to center
 					// glm::dot only accepts floating point numbers
 					const glm::vec2 centerToCurr(currentPoint - center);
 					if (glm::dot(centerToCurr, centerToCurr) <= ((float)radius + 0.5f) * ((float)radius + 0.5f))
 					{
-						curTile = Tile::Type::OneXOne;
+						curTile = placeType;
 					}
 				}
 			}

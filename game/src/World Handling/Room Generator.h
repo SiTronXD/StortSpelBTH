@@ -15,6 +15,7 @@ struct Tile
     enum Type : int
     {
         Unused = -1,
+        AI,
         Border,
         InnerBorder,
         OneXOne,
@@ -48,34 +49,37 @@ public:
 
     static const uint32_t BIG_TILE_MIN_DIST = 1u;
 
-    static const uint32_t WIDTH_HEIGHT = 40u;
+    static const uint32_t WIDTH_HEIGHT = 50u;
     static const uint32_t BORDER_SIZE = 3u;
     static const uint32_t RADIUS = 3u;
     static const uint32_t NUM_BRANCHES = 3u;
-    static const uint32_t BRANCH_DEPTH = 2u;
-    static const uint32_t BRANCH_DIST = 2u;
+    static const uint32_t BRANCH_DEPTH = 3u;
+    static const uint32_t BRANCH_DIST = 3u;
     static const uint32_t MAX_ANGLE = 60u;
-private:
+//private:
     VRandom& random;
 
     Tile::Type** tiles2D;
+    std::vector<Tile> tiles;
     std::vector<Tile> mainTiles;
     std::vector<Tile> bigTiles;
     std::vector<Tile> borders;
     std::vector<Tile> innerBorders;
     std::vector<Tile> exitPathsTiles;
+    std::vector<Tile> aiTiles;
 
     glm::ivec2 minMaxPos[4]; // x, -x, z, -z
     glm::ivec2 exitTilesPos[4];
     glm::ivec2 middle;
     glm::ivec2 size;
 
-    void drawCircle(const glm::ivec2& center, uint32_t radius);
+    void drawCircle(const glm::ivec2& center, uint32_t radius, Tile::Type target, Tile::Type placeType);
 
     void setBorders();
     void findMinMax();
     void setExits(bool* doors);
     void setBigTiles();
+    void findAITiles(bool* doors);
     void finalize();
 
     // Helpers
