@@ -18,7 +18,7 @@ const glm::vec3 RoomHandler::DOOR_LAMP_OFFSET = glm::vec3(-12.f, 21.5f, 30.5f);
 const glm::vec3 RoomHandler::DOOR_LAMP_COLOUR = glm::vec3(0.94f, 0.28f, 0.05f);
 const float RoomHandler::DOOR_LAMP_INTENSITY = 5000.f;
 const float RoomHandler::FLICKER_INTERVAL = 0.05f;
-const int RoomHandler::FLICKER_INTENSITY = 30;
+const int RoomHandler::FLICKER_INTENSITY = 60;
 
 RoomHandler::RoomHandler()
 	:scene(nullptr), resourceMan(nullptr), activeIndex(0), 
