@@ -119,7 +119,7 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 		}
 		else
 		{
-			std::cout<<"No avaliable humps!\n";
+			Log::write("No avaliable humps! (TELL AI PEOPLE THIS MESSAGE WAS SHOWN!)");
 		}
        
 	}
@@ -161,7 +161,7 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 			//PlayerHit!
 			glm::vec3 to = playerTrans.position;
 			glm::normalize(to);
-			getTheScene()->getComponent<HealthComp>(playerID).health -= (int)aiCombat.humpHit;
+			getTheScene()->getComponent<HealthComp>(playerID).health -= (int)tankComp.humpHit;
 
 			//single player
 			if (dynamic_cast<NetworkSceneHandler*>(BehaviorTree::sceneHandler) == nullptr) 
@@ -190,7 +190,6 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 						dir.z
 						});
 			}
-            toRemove.push_back(i);
 		}
 	}
 	for(auto r: toRemove)
@@ -198,7 +197,6 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 		deactivateHump(entityID, r);
 		tankComp.humps.erase(r);
 	}
-
 
 	updateCanBeHit(entityID);
 }

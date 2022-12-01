@@ -93,7 +93,7 @@ bool LichBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 	bool canGoRight=true;
 	bool canGoLeft=true;
 
-	int player_id = getPlayerID();
+	int player_id = getPlayerID(entityID);
 	Collider& entityCollider = getTheScene()->getComponent<Collider>(entityID);
 	Collider& playerCollider = getTheScene()->getComponent<Collider>(player_id);
 	Transform& entityTransform = getTheScene()->getComponent<Transform>(entityID);
@@ -695,7 +695,7 @@ BTStatus LichBT::attack(Entity entityID)
         }
 
         //Remove current strat
-        Log:write("Current attack: "+std::to_string((int)lichComp.curAttack->type), BT_FILTER);
+        Log::write("Current attack: "+std::to_string((int)lichComp.curAttack->type), BT_FILTER);
         lichComp.curAttack = nullptr;
 
         ret = BTStatus::Success;

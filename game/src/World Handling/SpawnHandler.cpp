@@ -311,19 +311,11 @@ void SpawnHandler::createTank()
     ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
     if (netScene == nullptr)
     {
-    static int tank = this->resourceManager->addMesh("assets/models/golem.obj");
-    static int tankHump = this->resourceManager->addMesh("assets/models/hump.obj");
-       
-    this->tankIDs.push_back(this->currScene->createEntity());
-    this->allEntityIDs.push_back(this->tankIDs.back());
-    this->currScene->setComponent<MeshComponent>(this->tankIDs.back(), tank);
-    for(int i = 0; i < 10; i++)
-       {
-           int ent = this->currScene->createEntity();
-           this->currScene->setComponent<MeshComponent>(ent, tankHump);
-           this->currScene->setInactive(ent);
-           tankComp.humpEnteties.push_back(ent);
-       }
+        static int tank = this->resourceManager->addMesh("assets/models/golem.obj");
+        
+        this->tankIDs.push_back(this->currScene->createEntity());
+        this->allEntityIDs.push_back(this->tankIDs.back());
+        this->currScene->setComponent<MeshComponent>(this->tankIDs.back(), tank);        
     }
     else
     {
@@ -349,6 +341,17 @@ void SpawnHandler::createTank()
     if (netScene != nullptr) 
     {
         netScene->addEvent({(int)GameEvent::INACTIVATE, this->tankIDs.back()});
+    }
+    else 
+    {
+        static int tankHump = this->resourceManager->addMesh("assets/models/hump.obj");
+        for(int i = 0; i < 10; i++)
+        {
+            int ent = this->currScene->createEntity();
+            this->currScene->setComponent<MeshComponent>(ent, tankHump);
+            this->currScene->setInactive(ent);
+            tankComp.humpEnteties.push_back(ent);
+        }
     }
 
 }
