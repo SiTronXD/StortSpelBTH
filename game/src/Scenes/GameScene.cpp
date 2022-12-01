@@ -251,10 +251,11 @@ void GameScene::update()
                 HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
                 healthComp.health = healthComp.maxHealth;
                 this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = *this->ghostMat;
-                this->getComponent<Transform>(this->playerID).position = glm::vec3(0.0f, 12.0f, 0.0f);
+                this->getComponent<Transform>(this->playerID).position = roomHandler.getRespawnPos(true);
                 this->getComponent<Rigidbody>(this->playerID).assigned = false; // For some reason this is needed, otherwise the position isn't changed
                 this->roomHandler.startOver();
                 this->spawnHandler.resetEnemies();
+                this->newRoomFrame = false;
             }
 
             if (this->ghostTransitionTimer > 1.0f)
