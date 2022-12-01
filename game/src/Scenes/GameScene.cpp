@@ -355,7 +355,6 @@ void GameScene::update()
 
 }
 
-
 void GameScene::onTriggerStay(Entity e1, Entity e2)
 {
 	Entity player = e1 == this->playerID ? e1 : e2 == this->playerID ? e2 : -1;
