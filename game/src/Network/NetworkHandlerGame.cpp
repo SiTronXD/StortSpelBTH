@@ -190,8 +190,8 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
         v0 = this->getVec(tcpPacket);
 		serverEntities.insert(std::pair<int, int>(i1, spawnEnemy(i0, v0)));
 		//just create a enemy with interpolation
-		entityToPosScale[i1] = {v0, glm::vec3(1)};
-        entityLastPosScale[i1] = {v0, glm::vec3(1)};
+        entityToPosScale.insert({i0, std::pair<glm::vec3, glm::vec3>(v0, glm::vec3(1))});
+        entityLastPosScale.insert({i0, std::pair<glm::vec3, glm::vec3>(v0, glm::vec3(1))});
 		}
         break;
     case GameEvent::PUSH_PLAYER: // Can't confirm yet if this works
@@ -254,10 +254,10 @@ void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 	glm::vec3 vec;
 	Transform* t;
 	AnimationComponent* anim;
+    this->timer = 0;
 	switch ((GameEvent)event)
 	{
 	case GameEvent::UPDATE_PLAYER:
-		this->timer = 0;
 		udpPacket >> i0;
 		i1 = -1;
 		for (int i = 0; i < this->otherPlayersServerId.size(); i++)
@@ -308,12 +308,11 @@ void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
             v1 = getVec(udpPacket);
             v2 = getVec(udpPacket);
             entityLastPosScale[i1].first = entityToPosScale[i1].first;
-            entityLastPosScale[i1].second = entityToPosScale[i1].second;
-            entityToPosScale[i1].first = v0;
-            entityToPosScale[i1].second = v2;
-            //sceneHandler->getScene()->getComponent<Transform>(serverEntities.find(i1)->second).position = v0;
+			entityLastPosScale[i1].second = entityToPosScale[i1].second;
+			entityToPosScale[i1].first = v0;
+			entityToPosScale[i1].second = v2;
+            
             sceneHandler->getScene()->getComponent<Transform>(serverEntities.find(i1)->second).rotation = v1;
-            //sceneHandler->getScene()->getComponent<Transform>(serverEntities.find(i1)->second).scale = v2;
 
 			// Get and set animation // don't know how this should be made
 			//anim = &this->sceneHandler->getScene()->getComponent<AnimationComponent>(serverEnteties.find(i1)->second);
@@ -568,12 +567,16 @@ void NetworkHandlerGame::interpolatePositions()
 				"mixamorig:RightHand") * glm::translate(glm::mat4(1.f), glm::vec3(0.f, 1.f, 0.f)) *
 			glm::rotate(glm::mat4(1.f), glm::radians(-90.f), glm::vec3(0.f, 0.f, 1.f)));
 	}
-    for (auto const& [key, val] : entityToPosScale)
-    {
-		Transform& t = scene->getComponent<Transform>(serverEntities.find(key)->second);
-		t.position = entityLastPosScale[key].first + percent * (entityToPosScale[key].first - entityLastPosScale[key].first);
-		t.scale = entityLastPosScale[key].second + percent * (entityToPosScale[key].second - entityLastPosScale[key].second);
+	for (auto const& [key, val] : serverEntities)
+	{
+		Transform& t = scene->getComponent<Transform>(serverEntities[key]);
+		if (entityToPosScale.find(key) != entityToPosScale.end() && sceneHandler->getScene()->hasComponents<Transform>(val))
+		{
+		    t.position = entityLastPosScale[key].first + percent * (entityToPosScale[key].first - entityLastPosScale[key].first);
+			t.scale = entityLastPosScale[key].second + percent * (entityToPosScale[key].second - entityLastPosScale[key].second);
+		}
 	}
+    
 }
 
 void NetworkHandlerGame::spawnItemRequest(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir)

@@ -734,7 +734,7 @@ BTStatus SwarmBT::die(Entity entityID)
 
     //TODO: Sometgin goes wrong when we remove from group.
     //SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
-    sceneHandler->getScene()->getComponent<Transform>(entityID).position = glm::vec3(0,-300,0);
+    //sceneHandler->getScene()->getComponent<Transform>(entityID).position = glm::vec3(0,-300,0);
     SwarmGroup* swarmGroup = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID).group;
     swarmGroup->aliveMembers.pop();
 
