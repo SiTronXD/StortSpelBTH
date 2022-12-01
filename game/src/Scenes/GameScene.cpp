@@ -164,7 +164,7 @@ void GameScene::start()
         this->aiHandler = this->getAIHandler();
         this->aiHandler->init(this->getSceneHandler());
     
-        spawnHandler.init(&this->roomHandler, this, 
+        spawnHandler.init(&this->roomHandler, this,
         this->getSceneHandler(),this->aiHandler,
         this->getResourceManager(),this->getUIRenderer());
     }
@@ -176,7 +176,7 @@ void GameScene::update()
 {
     
     if (!networkHandler->isConnected())
-     {   
+    {   
         this->aiHandler->update(Time::getDT());
 
         if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
@@ -187,15 +187,15 @@ void GameScene::update()
 
             this->spawnHandler.spawnEnemiesIntoRoom();
         }
-    if(!this->safetyCleanDone)
-    {
-        
-        if(this->timeWhenEnteredRoom + delayToSafetyDelete < Time::getTimeSinceStart())
+        if(!this->safetyCleanDone)
         {
-            this->spawnHandler.killAllEnemiesOutsideRoom();
-            this->safetyCleanDone = true;
+            
+            if(this->timeWhenEnteredRoom + delayToSafetyDelete < Time::getTimeSinceStart())
+            {
+                this->spawnHandler.killAllEnemiesOutsideRoom();
+                this->safetyCleanDone = true;
+            }
         }
-    }    
         if (this->spawnHandler.allDead() && this->newRoomFrame)
         {
             this->newRoomFrame = false;
@@ -217,9 +217,8 @@ void GameScene::update()
             }
         }
         this->spawnHandler.updateImgui();
-    this->imguiUpdate();
+        this->imguiUpdate();
     }
-    
     else
     {
         if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
@@ -242,6 +241,18 @@ void GameScene::update()
             {
                 this->networkHandler->disconnectClient(); // TEMP: probably will be in game over scene later
                 this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+            }
+        }
+        if (this->spawnHandler.allDead() && this->newRoomFrame)
+        {
+            this->newRoomFrame = false;
+            // Call when a room is cleared
+            this->roomHandler.roomCompleted();
+            this->numRoomsCleared++;
+
+            if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+            {
+                this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
             }
         }
 
