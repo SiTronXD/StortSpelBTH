@@ -488,7 +488,7 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
       auto& tankComp = this->getComponent<TankComponent>(other);
       if (tankComp.canAttack)
       {
-        auto& aiCombat = this->getComponent<AiCombatTank>(other);
+       /* auto& aiCombat = this->getComponent<AiCombatTank>(other);*/
         tankComp.canAttack = false;
         this->getComponent<HealthComp>(player).health -=
             (int)aiCombat.directHit;

@@ -27,10 +27,10 @@ void SpawnHandler::spawnEnemiesIntoRoom()
     int tempNrOfSwarms      = std::clamp((int)(this->tilePicker.size() * enemiesPerTiles *PERCENTAGE_SWARMS),0, NR_BLOBS_IN_GROUP*MAX_NR_SWARMGROUPS);
     this->nrOfGroups_inRoom = tempNrOfSwarms / SpawnHandler::NR_BLOBS_IN_GROUP;
     this->nrOfSwarms_inRoom = nrOfGroups_inRoom * SpawnHandler::NR_BLOBS_IN_GROUP;
-    this->nrOfEnemiesPerRoom = this->nrOfSwarms_inRoom+this->nrOfLichs_inRoom+this->nrOfTanks_inRoom;
+    this->nrOfEnemiesPerRoom = (float)(this->nrOfSwarms_inRoom+this->nrOfLichs_inRoom+this->nrOfTanks_inRoom);
 
     // Imgui data...
-    this->nrOfTilesInRoom = this->tilePicker.size();
+    this->nrOfTilesInRoom = (int)this->tilePicker.size();
 
     if(SpawnHandler::USE_DEBUG)
     {
@@ -160,7 +160,7 @@ uint32_t SpawnHandler::spawnSwarmGroup(const int swarmStartIdx, std::vector<cons
         spawnSwarm(swarmIdx, tile->getPos());
         swarmIdx++;
     }
-    return tileInfos.size();
+    return (uint32_t)tileInfos.size();
 }
 
 void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
@@ -312,9 +312,18 @@ void SpawnHandler::createTank()
     if (netScene == nullptr)
     {
     static int tank = this->resourceManager->addMesh("assets/models/golem.obj");
+    static int tankHump = this->resourceManager->addMesh("assets/models/hump.obj");
+       
     this->tankIDs.push_back(this->currScene->createEntity());
     this->allEntityIDs.push_back(this->tankIDs.back());
     this->currScene->setComponent<MeshComponent>(this->tankIDs.back(), tank);
+    for(int i = 0; i < 10; i++)
+       {
+           int ent = this->currScene->createEntity();
+           this->currScene->setComponent<MeshComponent>(ent, tankHump);
+           this->currScene->setInactive(ent);
+           tankComp.humpEnteties.push_back(ent);
+       }
     }
     else
     {
@@ -341,6 +350,7 @@ void SpawnHandler::createTank()
     {
         netScene->addEvent({(int)GameEvent::INACTIVATE, this->tankIDs.back()});
     }
+
 }
 
 void SpawnHandler::createLich()
@@ -694,7 +704,7 @@ ImguiLambda SpawnHandler::LichImgui()
         auto& lichComponent     = this->sceneHandler->getScene()->getComponent<LichComponent>(entityId);
         auto& entiyFSMAgentComp = this->sceneHandler->getScene()->getComponent<FSMAgentComponent>(entityId);
         auto& entityRigidBody   = this->sceneHandler->getScene()->getComponent<Rigidbody>(entityId);
-        float& health             = lichComponent.life;
+        int& health             = lichComponent.life;
         float& mana             = lichComponent.mana;
         float& speed            = lichComponent.speed;
         float& attackRange      = lichComponent.attackRadius;
@@ -719,7 +729,7 @@ ImguiLambda SpawnHandler::LichImgui()
         ImGui::Text(tempStrat.c_str());
         ImGui::Checkbox("Attack", &tempAttack);
         ImGui::SliderFloat("mana", &mana, 0, 100);
-        ImGui::SliderFloat("health", &health, 0, lichComponent.FULL_HEALTH);
+        ImGui::SliderInt("health", &health, 0, lichComponent.FULL_HEALTH);
         ImGui::SliderFloat("speed", &speed, 0, 100);
         ImGui::SliderFloat("gravity", &gravity, 0, 10);
         ImGui::SliderFloat("attackRange", &attackRange, 0, 100);

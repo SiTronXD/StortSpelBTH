@@ -47,13 +47,6 @@ void LichFSM::updateAttackColldowns(Entity entityID)
             atck.second.cooldownTimer -= get_dt();
         }
     }
-
-   /* if(lichComp.lightning.cooldownTimer > 0.0f)
-        lichComp.lightning.cooldownTimer -= get_dt();
-    if(lichComp.ice.cooldownTimer > 0.0f)
-        lichComp.ice.cooldownTimer -= get_dt();
-    if(lichComp.fire.cooldownTimer > 0.0f)
-        lichComp.fire.cooldownTimer -= get_dt();*/
 }
 
 bool LichFSM::idleToCreep(Entity entityID)
