@@ -19,7 +19,7 @@ scene.setComponent(playerID, CompType.Mesh, playerMesh)
 scene.setComponent(playerID, CompType.Animation, {})
 
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
-scene.setComponent(playerID, CompType.Collider, { type = ColliderType.Capsule, radius = 2, height = 11, offset = vector.new(0, 7.3, 0) })
+scene.setComponent(playerID, CompType.Collider, { type = ColliderType.Capsule, radius = 2, height = 10, offset = vector.new(0, 7.3, 0) })
 scene.setComponent(playerID, CompType.Rigidbody, { mass = 1, gravityMult = 5, rotFactor = vector.fill(0), friction = 0.1 })
 scene.getComponent(cam, CompType.Script).playerID = playerID
 
