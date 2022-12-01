@@ -86,7 +86,7 @@ struct LichComponent
 
 
     //Floats
-    float life_float            = 0.0f;
+    float life_float            = 0.0f;//Dont touch!
     float tempRotAngle			= 0.0f;//Dont touch!
     float creepRotSpeed         = 60.0f;
     float huntRotSpeed          = 60.0f;
@@ -103,8 +103,8 @@ struct LichComponent
     float attackRadius          = 60.0f; // I'm actually able to shoot at you!
     float nonoRadius            = 40.0f; // Too close, I will back away from you! (while shooting) 
 
-    float closeToGrave          = 10.f + LichComponent::graveWidth;
-    float closeToAlter          = 10.f + LichComponent::alterWidth;
+    float closeToGrave          = 20.f + LichComponent::graveWidth;
+    float closeToAlter          = 20.f + LichComponent::alterWidth;
         //Stats
     float maxMana               = 100.0f;
     float mana                  = maxMana;
