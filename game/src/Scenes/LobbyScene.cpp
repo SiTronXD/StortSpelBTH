@@ -44,9 +44,11 @@ void LobbyScene::init()
     this->backgroundId =
         this->getResourceManager()->addTexture("assets/textures/blackTex.png"
         );
+    this->buttonId =
+        this->getResourceManager()->addTexture("assets/textures/UI/button.png");
 
     this->fontTextureId = Scene::getResourceManager()->addTexture(
-        "assets/textures/UI/testBitmapFont.png", {samplerSettings, true}
+        "assets/textures/UI/font.png", {samplerSettings, true}
     );
     Scene::getUIRenderer()->setBitmapFont(
         {"abcdefghij",
@@ -56,7 +58,7 @@ void LobbyScene::init()
         "!?,<>:()#^",
         "@%        "},
         this->fontTextureId,
-        glm::vec2(16,16)
+        glm::vec2(50,50)
     );
 
     int camEntity = this->createEntity();
@@ -131,18 +133,19 @@ void LobbyScene::update()
     }
 
     // Button backtgrounds
-    this->getUIRenderer()->setTexture(this->backgroundId);
+    this->getUIRenderer()->setTexture(this->buttonId);
     this->getUIRenderer()->renderTexture(
         this->disconnectButton.position, this->disconnectButton.dimension,
-        glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.1f + this->disconnectButton.isHovering() * 0.15f));
+        glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.85f + this->disconnectButton.isHovering() * 0.15f));
     if (this->getNetworkHandler()->hasServer())
     {
         this->getUIRenderer()->renderTexture(
             this->startButton.position, this->startButton.dimension,
-            glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.1f + this->startButton.isHovering() * 0.15f));
+            glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.85f + this->startButton.isHovering() * 0.15f));
     }
 
     // Write player names in lobby
+    this->getUIRenderer()->setTexture(this->backgroundId);
     this->getUIRenderer()->renderString(
         this->getNetworkHandler()->getClientName(),
         this->POSITIONS[0] + glm::vec3(0.0f, 20.0f, 0.0f),

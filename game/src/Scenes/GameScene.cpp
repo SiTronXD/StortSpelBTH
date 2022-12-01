@@ -35,7 +35,7 @@ void GameScene::init()
     samplerSettings.unnormalizedCoordinates = VK_TRUE;
 
     int fontTextureId = Scene::getResourceManager()->addTexture(
-        "assets/textures/UI/testBitmapFont.png", { samplerSettings, true });
+        "assets/textures/UI/font.png", { samplerSettings, true });
     Scene::getUIRenderer()->setBitmapFont(
         { "abcdefghij",
          "klmnopqrst",
@@ -44,7 +44,7 @@ void GameScene::init()
          "!?,<>:()#^",
          "@%        " },
         fontTextureId,
-        glm::uvec2(16, 16));
+        glm::uvec2(50, 50));
 
     int swarm =
         this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
@@ -63,7 +63,7 @@ void GameScene::init()
     this->perkMeshes[4] = resourceMng->addMesh("assets/models/Perk_Stamina.obj");
 
     this->abilityTextures[0] = resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
-    this->abilityTextures[1] = resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
+    this->abilityTextures[1] = resourceMng->addTexture("assets/textures/UI/HealingAbility.png");
     this->abilityTextures[2] = resourceMng->addTexture("assets/textures/UI/empty.png");
     this->perkTextures[0] = resourceMng->addTexture("assets/textures/UI/hpUp.png");
     this->perkTextures[1] = resourceMng->addTexture("assets/textures/UI/dmgUp.png");
@@ -73,7 +73,6 @@ void GameScene::init()
     this->perkTextures[5] = resourceMng->addTexture("assets/textures/UI/empty.png");
     this->hpBarBackgroundTextureID = resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
     this->hpBarTextureID = resourceMng->addTexture("assets/textures/UI/hpBar.png");
-    this->blackTextureIndex = resourceMng->addTexture("assets/textures/blackTex.png");
 
     // Temporary light
     this->dirLightEntity = this->createEntity();
@@ -139,19 +138,19 @@ void GameScene::start()
 
     if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {
-        this->networkHandler->spawnItemRequest(healAbility, glm::vec3(50.0f, 10.0f, 0.0f));
-        this->networkHandler->spawnItemRequest(hpUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 20.0f));
-        this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f));
-        this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 0.0f));
-        this->networkHandler->spawnItemRequest(movementUpPerk, 1.0f, glm::vec3(30.0f, 5.0f, -40.0f));
-        this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f));
+        this->networkHandler->spawnItemRequest(healAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(hpUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(movementUpPerk, 1.0f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
     }
 
     // Pause menu
     this->resumeButton.position = glm::vec2(0.0f, 100.0f);
     this->exitButton.position = glm::vec2(0.0f, -100.0f);
-    this->resumeButton.dimension = glm::vec2(500.0f, 150.0f);
-    this->exitButton.dimension = glm::vec2(500.0f, 150.0f);
+    this->resumeButton.dimension = glm::vec2(500.0f, 100.0f);
+    this->exitButton.dimension = glm::vec2(500.0f, 100.0f);
 
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
@@ -302,13 +301,6 @@ void GameScene::update()
     }
     if (this->paused)
     {
-        this->getUIRenderer()->setTexture(this->blackTextureIndex);
-        this->getUIRenderer()->renderTexture(glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f), glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
-        this->getUIRenderer()->renderTexture(this->resumeButton.position, this->resumeButton.dimension);
-        this->getUIRenderer()->renderTexture(this->exitButton.position, this->exitButton.dimension);
-        this->getUIRenderer()->renderString("resume", this->resumeButton.position, glm::vec2(50.0f));
-        this->getUIRenderer()->renderString("exit", this->exitButton.position, glm::vec2(50.0f));
-
         if (this->resumeButton.isClicking())
         {
             this->paused = false;
@@ -363,7 +355,6 @@ void GameScene::update()
 #endif
 
 }
-
 
 void GameScene::onTriggerStay(Entity e1, Entity e2)
 {

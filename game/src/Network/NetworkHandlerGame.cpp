@@ -19,7 +19,7 @@ Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 
 	Transform& perkTrans = sceneHandler->getScene()->getComponent<Transform>(e);
 	perkTrans.position = pos;
 	perkTrans.scale = glm::vec3(2.0f);
-	scene->setComponent<Collider>(e, Collider::createSphere(2.0f, glm::vec3(0.0f), true));
+	scene->setComponent<Collider>(e, Collider::createSphere(4.0f, glm::vec3(0.0f), true));
 
 	if (shootDir != glm::vec3(0.0f))
 	{
@@ -31,7 +31,6 @@ Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 
 
 	scene->setComponent<Perks>(e, perk);
 	scene->setComponent<PointLight>(e, glm::vec3(0.0f), glm::vec3(5.0f, 7.0f, 9.0f));
-	scene->setScriptComponent(e, "scripts/spin.lua");
 
 	return e;
 }
@@ -45,7 +44,7 @@ Entity NetworkHandlerGame::spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 
 	Transform& perkTrans = sceneHandler->getScene()->getComponent<Transform>(e);
 	perkTrans.position = pos;
 	perkTrans.scale = glm::vec3(2.0f);
-	scene->setComponent<Collider>(e, Collider::createSphere(4.0f, glm::vec3(0.0f), true));
+	scene->setComponent<Collider>(e, Collider::createSphere(5.0f, glm::vec3(0.0f), true));
 
 	if (shootDir != glm::vec3(0.0f))
 	{
@@ -57,7 +56,6 @@ Entity NetworkHandlerGame::spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 
 
 	scene->setComponent<Abilities>(e, type);
 	scene->setComponent<PointLight>(e, glm::vec3(0.0f), glm::vec3(7.0f, 9.0f, 5.0f));
-	scene->setScriptComponent(e, "scripts/spin.lua");
 
 	return e;
 }
@@ -108,7 +106,7 @@ void NetworkHandlerGame::init()
 	this->perkMeshes[3] = this->resourceManger->addMesh("assets/models/Perk_Movement.obj");
 	this->perkMeshes[4] = this->resourceManger->addMesh("assets/models/Perk_Stamina.obj");
 	this->abilityMeshes[0] = this->resourceManger->addMesh("assets/models/KnockbackAbility.obj");
-	this->abilityMeshes[1] = this->resourceManger->addMesh("assets/models/KnockbackAbility.obj");
+	this->abilityMeshes[1] = this->resourceManger->addMesh("assets/models/Ability_Healing.obj");
 	this->healAreaMesh = this->resourceManger->addMesh("assets/models/HealingAbility.obj");
 	this->swordMesh = this->resourceManger->addMesh("assets/models/MainSword.fbx", "assets/textures");
 
@@ -335,8 +333,10 @@ void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 		t->rotation = this->getVec(udpPacket);
 
 		anim = &this->sceneHandler->getScene()->getComponent<AnimationComponent>(this->playerEntities[i1]);
-        udpPacket >> i0 >> anim->aniSlots[0].timer >> anim->aniSlots[0].timeScale;
+        udpPacket >> i0 >> anim->aniSlots[0].timer >> anim->aniSlots[0].timeScale >>
+					 i1 >> anim->aniSlots[1].timer >> anim->aniSlots[1].timeScale;
 		anim->aniSlots[0].animationIndex = (uint32_t)i0;
+		anim->aniSlots[1].animationIndex = (uint32_t)i1;
 		break;
     case GameEvent::UPDATE_MONSTER:
         // How many monsters we shall update
@@ -466,6 +466,8 @@ void NetworkHandlerGame::handleUDPEventServer(Server* server, int clientID, sf::
 
 		udpPacket >> si0 >> sf0 >> sf1;
 		packet << si0 << sf0 << sf1;
+		udpPacket >> si0 >> sf0 >> sf1;
+		packet << si0 << sf0 << sf1;
 
 		server->sendToAllOtherClientsUDP(packet, clientID);
 		break;
@@ -555,7 +557,7 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 		this->playerEntities[i] = scene->createEntity();
 		scene->setComponent<MeshComponent>(this->playerEntities[i], playerMesh);
 		scene->setComponent<AnimationComponent>(this->playerEntities[i]);
-		scene->setComponent<Collider>(this->playerEntities[i], Collider::createCapsule(2, 11, glm::vec3(0, 7.3, 0)));
+		scene->setComponent<Collider>(this->playerEntities[i], Collider::createCapsule(2, 10, glm::vec3(0, 7.3, 0)));
 
 		// Sword
 		this->swords[i] = scene->createEntity();
@@ -590,7 +592,8 @@ void NetworkHandlerGame::updatePlayer()
 		packet << (int)GameEvent::UPDATE_PLAYER <<
 			t.position.x << t.position.y << t.position.z <<
 			t.rotation.x << t.rotation.y << t.rotation.z <<
-			(int)anim.aniSlots[0].animationIndex << anim.aniSlots[0].timer << anim.aniSlots[0].timeScale;
+			(int)anim.aniSlots[0].animationIndex << anim.aniSlots[0].timer << anim.aniSlots[0].timeScale <<
+			(int)anim.aniSlots[1].animationIndex << anim.aniSlots[1].timer << anim.aniSlots[1].timeScale;
 		this->sendDataToServerUDP(packet);
 	}
 }
