@@ -143,7 +143,7 @@ void SpawnHandler::createTank()
     {
         this->tankIDs.push_back(this->currScene->createEntity());
         this->allEntityIDs.push_back(this->tankIDs.back());
-        static int tank = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
+        static int tank = this->resourceManager->addMesh("assets/models/Tank/TankCharge.fbx");
         this->currScene->setComponent<MeshComponent>(this->tankIDs.back(), tank);
     }
     else

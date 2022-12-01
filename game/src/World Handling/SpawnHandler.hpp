@@ -24,9 +24,9 @@ private:
     ResourceManager* resourceManager;
     UIRenderer*      uiRenderer;
 
-    int nrOfTanks  = 0;
+    int nrOfTanks  = 1;
     int nrOfLichs  = 0;
-    int nrOfSwarms = 3;
+    int nrOfSwarms = 0;
 
     int numOfGroups = 4;
     int group_size = 3;
