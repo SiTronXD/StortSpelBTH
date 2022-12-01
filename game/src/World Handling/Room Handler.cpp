@@ -879,7 +879,9 @@ void RoomHandler::createObjectEntities(const Tile& tile, Room& room)
 	Transform& transform = this->scene->getComponent<Transform>(mainEntity);
 	transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
 	transform.position *= TILE_WIDTH;
-	//transform.position.x += float((int)this->random->rand() % 10 - 5);
+
+	// Offset removed for now due to AI possible spawning too close and flying away
+	//transform.position.x += float((int)this->random->rand() % 10 - 5); 
 	//transform.position.z += float((int)this->random->rand() % 10 - 5);
 
 	if (tile.type == Tile::TwoXOne || tile.type == Tile::OneXTwo)
@@ -1144,26 +1146,6 @@ void RoomHandler::imgui(DebugRenderer* dr)
 				dr->renderBox(room.colliderPos, glm::vec3(0.f), room.box.extents * 2.f, glm::vec3(1.f, 0.f, 0.f));
 			}
 		}
-
-		//static glm::vec3 lampOffset{-12.f, 21.5f, 30.5f};
-		//static glm::vec3 colour{0.94f, 0.28f, 0.05f};
-		//static float intensity = 5000.f;
-
-		//ImGui::Separator();
-		//ImGui::ColorEdit3("Lamp colour", &colour.x);
-		//ImGui::DragFloat("Intensity", &intensity, 10.f);
-		//ImGui::DragFloat3("Lamp offset", &lampOffset.x, 0.01f);
-		//ImGui::DragFloat("Flicker offset", &flickerInt, 0.05f);
-		//ImGui::DragFloat("Flicker interval", &flickerInterval, 0.05f);
-		//ImGui::DragInt("Flicker int", &flickerInt2, 1);
-
-		//for (int i = 0; i < 4; i++)
-		//{
-		//	this->scene->getComponent<PointLight>(this->doorLamps[i]).color = colour * intensity;
-		//	this->scene->getComponent<PointLight>(this->doorLamps[i]).positionOffset = lampOffset;
-		//}
-
-
 	}
 	ImGui::End();
 }
