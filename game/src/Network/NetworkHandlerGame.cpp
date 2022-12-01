@@ -112,6 +112,9 @@ void NetworkHandlerGame::init()
 	this->healAreaMesh = this->resourceManger->addMesh("assets/models/HealingAbility.obj");
 	this->swordMesh = this->resourceManger->addMesh("assets/models/MainSword.fbx", "assets/textures");
 
+    this->graveMesh = this->resourceManger->addMesh("assets/models/grave.obj");
+    this->alterMesh = this->resourceManger->addMesh("assets/models/alter.obj");
+
     NetworkHandlerGame::lich_fire->setStats(ATTACK_STRATEGY::FIRE);
     NetworkHandlerGame::lich_ice->setStats(ATTACK_STRATEGY::ICE);
     NetworkHandlerGame::lich_light->setStats(ATTACK_STRATEGY::LIGHT);
@@ -164,6 +167,24 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 			this->itemIDs.push_back(this->spawnItem((AbilityType)i2, v0, v1));
 		}
 		break;
+    case GameEvent::SPAWN_OBJECT:
+         //id, type, position, rotation, scale 
+         tcpPacket >> i0 >> i1;
+         v0 = this->getVec(tcpPacket);
+         v1 = this->getVec(tcpPacket);
+         v2 = this->getVec(tcpPacket);
+
+         this->serverEntities.insert({i0, spawnObject((ObjectTypes)i1, v0,v1,v2)});
+
+        break;
+    case GameEvent::SET_POS_OBJECT:
+         //id, position
+         tcpPacket >> i0;
+         v0 = this->getVec(tcpPacket);
+
+        this->sceneHandler->getScene()->getComponent<Transform>(serverEntities[i0]).position = v0;
+         
+        break;
 	case GameEvent::PICKUP_ITEM:
 		// Index -> ItemType
 		tcpPacket >> i0 >> i1;

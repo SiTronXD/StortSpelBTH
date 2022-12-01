@@ -102,14 +102,10 @@ uint32_t SpawnHandler::spawnLich(int lichIdx, std::vector<const TileInfo*> tileI
     if(tileInfos.size() == 2)
     {
         currScene->setActive(this->lichIDs[lichIdx]);
-    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
-    {
-        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->lichIDs[lichIdx]});    
-    }
         const int alterID = this->lichObjects[this->lichIDs[lichIdx]].alterID;
         const int graveID = this->lichObjects[this->lichIDs[lichIdx]].graveID;
         currScene->setActive(alterID);
-        currScene->setActive(graveID);
+        currScene->setActive(graveID);        
 
         const auto& lichPos = tileInfos[0];
         const auto& alterPos = tileInfos[1];
@@ -132,6 +128,15 @@ uint32_t SpawnHandler::spawnLich(int lichIdx, std::vector<const TileInfo*> tileI
         // Place Grave 
         Transform& graveTransform = currScene->getComponent<Transform>(graveID);
         graveTransform.position = this->tilePicker.getRandomFreeTileFarAwayFrom(alterPos)->getPos(); 
+
+        if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
+        {
+            ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->lichIDs[lichIdx]});
+            ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, alterID});
+            ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, graveID});
+            ((NetworkScene*)currScene)->addEvent({(int)GameEvent::SET_POS_OBJECT, alterID}, {alterTransform.position.x, alterTransform.position.y, alterTransform.position.z});
+            ((NetworkScene*)currScene)->addEvent({(int)GameEvent::SET_POS_OBJECT, graveID}, {graveTransform.position.x, graveTransform.position.y, graveTransform.position.z});
+        }
 
         debugRays.push_back({alterPos->getPos(), {1.f,0.f,1.f}});
         debugRays.push_back({graveTransform.position, {0.5f,0.f,0.5f}});
@@ -463,6 +468,12 @@ void SpawnHandler::createLich()
     else
     {
         netScene->addEvent({(int)GameEvent::INACTIVATE, lichIDs.back()});
+
+
+        netScene->addEvent({(int)GameEvent::SPAWN_OBJECT, (int)graveID, (int)ObjectTypes::LICH_GRAVE},{0.f,0.f,0.f,   0.f,0.f,0.f,   1.f,1.f,1.f});
+        netScene->addEvent({(int)GameEvent::SPAWN_OBJECT, (int)alterID, (int)ObjectTypes::LICH_ALTER},{0.f,0.f,0.f,   0.f,0.f,0.f,   1.f,1.f,1.f});
+        netScene->addEvent({(int)GameEvent::INACTIVATE, (int)graveID});
+        netScene->addEvent({(int)GameEvent::INACTIVATE, (int)alterID});
         
         // Create Orbs
         for(size_t i = 0; i < LichComponent::NR_FIRE_ORBS;i++)
@@ -470,6 +481,7 @@ void SpawnHandler::createLich()
             lichComp.fireOrbs[i] = this->currScene->createEntity();
             this->currScene->setInactive(lichComp.fireOrbs[i]);
             this->currScene->setComponent<Orb>(lichComp.fireOrbs[i]);
+            this->currScene->setComponent<Rigidbody>(lichComp.fireOrbs[i]);
             netScene->addEvent({(int)GameEvent::SPAWN_ORB, lichComp.fireOrbs[i], (int)ATTACK_STRATEGY::FIRE});
         }
         for(size_t i = 0; i < LichComponent::NR_ICE_ORBS;i++)
@@ -477,6 +489,7 @@ void SpawnHandler::createLich()
             lichComp.iceOrbs[i] = this->currScene->createEntity();
             this->currScene->setInactive(lichComp.iceOrbs[i]);
             this->currScene->setComponent<Orb>(lichComp.iceOrbs[i]);
+            this->currScene->setComponent<Rigidbody>(lichComp.iceOrbs[i]);
             netScene->addEvent({(int)GameEvent::SPAWN_ORB, lichComp.iceOrbs[i], (int)ATTACK_STRATEGY::ICE});
 
         }
@@ -485,6 +498,7 @@ void SpawnHandler::createLich()
             lichComp.lightOrbs[i] = this->currScene->createEntity();
             this->currScene->setInactive(lichComp.lightOrbs[i]);
             this->currScene->setComponent<Orb>(lichComp.lightOrbs[i]);
+            this->currScene->setComponent<Rigidbody>(lichComp.lightOrbs[i]);
             netScene->addEvent({(int)GameEvent::SPAWN_ORB, lichComp.lightOrbs[i], (int)ATTACK_STRATEGY::LIGHT});
 
         }      
