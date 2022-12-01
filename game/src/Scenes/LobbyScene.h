@@ -27,6 +27,8 @@ private:
 		glm::vec3(-5, -10, 21) 
 	};
 
+	Entity scene;
+
 	UIArea startButton;
 	UIArea disconnectButton;
 
