@@ -31,7 +31,7 @@ void GameSceneNetwork::init()
   samplerSettings.unnormalizedCoordinates = VK_TRUE;
 
   int fontTextureId = Scene::getResourceManager()->addTexture(
-      "assets/textures/UI/testBitmapFont.png", {samplerSettings, true}
+      "assets/textures/UI/font.png", {samplerSettings, true}
   );
   Scene::getUIRenderer()->setBitmapFont(
       {"abcdefghij",
@@ -41,7 +41,7 @@ void GameSceneNetwork::init()
        "!?,<>:()#^",
        "@%        "},
       fontTextureId,
-      glm::uvec2(16, 16)
+      glm::uvec2(50, 50)
   );
 
   int swarm =
