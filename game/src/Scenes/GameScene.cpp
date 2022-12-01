@@ -21,20 +21,38 @@ void GameScene::initParticleSystems()
     // Heal particle system
     this->healParticleSystemEntity = this->createEntity();
     this->setComponent<ParticleSystem>(this->healParticleSystemEntity);
-    ParticleSystem& particleSystem = this->getComponent<ParticleSystem>(this->healParticleSystemEntity);
-    particleSystem.maxlifeTime = 3.0f;
-    particleSystem.numParticles = 64;
-    particleSystem.textureIndex = this->getResourceManager()->addTexture("assets/textures/UI/HealingAbility.png");
-    particleSystem.startSize = glm::vec2(0.5f);
-    particleSystem.endSize = glm::vec2(0.2f);
-    particleSystem.startColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-    particleSystem.endColor = glm::vec4(0.2f, 0.2f, 0.2f, 0.0f);
-    particleSystem.velocityStrength = 10.0f;
-    particleSystem.acceleration = glm::vec3(0.0f, -3.0f, 0.0f);
-    particleSystem.coneSpawnVolume.diskRadius = 25.0f;
-    particleSystem.coneSpawnVolume.coneAngle = 0.0f;
-    particleSystem.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
-    particleSystem.coneSpawnVolume.localPosition = glm::vec3(0.0f, -0.5f, 0.0f);
+    ParticleSystem& healPS = this->getComponent<ParticleSystem>(this->healParticleSystemEntity);
+    healPS.maxlifeTime = 3.0f;
+    healPS.numParticles = 32;
+    healPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/UI/HealingAbilityParticle.png");
+    healPS.startSize = glm::vec2(1.7f);
+    healPS.endSize = glm::vec2(0.3f);
+    healPS.startColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    healPS.endColor = glm::vec4(0.2f, 0.2f, 0.2f, 0.0f);
+    healPS.velocityStrength = 10.0f;
+    healPS.acceleration = glm::vec3(0.0f, -3.0f, 0.0f);
+    healPS.coneSpawnVolume.diskRadius = 25.0f;
+    healPS.coneSpawnVolume.coneAngle = 0.0f;
+    healPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
+    healPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, -0.5f, 0.0f);
+
+    // Fotstep particle system
+    this->setComponent<ParticleSystem>(this->playerID);
+    ParticleSystem& footstepPS = this->getComponent<ParticleSystem>(this->playerID);
+    footstepPS.maxlifeTime = 0.8f;
+    footstepPS.numParticles = 16;
+    footstepPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/grassDustParticle.png");
+    footstepPS.startSize = glm::vec2(0.0f);
+    footstepPS.endSize = glm::vec2(1.7f);
+    footstepPS.startColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    footstepPS.endColor = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
+    footstepPS.velocityStrength = 1.0f;
+    footstepPS.acceleration = glm::vec3(0.0f, -0.5f, 0.0f);
+    footstepPS.coneSpawnVolume.diskRadius = 3.0f;
+    footstepPS.coneSpawnVolume.coneAngle = 0.0f;
+    footstepPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
+    footstepPS.coneSpawnVolume.localPosition = glm::vec3(0.0f);
+    footstepPS.spawn = false;
 }
 
 void GameScene::deleteInitialParticleSystems()
@@ -147,9 +165,6 @@ void GameScene::init()
     dirLight.cascadeDepthScale = 36.952f;
     dirLight.shadowMapMinBias = 0.00001f;
     dirLight.shadowMapAngleBias = 0.0004f;
-
-    // Create particle systems for this scene
-    this->initParticleSystems();
 }
 
 void GameScene::start()
@@ -229,6 +244,9 @@ void GameScene::start()
         this->getSceneHandler(),this->aiHandler,
         this->getResourceManager(),this->getUIRenderer());
     }
+
+    // Create particle systems for this scene
+    this->initParticleSystems();
 }
 
 void GameScene::update()
