@@ -72,7 +72,6 @@ void GameScene::init()
     this->perkTextures[5] = resourceMng->addTexture("assets/textures/UI/empty.png");
     this->hpBarBackgroundTextureID = resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
     this->hpBarTextureID = resourceMng->addTexture("assets/textures/UI/hpBar.png");
-    this->blackTextureIndex = resourceMng->addTexture("assets/textures/blackTex.png");
 
     // Temporary light
     this->dirLightEntity = this->createEntity();
@@ -149,8 +148,8 @@ void GameScene::start()
     // Pause menu
     this->resumeButton.position = glm::vec2(0.0f, 100.0f);
     this->exitButton.position = glm::vec2(0.0f, -100.0f);
-    this->resumeButton.dimension = glm::vec2(500.0f, 150.0f);
-    this->exitButton.dimension = glm::vec2(500.0f, 150.0f);
+    this->resumeButton.dimension = glm::vec2(500.0f, 100.0f);
+    this->exitButton.dimension = glm::vec2(500.0f, 100.0f);
 
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
@@ -289,13 +288,6 @@ void GameScene::update()
     }
     if (this->paused)
     {
-        this->getUIRenderer()->setTexture(this->blackTextureIndex);
-        this->getUIRenderer()->renderTexture(glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f), glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
-        this->getUIRenderer()->renderTexture(this->resumeButton.position, this->resumeButton.dimension);
-        this->getUIRenderer()->renderTexture(this->exitButton.position, this->exitButton.dimension);
-        this->getUIRenderer()->renderString("resume", this->resumeButton.position, glm::vec2(50.0f));
-        this->getUIRenderer()->renderString("exit", this->exitButton.position, glm::vec2(50.0f));
-
         if (this->resumeButton.isClicking())
         {
             this->paused = false;
@@ -350,7 +342,6 @@ void GameScene::update()
 #endif
 
 }
-
 
 void GameScene::onTriggerStay(Entity e1, Entity e2)
 {
