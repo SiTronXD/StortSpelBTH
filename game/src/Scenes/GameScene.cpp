@@ -245,6 +245,7 @@ void GameScene::update()
         }
         if (this->spawnHandler.allDead() && this->newRoomFrame)
         {
+            Log::warning("DOORS ARE OPEN ALL THE TIME, TO PREVENT BEING STUCK. PLZ FIX!");
             this->newRoomFrame = false;
             // Call when a room is cleared
             this->roomHandler.roomCompleted();
