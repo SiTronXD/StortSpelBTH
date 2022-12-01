@@ -76,6 +76,7 @@
     <ClInclude Include="src\Components\HealthComp.h" />
     <ClInclude Include="src\Components\HealArea.h" />
     <ClInclude Include="src\Systems\HealSystem.hpp" />
+    <ClInclude Include="src\Systems\BloodSystem.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

@@ -5,7 +5,6 @@
 
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../World Handling/Room Handler.h"
-#include "../Systems/CombatSystem.hpp"
 #include "../World Handling/SpawnHandler.hpp"
 #include "vengine.h"
 #include "../World Handling/Room Handler.h"
@@ -57,7 +56,9 @@ private:
   uint32_t portalOnMesh;
 
   Entity healParticleSystemEntity;
+  Entity bloodParticleSystemEntity;
   ParticleSystem healParticleSystem;
+  ParticleSystem bloodParticleSystem;
   bool deletedParticleSystems;
 
   void initParticleSystems();
@@ -78,6 +79,7 @@ public:
   virtual void onCollisionExit(Entity e1, Entity e2) override;
 
   inline const ParticleSystem& getHealParticleSystem() const { return this->healParticleSystem; }
+  inline const ParticleSystem& getBloodParticleSystem() const { return this->bloodParticleSystem; }
 
 private:
 

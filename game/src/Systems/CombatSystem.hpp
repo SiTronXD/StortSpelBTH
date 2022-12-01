@@ -3,11 +3,11 @@
 #include <vengine.h>
 #include "../Components/Combat.h"
 #include "../Components/HealthComp.h"
-#include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
-#include "../Network/NetworkHandlerGame.h"
-#include "../Ai/Behaviors/Tank/TankFSM.hpp"
-
 #include "../Components/HealArea.h"
+#include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
+#include "../Ai/Behaviors/Tank/TankFSM.hpp"
+#include "../Network/NetworkHandlerGame.h"
+#include "../Scenes/GameScene.h"
 
 enum SoundEnum { takeDmg, swingSword };
 
@@ -269,6 +269,16 @@ public:
 			playerEffectSound(this->takeDmgSounds[0], this->scene->getComponent<Transform>(this->playerID).position,
 				this->takeDmgAudioSource, 10.f);
 		}
+
+		// TODO: REMOVE ENTITY AFTER A SHORT WHILE
+
+		// Particle system
+		Entity bloodParticleSystemEntity = this->scene->createEntity();
+		this->scene->getComponent<Transform>(bloodParticleSystemEntity) =
+			this->scene->getComponent<Transform>(this->playerID);
+		this->scene->setComponent<ParticleSystem>(bloodParticleSystemEntity);
+		this->scene->getComponent<ParticleSystem>(bloodParticleSystemEntity) = 
+			((GameScene*) this->scene)->getBloodParticleSystem();
 	}
 
 	void hitEnemy(Combat& combat, int ID)

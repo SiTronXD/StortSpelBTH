@@ -3,9 +3,11 @@
 #include "../Systems/AiCombatSystem.hpp"
 #include "../Systems/AiMovementSystem.hpp"
 #include "../Systems/CameraMovementSystem.hpp"
+#include "../Systems/CombatSystem.hpp"
 #include "../Systems/HealthBarSystem.hpp"
 #include "../Systems/HealSystem.hpp"
 #include "../Systems/MovementSystem.hpp"
+#include "../Systems/BloodSystem.hpp"
 #include "../Network/NetworkHandlerGame.h"
 #include "GameOverScene.h"
 #include "MainMenu.h"
@@ -35,6 +37,25 @@ void GameScene::initParticleSystems()
     healPS.coneSpawnVolume.coneAngle = 0.0f;
     healPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
     healPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, -0.5f, 0.0f);
+
+    // Blood particle system
+    this->bloodParticleSystemEntity = this->createEntity();
+    this->setComponent<ParticleSystem>(this->bloodParticleSystemEntity);
+    ParticleSystem& bloodPS = this->getComponent<ParticleSystem>(this->bloodParticleSystemEntity);
+    std::strcpy(bloodPS.name, "BloodPS");
+    bloodPS.maxlifeTime = 3.0f;
+    bloodPS.numParticles = 32;
+    bloodPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/UI/HealingAbilityParticle.png");
+    bloodPS.startSize = glm::vec2(1.7f);
+    bloodPS.endSize = glm::vec2(0.3f);
+    bloodPS.startColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    bloodPS.endColor = glm::vec4(0.2f, 0.0f, 0.0f, 0.0f);
+    bloodPS.velocityStrength = 10.0f;
+    bloodPS.acceleration = glm::vec3(0.0f, -3.0f, 0.0f);
+    bloodPS.coneSpawnVolume.diskRadius = 25.0f;
+    bloodPS.coneSpawnVolume.coneAngle = 0.0f;
+    bloodPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
+    bloodPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, -0.5f, 0.0f);
 
     // Fotstep particle system
     this->setComponent<ParticleSystem>(this->playerID);
@@ -87,6 +108,16 @@ void GameScene::deleteInitialParticleSystems()
             this->healParticleSystem = 
                 this->getComponent<ParticleSystem>(particleEntities[i]);
 
+            // Remove found entity
+            this->removeEntity(particleEntities[i]);
+        }
+        // Blood particle system
+        else if (particleEntities[i] == this->bloodParticleSystemEntity)
+        {
+            this->bloodParticleSystem =
+                this->getComponent<ParticleSystem>(particleEntities[i]);
+
+            // Remove found entity
             this->removeEntity(particleEntities[i]);
         }
     }
@@ -211,6 +242,7 @@ void GameScene::start()
         this,
         this->getUIRenderer()
         );
+    this->createSystem<BloodSystem>(this);
 
     if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {
