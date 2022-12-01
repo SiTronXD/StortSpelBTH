@@ -20,6 +20,8 @@ enum class GameEvent
 	PLAYER_SETHP, // What player, how much hp
 	PUSH_PLAYER, // What player, direction
 	MONSTER_TAKE_DAMAGE,
+	INACTIVATE, //what entity
+	ACTIVATE, //what entity
 
 	ROOM_CLEAR,
 	SPAWN_PORTAL,

@@ -29,7 +29,6 @@ public:
 	static const float FLICKER_INTERVAL;
 	static const int FLICKER_INTENSITY;
 private:
-  public:
 
 	// Helper structs
 	struct RoomExitPoint

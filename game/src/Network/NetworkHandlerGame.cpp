@@ -16,7 +16,7 @@ Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 
 	Transform& perkTrans = sceneHandler->getScene()->getComponent<Transform>(e);
 	perkTrans.position = pos;
 	perkTrans.scale = glm::vec3(2.0f);
-	scene->setComponent<Collider>(e, Collider::createSphere(2.0f, glm::vec3(0.0f), true));
+	scene->setComponent<Collider>(e, Collider::createSphere(4.0f, glm::vec3(0.0f), true));
 
 	if (shootDir != glm::vec3(0.0f))
 	{
@@ -28,7 +28,6 @@ Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 
 
 	scene->setComponent<Perks>(e, perk);
 	scene->setComponent<PointLight>(e, glm::vec3(0.0f), glm::vec3(5.0f, 7.0f, 9.0f));
-	scene->setScriptComponent(e, "scripts/spin.lua");
 
 	return e;
 }
@@ -42,7 +41,7 @@ Entity NetworkHandlerGame::spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 
 	Transform& perkTrans = sceneHandler->getScene()->getComponent<Transform>(e);
 	perkTrans.position = pos;
 	perkTrans.scale = glm::vec3(2.0f);
-	scene->setComponent<Collider>(e, Collider::createSphere(4.0f, glm::vec3(0.0f), true));
+	scene->setComponent<Collider>(e, Collider::createSphere(5.0f, glm::vec3(0.0f), true));
 
 	if (shootDir != glm::vec3(0.0f))
 	{
@@ -54,7 +53,6 @@ Entity NetworkHandlerGame::spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 
 
 	scene->setComponent<Abilities>(e, type);
 	scene->setComponent<PointLight>(e, glm::vec3(0.0f), glm::vec3(7.0f, 9.0f, 5.0f));
-	scene->setScriptComponent(e, "scripts/spin.lua");
 
 	return e;
 }
@@ -105,7 +103,7 @@ void NetworkHandlerGame::init()
 	this->perkMeshes[3] = this->resourceManger->addMesh("assets/models/Perk_Movement.obj");
 	this->perkMeshes[4] = this->resourceManger->addMesh("assets/models/Perk_Stamina.obj");
 	this->abilityMeshes[0] = this->resourceManger->addMesh("assets/models/KnockbackAbility.obj");
-	this->abilityMeshes[1] = this->resourceManger->addMesh("assets/models/KnockbackAbility.obj");
+	this->abilityMeshes[1] = this->resourceManger->addMesh("assets/models/Ability_Healing.obj");
 	this->healAreaMesh = this->resourceManger->addMesh("assets/models/HealingAbility.obj");
 	this->swordMesh = this->resourceManger->addMesh("assets/models/MainSword.fbx", "assets/textures");
 }
@@ -207,6 +205,20 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 			this->sceneHandler->getScene()->getComponent<HealthComp>(player).health = i1;   
 		}
 		// Else give hp to other players visually
+		break;
+    case GameEvent::INACTIVATE:
+        tcpPacket >> i0;
+        if (serverEntities.find(i0) != serverEntities.end())
+        {
+            this->sceneHandler->getScene()->setInactive(serverEntities.find(i0)->second);
+		}
+		break;
+    case GameEvent::ACTIVATE:
+        tcpPacket >> i0;
+        if (serverEntities.find(i0) != serverEntities.end())
+        {
+            this->sceneHandler->getScene()->setActive(serverEntities.find(i0)->second);
+		}
 		break;
 	default:
 		break;
@@ -325,7 +337,6 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 		serverScene = server->getScene<ServerGameMode>();
 		tcpPacket >> si0 >> si1 >> sf0;
 		// Get how they should take damage
-        std::cout << "monster take damage" << std::endl;
         if (serverScene->hasComponents<SwarmComponent>(si0))
         {
 			serverScene->getComponent<SwarmComponent>(si0).life -= si1;  
@@ -338,6 +349,15 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
         {
 			serverScene->getComponent<LichComponent>(si0).life -= si1;  
 		}
+        if (serverScene->hasComponents<Transform>(si0))
+        {
+			sv1 = serverScene->getComponent<Transform>(si0).position;
+			sv2 = serverScene->getComponent<Transform>(serverScene->getPlayer(clientID)).position;
+			sv0 = glm::normalize(sv2 - sv1);
+			serverScene->getComponent<Rigidbody>(si0).velocity = glm::vec3(-sv0.x, 0.f, -sv0.z) * sf0;
+        }
+        
+        
 		break;
 	default:
 		packet << event;
@@ -454,7 +474,7 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 		this->playerEntities[i] = scene->createEntity();
 		scene->setComponent<MeshComponent>(this->playerEntities[i], playerMesh);
 		scene->setComponent<AnimationComponent>(this->playerEntities[i]);
-		scene->setComponent<Collider>(this->playerEntities[i], Collider::createCapsule(2, 11, glm::vec3(0, 7.3, 0)));
+		scene->setComponent<Collider>(this->playerEntities[i], Collider::createCapsule(2, 10, glm::vec3(0, 7.3, 0)));
 
 		// Sword
 		this->swords[i] = scene->createEntity();

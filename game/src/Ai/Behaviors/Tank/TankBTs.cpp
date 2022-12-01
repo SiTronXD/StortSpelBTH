@@ -760,7 +760,11 @@ BTStatus TankBT::die(Entity entityID)
 	}
 
 	getTheScene()->setInactive(entityID);
-
+	ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
+    if (serverScene != nullptr) 
+    {
+        serverScene->addEvent({(int)GameEvent::INACTIVATE, entityID});
+    }
 	return ret;
 }
 
