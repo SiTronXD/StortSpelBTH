@@ -16,9 +16,68 @@ void decreaseFps();
 double heavyFunction(double value);
 #endif
 
+void GameScene::initParticleSystems()
+{
+    // Heal particle system
+    this->healParticleSystemEntity = this->createEntity();
+    this->setComponent<ParticleSystem>(this->healParticleSystemEntity);
+    ParticleSystem& particleSystem = this->getComponent<ParticleSystem>(this->healParticleSystemEntity);
+    particleSystem.maxlifeTime = 3.0f;
+    particleSystem.numParticles = 64;
+    particleSystem.textureIndex = this->getResourceManager()->addTexture("assets/textures/UI/HealingAbility.png");
+    particleSystem.startSize = glm::vec2(0.5f);
+    particleSystem.endSize = glm::vec2(0.2f);
+    particleSystem.startColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    particleSystem.endColor = glm::vec4(0.2f, 0.2f, 0.2f, 0.0f);
+    particleSystem.velocityStrength = 10.0f;
+    particleSystem.acceleration = glm::vec3(0.0f, -3.0f, 0.0f);
+    particleSystem.coneSpawnVolume.diskRadius = 25.0f;
+    particleSystem.coneSpawnVolume.coneAngle = 0.0f;
+    particleSystem.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
+    particleSystem.coneSpawnVolume.localPosition = glm::vec3(0.0f, -0.5f, 0.0f);
+}
+
+void GameScene::deleteInitialParticleSystems()
+{
+    // Only delete particle systems once
+    if (this->deletedParticleSystems)
+    {
+        return;
+    }
+    this->deletedParticleSystems = true;
+
+    // Find all particle entities
+    std::vector<Entity> particleEntities;
+    particleEntities.reserve(32);
+    auto pView =
+        this->getSceneReg().view<Transform, ParticleSystem>();
+    pView.each(
+        [&](const auto entity,
+            const Transform& transform,
+            const ParticleSystem& particleSystem)
+        {
+            particleEntities.push_back((Entity) entity);
+        }
+    );
+
+    // Remove all particle entities
+    for (size_t i = 0; i < particleEntities.size(); ++i)
+    {
+        // Heal particle system
+        if (particleEntities[i] == this->healParticleSystemEntity)
+        {
+            this->healParticleSystem = 
+                this->getComponent<ParticleSystem>(particleEntities[i]);
+
+            this->removeEntity(particleEntities[i]);
+        }
+    }
+}
+
 GameScene::GameScene() :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
-    perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1)
+    perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1),
+    deletedParticleSystems(false)
 {
     Input::setHideCursor(true);
 }
@@ -89,6 +148,8 @@ void GameScene::init()
     dirLight.shadowMapMinBias = 0.00001f;
     dirLight.shadowMapAngleBias = 0.0004f;
 
+    // Create particle systems for this scene
+    this->initParticleSystems();
 }
 
 void GameScene::start()
@@ -172,6 +233,8 @@ void GameScene::start()
 
 void GameScene::update()
 {
+    this->deleteInitialParticleSystems();
+
     if (!networkHandler->isConnected())
      {   
         this->aiHandler->update(Time::getDT());

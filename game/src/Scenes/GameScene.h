@@ -56,6 +56,13 @@ private:
   uint32_t portalOffMesh;
   uint32_t portalOnMesh;
 
+  Entity healParticleSystemEntity;
+  ParticleSystem healParticleSystem;
+  bool deletedParticleSystems;
+
+  void initParticleSystems();
+  void deleteInitialParticleSystems();
+
 public:
   GameScene();
   virtual ~GameScene();
@@ -69,6 +76,8 @@ public:
   virtual void onCollisionEnter(Entity e1, Entity e2) override;
   virtual void onCollisionStay(Entity e1, Entity e2) override;
   virtual void onCollisionExit(Entity e1, Entity e2) override;
+
+  inline const ParticleSystem& getHealParticleSystem() const { return this->healParticleSystem; }
 
 private:
 
