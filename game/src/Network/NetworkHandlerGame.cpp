@@ -521,6 +521,12 @@ void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
                   enemy.life -= damage;
                   isEnemy = true;
 		}
+        else if (sceneHandler->getScene()->hasComponents<LichComponent>(entityID)) {
+			LichComponent& enemy = sceneHandler->getScene()->getComponent<LichComponent>(entityID);
+                  enemy.life -= damage;
+                  isEnemy = true;
+                  std::cout << "LichWas HIT\n";
+		}
 		//if (sceneHandler->getScene()->hasComponents<LichComponent>(entityID)) {
 		//
 		//}
