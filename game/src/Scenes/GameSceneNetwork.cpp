@@ -432,7 +432,6 @@ void GameSceneNetwork::aiExample()
         auto entityImguiWindow = [&](SwarmFSM* swarmFsm, uint32_t entityId)->void 
         {
             auto& entitySwarmComponent = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId);
-            auto& entityAiCombatComponent = this->getSceneHandler()->getScene()->getComponent<AiCombatSwarm>(entityId);
             auto& entiyFSMAgentComp = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId);
             auto& entityRigidBody = this->getSceneHandler()->getScene()->getComponent<Rigidbody>(entityId);
             int& health            = entitySwarmComponent.life;
@@ -442,8 +441,8 @@ void GameSceneNetwork::aiExample()
             float& attackRange     = entitySwarmComponent.attackRange;
             float& sightRange      = entitySwarmComponent.sightRadius;
             bool& inCombat         = entitySwarmComponent.inCombat;
-            float& attackPerSec    = entityAiCombatComponent.lightAttackTime;
-            float& lightAttackDmg  = entityAiCombatComponent.lightHit;
+            float& attackPerSec    = entitySwarmComponent.lightAttackTime;
+            float& lightAttackDmg  = entitySwarmComponent.lightHit;
 			float& gravity 			= entityRigidBody.gravityMult;
             std::string& status    = entiyFSMAgentComp.currentNode->status;   
             ImGui::Text(status.c_str());
@@ -498,7 +497,6 @@ void GameSceneNetwork::aiExample()
 		entityImguiWindow(swarmFSM, entityId);
 
         auto& entitySwarmComponent = this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(entityId);
-        auto& entityAiCombatComponent = this->getSceneHandler()->getScene()->getComponent<AiCombatSwarm>(entityId);
         auto& entiyFSMAgentComp = this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(entityId);
 
         std::string groupName = "GroupMembers["+std::to_string(entitySwarmComponent.group->myId)+"]";
@@ -594,7 +592,6 @@ void GameSceneNetwork::aiExample()
         {
             this->swarmIDs.push_back(this->createEntity());
             this->setComponent<MeshComponent>(this->swarmIDs.back(), swarm);
-            this->setComponent<AiCombatSwarm>(this->swarmIDs.back());
             this->setComponent<Collider>(this->swarmIDs.back(), Collider::createSphere(4.0f));
             this->setComponent<Rigidbody>(this->swarmIDs.back());
 			Rigidbody& rb = this->getComponent<Rigidbody>(this->swarmIDs.back());
@@ -761,12 +758,11 @@ void GameSceneNetwork::onCollisionStay(Entity e1, Entity e2)
           auto& swarmComp = this->getComponent<SwarmComponent>(other);
           if (swarmComp.inAttack)
             {
-              auto& aiCombat = this->getComponent<AiCombatSwarm>(other);
               swarmComp.inAttack = false;
               swarmComp.touchedPlayer = true;
               //aiCombat.timer = aiCombat.lightAttackTime;
               this->getComponent<Combat>(player).health -=
-                  (int)aiCombat.lightHit;
+                  (int)swarmComp.lightHit;
               Log::write("WAS HIT", BT_FILTER);
             }
         }

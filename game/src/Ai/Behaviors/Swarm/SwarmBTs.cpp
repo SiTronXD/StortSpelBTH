@@ -1,7 +1,6 @@
 #include "SwarmBTs.hpp"
 #include "SwarmFSM.hpp"
 #include "../../../Components/Combat.h"
-#include "../../../Components/AiCombatSwarm.h"
 #include "../../../Components/Perks.h"
 #include "../../../Components/Abilities.h"
 #include <limits>
@@ -650,7 +649,6 @@ BTStatus SwarmBT::attack(Entity entityID)
 	Transform& thisTransform = getTheScene()->getComponent<Transform>(entityID);
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(getPlayerID());
 	SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(entityID);
-	AiCombatSwarm& combat = getTheScene()->getComponent<AiCombatSwarm>(entityID);
 	Rigidbody& rigidbody = getTheScene()->getComponent<Rigidbody>(entityID);
 	Collider& sawrmCollider = getTheScene()->getComponent<Collider>(entityID);
 
@@ -664,9 +662,9 @@ BTStatus SwarmBT::attack(Entity entityID)
 	static float initialFriction = rigidbody.friction;
 
 
-	if(swarmComp.grounded && combat.timer > 0.0f)
+	if(swarmComp.grounded && swarmComp.timer > 0.0f)
 	{
-		combat.timer -= get_dt();
+		swarmComp.timer -= get_dt();
 		if(thisTransform.scale.y > 0.5f)
 		{
 			thisTransform.scale.y -= swarmComp.chargeAnimSpeed * get_dt();
@@ -689,7 +687,7 @@ BTStatus SwarmBT::attack(Entity entityID)
 		swarmComp.inAttack = false; 
 		swarmComp.touchedPlayer = false; 
 		rigidbody.friction = initialFriction;
-		combat.timer = combat.lightAttackTime;
+		swarmComp.timer = swarmComp.lightAttackTime;
     }
 
 	return ret;

@@ -2,6 +2,7 @@
 #include "vengine.h"
 #include "LichBTs.hpp"
 #include <string>
+#include "../../../Components/AiElite.hpp"
 
 enum ATTACK_STRATEGY
 {
@@ -133,6 +134,56 @@ struct LichComponent
     Entity alterID;
     Entity graveID;
 
+    void applyEliteStats(AiEliteComponent& eliteComp)
+    {
+        for(auto a: this->attacks)
+        {
+            a.second.damage             *= eliteComp.dmgMultiplier;
+        }
+        this->LOW_HEALTH                *= eliteComp.healthMultiplier;           
+        this->FULL_HEALTH               *= eliteComp.healthMultiplier;
+        this->ESCAPE_HEALTH             *= eliteComp.healthMultiplier;
+        this->BACK_TO_FIGHT_HEALTH      *= eliteComp.healthMultiplier;
+
+        this->sightRadius               *= eliteComp.radiusMultiplier;
+        this->peronalSpaceRadius        *= eliteComp.radiusMultiplier;
+        this->attackRadius              *= eliteComp.radiusMultiplier;
+        this->nonoRadius                *= eliteComp.radiusMultiplier;
+
+        this->origScaleY                *= eliteComp.sizeMultiplier;
+        
+        this->healthRegenSpeed          *= eliteComp.speedMultiplier;
+        this->manaRegenSpeed            *= eliteComp.speedMultiplier;
+        this->creepRotSpeed             *= eliteComp.speedMultiplier;
+        this->huntRotSpeed              *= eliteComp.speedMultiplier;
+        this->huntSpeed                 *= eliteComp.speedMultiplier;
+        this->speed                     *= eliteComp.speedMultiplier;
+    }
+    void removeEliteStats(AiEliteComponent& eliteComp)
+    {
+        for(auto a: this->attacks)
+        {
+            a.second.damage             /= eliteComp.dmgMultiplier;
+        }
+        this->LOW_HEALTH                /= eliteComp.radiusMultiplier;           
+        this->FULL_HEALTH               /= eliteComp.radiusMultiplier;
+        this->ESCAPE_HEALTH             /= eliteComp.radiusMultiplier;
+        this->BACK_TO_FIGHT_HEALTH      /= eliteComp.radiusMultiplier;
+
+        this->sightRadius               /= eliteComp.radiusMultiplier;
+        this->peronalSpaceRadius        /= eliteComp.radiusMultiplier;
+        this->attackRadius              /= eliteComp.radiusMultiplier;
+        this->nonoRadius                /= eliteComp.radiusMultiplier;
+
+        this->origScaleY                /= eliteComp.sizeMultiplier;
+
+        this->healthRegenSpeed          /= eliteComp.speedMultiplier;
+        this->manaRegenSpeed            /= eliteComp.speedMultiplier;
+        this->creepRotSpeed             /= eliteComp.speedMultiplier;
+        this->huntRotSpeed              /= eliteComp.speedMultiplier;
+        this->huntSpeed                 /= eliteComp.speedMultiplier;
+        this->speed                     /= eliteComp.speedMultiplier;
+    }
 
     bool isDead(){return life<=0;}
 

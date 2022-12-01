@@ -1,12 +1,13 @@
 #pragma once
 #include "vengine.h"
 #include "SwarmBTs.hpp"
-#include "../../../Components/AiCombatSwarm.h"
 
 
 struct SwarmComponent
 {
     inline static const uint32_t colliderRadius = 4;
+
+	
 
 	//Ints
 	int LOW_HEALTH				= 30;
@@ -28,6 +29,9 @@ struct SwarmComponent
     float alert_top;
 	float idleRotSpeed			= 100.0f;
 	float tempRotAngle			= 0.0f;//Dont touch!
+	float lightHit = 10.f;
+	float lightAttackTime = 2.0f;
+	float timer = 0.f;
 	//Bools
     bool alert_go_up			= true;
 	bool alertAtTop				= false;
@@ -66,6 +70,53 @@ struct SwarmComponent
 	{
 		attackGoRight = rand()%2;
 	};
+
+	/*void applyEliteStats(AiEliteComponent& eliteComp)
+    {
+        this->             *= eliteComp.dmgMultiplier;
+        this->LOW_HEALTH                *= eliteComp.healthMultiplier;           
+        this->FULL_HEALTH               *= eliteComp.healthMultiplier;
+        this->ESCAPE_HEALTH             *= eliteComp.healthMultiplier;
+        this->BACK_TO_FIGHT_HEALTH      *= eliteComp.healthMultiplier;
+
+        this->sightRadius               *= eliteComp.radiusMultiplier;
+        this->peronalSpaceRadius        *= eliteComp.radiusMultiplier;
+        this->attackRadius              *= eliteComp.radiusMultiplier;
+        this->nonoRadius                *= eliteComp.radiusMultiplier;
+
+        this->origScaleY                *= eliteComp.sizeMultiplier;
+        
+        this->healthRegenSpeed          *= eliteComp.speedMultiplier;
+        this->manaRegenSpeed            *= eliteComp.speedMultiplier;
+        this->creepRotSpeed             *= eliteComp.speedMultiplier;
+        this->huntRotSpeed              *= eliteComp.speedMultiplier;
+        this->huntSpeed                 *= eliteComp.speedMultiplier;
+        this->speed                     *= eliteComp.speedMultiplier;
+    }
+    void removeEliteStats(AiEliteComponent& eliteComp)
+    {
+      
+        a.second.damage             /= eliteComp.dmgMultiplier;
+        
+        this->LOW_HEALTH                /= eliteComp.radiusMultiplier;           
+        this->FULL_HEALTH               /= eliteComp.radiusMultiplier;
+        this->ESCAPE_HEALTH             /= eliteComp.radiusMultiplier;
+        this->BACK_TO_FIGHT_HEALTH      /= eliteComp.radiusMultiplier;
+
+        this->sightRadius               /= eliteComp.radiusMultiplier;
+        this->peronalSpaceRadius        /= eliteComp.radiusMultiplier;
+        this->attackRadius              /= eliteComp.radiusMultiplier;
+        this->nonoRadius                /= eliteComp.radiusMultiplier;
+
+        this->origScaleY                /= eliteComp.sizeMultiplier;
+
+        this->healthRegenSpeed          /= eliteComp.speedMultiplier;
+        this->manaRegenSpeed            /= eliteComp.speedMultiplier;
+        this->creepRotSpeed             /= eliteComp.speedMultiplier;
+        this->huntRotSpeed              /= eliteComp.speedMultiplier;
+        this->huntSpeed                 /= eliteComp.speedMultiplier;
+        this->speed                     /= eliteComp.speedMultiplier;
+    }*/
 
 	float getGroupHealth(Scene* scene)
 	{
@@ -165,7 +216,6 @@ protected:
 	virtual void registerEntityComponents(Entity entityId) override
 	{
 		addRequiredComponent<SwarmComponent>(entityId);
-		addRequiredComponent<AiCombatSwarm>(entityId);
 	}
 
 	virtual void real_init() override

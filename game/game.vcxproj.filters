@@ -63,6 +63,7 @@
     <ClInclude Include="src\Ai\Behaviors\Tank\TankBTs.hpp" />
     <ClInclude Include="src\Network\NetworkDataFetcher.hpp" />
     <ClInclude Include="src\World Handling\SpawnHandler.hpp" />
+    <ClInclude Include="src\Components\AiElite.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
