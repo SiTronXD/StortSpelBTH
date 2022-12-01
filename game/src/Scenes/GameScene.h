@@ -49,8 +49,6 @@ private:
   uint32_t abilityTextures[3];
   uint32_t perkTextures[6];
   uint32_t fontTextureIndex;
-  uint32_t pauseBackgroundId;
-  uint32_t buttonId;
 
   uint32_t hpBarBackgroundTextureID;
   uint32_t hpBarTextureID;

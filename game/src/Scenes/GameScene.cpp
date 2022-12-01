@@ -72,8 +72,6 @@ void GameScene::init()
     this->perkTextures[5] = resourceMng->addTexture("assets/textures/UI/empty.png");
     this->hpBarBackgroundTextureID = resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
     this->hpBarTextureID = resourceMng->addTexture("assets/textures/UI/hpBar.png");
-    this->pauseBackgroundId = resourceMng->addTexture("assets/textures/UI/frame.png");
-    this->buttonId = resourceMng->addTexture("assets/textures/UI/button.png");
 
     // Temporary light
     this->dirLightEntity = this->createEntity();
@@ -290,16 +288,6 @@ void GameScene::update()
     }
     if (this->paused)
     {
-        //this->getUIRenderer()->setTexture(this->pauseBackgroundId);
-        //this->getUIRenderer()->renderTexture(glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f), glm::uvec4(0, 0, 1, 1));
-        //this->getUIRenderer()->renderString("game paused", glm::vec2(0,400), glm::vec2(80.0f)
-        //);
-        //this->getUIRenderer()->setTexture(this->buttonId);
-        //this->getUIRenderer()->renderTexture(this->resumeButton.position, this->resumeButton.dimension);
-        //this->getUIRenderer()->renderTexture(this->exitButton.position, this->exitButton.dimension);
-        //this->getUIRenderer()->renderString("resume", this->resumeButton.position, glm::vec2(50.0f));
-        //this->getUIRenderer()->renderString("exit", this->exitButton.position, glm::vec2(50.0f));
-
         if (this->resumeButton.isClicking())
         {
             this->paused = false;
