@@ -217,6 +217,18 @@ glm::vec3 RoomHandler::getRespawnPos(bool singlePlayer) const
 	return pos;
 }
 
+glm::vec3 RoomHandler::getRespawnRot() const
+{
+	const float respawnYRot[] =
+	{
+		-90.f,
+		90.f,
+		180.f,
+		0.f
+	};
+	return glm::vec3(0.f, respawnYRot[this->respawnDoorIdx], 0.f);
+}
+
 void RoomHandler::generate(uint32_t seed)
 {
 	const glm::vec3 noDoorBoxOffset[] = 

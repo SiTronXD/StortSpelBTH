@@ -251,8 +251,10 @@ void GameScene::update()
                 HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
                 healthComp.health = healthComp.maxHealth;
                 this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = *this->ghostMat;
-                this->getComponent<Transform>(this->playerID).position = roomHandler.getRespawnPos(true);
+                this->getComponent<Transform>(this->playerID).position = this->roomHandler.getRespawnPos(true);
+                this->getComponent<Transform>(this->playerID).rotation = this->roomHandler.getRespawnRot();
                 this->getComponent<Rigidbody>(this->playerID).assigned = false; // For some reason this is needed, otherwise the position isn't changed
+                this->getComponent<Transform>(this->getMainCameraID()).rotation = this->roomHandler.getRespawnRot();
                 this->roomHandler.startOver();
                 this->spawnHandler.resetEnemies();
                 this->newRoomFrame = false;
