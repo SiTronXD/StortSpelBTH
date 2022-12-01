@@ -551,26 +551,45 @@ BTStatus LichBT::attack(Entity entityID)
         //Reset cast times
         lichComp.curAttack->castTimeTimer = lichComp.curAttack->castTimeTimerOrig;
         lichComp.curAttack->cooldownTimer = lichComp.curAttack->cooldownTimerOrig;
-        
+
+        // Cast Projectile stuff
+        Transform&  lichTrans = getTheScene()->getComponent<Transform>(entityID);
+        lichTrans.updateMatrix();
 
         //Pick Projectile 
         Entity projectileID = LichBT::getFreeOrb(entityID, lichComp.curAttack->type);
-    
-        //Shoot projectile!
-        Orb&        orb      = getTheScene()->getComponent<Orb>(projectileID);
-        Transform&  orbTrans = getTheScene()->getComponent<Transform>(projectileID);
-        Rigidbody&  orbRB = getTheScene()->getComponent<Rigidbody>(projectileID);
-        Transform&  lichTrans = getTheScene()->getComponent<Transform>(entityID);
-                
-        lichTrans.updateMatrix();
-        orbTrans.position = lichTrans.position + (-lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
-        auto spellVector = glm::normalize(playerTrans.position - lichTrans.position) * LichComponent::spellForce;
-        spellVector.y = 0; 
-        orbRB.velocity = spellVector;
-        orb.orbPower = lichComp.curAttack;
-
-        orb.timeAtCast = Time::getTimeSinceStart();
         
+        if(projectileID != -1){
+
+            Orb& orb = getTheScene()->getComponent<Orb>(projectileID);
+
+            ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+            if (netScene == nullptr)
+            {            
+            
+                //Shoot projectile!
+                Transform&  orbTrans = getTheScene()->getComponent<Transform>(projectileID);
+                Rigidbody&  orbRB    = getTheScene()->getComponent<Rigidbody>(projectileID);
+                
+                orbTrans.position = lichTrans.position + (-lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
+                auto spellVector = glm::normalize(playerTrans.position - lichTrans.position) * LichComponent::spellForce;
+                spellVector.y = 0;  //TODO: What if player is on top of something... Will not aim att player
+                orbRB.velocity = spellVector;
+                orb.orbPower = lichComp.curAttack;                
+                            
+            }
+            else
+            {
+                glm::vec3 initialOrbPos = lichTrans.position + (-lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
+                glm::vec3 spellVector = glm::normalize(playerTrans.position - lichTrans.position) * LichComponent::spellForce;
+                spellVector.y = 0;  //TODO: What if player is on top of something... Will not aim att player
+                
+                netScene->addEvent({(int)GameEvent::THROW_ORB, (int)projectileID },{initialOrbPos.x,initialOrbPos.y,initialOrbPos.z, spellVector.x, spellVector.y,spellVector.z});
+            }
+
+            orb.timeAtCast = Time::getTimeSinceStart();
+        }
+
         //Remove current strat
         lichComp.curAttack = nullptr;
 

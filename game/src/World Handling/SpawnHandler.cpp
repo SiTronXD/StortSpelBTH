@@ -408,20 +408,6 @@ void SpawnHandler::createLich()
         // Create Orbs
         for(size_t i = 0; i < LichComponent::NR_FIRE_ORBS;i++)
         {
-            this->currScene->setComponent<MeshComponent>(lichComp.fireOrbs[i], fireOrb_mesh);            
-        }
-        for(size_t i = 0; i < LichComponent::NR_ICE_ORBS;i++)
-        {
-            this->currScene->setComponent<MeshComponent>(lichComp.iceOrbs[i], iceOrb_mesh);
-        }
-        for(size_t i = 0; i < LichComponent::NR_LIGHT_ORBS;i++)
-        {
-            this->currScene->setComponent<MeshComponent>(lichComp.lightOrbs[i], lightOrb_mesh);
-        }
-
-        // Create Orbs
-        for(size_t i = 0; i < LichComponent::NR_FIRE_ORBS;i++)
-        {
             lichComp.fireOrbs[i] = this->currScene->createEntity();
             this->currScene->setComponent<Collider>(lichComp.fireOrbs[i], Collider::createSphere(LichComponent::orbRadius));
             this->currScene->setComponent<Orb>(lichComp.fireOrbs[i]);
@@ -458,7 +444,21 @@ void SpawnHandler::createLich()
             rb.gravityMult = 0.0f;
             rb.friction = 3.0f;
             rb.mass = 10.0f;
-        }       
+        }
+
+        // Create Orbs
+        for(size_t i = 0; i < LichComponent::NR_FIRE_ORBS;i++)
+        {
+            this->currScene->setComponent<MeshComponent>(lichComp.fireOrbs[i], fireOrb_mesh);            
+        }
+        for(size_t i = 0; i < LichComponent::NR_ICE_ORBS;i++)
+        {
+            this->currScene->setComponent<MeshComponent>(lichComp.iceOrbs[i], iceOrb_mesh);
+        }
+        for(size_t i = 0; i < LichComponent::NR_LIGHT_ORBS;i++)
+        {
+            this->currScene->setComponent<MeshComponent>(lichComp.lightOrbs[i], lightOrb_mesh);
+        }
     }
     else
     {
@@ -468,17 +468,23 @@ void SpawnHandler::createLich()
         for(size_t i = 0; i < LichComponent::NR_FIRE_ORBS;i++)
         {
             lichComp.fireOrbs[i] = this->currScene->createEntity();
+            this->currScene->setInactive(lichComp.fireOrbs[i]);
+            this->currScene->setComponent<Orb>(lichComp.fireOrbs[i]);
             netScene->addEvent({(int)GameEvent::SPAWN_ORB, lichComp.fireOrbs[i], (int)ATTACK_STRATEGY::FIRE});
         }
         for(size_t i = 0; i < LichComponent::NR_ICE_ORBS;i++)
         {
             lichComp.iceOrbs[i] = this->currScene->createEntity();
+            this->currScene->setInactive(lichComp.iceOrbs[i]);
+            this->currScene->setComponent<Orb>(lichComp.iceOrbs[i]);
             netScene->addEvent({(int)GameEvent::SPAWN_ORB, lichComp.iceOrbs[i], (int)ATTACK_STRATEGY::ICE});
 
         }
         for(size_t i = 0; i < LichComponent::NR_LIGHT_ORBS;i++)
         {
             lichComp.lightOrbs[i] = this->currScene->createEntity();
+            this->currScene->setInactive(lichComp.lightOrbs[i]);
+            this->currScene->setComponent<Orb>(lichComp.lightOrbs[i]);
             netScene->addEvent({(int)GameEvent::SPAWN_ORB, lichComp.lightOrbs[i], (int)ATTACK_STRATEGY::LIGHT});
 
         }      

@@ -49,16 +49,17 @@ struct Orb {
     int timeAtCast = 0;
     LichAttack* orbPower; 
 
-    inline void setInactive(Entity entityID)
+    inline void setInactive(Entity entityID, SceneHandler* sceneHandler)
     {        
-        Rigidbody& rb = LichBT::getTheScene()->getComponent<Rigidbody>(entityID);
+        Rigidbody& rb = sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
         rb.velocity = glm::vec3(0.f,0.f,0.f);
-        LichBT::getTheScene()->setInactive(static_cast<int>(entityID));
+        sceneHandler->getScene()->setInactive(static_cast<int>(entityID));
     }
-    inline void onCollision(Entity entityID)
+    inline void onCollision(Entity entityID, SceneHandler* sceneHandler)
     {
         //TODO: Some effect? 
-        this->setInactive(entityID);
+        this->setInactive(entityID, sceneHandler);
+
     }
 };
 
@@ -76,7 +77,7 @@ public:
             [&](const auto& entity, Orb& orb){
                 if(orb.timeAtCast + Orb::LIFE_TIME < Time::getTimeSinceStart() )
                 {
-                    orb.setInactive(static_cast<int>(entity));
+                    orb.setInactive(static_cast<int>(entity),sceneHandler);
                 }
             }
         );

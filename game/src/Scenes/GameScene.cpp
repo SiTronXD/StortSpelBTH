@@ -175,6 +175,7 @@ void GameScene::start()
 
 void GameScene::update()
 {
+    
     if (!networkHandler->isConnected())
      {   
         this->aiHandler->update(Time::getDT());
@@ -500,7 +501,7 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
         auto& orb = this->getComponent<Orb>(other);
         this->getComponent<HealthComp>(player).health -=
             orb.orbPower->damage;
-        orb.onCollision(other);
+        orb.onCollision(other, this->getSceneHandler());
     }
   }
   else 
@@ -511,7 +512,7 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
         Entity collidingOrb = this->hasComponents<Orb>(e1) ? e1 : e2; 
         
         auto& orb = this->getComponent<Orb>(collidingOrb);        
-        orb.onCollision(collidingOrb);
+        orb.onCollision(collidingOrb, this->getSceneHandler());
         
     }
   }
@@ -545,7 +546,7 @@ void GameScene::imguiUpdate()
     getScriptHandler()->getGlobal(playerID, playerString);
     auto& playerHealthComp = getComponent<HealthComp>(playerID);
     if(ImGui::Button("INVINCIBLE Player")){
-        playerHealthComp.health = INT_MAX;         
+        playerHealthComp.health = INT_MAX;
     }
     if(ImGui::Button("Kill Player")){
         playerHealthComp.health = 0; 

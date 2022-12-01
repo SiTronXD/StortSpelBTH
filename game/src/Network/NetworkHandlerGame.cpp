@@ -4,6 +4,9 @@
 #include "../Scenes/GameScene.h"
 
 const float NetworkHandlerGame::UPDATE_RATE = ServerUpdateRate;
+LichAttack* NetworkHandlerGame::lich_fire  = new LichAttack();
+LichAttack* NetworkHandlerGame::lich_ice   = new LichAttack();
+LichAttack* NetworkHandlerGame::lich_light = new LichAttack();
 
 Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir)
 {
@@ -108,6 +111,10 @@ void NetworkHandlerGame::init()
 	this->abilityMeshes[1] = this->resourceManger->addMesh("assets/models/KnockbackAbility.obj");
 	this->healAreaMesh = this->resourceManger->addMesh("assets/models/HealingAbility.obj");
 	this->swordMesh = this->resourceManger->addMesh("assets/models/MainSword.fbx", "assets/textures");
+
+    NetworkHandlerGame::lich_fire->setStats(ATTACK_STRATEGY::FIRE);
+    NetworkHandlerGame::lich_ice->setStats(ATTACK_STRATEGY::ICE);
+    NetworkHandlerGame::lich_light->setStats(ATTACK_STRATEGY::LIGHT);
 }
 
 void NetworkHandlerGame::cleanup()
@@ -217,11 +224,14 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
         tcpPacket >> i0;
         v0 = this->getVec(tcpPacket);
         v1 = this->getVec(tcpPacket);
-
-        this->sceneHandler->getScene()->setActive(serverEntities[i0]);
-        this->sceneHandler->getScene()->getComponent<Transform>(serverEntities[i0]).position = v0;
-        this->sceneHandler->getScene()->getComponent<Rigidbody>(serverEntities[i0]).velocity = v1;
-        this->sceneHandler->getScene()->getComponent<Orb>(serverEntities[i0]).timeAtCast = Time::getTimeSinceStart();
+        
+        if(serverEntities.find(i0) != serverEntities.end())
+        {
+            this->sceneHandler->getScene()->setActive(serverEntities[i0]);
+            this->sceneHandler->getScene()->getComponent<Transform>(serverEntities[i0]).position = v0;
+            this->sceneHandler->getScene()->getComponent<Rigidbody>(serverEntities[i0]).velocity = v1;
+            this->sceneHandler->getScene()->getComponent<Orb>(serverEntities[i0]).timeAtCast = Time::getTimeSinceStart();
+        }
 
         
 		break;
@@ -373,7 +383,13 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 			sv1 = serverScene->getComponent<Transform>(si0).position;
 			sv2 = serverScene->getComponent<Transform>(serverScene->getPlayer(clientID)).position;
 			sv0 = glm::normalize(sv2 - sv1);
-			serverScene->getComponent<Rigidbody>(si0).velocity = glm::vec3(-sv0.x, 0.f, -sv0.z) * sf0;
+            if(serverScene->hasComponents<Rigidbody>(si0)){
+                serverScene->getComponent<Rigidbody>(si0).velocity = glm::vec3(-sv0.x, 0.f, -sv0.z) * sf0;
+            }else {
+                std::cout << "ERROR; something is fucked up with Rigidbody on Monster Take Damage\n";
+                assert(false);
+            }
+			
         }
         
         
@@ -645,4 +661,64 @@ void NetworkHandlerGame::useHealAbilityRequest(glm::vec3 position)
 	{
 		this->spawnHealArea(position);
 	}
+}
+Entity NetworkHandlerGame::spawnOrbs(int orbType)
+{
+    static int fireOrb_mesh  = this->resourceManger->addMesh("assets/models/fire_orb.obj");
+    static int lightOrb_mesh = this->resourceManger->addMesh("assets/models/light_orb.obj");
+    static int iceOrb_mesh   = this->resourceManger->addMesh("assets/models/ice_orb.obj");
+
+    Entity orb = this->sceneHandler->getScene()->createEntity();
+    if (orbType == (int)ATTACK_STRATEGY::FIRE)
+    {
+        this->sceneHandler->getScene()->setComponent<MeshComponent>(orb, fireOrb_mesh);
+        this->sceneHandler->getScene()->setComponent<Collider>(
+            orb, Collider::createSphere(LichComponent::orbRadius)
+        );
+        this->sceneHandler->getScene()->setComponent<Orb>(orb);
+        this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
+        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = NetworkHandlerGame::lich_fire;
+        Rigidbody& rb =
+            this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
+        rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+        rb.gravityMult = 0.0f;
+        rb.friction = 3.0f;
+        rb.mass = 10.0f;
+    }
+    else if (orbType == (int)ATTACK_STRATEGY::ICE)
+    {
+        this->sceneHandler->getScene()->setComponent<MeshComponent>(orb, iceOrb_mesh);
+        this->sceneHandler->getScene()->setComponent<Collider>(
+            orb, Collider::createSphere(LichComponent::orbRadius)
+        );
+        this->sceneHandler->getScene()->setComponent<Orb>(orb);
+        this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
+        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = NetworkHandlerGame::lich_ice;
+        Rigidbody& rb =
+            this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
+        rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+        rb.gravityMult = 0.0f;
+        rb.friction = 3.0f;
+        rb.mass = 10.0f;
+    }
+    else if (orbType == (int)ATTACK_STRATEGY::LIGHT)
+    {
+        this->sceneHandler->getScene()->setComponent<MeshComponent>(orb, lightOrb_mesh);
+        this->sceneHandler->getScene()->setComponent<Collider>(
+            orb, Collider::createSphere(LichComponent::orbRadius)
+        );
+        this->sceneHandler->getScene()->setComponent<Orb>(orb);
+        this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
+        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = NetworkHandlerGame::lich_light;
+        Rigidbody& rb =
+            this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
+        rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+        rb.gravityMult = 0.0f;
+        rb.friction = 3.0f;
+        rb.mass = 10.0f;
+    }
+
+    this->sceneHandler->getScene()->setInactive(orb);
+
+    return orb;
 }

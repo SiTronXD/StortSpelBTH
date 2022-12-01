@@ -36,6 +36,8 @@ void ServerGameMode::init()
     {
         this->setComponent<HealthComp>(getPlayer(i));
     }
+
+    this->createSystem<OrbSystem>(this->getSceneHandler());
 }
 
 void ServerGameMode::update(float dt)

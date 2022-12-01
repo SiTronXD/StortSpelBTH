@@ -81,49 +81,12 @@ private:
 	int healAreaMesh;
 	int swordMesh;
 
-    Entity spawnOrbs(int orbType)
-    {
-        Entity orb = this->sceneHandler->getScene()->createEntity();
-        if(orbType == (int)ATTACK_STRATEGY::FIRE)
-        {
-            this->sceneHandler->getScene()->setComponent<Collider>(orb, Collider::createSphere(LichComponent::orbRadius));
-            this->sceneHandler->getScene()->setComponent<Orb>(orb);
-            this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
-            Rigidbody& rb = this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
-            rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
-            rb.gravityMult = 0.0f;
-            rb.friction = 3.0f;
-            rb.mass = 10.0f;
-        }
-        else if(orbType == (int)ATTACK_STRATEGY::ICE)
-        {
-            this->sceneHandler->getScene()->setComponent<Collider>(orb, Collider::createSphere(LichComponent::orbRadius));
-            this->sceneHandler->getScene()->setComponent<Orb>(orb);
-            this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
-            Rigidbody& rb = this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
-            rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
-            rb.gravityMult = 0.0f;
-            rb.friction = 3.0f;
-            rb.mass = 10.0f;
+    static LichAttack* lich_fire   ;
+    static LichAttack* lich_ice    ;
+    static LichAttack* lich_light  ;
 
-        }
-        else if(orbType == (int)ATTACK_STRATEGY::LIGHT)
-        {
-            this->sceneHandler->getScene()->setComponent<Collider>(orb, Collider::createSphere(LichComponent::orbRadius));
-            this->sceneHandler->getScene()->setComponent<Orb>(orb);
-            this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
-            Rigidbody& rb = this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
-            rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
-            rb.gravityMult = 0.0f;
-            rb.friction = 3.0f;
-            rb.mass = 10.0f;
-        }
-
-        this->sceneHandler->getScene()->setInactive(orb);
-
-        return orb;
-    }
-	Entity spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
+    Entity spawnOrbs(int orbType);
+    Entity spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	Entity spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	Entity spawnHealArea(glm::vec3 pos);
 
