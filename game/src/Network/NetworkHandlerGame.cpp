@@ -476,7 +476,7 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 		this->playerEntities[i] = scene->createEntity();
 		scene->setComponent<MeshComponent>(this->playerEntities[i], playerMesh);
 		scene->setComponent<AnimationComponent>(this->playerEntities[i]);
-		scene->setComponent<Collider>(this->playerEntities[i], Collider::createCapsule(2, 11, glm::vec3(0, 7.3, 0)));
+		scene->setComponent<Collider>(this->playerEntities[i], Collider::createCapsule(2, 10, glm::vec3(0, 7.3, 0)));
 
 		// Sword
 		this->swords[i] = scene->createEntity();
