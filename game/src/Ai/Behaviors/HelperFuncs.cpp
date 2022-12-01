@@ -86,29 +86,34 @@ void avoidStuff(Entity entityID, SceneHandler* sceneHandler, bool& attackGoRight
 	RayPayload r_150			= sceneHandler->getPhysicsEngine()->raycast(ray150	, left_right_maxDist);	//Left
 	RayPayload r_180			= sceneHandler->getPhysicsEngine()->raycast(ray180	, left_right_maxDist);	//Left
 
+        
 	if(drawRays)
 	{
-		//Storing rays for drawing
-		std::unordered_map<Ray*, RayPayload*>rays;
-		rays.insert({&ray0,		&r_0});		
-		rays.insert({&ray30,	&r_30});
-		rays.insert({&ray60,	&r_60});
-		rays.insert({&ray90,	&r_90});
-		rays.insert({&ray120,	&r_120});
-		rays.insert({&ray150,	&r_150});
-		rays.insert({&ray180,	&r_180});
+        if(sceneHandler->getScene()->getNetworkHandler() != nullptr)
+        {
+      
+            //Storing rays for drawing
+            std::unordered_map<Ray*, RayPayload*>rays;
+            rays.insert({&ray0,		&r_0});		
+            rays.insert({&ray30,	&r_30});
+            rays.insert({&ray60,	&r_60});
+            rays.insert({&ray90,	&r_90});
+            rays.insert({&ray120,	&r_120});
+            rays.insert({&ray150,	&r_150});
+            rays.insert({&ray180,	&r_180});
 
-		for(auto r: rays)
-		{
-			if(r.second->hit)
-			{
-				drawRaySimple(sceneHandler, *r.first	, left_right_maxDist, glm::vec3(0.0f, 1.0f, 0.0f));	
-			}
-			else
-			{
-				drawRaySimple(sceneHandler, *r.first	, left_right_maxDist, glm::vec3(1.0f, 0.0f, 0.0f));	
-			}
-		}
+            for(auto r: rays)
+            {
+                if(r.second->hit)
+                {
+                    drawRaySimple(sceneHandler, *r.first	, left_right_maxDist, glm::vec3(0.0f, 1.0f, 0.0f));	
+                }
+                else
+                {
+                    drawRaySimple(sceneHandler, *r.first	, left_right_maxDist, glm::vec3(1.0f, 0.0f, 0.0f));	
+                }
+            }
+        }
 	}
 	
 	
