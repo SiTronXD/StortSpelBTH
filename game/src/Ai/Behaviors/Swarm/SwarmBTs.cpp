@@ -675,7 +675,7 @@ BTStatus SwarmBT::die(Entity entityID)
         {
             glm::vec3 spawnPos = sceneHandler->getScene()->getComponent<Transform>(entityID).position;
             glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
-            ServerGameMode* serverScene = (ServerGameMode*)((NetworkSceneHandler*)sceneHandler)->getScene();
+            //ServerGameMode* serverScene = (ServerGameMode*)((NetworkSceneHandler*)sceneHandler)->getScene();
             itemID = serverScene->spawnItem((ItemType)type, otherType, multiplier);
             serverScene->addEvent(
                 {(int)GameEvent::SPAWN_ITEM,
@@ -692,13 +692,16 @@ BTStatus SwarmBT::die(Entity entityID)
     {
         if (spawnLoot < 2)
 	    {
+            NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
+	    	Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+            network->spawnItemRequest((PerkType)(rand() % PerkType::emptyPerk), 0.2f, swarmTrans.position,
+                glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
 	    	// Spawn Perk
-	    	PerkType perkType = (PerkType)(rand() % PerkType::emptyPerk);
+	    	/*PerkType perkType = (PerkType)(rand() % PerkType::emptyPerk);
 	    	Perks perk{ .multiplier = 0.2f, .perkType = perkType };
 	    	Entity perkEnt = sceneHandler->getScene()->createEntity();
 	    	sceneHandler->getScene()->setComponent<MeshComponent>(perkEnt, SwarmBT::perkMeshes[perkType]);
 	    	Transform& perkTrans = sceneHandler->getScene()->getComponent<Transform>(perkEnt);
-	    	Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 	    	perkTrans.position = swarmTrans.position;
 	    	perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
 	    	sceneHandler->getScene()->setComponent<Collider>(perkEnt, Collider::createSphere(2.f, glm::vec3(0.f, 0.f, 0.f), true));
@@ -709,11 +712,16 @@ BTStatus SwarmBT::die(Entity entityID)
 	    	perkRb.velocity = glm::normalize(spawnDir) * 20.f;
 	    	sceneHandler->getScene()->setComponent<Perks>(perkEnt, perk);
 	    	sceneHandler->getScene()->setComponent<PointLight>(perkEnt, glm::vec3(5.f, 7.f, 9.f));
-	    	sceneHandler->getScene()->setScriptComponent(perkEnt, "scripts/spin.lua");
+	    	sceneHandler->getScene()->setScriptComponent(perkEnt, "scripts/spin.lua");*/
 	    }
 	    else if (spawnLoot == 2)
 	    {
-	    	AbilityType abilityType = (AbilityType)(rand() % 2);
+            NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
+            Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+            network->spawnItemRequest((AbilityType)(rand() % 2), swarmTrans.position,
+                glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
+
+	    	/*AbilityType abilityType = (AbilityType)(rand() % 2);
 	    	Abilities ability{ .abilityType = abilityType };
 	    	Entity abilityEnt = sceneHandler->getScene()->createEntity();
 	    	sceneHandler->getScene()->setComponent<MeshComponent>(abilityEnt, SwarmBT::abilityMeshes[abilityType]);
@@ -728,7 +736,7 @@ BTStatus SwarmBT::die(Entity entityID)
 	    	abilityRb.gravityMult = 4.f;
 	    	abilityRb.velocity = glm::normalize(spawnDir) * 40.f;
 	    	sceneHandler->getScene()->setComponent<Abilities>(abilityEnt, ability);
-	    	sceneHandler->getScene()->setComponent<PointLight>(abilityEnt, glm::vec3(7.f, 9.f, 5.f));
+	    	sceneHandler->getScene()->setComponent<PointLight>(abilityEnt, glm::vec3(7.f, 9.f, 5.f));*/
 	    }
     }
 

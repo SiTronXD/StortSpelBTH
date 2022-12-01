@@ -22,12 +22,12 @@ void SpawnHandler::spawnEnemiesIntoRoom()
             }
             else if(lichIdx < nrOfLichs)
             {
-                    this->spawnLich(lichIdx, tile);
+                this->spawnLich(lichIdx, tile);
                 lichIdx++;
             }
             else if(swarmIdx < nrOfSwarms)
             {
-                    this->spawnSwarm(swarmIdx, tile);                
+                this->spawnSwarm(swarmIdx, tile);                
                 swarmIdx++;
             }        
             counter++;        
