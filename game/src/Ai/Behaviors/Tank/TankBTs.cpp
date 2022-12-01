@@ -683,6 +683,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	glm::vec3 dir;
 	if(!rayChecking(entityID, dir))
 	{
+        avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, playerTrans.position, dir, glm::vec3(0.0f, -3.0f, 0.0f)); 
 		rb.velocity = dir * tankComp.idleSpeed;
 		return ret;
 	}
