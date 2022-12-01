@@ -264,8 +264,10 @@ void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 		t->rotation = this->getVec(udpPacket);
 
 		anim = &this->sceneHandler->getScene()->getComponent<AnimationComponent>(this->playerEntities[i1]);
-        udpPacket >> i0 >> anim->aniSlots[0].timer >> anim->aniSlots[0].timeScale;
+        udpPacket >> i0 >> anim->aniSlots[0].timer >> anim->aniSlots[0].timeScale >>
+					 i1 >> anim->aniSlots[1].timer >> anim->aniSlots[1].timeScale;
 		anim->aniSlots[0].animationIndex = (uint32_t)i0;
+		anim->aniSlots[1].animationIndex = (uint32_t)i1;
 		break;
     case GameEvent::UPDATE_MONSTER:
         // How many monsters we shall update
@@ -383,6 +385,8 @@ void NetworkHandlerGame::handleUDPEventServer(Server* server, int clientID, sf::
 		sv0 = this->getVec(udpPacket);
 		this->sendVec(packet, sv0);
 
+		udpPacket >> si0 >> sf0 >> sf1;
+		packet << si0 << sf0 << sf1;
 		udpPacket >> si0 >> sf0 >> sf1;
 		packet << si0 << sf0 << sf1;
 
@@ -509,7 +513,8 @@ void NetworkHandlerGame::updatePlayer()
 		packet << (int)GameEvent::UPDATE_PLAYER <<
 			t.position.x << t.position.y << t.position.z <<
 			t.rotation.x << t.rotation.y << t.rotation.z <<
-			(int)anim.aniSlots[0].animationIndex << anim.aniSlots[0].timer << anim.aniSlots[0].timeScale;
+			(int)anim.aniSlots[0].animationIndex << anim.aniSlots[0].timer << anim.aniSlots[0].timeScale <<
+			(int)anim.aniSlots[1].animationIndex << anim.aniSlots[1].timer << anim.aniSlots[1].timeScale;
 		this->sendDataToServerUDP(packet);
 	}
 }
