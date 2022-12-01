@@ -70,7 +70,7 @@ struct TankComponent
 	float runDist					= 0.0f;
 	float humpForce					= 75.0f;
 	float humpYForce				= 150.0f;
-	float humpShockwaveSpeed		= 30.0f;
+	float humpShockwaveSpeed		= 100.f;
 	float humpShockwaveShieldRadius	= sightRadius;
 	float humpShockwaveAttackRadius	= sightRadius;
 	float deathAnimSpeed			= 3.0f;

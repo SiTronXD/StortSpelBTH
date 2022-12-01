@@ -338,14 +338,22 @@ void SpawnHandler::createTank()
     this->currScene->setInactive(this->tankIDs.back());
     tankComp.life = 0;
 
+    static int nrOfHumps = 10;
     if (netScene != nullptr) 
     {
         netScene->addEvent({(int)GameEvent::INACTIVATE, this->tankIDs.back()});
+        netScene->addEvent({(int)GameEvent::SPAWN_GROUND_HUMP, nrOfHumps});
+        for(int i = 0; i < nrOfHumps; i++){
+            int ent = netScene->createEntity();
+            this->currScene->setInactive(ent);
+            tankComp.humpEnteties.push_back(ent);
+            netScene->addEvent({ent});
+        }
     }
     else 
     {
         static int tankHump = this->resourceManager->addMesh("assets/models/hump.obj");
-        for(int i = 0; i < 10; i++)
+        for(int i = 0; i < nrOfHumps; i++)
         {
             int ent = this->currScene->createEntity();
             this->currScene->setComponent<MeshComponent>(ent, tankHump);

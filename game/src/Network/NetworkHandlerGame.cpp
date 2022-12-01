@@ -114,6 +114,7 @@ void NetworkHandlerGame::init()
 
     this->graveMesh = this->resourceManger->addMesh("assets/models/grave.obj");
     this->alterMesh = this->resourceManger->addMesh("assets/models/alter.obj");
+    this->humpMesh = this->resourceManger->addMesh("assets/models/hump.obj");//TODO : ADD THE humpMesh!!!
 
     NetworkHandlerGame::lich_fire->setStats(ATTACK_STRATEGY::FIRE);
     NetworkHandlerGame::lich_ice->setStats(ATTACK_STRATEGY::ICE);
@@ -175,6 +176,26 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
          v2 = this->getVec(tcpPacket);
 
          this->serverEntities.insert({i0, spawnObject((ObjectTypes)i1, v0,v1,v2)});
+
+        break;
+    case GameEvent::SPAWN_GROUND_HUMP:
+        tcpPacket >> i0;
+        for(int i = 0; i < i0; i++){
+            tcpPacket >> i1;
+            serverEntities.insert({i1, createHump()});
+        }
+        break;
+    case GameEvent::DO_HUMP:
+        tcpPacket >> i0;
+        v0 = this->getVec(tcpPacket);
+        this->sceneHandler->getScene()->setActive(serverEntities[i0]);
+        this->sceneHandler->getScene()->getComponent<Transform>(serverEntities[i0]).position = v0;
+
+        break;
+    case GameEvent::UPDATE_HUMP:
+        tcpPacket >> i0;
+        v0 = this->getVec(tcpPacket);
+        this->sceneHandler->getScene()->getComponent<Transform>(serverEntities[i0]).scale = v0;
 
         break;
     case GameEvent::SET_POS_OBJECT:
@@ -408,6 +429,10 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
                 serverScene->getComponent<Rigidbody>(si0).velocity = glm::vec3(-sv0.x, 0.f, -sv0.z) * sf0;
             }else {
                 std::cout << "ERROR; something is fucked up with Rigidbody on Monster Take Damage\n";
+                std::cout << "ERROR; is Lich " << serverScene->hasComponents<LichComponent>(si0) << "\n";
+                std::cout << "ERROR; is Tank"  << serverScene->hasComponents<TankComponent>(si0)<< "\n";
+                std::cout << "ERROR; is Swarm" << serverScene->hasComponents<SwarmComponent>(si0)<< "\n";
+                
                 assert(false);
             }
 			
@@ -742,4 +767,57 @@ Entity NetworkHandlerGame::spawnOrbs(int orbType)
     this->sceneHandler->getScene()->setInactive(orb);
 
     return orb;
+}
+Entity NetworkHandlerGame::spawnObject(
+    const ObjectTypes& type, const glm::vec3& pos, const glm::vec3& rot,
+    const glm::vec3& scale
+)
+{
+    Entity entity = this->sceneHandler->getScene()->createEntity();
+    switch (type)
+        {
+            case ObjectTypes::LICH_ALTER:
+                this->sceneHandler->getScene()->setComponent<MeshComponent>(
+                    entity, this->alterMesh
+                );
+                this->sceneHandler->getScene()->setComponent<Collider>(
+                    entity,
+                    Collider::createBox(glm::vec3{
+                        LichComponent::alterWidth,
+                        LichComponent::alterHeight,
+                        LichComponent::alterDepth})
+                );
+
+                break;
+            case ObjectTypes::LICH_GRAVE:
+                this->sceneHandler->getScene()->setComponent<MeshComponent>(
+                    entity, this->graveMesh
+                );
+                this->sceneHandler->getScene()->setComponent<Collider>(
+                    entity,
+                    Collider::createBox(glm::vec3{
+                        LichComponent::graveWidth,
+                        LichComponent::graveHeight,
+                        LichComponent::graveDepth})
+                );
+                break;
+            default:
+                break;
+        }
+    this->sceneHandler->getScene()->getComponent<Transform>(entity).position =
+        pos;
+    this->sceneHandler->getScene()->getComponent<Transform>(entity).rotation =
+        rot;
+    this->sceneHandler->getScene()->getComponent<Transform>(entity).scale =
+        scale;
+    return entity;
+}
+
+Entity NetworkHandlerGame::createHump(){
+    int e = sceneHandler->getScene()->createEntity();
+
+    sceneHandler->getScene()->setComponent<MeshComponent>(e, humpMesh);
+    sceneHandler->getScene()->setInactive(e);
+
+    return e;
 }

@@ -1,5 +1,6 @@
 #include "TankFSM.hpp"
 #include "../../../Components/Combat.h"
+#include "../../../Network/ServerGameMode.h"
 
 Entity TankFSM::getPlayerID(Entity entityID){
     // if network exist take player from there
@@ -155,6 +156,11 @@ void TankFSM::removeHumps(Entity entityID)
     for(auto h: tankComp.humpEnteties)
     {
         getTheScene()->setInactive(h);
+        ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+        if(netScene)
+        {
+            netScene->addEvent({(int)GameEvent::INACTIVATE, (int)h});
+        }
     }
 }
 
@@ -344,6 +350,7 @@ bool TankFSM::toDead(Entity entityID)
     {
         ret = true;
         resetTimers(entityID);
+        removeHumps(entityID);
     }
     return ret;
 }

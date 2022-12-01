@@ -20,6 +20,9 @@ enum class GameEvent
 	SPAWN_ENEMY,// Type, ServerID, Position,
     SPAWN_ORB, // id, Type, Position
     SPAWN_OBJECT, // id, type, position, rotation, scale 
+    SPAWN_GROUND_HUMP, // nrOf, id
+    DO_HUMP, // id, position 
+    UPDATE_HUMP, // id, position 
     SET_POS_OBJECT, // id, position
     THROW_ORB, // Id, initialPosition, Direction
 	PLAYER_TAKE_DAMAGE, // What player, how much damage
@@ -90,6 +93,7 @@ private:
 	int swordMesh;
     int graveMesh;
     int alterMesh;
+    int humpMesh;
 
     static LichAttack* lich_fire   ;
     static LichAttack* lich_ice    ;
@@ -98,32 +102,12 @@ private:
     Entity spawnOrbs(int orbType);
     Entity spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	Entity spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
-    Entity spawnObject(const ObjectTypes& type, const glm::vec3& pos, const glm::vec3& rot, const glm::vec3& scale)
-    {
-        Entity entity = this->sceneHandler->getScene()->createEntity();
-        switch(type) 
-        {
-            case ObjectTypes::LICH_ALTER:                 
-                this->sceneHandler->getScene()->setComponent<MeshComponent>(entity, this->alterMesh);
-                this->sceneHandler->getScene()->setComponent<Collider>(entity, 
-                    Collider::createBox(
-                        glm::vec3{LichComponent::alterWidth,LichComponent::alterHeight,LichComponent::alterDepth}));                                
-                
-                break;
-            case ObjectTypes::LICH_GRAVE: 
-                this->sceneHandler->getScene()->setComponent<MeshComponent>(entity, this->graveMesh);                            
-                this->sceneHandler->getScene()->setComponent<Collider>(entity, Collider::createBox(
-                        glm::vec3{LichComponent::graveWidth,LichComponent::graveHeight,LichComponent::graveDepth}));
-                break;
-            default: 
-                break;
-        }
-        this->sceneHandler->getScene()->getComponent<Transform>(entity).position = pos;
-        this->sceneHandler->getScene()->getComponent<Transform>(entity).rotation = rot;
-        this->sceneHandler->getScene()->getComponent<Transform>(entity).scale = scale;
-        return entity;
-    }
-	Entity spawnHealArea(glm::vec3 pos);
+    Entity spawnObject(
+        const ObjectTypes& type, const glm::vec3& pos, const glm::vec3& rot,
+        const glm::vec3& scale
+    );
+    Entity spawnHealArea(glm::vec3 pos);
+    Entity createHump();
 
 	Entity spawnEnemy(const int& type, const glm::vec3& pos);
 public:

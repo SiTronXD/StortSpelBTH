@@ -54,7 +54,7 @@ class TankBT : public BehaviorTree
 	static bool rayChecking(Entity entityID, glm::vec3& moveDir);
 	static void drawRaySimple(Ray& ray, float dist, glm::vec3 color = glm::vec3(1.0f, 0.0f, 0.0f));
 
-	static int		getPlayerID(int entityID = -1);
+	static int		getPlayerID(int entityID);
 	static float	get_dt();
 	static Scene*	getTheScene();
 	static void		updateCanBeHit(Entity entityID);
