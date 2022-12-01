@@ -39,10 +39,6 @@ void SpawnHandler::spawnEnemiesIntoRoom()
 void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
 {
     currScene->setActive(this->tankIDs[tankIdx]);
-    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
-    {
-        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->tankIDs[tankIdx]});    
-    }
     Transform& transform = currScene->getComponent<Transform>(this->tankIDs[tankIdx]);
     
     float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
@@ -52,15 +48,17 @@ void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
     TankComponent& tankComp = currScene->getComponent<TankComponent>(this->tankIDs[tankIdx]);
     tankComp.life = tankComp.FULL_HEALTH;
     transform.scale.y = tankComp.origScaleY;
+
+    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
+    {
+        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->tankIDs[tankIdx]});    
+        //((NetworkScene*)currScene)->addEvent({(int)GameEvent::ENTITY_SET_HP, this->tankIDs[tankIdx], tankComp.life});    
+    }
 }
 
 void SpawnHandler::spawnLich(int lichIdx, const glm::vec3& pos)
 {
     currScene->setActive(this->lichIDs[lichIdx]);
-    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
-    {
-        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->lichIDs[lichIdx]});    
-    }
     Transform& transform = currScene->getComponent<Transform>(this->lichIDs[lichIdx]);
     float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
     transform.position = pos + glm::vec3(tileWidth, 0.f, tileWidth);
@@ -68,15 +66,17 @@ void SpawnHandler::spawnLich(int lichIdx, const glm::vec3& pos)
     //Reset
     LichComponent& lichComp = currScene->getComponent<LichComponent>(this->lichIDs[lichIdx]);
     lichComp.life = lichComp.FULL_HEALTH;
+
+    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
+    {
+        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->lichIDs[lichIdx]});    
+       //((NetworkScene*)currScene)->addEvent({(int)GameEvent::ENTITY_SET_HP, this->lichIDs[lichIdx], lichComp.life});    
+    }
 }
 
 void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
 {
     currScene->setActive(this->swarmIDs[swarmIdx]);
-    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
-    {
-        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->swarmIDs[swarmIdx]});    
-    }
 
     Transform& transform = currScene->getComponent<Transform>(this->swarmIDs[swarmIdx]);
     float tileWidth = rand() % ((int)RoomHandler::TILE_WIDTH/2) + 0.01f;
@@ -89,7 +89,13 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
     swarmComp.life = swarmComp.FULL_HEALTH;
     swarmComp.group->inCombat = false;
 
-    swarmComp.group->aliveMembers.push(0); 
+    swarmComp.group->aliveMembers.push(0);
+
+    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
+    {
+        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->swarmIDs[swarmIdx]});    
+        //((NetworkScene*)currScene)->addEvent({(int)GameEvent::ENTITY_SET_HP, this->swarmIDs[swarmIdx], swarmComp.life});    
+    }
 }
 
 

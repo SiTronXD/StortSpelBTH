@@ -36,6 +36,14 @@ void ServerGameMode::init()
     {
         this->setComponent<HealthComp>(getPlayer(i));
     }
+
+    auto* tankFSM = this->aiHandler.FSMs["tankFSM"];
+    auto* lichFSM = this->aiHandler.FSMs["lichFSM"];
+    auto* swarmFSM = this->aiHandler.FSMs["swarmFSM"];
+
+    lastSwarmHp.resize(this->aiHandler.FSMsEntities[swarmFSM].size());
+    lastLichHp.resize(this->aiHandler.FSMsEntities[lichFSM].size());
+    lastTankHp.resize(this->aiHandler.FSMsEntities[tankFSM].size());
 }
 
 void ServerGameMode::update(float dt)
@@ -121,8 +129,49 @@ void ServerGameMode::makeDataSendToClient()
                 t.position.z,
                 t.rotation.x,
                 t.rotation.y,
-                t.rotation.z
+                t.rotation.z,
+                t.scale.x,
+                t.scale.y,
+                t.scale.z
                 });
+            //update hp if needed
+            if (this->hasComponents<SwarmComponent>(it.second[i]))
+            {
+                if (lastSwarmHp[i].health != this->getComponent<SwarmComponent>(it.second[i]).life)
+                {
+                    this->addEvent(
+                        {(int)GameEvent::ENTITY_SET_HP,
+                        (int)it.second[i],
+                         this->getComponent<SwarmComponent>(it.second[i]).life}
+                     );
+                    lastSwarmHp[i].health = this->getComponent<SwarmComponent>(it.second[i]).life;
+                }
+            }
+            else if (this->hasComponents<LichComponent>(it.second[i]))
+            {
+                if (lastLichHp[i].health != this->getComponent<LichComponent>(it.second[i]).life)
+                {
+                    this->addEvent(
+                        {(int)GameEvent::ENTITY_SET_HP,
+                        (int)it.second[i],
+                        this->getComponent<LichComponent>(it.second[i]).life}
+                     );
+                    lastLichHp[i].health = this->getComponent<LichComponent>(it.second[i]).life;
+                }
+            }
+            else if (this->hasComponents<TankComponent>(it.second[i]))
+            {
+                if (lastTankHp[i].health != this->getComponent<TankComponent>(it.second[i]).life)
+                {
+                    this->addEvent(
+                        {(int)GameEvent::ENTITY_SET_HP,
+                        (int)it.second[i],
+                         this->getComponent<TankComponent>(it.second[i]).life}
+                     );
+                    lastTankHp[i].health = this->getComponent<TankComponent>(it.second[i]).life;
+                }
+            }
+            
         }
     }
     //Check for updates in player hp and change it it should

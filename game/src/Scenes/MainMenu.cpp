@@ -37,6 +37,7 @@ void MainMenu::start()
 	this->getAudioHandler()->setMasterVolume(0.5f);
 	this->getAudioHandler()->setMusicVolume(1.f);
 	this->getAudioHandler()->playMusic();
+    this->howToPlayButton = this->createEntity();
   this->playButton = this->createEntity();
   this->joinGameButton = this->createEntity();
   this->settingsButton = this->createEntity();
