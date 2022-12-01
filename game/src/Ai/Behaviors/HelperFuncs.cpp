@@ -54,6 +54,7 @@ void avoidStuff(Entity entityID, SceneHandler* sceneHandler, bool& attackGoRight
 	float maxDist = glm::length(from - to);
 	glm::vec3 dir = glm::normalize(from - to);   
 
+
 	//Rays
 	Ray ray0			{from, entityTransform.right()};    
 	Ray ray30			{from, rotateVec(entityTransform.right(), AI_DEG_TO_RAD(-30), glm::vec3(0.0f, 1.0f, 0.0f))};    
@@ -100,20 +101,20 @@ void avoidStuff(Entity entityID, SceneHandler* sceneHandler, bool& attackGoRight
 	}
 	
 	
-	if(r_90.hit && !sceneHandler->getScene()->getComponent<Collider>(r_90.entity).isTrigger)
+	if(r_90.hit && sceneHandler->getScene()->hasComponents<Collider>(r_90.entity) && !sceneHandler->getScene()->getComponent<Collider>(r_90.entity).isTrigger)
 	{
 		canGoForward = false;
 	}
-	if((r_0.hit && !sceneHandler->getScene()->getComponent<Collider>(r_0.entity).isTrigger) ||
-		(r_30.hit && !sceneHandler->getScene()->getComponent<Collider>(r_30.entity).isTrigger)||
-		(r_60.hit && !sceneHandler->getScene()->getComponent<Collider>(r_60.entity).isTrigger))
+	if((r_0.hit && sceneHandler->getScene()->hasComponents<Collider>(r_0.entity) && !sceneHandler->getScene()->getComponent<Collider>(r_0.entity).isTrigger) ||
+		(r_30.hit && sceneHandler->getScene()->hasComponents<Collider>(r_30.entity) && !sceneHandler->getScene()->getComponent<Collider>(r_30.entity).isTrigger)||
+		(r_60.hit && sceneHandler->getScene()->hasComponents<Collider>(r_60.entity) && !sceneHandler->getScene()->getComponent<Collider>(r_60.entity).isTrigger))
 	{
 		canGoRight = false;
 		attackGoRight = false;
 	}
-	if((r_120.hit && !sceneHandler->getScene()->getComponent<Collider>(r_120.entity).isTrigger) ||
-		(r_150.hit && !sceneHandler->getScene()->getComponent<Collider>(r_150.entity).isTrigger)||
-		(r_180.hit && !sceneHandler->getScene()->getComponent<Collider>(r_180.entity).isTrigger))
+	if((r_120.hit && sceneHandler->getScene()->hasComponents<Collider>(r_120.entity) && !sceneHandler->getScene()->getComponent<Collider>(r_120.entity).isTrigger) ||
+		(r_150.hit && sceneHandler->getScene()->hasComponents<Collider>(r_150.entity) && !sceneHandler->getScene()->getComponent<Collider>(r_150.entity).isTrigger)||
+		(r_180.hit && sceneHandler->getScene()->hasComponents<Collider>(r_180.entity) && !sceneHandler->getScene()->getComponent<Collider>(r_180.entity).isTrigger))
 	{
 		canGoLeft = false;
 		attackGoRight = true;
