@@ -28,7 +28,6 @@ Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 
 
 	scene->setComponent<Perks>(e, perk);
 	scene->setComponent<PointLight>(e, glm::vec3(0.0f), glm::vec3(5.0f, 7.0f, 9.0f));
-	scene->setScriptComponent(e, "scripts/spin.lua");
 
 	return e;
 }
@@ -54,7 +53,6 @@ Entity NetworkHandlerGame::spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 
 
 	scene->setComponent<Abilities>(e, type);
 	scene->setComponent<PointLight>(e, glm::vec3(0.0f), glm::vec3(7.0f, 9.0f, 5.0f));
-	scene->setScriptComponent(e, "scripts/spin.lua");
 
 	return e;
 }
@@ -105,7 +103,7 @@ void NetworkHandlerGame::init()
 	this->perkMeshes[3] = this->resourceManger->addMesh("assets/models/Perk_Movement.obj");
 	this->perkMeshes[4] = this->resourceManger->addMesh("assets/models/Perk_Stamina.obj");
 	this->abilityMeshes[0] = this->resourceManger->addMesh("assets/models/KnockbackAbility.obj");
-	this->abilityMeshes[1] = this->resourceManger->addMesh("assets/models/KnockbackAbility.obj");
+	this->abilityMeshes[1] = this->resourceManger->addMesh("assets/models/Ability_Healing.obj");
 	this->healAreaMesh = this->resourceManger->addMesh("assets/models/HealingAbility.obj");
 	this->swordMesh = this->resourceManger->addMesh("assets/models/MainSword.fbx", "assets/textures");
 }
