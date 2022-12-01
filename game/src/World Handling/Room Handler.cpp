@@ -4,14 +4,21 @@
 #include "vengine/graphics/DebugRenderer.hpp"
 #include "vengine/physics/PhysicsEngine.h"
 #include "vengine/application/Input.hpp"
+#include "vengine/components/PointLight.hpp"
 
 const float RoomHandler::TILE_WIDTH = 25.f;
 const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 5;
+const uint32_t RoomHandler::DECO_ENTITY_CHANCE = 30;
 const uint32_t RoomHandler::NUM_BORDER = 1;
 const uint32_t RoomHandler::NUM_ONE_X_ONE = 3;
 const uint32_t RoomHandler::NUM_ONE_X_TWO = 2;
 const uint32_t RoomHandler::NUM_TWO_X_TWO = 1;
-const uint32_t RoomHandler::DECO_ENTITY_CHANCE = 30;
+
+const glm::vec3 RoomHandler::DOOR_LAMP_OFFSET = glm::vec3(-12.f, 21.5f, 30.5f);
+const glm::vec3 RoomHandler::DOOR_LAMP_COLOUR = glm::vec3(0.94f, 0.28f, 0.05f);
+const float RoomHandler::DOOR_LAMP_INTENSITY = 5000.f;
+const float RoomHandler::FLICKER_INTERVAL = 0.05f;
+const int RoomHandler::FLICKER_INTENSITY = 30;
 
 RoomHandler::RoomHandler()
 	:scene(nullptr), resourceMan(nullptr), activeIndex(0), 
@@ -35,9 +42,9 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, bool useMeshe
 		this->borderMeshIds.resize(NUM_BORDER);
 		for (uint32_t i = 0; i < NUM_BORDER; i++)
 		{
-			this->borderMeshIds[i] = resourceMan->addMesh("assets/models/Tiles/Border/" + std::to_string(i + 1u) + ".obj");
+			this->borderMeshIds[i] = (int)resourceMan->addMesh("assets/models/Tiles/Border/" + std::to_string(i + 1u) + ".obj");
 		}
-		this->innerBorderMesh = resourceMan->addMesh("assets/models/Tiles/Border/innerBorder.obj");
+		this->innerBorderMesh = (int)resourceMan->addMesh("assets/models/Tiles/Border/innerBorder.obj");
 	}
 
 	if (this->useMeshes)
@@ -45,7 +52,7 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, bool useMeshe
 		this->oneXOneMeshIds.resize(NUM_ONE_X_ONE);
 		for (uint32_t i = 0; i < NUM_ONE_X_ONE; i++)
 		{
-			this->oneXOneMeshIds[i] = resourceMan->addMesh("assets/models/Tiles/OneXOne/" + std::to_string(i + 1u) + ".obj");
+			this->oneXOneMeshIds[i] = (int)resourceMan->addMesh("assets/models/Tiles/OneXOne/" + std::to_string(i + 1u) + ".obj");
 		}
 	}
 
@@ -54,10 +61,10 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, bool useMeshe
 	{
 		if (this->useMeshes)
 		{
-			this->oneXTwoMeshIds[i].first = resourceMan->addMesh("assets/models/Tiles/OneXTwo/" + std::to_string(i + 1u) + ".obj");
+			this->oneXTwoMeshIds[i].first = (int)resourceMan->addMesh("assets/models/Tiles/OneXTwo/" + std::to_string(i + 1u) + ".obj");
 		}
-		const uint32_t collId = resourceMan->addCollisionShapeFromMesh("assets/models/Tiles/OneXTwo/" + std::to_string(i + 1u) + ".obj");
-		this->oneXTwoMeshIds[i].second = resourceMan->getCollisionShapeFromMesh(collId).size() ? collId : ~0u;
+		const int collId =(int) resourceMan->addCollisionShapeFromMesh("assets/models/Tiles/OneXTwo/" + std::to_string(i + 1u) + ".obj");
+		this->oneXTwoMeshIds[i].second =(int) resourceMan->getCollisionShapeFromMesh(collId).size() ? collId : ~0u;
 	}
 
 	this->twoXTwoMeshIds.resize(NUM_TWO_X_TWO);
@@ -67,17 +74,21 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, bool useMeshe
 		{
 			this->twoXTwoMeshIds[i].first = resourceMan->addMesh("assets/models/Tiles/TwoXTwo/" + std::to_string(i + 1u) + ".obj");
 		}
-		const uint32_t collId = resourceMan->addCollisionShapeFromMesh("assets/models/Tiles/TwoXTwo/" + std::to_string(i + 1u) + ".obj");
-		this->twoXTwoMeshIds[i].second = resourceMan->getCollisionShapeFromMesh(collId).size() ? collId : ~0u;
+		const int collId = (int)resourceMan->addCollisionShapeFromMesh("assets/models/Tiles/TwoXTwo/" + std::to_string(i + 1u) + ".obj");
+		this->twoXTwoMeshIds[i].second = (int)resourceMan->getCollisionShapeFromMesh(collId).size() ? collId : ~0u;
 
 	}
 
 	if (this->useMeshes)
 	{
-		this->doorMeshID = resourceMan->addMesh("assets/models/door.obj");
-		this->rockMeshId = resourceMan->addMesh("assets/models/tempRock.obj");
-		this->rockFenceMeshId = resourceMan->addMesh("assets/models/rockFence.obj");
-		this->tileFloorMeshId = resourceMan->addMesh("assets/models/Tiles/Floor.obj");
+		this->doorMeshID = (int)resourceMan->addMesh("assets/models/door.obj");
+		this->rockMeshId = (int)resourceMan->addMesh("assets/models/tempRock.obj");
+		this->rockFenceMeshId = (int)resourceMan->addMesh("assets/models/rockFence.obj");
+		this->tileFloorMeshId = (int)resourceMan->addMesh("assets/models/Tiles/Floor.obj");
+		this->lampMeshId = (int)resourceMan->addMesh("assets/models/Tiles/OneXTwo/2.obj");
+
+		this->lampDiffuseId = (int)resourceMan->addTexture("assets/textures/lampTex.png");
+		this->lampGlowId = (int)resourceMan->addTexture("assets/textures/Perk_HpTex.png");
 	}
 }
 
@@ -108,6 +119,19 @@ void RoomHandler::roomCompleted()
 
 bool RoomHandler::playerNewRoom(Entity player, PhysicsEngine* physicsEngine)
 {
+	// Light flicker
+	flickerTimer += Time::getDT();
+	if (flickerTimer >= FLICKER_INTERVAL)
+	{
+		flickerTimer = 0.f;
+		for (int i = 0; i < 4; i++)
+		{
+			PointLight& light = this->scene->getComponent<PointLight>(this->doorLamps[i]);
+			light.color = DOOR_LAMP_COLOUR * DOOR_LAMP_INTENSITY;
+			light.color += rand() % FLICKER_INTENSITY * (rand() % 2 ? 1.f : -1.f);
+		}
+	}
+
 	Room& curRoom = this->rooms[this->activeIndex];
 	if (!curRoom.finished)
 	{
@@ -128,6 +152,7 @@ bool RoomHandler::playerNewRoom(Entity player, PhysicsEngine* physicsEngine)
 				{
 					const int oldIndex = this->activeIndex;
 					this->activeIndex = curRoom.connectingIndex[i];
+					this->placeDoorLamps();
 
 					if (!newRoom.finished) // Room wasn't finished
 					{
@@ -394,7 +419,17 @@ void RoomHandler::generate(uint32_t seed)
 	this->roomExitPoints.shrink_to_fit();
 	this->verticalConnection.shrink_to_fit();
 
+	for (int i = 0; i < 4; i++)
+	{
+		this->doorLamps[i] = this->scene->createEntity();
+
+		this->scene->setComponent<PointLight>(this->doorLamps[i]);
+		PointLight& light = this->scene->getComponent<PointLight>(this->doorLamps[i]);
+		light.color = DOOR_LAMP_COLOUR * DOOR_LAMP_INTENSITY;
+		light.positionOffset = DOOR_LAMP_OFFSET;
+	}
 	this->activeIndex = 0;
+	this->placeDoorLamps();
 	Room& startRoom = this->rooms[this->activeIndex];
 	startRoom.finished = true;
 
@@ -535,13 +570,13 @@ void RoomHandler::createDoors(int roomIndex, const glm::ivec2* doorTilePos)
 
 	const float rots[4] = { -90.f, 90.f, 180.f, 0.f };
 
-	const float OFFSET = 2.5f;
-	const glm::vec2 OFFSETS[4] =
+	const float OFFSET = 1.f;
+	const glm::vec3 OFFSETS[4] =
 	{
-		glm::vec2(-OFFSET, 0.f),
-		glm::vec2(OFFSET, 0.f),
-		glm::vec2(0.f, -OFFSET),
-		glm::vec2(0.f, OFFSET)
+		glm::vec3(-OFFSET, 0.f, 0.f),
+		glm::vec3(OFFSET, 0.f, 0.f),
+		glm::vec3(0.f, 0.f, -OFFSET),
+		glm::vec3(0.f, 0.f, OFFSET)
 	};
 
 	for (int i = 0; i < 4; i++)
@@ -551,8 +586,30 @@ void RoomHandler::createDoors(int roomIndex, const glm::ivec2* doorTilePos)
 			curRoom.doors[i] = this->createDoorEntity(rots[i]);
 
 			Transform& tra = this->scene->getComponent<Transform>(curRoom.doors[i]);
-			tra.position.x = ((float)doorTilePos[i].x + OFFSETS[i].x) * TILE_WIDTH;
-			tra.position.z = ((float)doorTilePos[i].y + OFFSETS[i].y) * TILE_WIDTH;
+			tra.position.x = ((float)doorTilePos[i].x + OFFSETS[i].x * 2.5f) * TILE_WIDTH;
+			tra.position.z = ((float)doorTilePos[i].y + OFFSETS[i].z * 2.5f) * TILE_WIDTH;
+			
+			curRoom.objects.emplace_back(this->scene->createEntity());
+			this->scene->setComponent<MeshComponent>(curRoom.objects.back(), this->lampMeshId);
+			MeshComponent& meshComp = this->scene->getComponent<MeshComponent>(curRoom.objects.back());
+			this->resourceMan->makeUniqueMaterials(meshComp);
+			meshComp.numOverrideMaterials = 1;
+			meshComp.overrideMaterials[0].diffuseTextureIndex = this->lampDiffuseId;
+			//meshComp.overrideMaterials[0].glowMapTextureIndex = this->lampGlowId;
+			meshComp.overrideMaterials[0].emissionIntensity = 1.f;
+
+			Transform& doorTra = this->scene->getComponent<Transform>(curRoom.objects.back());
+			doorTra.rotation = tra.rotation;
+			doorTra.position = tra.position;
+			doorTra.position += OFFSETS[i] * TILE_WIDTH;
+			if (i <= 1)
+			{
+				doorTra.position.z += TILE_WIDTH * 0.5f * (i % 2 ? 1.f : -1.f);
+			}
+			else
+			{
+				doorTra.position.x += TILE_WIDTH * 0.5f * (i % 2 ? -1.f : 1.f);
+			}
 		}
 	}
 }
@@ -840,7 +897,7 @@ void RoomHandler::createObjectEntities(const Tile& tile, Room& room)
 		transform.rotation.y = float((int)this->random->rand() % 360);
 	}
 
-	std::pair<uint32_t, uint32_t> pair(~0u, ~0u);
+	std::pair<int, int> pair(~0u, ~0u);
 
 	if		(tile.type == Tile::TwoXTwo) { pair = this->twoXTwoMeshIds[this->random->rand() % NUM_TWO_X_TWO]; }
 	else if (tile.type == Tile::TwoXOne) { pair = this->oneXTwoMeshIds[this->random->rand() % NUM_ONE_X_TWO]; }
@@ -848,7 +905,7 @@ void RoomHandler::createObjectEntities(const Tile& tile, Room& room)
 
 	if (this->useMeshes)
 	{
-		this->scene->setComponent<MeshComponent>(mainEntity, (int)pair.first);
+		this->scene->setComponent<MeshComponent>(mainEntity, pair.first);
 	}
 	
 	if (pair.second != ~0u)
@@ -1022,6 +1079,31 @@ void RoomHandler::deactivateRoom(int index)
 	}
 }
 
+void RoomHandler::placeDoorLamps()
+{
+	Room& curRoom = this->rooms[this->activeIndex];
+	for (int i = 0; i < 4; i++)
+	{
+		if (curRoom.doors[i] != -1)
+		{
+			if (!this->rooms[curRoom.connectingIndex[i]].finished)
+			{
+				this->scene->setActive(this->doorLamps[i]);
+				const Transform& doorTra = this->scene->getComponent<Transform>(curRoom.doors[i]);
+				
+				Transform& transform = this->scene->getComponent<Transform>(this->doorLamps[i]);
+				transform.rotation = doorTra.rotation;
+				transform.position.x = doorTra.position.x;
+				transform.position.z = doorTra.position.z;
+			}
+		}
+		else
+		{
+			this->scene->setInactive(this->doorLamps[i]);
+		}
+	}
+}
+
 #ifdef _CONSOLE
 void RoomHandler::imgui(DebugRenderer* dr)
 {
@@ -1062,6 +1144,25 @@ void RoomHandler::imgui(DebugRenderer* dr)
 				dr->renderBox(room.colliderPos, glm::vec3(0.f), room.box.extents * 2.f, glm::vec3(1.f, 0.f, 0.f));
 			}
 		}
+
+		//static glm::vec3 lampOffset{-12.f, 21.5f, 30.5f};
+		//static glm::vec3 colour{0.94f, 0.28f, 0.05f};
+		//static float intensity = 5000.f;
+
+		//ImGui::Separator();
+		//ImGui::ColorEdit3("Lamp colour", &colour.x);
+		//ImGui::DragFloat("Intensity", &intensity, 10.f);
+		//ImGui::DragFloat3("Lamp offset", &lampOffset.x, 0.01f);
+		//ImGui::DragFloat("Flicker offset", &flickerInt, 0.05f);
+		//ImGui::DragFloat("Flicker interval", &flickerInterval, 0.05f);
+		//ImGui::DragInt("Flicker int", &flickerInt2, 1);
+
+		//for (int i = 0; i < 4; i++)
+		//{
+		//	this->scene->getComponent<PointLight>(this->doorLamps[i]).color = colour * intensity;
+		//	this->scene->getComponent<PointLight>(this->doorLamps[i]).positionOffset = lampOffset;
+		//}
+
 
 	}
 	ImGui::End();
