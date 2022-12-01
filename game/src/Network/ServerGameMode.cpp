@@ -293,6 +293,22 @@ void ServerGameMode::onCollisionExit(Entity e1, Entity e2) {
   }
 }
 
+int ServerGameMode::getNearestPlayer(const int& ent)
+{
+    int returnIndex = 0;
+    float nearestLenght = glm::length(this->getComponent<Transform>(ent).position - this->getComponent<Transform>(players[0]).position);
+    for (int i = 1; i < this->players.size(); i++)
+    {
+        float nnl = glm::length(this->getComponent<Transform>(ent).position - this->getComponent<Transform>(players[i]).position);
+        if (nnl < nearestLenght && this->getComponent<HealthComp>(players[i]).health > 0.0f)
+        {
+            nearestLenght = nnl;
+            returnIndex = i;
+        }
+    }
+    return returnIndex;
+}
+
 int ServerGameMode::spawnItem(ItemType type, int otherType, float multiplier)
 {
 	this->curItems.push_back({ type, otherType, multiplier });

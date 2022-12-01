@@ -1,5 +1,6 @@
 #include "LichFSM.hpp"
 #include "../../../Components/Combat.h"
+#include "../../../Network/ServerGameMode.h"
 
 //TODO: Change this to funtions!!!!
 //#define getLichComponent() FSM::sceneHandler->getScene()->getComponent<LichComponent>(entityID)
@@ -13,7 +14,7 @@
 int	LichFSM::getPlayerID(Entity entityID)
 {
     // if network exist take player from there
-    NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+    ServerGameMode* s = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
     if (s != nullptr)
     {
             return s->getNearestPlayer(entityID);

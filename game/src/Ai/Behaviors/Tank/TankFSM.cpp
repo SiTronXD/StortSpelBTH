@@ -1,5 +1,6 @@
 #include "TankFSM.hpp"
 #include "../../../Components/Combat.h"
+#include "../../../Network/ServerGameMode.h"
 
 bool TankFSM::falseIfDead(Entity entityID)
 {
@@ -25,7 +26,7 @@ float TankFSM::get_dt()
 int TankFSM::getPlayerID(Entity entityID)
 {
     // if network exist take player from there
-    NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+    ServerGameMode* s = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
     if (s != nullptr)
         {
             return s->getNearestPlayer(entityID);

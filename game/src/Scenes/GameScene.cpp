@@ -291,15 +291,37 @@ void GameScene::update()
         if (this->hasComponents<HealthComp>(this->playerID))
         {
             HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
-            if (healthComp.health <= 0.0f || Input::isKeyPressed(Keys::K))
+            if (healthComp.health <= 0.0f && !this->isGhost)
             {
                 this->isGhost = true;
+                this->combatDisabled = true;
+                this->ghostTransitionTimer = 0.0f;
                 HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
                 healthComp.health = 0.0f;
-                this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = *this->ghostMat;
-                this->combatDisabled = true;
                 //this->networkHandler->disconnectClient(); // TEMP: probably will be in game over scene later
                 //this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+            }
+        }
+
+        // "Respawned" Basically only applying ghost material after some time
+        if (this->ghostTransitionTimer > 1.0f && !this->hasRespawned)
+        {
+            this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = *this->ghostMat;
+        }
+        if (this->isGhost && this->ghostTransitionTimer > 1.0f)
+        {
+            this->getUIRenderer()->renderString("you are dead", glm::vec2(0.0f, 250.0f), glm::vec2(50.0f));
+        }
+        if (this->isGhost && this->ghostTransitionTimer < 5.0f)
+        {
+            this->ghostTransitionTimer += Time::getDT();
+
+            // Fade in/out to black
+            if (this->ghostTransitionTimer < 2.75f)
+            {
+                this->getUIRenderer()->setTexture(this->blackTextureIndex);
+                this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
+                    glm::vec4(1.0f, 1.0f, 1.0f, sin(this->ghostTransitionTimer * 2.0f - glm::half_pi<float>() + 1.25f) * 0.5f + 0.5f));
             }
         }
 
@@ -583,8 +605,9 @@ void GameScene::revivePlayer()
 {
     this->isGhost = false;
     this->combatDisabled = false;
+    this->ghostTransitionTimer = 0.0f;
     this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = this->origMat;
-    // Get back only half hp
+    // Get back half hp
     this->getComponent<HealthComp>(this->playerID).health = this->getComponent<HealthComp>(this->playerID).maxHealth / 2;
 }
 

@@ -97,9 +97,10 @@ public:
 			decreaseTimers(combat, deltaTime);
 			if (!*this->disabled)
 			{
+				this->scene->setActive(this->swordID);
 				updateSwordPos();
 			}
-			else if (this->scene->isActive(this->swordID))
+			else
 			{
 				this->scene->setInactive(this->swordID);
 			}

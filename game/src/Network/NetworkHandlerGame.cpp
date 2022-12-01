@@ -252,7 +252,9 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		dynamic_cast<GameScene*>(scene)->revivePlayer();
 		for (int i = 0; i < (int)this->playerEntities.size(); i++)
 		{
-			scene->getComponent<MeshComponent>(this->playerEntities[i]).overrideMaterials[0] = this->origMat;
+			MeshComponent& mesh = scene->getComponent<MeshComponent>(this->playerEntities[i]);
+			mesh.overrideMaterials[0] = this->origMat;
+			mesh.overrideMaterials[0].tintColor = this->playerColors[i];
 			scene->setActive(this->swords[i]);
 		}
 		break;

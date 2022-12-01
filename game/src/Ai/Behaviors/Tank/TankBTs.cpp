@@ -132,7 +132,7 @@ float TankBT::get_dt()
 int TankBT::getPlayerID(int entityID)
 {
 	// if network exist take player from there
-    NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+	ServerGameMode* s = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
     if (s != nullptr && entityID != -1)
         {
             return s->getNearestPlayer(entityID);

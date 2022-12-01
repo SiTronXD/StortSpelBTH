@@ -16,11 +16,11 @@ int SwarmBT::abilityMeshes[] = {0, 0};
 Entity getPlayerID(SceneHandler* sceneHandler, Entity entityID)
 {
     // if network exist take player from there
-    NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+    ServerGameMode* s = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
     if (s != nullptr)
-        {
-            return s->getNearestPlayer(entityID);
-        }
+    {
+        return s->getNearestPlayer(entityID);
+    }
 
     // else find player from script
     int playerID = -1;
