@@ -120,20 +120,7 @@ void LobbyScene::start()
 
 void LobbyScene::update()
 {
-    Transform& t = this->getComponent<Transform>(scene);
-    ImGui::Begin("scene transform");
-    ImGui::SliderFloat("Position X", &t.position.x, -50.0f, 50.0f);
-    ImGui::SliderFloat("Position Y", &t.position.y, -50.0f, 50.0f);
-    ImGui::SliderFloat("Position Z", &t.position.z, -50.0f, 50.0f);
-
-    ImGui::SliderFloat("Rotation X", &t.rotation.x, -180.0f, 180.0f);
-    ImGui::SliderFloat("Rotation Y", &t.rotation.y, -180.0f, 180.0f);
-    ImGui::SliderFloat("Rotation Z", &t.rotation.z, -180.0f, 180.0f);
-
-    ImGui::SliderFloat("Scale X", &t.scale.x, 0.0f, 5.0f);
-    ImGui::SliderFloat("Scale Y", &t.scale.y, 0.0f, 5.0f);
-    ImGui::SliderFloat("Scale Z", &t.scale.z, 0.0f, 5.0f);
-    ImGui::End();
+    
     // Set model position and player names
     auto netPlayers = this->networkHandler->getPlayers();
     if (netPlayers.size() != this->activePlayers - 1)
