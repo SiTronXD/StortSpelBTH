@@ -56,9 +56,12 @@ private:
   uint32_t portalOnMesh;
 
   Entity healParticleSystemEntity;
-  Entity bloodParticleSystemEntity;
   ParticleSystem healParticleSystem;
-  ParticleSystem bloodParticleSystem;
+
+  std::vector<Entity> bloodParticleSystemEntities;
+  std::vector<ParticleSystem> bloodParticleSystems;
+  uint32_t currentBloodIndex;
+
   bool deletedParticleSystems;
 
   void initParticleSystems();
@@ -79,7 +82,11 @@ public:
   virtual void onCollisionExit(Entity e1, Entity e2) override;
 
   inline const ParticleSystem& getHealParticleSystem() const { return this->healParticleSystem; }
-  inline const ParticleSystem& getBloodParticleSystem() const { return this->bloodParticleSystem; }
+  inline const ParticleSystem& getBloodParticleSystem()
+  { 
+	  this->currentBloodIndex = (this->currentBloodIndex + 1) % this->bloodParticleSystems.size();
+	  return this->bloodParticleSystems[this->currentBloodIndex]; 
+  }
 
 private:
 

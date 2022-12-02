@@ -31,11 +31,12 @@ public:
 				// Entity was recently created
 				if (this->entityTimers.count((Entity) entity) <= 0)
 				{
-					this->entityTimers[(Entity) entity] = 3.0f;
+					this->entityTimers[(Entity) entity] = particleSystem.maxlifeTime;
 				}
 
 				// Decrease timer
 				this->entityTimers[(Entity) entity] -= deltaTime;
+				Log::write("DECREASE ENTITY TIMER");
 
 				// Remove entity
 				if (this->entityTimers[(Entity) entity] <= 0.0f)

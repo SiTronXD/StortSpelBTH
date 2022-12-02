@@ -270,15 +270,14 @@ public:
 				this->takeDmgAudioSource, 10.f);
 		}
 
-		// TODO: REMOVE ENTITY AFTER A SHORT WHILE
-
 		// Particle system
 		Entity bloodParticleSystemEntity = this->scene->createEntity();
 		this->scene->getComponent<Transform>(bloodParticleSystemEntity) =
 			this->scene->getComponent<Transform>(this->playerID);
 		this->scene->setComponent<ParticleSystem>(bloodParticleSystemEntity);
-		this->scene->getComponent<ParticleSystem>(bloodParticleSystemEntity) = 
-			((GameScene*) this->scene)->getBloodParticleSystem();
+		ParticleSystem& bloodPS = this->scene->getComponent<ParticleSystem>(bloodParticleSystemEntity);
+		bloodPS = ((GameScene*) this->scene)->getBloodParticleSystem();
+		bloodPS.spawn = true;
 	}
 
 	void hitEnemy(Combat& combat, int ID)

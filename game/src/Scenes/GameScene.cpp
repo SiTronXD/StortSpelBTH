@@ -39,23 +39,31 @@ void GameScene::initParticleSystems()
     healPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, -0.5f, 0.0f);
 
     // Blood particle system
-    this->bloodParticleSystemEntity = this->createEntity();
-    this->setComponent<ParticleSystem>(this->bloodParticleSystemEntity);
-    ParticleSystem& bloodPS = this->getComponent<ParticleSystem>(this->bloodParticleSystemEntity);
-    std::strcpy(bloodPS.name, "BloodPS");
-    bloodPS.maxlifeTime = 3.0f;
-    bloodPS.numParticles = 32;
-    bloodPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/UI/HealingAbilityParticle.png");
-    bloodPS.startSize = glm::vec2(1.7f);
-    bloodPS.endSize = glm::vec2(0.3f);
-    bloodPS.startColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-    bloodPS.endColor = glm::vec4(0.2f, 0.0f, 0.0f, 0.0f);
-    bloodPS.velocityStrength = 10.0f;
-    bloodPS.acceleration = glm::vec3(0.0f, -3.0f, 0.0f);
-    bloodPS.coneSpawnVolume.diskRadius = 25.0f;
-    bloodPS.coneSpawnVolume.coneAngle = 0.0f;
-    bloodPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
-    bloodPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, -0.5f, 0.0f);
+    this->bloodParticleSystemEntities.resize(3);
+    this->bloodParticleSystems.resize(this->bloodParticleSystemEntities.size());
+    for (size_t i = 0; i < this->bloodParticleSystemEntities.size(); ++i)
+    {
+        this->bloodParticleSystemEntities[i] = this->createEntity();
+        this->setComponent<ParticleSystem>(this->bloodParticleSystemEntities[i]);
+        ParticleSystem& bloodPS = this->getComponent<ParticleSystem>(this->bloodParticleSystemEntities[i]);
+        std::strcpy(bloodPS.name, "BloodPS");
+        bloodPS.maxlifeTime = 1.0f;
+        bloodPS.numParticles = 64;
+        bloodPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/bloodParticle.png");
+        bloodPS.startSize = glm::vec2(0.4f);
+        bloodPS.endSize = glm::vec2(0.0f);
+        bloodPS.startColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+        bloodPS.endColor = glm::vec4(0.2f, 0.0f, 0.0f, 0.0f);
+        bloodPS.velocityStrength = 25.0f;
+        bloodPS.acceleration = glm::vec3(0.0f, -20.0f, 0.0f);
+        bloodPS.spawnRate = 0.01f;
+        bloodPS.spawn = true;
+        bloodPS.respawnSetting = RespawnSetting::EXPLOSION;
+        bloodPS.coneSpawnVolume.diskRadius = 1.5f;
+        bloodPS.coneSpawnVolume.coneAngle = 57.2f;
+        bloodPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 0.0f, 1.0f);
+        bloodPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, -0.5f, 0.0f);
+    }
 
     // Fotstep particle system
     this->setComponent<ParticleSystem>(this->playerID);
@@ -112,13 +120,19 @@ void GameScene::deleteInitialParticleSystems()
             this->removeEntity(particleEntities[i]);
         }
         // Blood particle system
-        else if (particleEntities[i] == this->bloodParticleSystemEntity)
+        else
         {
-            this->bloodParticleSystem =
-                this->getComponent<ParticleSystem>(particleEntities[i]);
+            for (size_t j = 0; j < this->bloodParticleSystemEntities.size(); ++j)
+            {
+                if (particleEntities[i] == this->bloodParticleSystemEntities[j])
+                {
+                    this->bloodParticleSystems[j] =
+                        this->getComponent<ParticleSystem>(particleEntities[i]);
 
-            // Remove found entity
-            this->removeEntity(particleEntities[i]);
+                    // Remove found entity
+                    this->removeEntity(particleEntities[i]);
+                }
+            }
         }
     }
 }
@@ -126,7 +140,8 @@ void GameScene::deleteInitialParticleSystems()
 GameScene::GameScene() :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
     perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1),
-    deletedParticleSystems(false)
+    deletedParticleSystems(false),
+    currentBloodIndex(0)
 {
     Input::setHideCursor(true);
 }
@@ -284,6 +299,27 @@ void GameScene::start()
 void GameScene::update()
 {
     this->deleteInitialParticleSystems();
+
+/*#ifdef _CONSOLE
+    if (this->entityValid(this->bloodParticleSystemEntity))
+    {
+        ImGui::Begin("Particle System");
+        ImGui::SliderFloat3("Cone pos: ", &this->bloodPS->coneSpawnVolume.localPosition[0], -5.0f, 5.0f);
+        ImGui::SliderFloat3("Cone dir: ", &this->bloodPS->coneSpawnVolume.localDirection[0], -1.0f, 1.0f);
+        ImGui::SliderFloat("Disk radius: ", &this->bloodPS->coneSpawnVolume.diskRadius, 0.0f, 10.0f);
+        ImGui::SliderFloat("Cone angle: ", &this->bloodPS->coneSpawnVolume.coneAngle, 0.0f, 180.0f);
+        ImGui::SliderFloat("Velocity strength: ", &this->bloodPS->velocityStrength, 0.0f, 50.0f);
+        ImGui::SliderFloat("Spawn rate: ", &this->bloodPS->spawnRate, 0.0f, 1.0f);
+        ImGui::Checkbox("Spawn: ", &this->bloodPS->spawn);
+        ImGui::End();
+
+        this->getDebugRenderer()->renderParticleSystemCone(this->bloodParticleSystemEntity);
+    }
+#endif*/
+
+
+
+
 
     if (!networkHandler->isConnected())
      {   
