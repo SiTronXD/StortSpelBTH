@@ -30,6 +30,11 @@ private:
 
   float deathTimer;
   bool isDead;
+  
+  bool safetyCleanDone = false;
+  uint32_t timeWhenEnteredRoom = 0;
+  const uint32_t delayToSafetyDelete = 2;
+
   Entity playerID;
   Entity portal;
   Entity perk;
@@ -73,6 +78,7 @@ public:
 
 private:
 
+    void imguiUpdate();
   void createPortal();
 
   int colliderTest;
