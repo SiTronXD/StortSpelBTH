@@ -710,13 +710,16 @@ void RoomHandler::createDoors(int roomIndex, const glm::ivec2* doorTilePos)
 			tra.position.z = ((float)doorTilePos[i].y + OFFSETS[i].z * 2.5f) * TILE_WIDTH;
 			
 			curRoom.objects.emplace_back(this->scene->createEntity());
-			this->scene->setComponent<MeshComponent>(curRoom.objects.back(), this->lampMeshId);
-			MeshComponent& meshComp = this->scene->getComponent<MeshComponent>(curRoom.objects.back());
-			this->resourceMan->makeUniqueMaterials(meshComp);
-			meshComp.numOverrideMaterials = 1;
-			meshComp.overrideMaterials[0].diffuseTextureIndex = this->lampDiffuseId;
-			//meshComp.overrideMaterials[0].glowMapTextureIndex = this->lampGlowId;
-			meshComp.overrideMaterials[0].emissionIntensity = 1.f;
+			if(this->useMeshes)
+            {
+                this->scene->setComponent<MeshComponent>(curRoom.objects.back(), this->lampMeshId);
+                MeshComponent& meshComp = this->scene->getComponent<MeshComponent>(curRoom.objects.back());
+                this->resourceMan->makeUniqueMaterials(meshComp);
+                meshComp.numOverrideMaterials = 1;
+                meshComp.overrideMaterials[0].diffuseTextureIndex = this->lampDiffuseId;
+                //meshComp.overrideMaterials[0].glowMapTextureIndex = this->lampGlowId;
+                meshComp.overrideMaterials[0].emissionIntensity = 1.f;
+            }
 
 			Transform& doorTra = this->scene->getComponent<Transform>(curRoom.objects.back());
 			doorTra.rotation = tra.rotation;
