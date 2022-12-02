@@ -20,7 +20,7 @@ void TankBT::updateCanBeHit(Entity entityID)
 	hitDeg = 180 - hitDeg;
 	if(tank_player_len < tankComp.peronalSpaceRadius)
 	{
-		if(getAngleBetween(tank_player_vec, -tankTrans.forward()) >= hitDeg)
+		if(getAngleBetween(tank_player_vec, tankTrans.forward()) >= hitDeg)
 		{
 			tankComp.canBeHit = true;
 		}
@@ -134,7 +134,6 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 		{
 			Log::write("No avaliable humps! (TELL AI PEOPLE THIS MESSAGE WAS SHOWN!)");
 		}
-       
 	}
 	else
 	{
@@ -150,7 +149,6 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 	// BehaviorTree::sceneHandler->getScriptHandler()->getScriptComponentValue(playerScript, playerGrounded, "onGround");
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	std::vector<int> toRemove;
-
 
 	rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
 
@@ -307,7 +305,7 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 
 	if(dir == glm::vec3(0.0f, 0.0f, 0.0f))
 	{
-		dir = -entityTransform.forward();
+		dir = entityTransform.forward();
 	}
 	rotateTowards(entityID, playerTransform.position, tankComp.idleRotSpeed, 5.0f);
 	glm::normalize(dir);
@@ -388,6 +386,11 @@ int TankBT::getPlayerID(int entityID)
 
 void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 {
+	Log::write("Rotating");
+	if (getTheScene()->getAnimationStatus(entityID).animationName != "Walk")
+	{
+		getTheScene()->setAnimation(entityID, "Walk");
+	}
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	if(tankComp.firendTarget.id == entityID)
@@ -398,7 +401,7 @@ void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 	tankTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(tankComp.firendTarget.pos.x, tankComp.firendTarget.pos.z);
 	glm::vec2 tankPos			= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	glm::vec2 curRot			= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	glm::vec2 curRot			= glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
 	glm::vec2 tank_to_friend	= glm::normalize(targetPos - tankPos);
 
 	float angle_between			= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
@@ -417,7 +420,7 @@ void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 	tankTrans.updateMatrix();
 	targetPos			= glm::vec2(tankComp.firendTarget.pos.x, tankComp.firendTarget.pos.z);
 	tankPos				= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	curRot				= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	curRot				= glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
 	tank_to_friend		= glm::normalize(targetPos - tankPos);
 	angle_between		= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
 	//If angle got bigger, then change direction
@@ -436,13 +439,17 @@ void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 }
 void TankBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision)
 {
+	if (getTheScene()->getAnimationStatus(entityID).animationName != "Walk")
+	{
+		getTheScene()->setAnimation(entityID, "Walk");
+	}
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	//Rotate towards target start
 	tankTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
 	glm::vec2 tankPos			= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	glm::vec2 curRot			= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	glm::vec2 curRot			= glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
 	glm::vec2 tank_to_friend	= glm::normalize(targetPos - tankPos);
 
 	float angle_between			= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
@@ -461,7 +468,7 @@ void TankBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 	tankTrans.updateMatrix();
 	targetPos			= glm::vec2(target.x, target.z);
 	tankPos				= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	curRot				= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	curRot				= glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
 	tank_to_friend		= glm::normalize(targetPos - tankPos);
 	angle_between		= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
 	//If angle got bigger, then change direction
@@ -481,11 +488,12 @@ void TankBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 
 bool TankBT::rotationDone(Entity entityID, glm::vec3 target, float rotSpeed, float precision)
 {
+	Log::write("Rotation Done");
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	tankTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
 	glm::vec2 tankPos			= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	glm::vec2 curRot			= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	glm::vec2 curRot			=-glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
 	glm::vec2 tank_to_friend	= glm::normalize(targetPos - tankPos);
 
 	float angle_between			= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
@@ -588,7 +596,12 @@ BTStatus TankBT::PickNewRandomTarget(Entity entityID)
 
 BTStatus TankBT::MoveAround(Entity entityID)
 {
+	Log::write("Moving");
 	BTStatus ret = BTStatus::Running;
+	if (getTheScene()->getAnimationStatus(entityID).animationName != "Walk")
+	{
+		getTheScene()->setAnimation(entityID, "Walk");
+	}
 
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	if(tankComp.firendTarget.id == entityID)
@@ -605,7 +618,6 @@ BTStatus TankBT::MoveAround(Entity entityID)
 	Collider& friendCol		= getTheScene()->getComponent<Collider>(tankComp.firendTarget.id);
 
 	rotateTowardsTarget(entityID, 5.0f);
-	
 
 	float dist = glm::length(tankTrans.position - tankComp.firendTarget.pos);
 	float distToCheck = 0.0f;
@@ -706,7 +718,12 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		return ret;
 	}
 
+	/*if (getTheScene()->getAnimationStatus(entityID).animationName != "Charge")
+	{
+		getTheScene()->setAnimation(entityID, "Charge");
+	}*/
 
+	Log::write("Charge");
 	if(!tankComp.hasRunTarget && (tankComp.chargeTimer > 0.0f || !rotationDone(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f)))
 	{
 		rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
@@ -730,6 +747,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	{
 		tankComp.runTimer -= get_dt();
 		rb.velocity = tankComp.runDir * tankComp.cahargeSpeed;
+		getTheScene()->setAnimationTimeScale(entityID, 0.0f);
 	}
 	else
 	{
@@ -738,7 +756,6 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.hasRunTarget = false;
 		tankComp.canAttack = false;
 	}
-
 
 	return ret;
 }
@@ -815,6 +832,7 @@ BTStatus TankBT::moveTowardsGroup(Entity entityID)
 
 BTStatus TankBT::HoldShield(Entity entityID)
 {
+	Log::write("Hold Shield");
 	BTStatus ret = BTStatus::Failure;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 
@@ -834,9 +852,12 @@ BTStatus TankBT::HoldShield(Entity entityID)
 
 BTStatus TankBT::playAlertAnim(Entity entityID)
 {
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	tankComp.alertDone = true;
+	return BTStatus::Success; // No scale 
+
 	BTStatus ret = BTStatus::Running;
 
-	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     int playerID = getPlayerID(entityID);
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 	Transform& tankTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);

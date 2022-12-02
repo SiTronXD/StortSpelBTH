@@ -113,7 +113,7 @@ void GameScene::start()
     
     createPortal();
 
-    this->setComponent<HealthComp>(playerID);
+    this->setComponent<HealthComp>(playerID, 100000, 100000);
     this->setComponent<Combat>(playerID);
     this->createSystem<CombatSystem>(
         this,
@@ -168,7 +168,6 @@ void GameScene::start()
         this->getSceneHandler(),this->aiHandler,
         this->getResourceManager(),this->getUIRenderer());
     }
-        
     this->createSystem<OrbSystem>(this->getSceneHandler());
 }
 

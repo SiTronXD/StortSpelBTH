@@ -311,11 +311,24 @@ void SpawnHandler::createTank()
     ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
     if (netScene == nullptr)
     {
-        static int tank = this->resourceManager->addMesh("assets/models/Tank/TankCharge.fbx");
-        
         this->tankIDs.push_back(this->currScene->createEntity());
         this->allEntityIDs.push_back(this->tankIDs.back());
-        this->currScene->setComponent<MeshComponent>(this->tankIDs.back(), tank);        
+        static int tank = this->resourceManager->addAnimations({
+                        "assets/models/Tank/TankWalk.fbx",
+                        "assets/models/Tank/TankCharge.fbx",
+                        "assets/models/Tank/TankGroundHump.fbx",
+                        "assets/models/Tank/TankRaiseShield.fbx"
+            },
+            "assets/textures/"
+        );
+        this->resourceManager->mapAnimations(tank, {
+            "Walk",
+            "Charge",
+            "GroundHump",
+            "RaiseShield",
+            });
+        this->currScene->setComponent<MeshComponent>(this->tankIDs.back(), tank);
+        this->currScene->setComponent<AnimationComponent>(this->tankIDs.back());
     }
     else
     {
@@ -330,8 +343,7 @@ void SpawnHandler::createTank()
     rb.friction = 3.0f;
     rb.mass = 10.0f;
     Transform& transform = this->currScene->getComponent<Transform>(this->tankIDs.back());
-    transform.scale = glm::vec3(3.0f, 3.0f, 3.0f); //TODO: Remove this line when we have real model 
-    this->currScene->setComponent<Collider>(this->tankIDs.back(), Collider::createSphere(TankComponent::colliderRadius));
+    this->currScene->setComponent<Collider>(this->tankIDs.back(), Collider::createSphere(4.0f * transform.scale.x, glm::vec3(0.0f, 3.0f, 0.0f)));
     this->aiHandler->createAIEntity(this->tankIDs.back(), "tankFSM");
     TankComponent& tankComp = this->currScene->getComponent<TankComponent>(this->tankIDs.back());
     tankComp.origScaleY = transform.scale.y;
