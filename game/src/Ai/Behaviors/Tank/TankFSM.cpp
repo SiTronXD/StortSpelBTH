@@ -28,6 +28,113 @@ bool TankFSM::falseIfDead(Entity entityID)
     {return true;}
 }
 
+void TankFSM::generalUpdate(Entity entityID)
+{
+    updateFriendsInSight(entityID);
+    updateHumps(entityID);
+}
+
+void TankFSM::deactivateHump(Entity entityID, uint32_t what)
+{
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	for(auto e: tankComp.humpEnteties)
+	{
+		if(e == what)
+		{
+			getTheScene()->setInactive(e);
+            ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+            if(netScene != nullptr){
+                netScene->addEvent({(int)GameEvent::INACTIVATE, (int)e});
+            }
+			break;
+		}
+	}
+}
+
+void TankFSM::updateHump(Entity entityID, uint32_t what)
+{
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+
+	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
+	Transform& trans = getTheScene()->getComponent<Transform>(what);
+	trans.scale.x = trans.scale.z = tankComp.humps[what];
+	/*trans.position.x = tankTrans.position.x;
+	trans.position.z = tankTrans.position.z;*/
+    ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+    if(netScene != nullptr){
+        netScene->addEvent({(int)GameEvent::UPDATE_HUMP, (int)what}, {trans.scale.x,trans.scale.y,trans.scale.z});
+    }
+}
+
+void TankFSM::updateHumps(Entity entityID)
+{
+    int playerID = getPlayerID(entityID);
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+	Collider& playerCol = getTheScene()->getComponent<Collider>(playerID);	
+	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
+	std::vector<int> toRemove;
+
+    for(auto& h: tankComp.humps)
+	{
+		h.second += tankComp.humpShockwaveSpeed * get_dt();
+
+		updateHump(entityID, h.first);
+        Transform& humpTrans = getTheScene()->getComponent<Transform>(h.first);
+
+		float dist = glm::length(playerTrans.position - humpTrans.position);
+		float minHitDist = dist - playerCol.radius;
+		float maxHitDist = dist + playerCol.radius;
+
+		if(h.second/2.0f >= tankComp.humpShockwaveShieldRadius)
+		{
+			toRemove.push_back(h.first);
+		}
+		else if(h.second/2.0f >= minHitDist && h.second/2.0f <= maxHitDist && (playerTrans.position.y < 1.0f))
+		{
+			//PlayerHit!
+			glm::vec3 to = playerTrans.position;
+			glm::normalize(to);
+			getTheScene()->getComponent<HealthComp>(playerID).health -= (int)tankComp.humpHit;
+            std::cout<<"Player humped!\n";
+			//single player
+			if (dynamic_cast<NetworkSceneHandler*>(FSM::sceneHandler) == nullptr) 
+			{
+				Script& playerScript = getTheScene()->getComponent<Script>(playerID);
+				FSM::sceneHandler->getScriptHandler()->setScriptComponentValue(playerScript , 1.0f, "pushTimer");
+                Rigidbody& playerRB = getTheScene()->getComponent<Rigidbody>(playerID);
+
+                glm::vec3 dir = glm::normalize(to - tankTrans.position);
+                playerRB.velocity = dir * tankComp.humpForce;
+                playerRB.velocity.y += tankComp.humpYForce;
+
+                toRemove.push_back(h.first);
+			}
+            else
+            {
+				//send pushPlayer
+                glm::vec3 dir = glm::normalize(to - tankTrans.position);
+                dir *= tankComp.humpForce;
+                dir.y += tankComp.humpYForce;
+				//trust that push timer never changes
+                ((NetworkSceneHandler*)FSM::sceneHandler)
+                    ->getScene()
+                    ->addEvent({(int)GameEvent::PUSH_PLAYER, playerID}, 
+						{
+						dir.x,
+						dir.y,
+						dir.z
+						});
+			}
+		}
+	}
+	for(auto r: toRemove)
+	{
+		deactivateHump(entityID, r);
+		tankComp.humps.erase(r);
+	}
+}
+
 Scene* TankFSM::getTheScene()
 {
     return FSM::sceneHandler->getScene();
@@ -162,17 +269,16 @@ void TankFSM::removeHumps(Entity entityID)
             netScene->addEvent({(int)GameEvent::INACTIVATE, (int)h});
         }
     }
+    std::cout<<"Removing humps!\n";
 }
 
 bool TankFSM::idleToAler(Entity entityID)
 {
     if(!falseIfDead(entityID)){return false;}
     bool ret = false;
-    
-        
+       
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
-
-    updateFriendsInSight(entityID);
+    
     if(playerInSight(entityID) || friendlysInFight(entityID))
     {
         ret = true;
@@ -193,7 +299,6 @@ bool TankFSM::alertToCombat(Entity entityID)
 {
     if(!falseIfDead(entityID)){return false;}
     bool ret = false;
-    updateFriendsInSight(entityID);  
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 
     if(tankComp.alertDone && tankComp.friendsInSight.size() <= 0)
@@ -214,8 +319,7 @@ bool TankFSM::alertToCombat(Entity entityID)
 bool TankFSM::alertToShield(Entity entityID)
 {
     if(!falseIfDead(entityID)){return false;}
-    bool ret = false;
-    updateFriendsInSight(entityID);  
+    bool ret = false; 
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     if(tankComp.alertDone && tankComp.friendsInSight.size() > 0)
 	{
@@ -236,7 +340,6 @@ bool TankFSM::combatToIdel(Entity entityID)
 {
     if(!falseIfDead(entityID)){return false;}
     bool ret = false;
-    updateFriendsInSight(entityID);
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     if(!playerInSight(entityID) && tankComp.huntTimer <= 0 && tankComp.friendsInSight.size() <= 0)
     {
@@ -254,7 +357,7 @@ bool TankFSM::combatToIdel(Entity entityID)
         tankComp.inCombat = false;
 	    tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
         resetTimers(entityID);
-        removeHumps(entityID);
+        //removeHumps(entityID);
     }
     return ret;
 }
@@ -263,7 +366,6 @@ bool TankFSM::combatToShield(Entity entityID)
 {
     if(!falseIfDead(entityID)){return false;}
     bool ret = false;
-    updateFriendsInSight(entityID);
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     if((playerInSight(entityID) && tankComp.friendsInSight.size() > 0) || friendlysInFight(entityID))
     {
@@ -283,7 +385,6 @@ bool TankFSM::shieldToCombat(Entity entityID)
 {
     if(!falseIfDead(entityID)){return false;}
     bool ret = false;
-    updateFriendsInSight(entityID);
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     if(playerInSight(entityID) && tankComp.friendsInSight.size() <= 0)
     {
@@ -316,7 +417,6 @@ bool TankFSM::shieldToIdle(Entity entityID)
 {
     if(!falseIfDead(entityID)){return false;}
     bool ret = false;
-    updateFriendsInSight(entityID);
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     if(!playerInSight(entityID) && !friendlysInFight(entityID))
     {
@@ -337,7 +437,7 @@ bool TankFSM::shieldToIdle(Entity entityID)
         }
         tankComp.canBeHit = true;
         resetTimers(entityID);
-        removeHumps(entityID);
+        //removeHumps(entityID);
     }
     return ret;
 }
@@ -345,6 +445,7 @@ bool TankFSM::shieldToIdle(Entity entityID)
 bool TankFSM::toDead(Entity entityID)
 {
     bool ret = false;
+    generalUpdate(entityID);
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     if(tankComp.life <= 0)
     {

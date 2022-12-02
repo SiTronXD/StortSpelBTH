@@ -168,6 +168,10 @@ private:
 	static float	get_dt();
 	static Scene*	getTheScene();
 	static bool		falseIfDead(Entity entityID);
+	static void		generalUpdate(Entity entityID);
+	static void		deactivateHump(Entity entityID, uint32_t what);
+	static void		updateHump(Entity entityID, uint32_t what);
+	static void		updateHumps(Entity entityID);
 protected:
 	// Inherited via FSM
 	virtual void registerEntityComponents(Entity entityId) override

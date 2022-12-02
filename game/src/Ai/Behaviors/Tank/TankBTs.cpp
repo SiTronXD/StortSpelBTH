@@ -44,6 +44,7 @@ int	TankBT::numActiveHumps(Entity entityID)
 	}
 	return ret;
 }
+
 uint32_t TankBT::activateHump(Entity entityID)
 {
 	uint32_t ret = -1;
@@ -60,37 +61,7 @@ uint32_t TankBT::activateHump(Entity entityID)
 	}
 	return ret;
 }
-void TankBT::deactivateHump(Entity entityID, uint32_t what)
-{
-	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
-	for(auto e: tankComp.humpEnteties)
-	{
-		if(e == what)
-		{
-			getTheScene()->setInactive(e);
-            ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
-            if(netScene != nullptr){
-                netScene->addEvent({(int)GameEvent::INACTIVATE, (int)e});
-            }
-			//std::cout<<"Removing hump!\n";
-			break;
-		}
-	}
-}
-void TankBT::updateHump(Entity entityID, uint32_t what)
-{
-	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 
-	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
-	Transform& trans = getTheScene()->getComponent<Transform>(what);
-	trans.scale.x = trans.scale.z = tankComp.humps[what];
-	trans.position.x = tankTrans.position.x;
-	trans.position.z = tankTrans.position.z;
-    ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
-    if(netScene != nullptr){
-        netScene->addEvent({(int)GameEvent::UPDATE_HUMP, (int)what}, {trans.scale.x,trans.scale.y,trans.scale.z});
-    }
-}
 bool TankBT::canActivateNewHump(Entity entityID)
 {
 	bool ret = false;
@@ -105,7 +76,8 @@ bool TankBT::canActivateNewHump(Entity entityID)
 	}
 	return ret;
 }
-void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
+
+void TankBT::groundHumpShortcut(Entity entityID)
 {
 	Collider& tankCol = getTheScene()->getComponent<Collider>(entityID);
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
@@ -142,77 +114,14 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
 	}
 
 	int playerID = getPlayerID(entityID);
-	
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
-	Collider& playerCol = getTheScene()->getComponent<Collider>(playerID);	
-	// Script& playerScript = getTheScene()->getComponent<Script>(playerID);
-	bool playerGrounded = false;
-	// BehaviorTree::sceneHandler->getScriptHandler()->getScriptComponentValue(playerScript, playerGrounded, "onGround");
-	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
-	std::vector<int> toRemove;
+
 
 
 	rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
-
-	for(auto& h: tankComp.humps)
-	{
-		h.second += tankComp.humpShockwaveSpeed * get_dt();
-
-		updateHump(entityID, h.first);
-
-		float dist = glm::length(playerTrans.position - tankTrans.position);
-		float minHitDist = dist - playerCol.radius;
-		float maxHitDist = dist + playerCol.radius;
-
-		if(h.second/2.0f >= maxRad)
-		{
-			toRemove.push_back(h.first);
-		}
-		else if(h.second/2.0f >= minHitDist && h.second/2.0f <= maxHitDist && (playerTrans.position.y < 1.f))
-		{
-			//PlayerHit!
-			glm::vec3 to = playerTrans.position;
-			glm::normalize(to);
-			getTheScene()->getComponent<HealthComp>(playerID).health -= (int)tankComp.humpHit;
-
-			//single player
-			if (dynamic_cast<NetworkSceneHandler*>(BehaviorTree::sceneHandler) == nullptr) 
-			{
-				Script& playerScript = getTheScene()->getComponent<Script>(playerID);
-				BehaviorTree::sceneHandler->getScriptHandler()->setScriptComponentValue(playerScript , 1.0f, "pushTimer");
-                Rigidbody& playerRB = getTheScene()->getComponent<Rigidbody>(playerID);
-
-                glm::vec3 dir = glm::normalize(to - tankTrans.position);
-                playerRB.velocity = dir * tankComp.humpForce;
-                playerRB.velocity.y += tankComp.humpYForce;
-                
-			}
-            else
-            {
-				//send pushPlayer
-                glm::vec3 dir = glm::normalize(to - tankTrans.position);
-                dir *= tankComp.humpForce;
-                dir.y += tankComp.humpYForce;
-				//trust that push timer never changes
-                ((NetworkSceneHandler*)BehaviorTree::sceneHandler)
-                    ->getScene()
-                    ->addEvent({(int)GameEvent::PUSH_PLAYER, playerID}, 
-						{
-						dir.x,
-						dir.y,
-						dir.z
-						});
-			}
-		}
-	}
-	for(auto r: toRemove)
-	{
-		deactivateHump(entityID, r);
-		tankComp.humps.erase(r);
-	}
-
 	updateCanBeHit(entityID);
 }
+
 void TankBT::drawRaySimple(Ray& ray, float dist, glm::vec3 color)
 {
 	//Draw ray
@@ -656,7 +565,7 @@ BTStatus TankBT::GroundHump(Entity entityID)
 	BTStatus ret = BTStatus::Running;
 
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
-	groundHumpShortcut(entityID, tankComp.humpShockwaveAttackRadius);
+	groundHumpShortcut(entityID);
 
 	return ret;
 }
@@ -825,7 +734,7 @@ BTStatus TankBT::HoldShield(Entity entityID)
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	rotateTowards(entityID, playerTrans.position, tankComp.shildRotSpeed, 5.0f);
 
-	groundHumpShortcut(entityID, tankComp.humpShockwaveShieldRadius);
+	groundHumpShortcut(entityID);
 
 	updateCanBeHit(entityID);
 
