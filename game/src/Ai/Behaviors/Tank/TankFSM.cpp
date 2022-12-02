@@ -1,5 +1,21 @@
 #include "TankFSM.hpp"
 #include "../../../Components/Combat.h"
+#include "../../../Network/ServerGameMode.h"
+
+Entity TankFSM::getPlayerID(Entity entityID){
+    // if network exist take player from there
+    NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+    if (s != nullptr)
+    {
+            return s->getNearestPlayer(entityID);
+    }
+
+    // else find player from script
+    int playerID = -1;
+    std::string playerString = "playerID";
+    FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
+    return playerID;
+}
 
 bool TankFSM::falseIfDead(Entity entityID)
 {
@@ -22,22 +38,6 @@ float TankFSM::get_dt()
     return FSM::sceneHandler->getAIHandler()->getDeltaTime();
 }
 
-int TankFSM::getPlayerID(Entity entityID)
-{
-    // if network exist take player from there
-    NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
-    if (s != nullptr)
-        {
-            return s->getNearestPlayer(entityID);
-        }
-
-    // else find player from script
-    int playerID = -1;
-    std::string playerString = "playerID";
-    FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
-    return playerID;
-}
-
 void TankFSM::resetTimers(Entity entityID)
 {
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
@@ -48,7 +48,7 @@ void TankFSM::resetTimers(Entity entityID)
 	tankComp.huntTimer        = tankComp.huntTimerOrig;   
 	tankComp.chargeTimer      = tankComp.chargeTimerOrig; 
 	tankComp.runTimer	      = tankComp.runTimerOrig;    
-	tankComp.groundHumpTimer  = tankComp.groundHumpTimerOrig;     
+	tankComp.groundHumpTimer  = 0.0f;//tankComp.groundHumpTimerOrig;     
 	tankComp.friendHealTimer  = tankComp.friendHealTimerOrig;     
 
 }
@@ -62,26 +62,15 @@ void TankFSM::updateFriendsInSight(Entity entityID)
     Transform& tankTransform = scene->getComponent<Transform>(entityID);
 
     std::vector<int> toRemove;
-    std::vector<int> toAddID;
     std::vector<TankFriend> toAddData;
     for(auto f: tankComp.allFriends)
     {
+        //Check if friend is dead, then remove it from all friends
         if(f.second.type == "Swarm")
         {
             SwarmComponent& swarmComp = scene->getComponent<SwarmComponent>(f.first);
             if(swarmComp.life <= 0)
             {
-                
-                for(auto g: swarmComp.group->members)
-                {
-                    if(scene->getComponent<SwarmComponent>(g).life > 0)
-                    {
-                        toAddID.push_back(g);
-                        toAddData.push_back({f.second.type, f.second.visited});
-                        break;
-                    }
-                }
-                
                 toRemove.push_back(f.first);
                 continue;
             }
@@ -95,7 +84,13 @@ void TankFSM::updateFriendsInSight(Entity entityID)
                 continue;
             }
         }
+        else if(f.second.type == "")
+        {
+            toRemove.push_back(f.first);
+            continue;
+        }
 
+        //Update friends in sight
         Transform& transComp = scene->getComponent<Transform>(f.first);
         float dist = glm::length(transComp.position - tankTransform.position);
         if(dist < tankComp.sightRadius)
@@ -107,10 +102,6 @@ void TankFSM::updateFriendsInSight(Entity entityID)
     for(auto r: toRemove)
     {
         tankComp.allFriends.erase(r);
-    }
-    for(int i = 0; i < toAddID.size(); i++)
-    {
-        tankComp.allFriends.insert({toAddID[i],{toAddData[i].type, toAddData[i].visited}});
     }
 }
 
@@ -146,7 +137,7 @@ bool TankFSM::friendlysInFight(Entity entityID)
         }
         else if(theScene->hasComponents<LichComponent>(f.first))
         {
-             if(theScene->getComponent<LichComponent>(f.first).inCombat)
+            if(theScene->getComponent<LichComponent>(f.first).inCombat)
             {
                 return true;
             }
@@ -156,6 +147,21 @@ bool TankFSM::friendlysInFight(Entity entityID)
 
 
     return false;
+}
+
+void TankFSM::removeHumps(Entity entityID)
+{
+    TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+    tankComp.humps.clear();
+    for(auto h: tankComp.humpEnteties)
+    {
+        getTheScene()->setInactive(h);
+        ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+        if(netScene)
+        {
+            netScene->addEvent({(int)GameEvent::INACTIVATE, (int)h});
+        }
+    }
 }
 
 bool TankFSM::idleToAler(Entity entityID)
@@ -246,9 +252,9 @@ bool TankFSM::combatToIdel(Entity entityID)
     if(ret)
     {
         tankComp.inCombat = false;
-        tankComp.humps.clear();
 	    tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
         resetTimers(entityID);
+        removeHumps(entityID);
     }
     return ret;
 }
@@ -267,7 +273,6 @@ bool TankFSM::combatToShield(Entity entityID)
     if(ret)
     {
         tankComp.inCombat = false;
-        tankComp.humps.clear();
         resetTimers(entityID);
     }
 
@@ -325,14 +330,14 @@ bool TankFSM::shieldToIdle(Entity entityID)
             {
                 getTheScene()->getComponent<SwarmComponent>(f.first).shieldedByTank = false;
             }
-            else
+            else if(f.second.type == "Lich")
             {
                 getTheScene()->getComponent<LichComponent>(f.first).shieldedByTank = false;
-
             }
         }
         tankComp.canBeHit = true;
         resetTimers(entityID);
+        removeHumps(entityID);
     }
     return ret;
 }
@@ -345,6 +350,7 @@ bool TankFSM::toDead(Entity entityID)
     {
         ret = true;
         resetTimers(entityID);
+        removeHumps(entityID);
     }
     return ret;
 }

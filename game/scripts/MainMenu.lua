@@ -1,4 +1,4 @@
-local playerMesh = resources.addAnimations({ "assets/models/Menu/SittingIdle.fbx"}, "assets/textures/playerMesh")
+local playerMesh = resources.addAnimations({ "assets/models/Menu/SittingIdle2.fbx"}, "assets/textures/playerMesh")
 resources.mapAnimations(playerMesh, {"idle"})
 
 -- Camera

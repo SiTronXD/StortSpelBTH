@@ -28,6 +28,10 @@ private:
   UIArea resumeButton;
   UIArea exitButton;
 
+  bool safetyCleanDone = false;
+  uint32_t timeWhenEnteredRoom = 0;
+  const uint32_t delayToSafetyDelete = 2;
+
   Entity playerID;
   Entity portal;
   Entity perk;
@@ -49,7 +53,6 @@ private:
   uint32_t abilityTextures[3];
   uint32_t perkTextures[6];
   uint32_t fontTextureIndex;
-  uint32_t blackTextureIndex;
 
   uint32_t hpBarBackgroundTextureID;
   uint32_t hpBarTextureID;
@@ -72,6 +75,7 @@ public:
 
 private:
 
+    void imguiUpdate();
   void createPortal();
 
   int colliderTest;

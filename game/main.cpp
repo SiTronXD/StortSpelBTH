@@ -10,8 +10,11 @@
 #include "src/Scenes/MainMenu.h"
 #include "src/Scenes/GameScene.h"
 #include "src/Scenes/GameOverScene.h"
+
+#ifdef WIN32
 #include "src/Scenes/LevelEditor.h"
-#include "src/Scenes/NetworkAI.h"
+#endif
+
 #include "src/Scenes/LobbyScene.h"
 #include "src/Network/NetworkHandlerGame.h"
 
@@ -26,14 +29,23 @@ int main(int argc, char* argv[])
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif // _WIN32 && _DEBUG
 
-    srand((unsigned int)time(0));
+    uint32_t seed = (unsigned int)time(0);
+#ifdef _CONSOLE 
+    if(argc > 1)
+    {
+        seed = (uint32_t)std::stoi(argv[1]);
+    }
+    Log::write("Seed was: " + std::to_string(seed));
+#endif
+
+    srand(seed);
     {
         Engine engine;
         engine.setCustomNetworkHandler(new NetworkHandlerGame());
-        //engine.run("Presumed Dead", "", new LobbyScene());
-        engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
+        engine.run("Presumed Dead", "", new LobbyScene());
         //engine.run("Presumed Dead", "", new RoomTesting());
         //engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
+        //engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
     }
 
     return EXIT_SUCCESS;
