@@ -44,6 +44,8 @@ void LobbyScene::init()
     this->backgroundId =
         this->getResourceManager()->addTexture("assets/textures/blackTex.png"
         );
+    this->buttonId =
+        this->getResourceManager()->addTexture("assets/textures/UI/button.png");
 
     this->fontTextureId = Scene::getResourceManager()->addTexture(
         "assets/textures/UI/font.png", {samplerSettings, true}
@@ -64,6 +66,12 @@ void LobbyScene::init()
     this->setMainCamera(camEntity);
     this->getComponent<Transform>(camEntity).position = glm::vec3(0, 0, 0);
     this->getComponent<Transform>(camEntity).rotation = glm::vec3(0, 0, 0);
+
+    scene = this->createEntity();
+    this->setComponent<MeshComponent>(scene, (int)this->getResourceManager()->addMesh("assets/models/Menu/lobby.obj"));
+    Transform& t = this->getComponent<Transform>(scene);
+    t.position = glm::vec3(0.f, 0.5f, 40.f);
+    t.rotation = glm::vec3(0.f, 180.f, 0.f);
 
     this->players.resize(MAX_PLAYER_COUNT);
     this->playersNames.resize(MAX_PLAYER_COUNT);
@@ -102,6 +110,9 @@ void LobbyScene::start()
     this->getComponent<Transform>(background).scale.y = 100;
 
     int light = this->createEntity();
+    this->setComponent<DirectionalLight>(
+        light, glm::vec3(-0.5f, -1.0f, 1.0f), glm::vec3(0.6f)
+    );
     this->setComponent<PointLight>(light);
     this->getComponent<PointLight>(light).color = glm::vec3(10, 10, 10);
     this->getComponent<Transform>(light).position = glm::vec3(0, 0, 0);
@@ -109,6 +120,7 @@ void LobbyScene::start()
 
 void LobbyScene::update()
 {
+    
     // Set model position and player names
     auto netPlayers = this->networkHandler->getPlayers();
     if (netPlayers.size() != this->activePlayers - 1)
@@ -131,18 +143,19 @@ void LobbyScene::update()
     }
 
     // Button backtgrounds
-    this->getUIRenderer()->setTexture(this->backgroundId);
+    this->getUIRenderer()->setTexture(this->buttonId);
     this->getUIRenderer()->renderTexture(
         this->disconnectButton.position, this->disconnectButton.dimension,
-        glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.1f + this->disconnectButton.isHovering() * 0.15f));
+        glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.85f + this->disconnectButton.isHovering() * 0.15f));
     if (this->getNetworkHandler()->hasServer())
     {
         this->getUIRenderer()->renderTexture(
             this->startButton.position, this->startButton.dimension,
-            glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.1f + this->startButton.isHovering() * 0.15f));
+            glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.85f + this->startButton.isHovering() * 0.15f));
     }
 
     // Write player names in lobby
+    this->getUIRenderer()->setTexture(this->backgroundId);
     this->getUIRenderer()->renderString(
         this->getNetworkHandler()->getClientName(),
         this->POSITIONS[0] + glm::vec3(0.0f, 20.0f, 0.0f),

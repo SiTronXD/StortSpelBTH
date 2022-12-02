@@ -11,6 +11,7 @@ class LobbyScene : public Scene
 private:
 	uint32_t fontTextureId;
 	uint32_t backgroundId;
+	uint32_t buttonId;
 	std::string serverIP;
 
 	uint32_t activePlayers;
@@ -26,6 +27,8 @@ private:
 		glm::vec3(-10, -10, 18),
 		glm::vec3(-5, -10, 21) 
 	};
+
+	Entity scene;
 
 	UIArea startButton;
 	UIArea disconnectButton;
