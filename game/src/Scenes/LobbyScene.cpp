@@ -70,7 +70,7 @@ void LobbyScene::init()
     scene = this->createEntity();
     this->setComponent<MeshComponent>(scene, (int)this->getResourceManager()->addMesh("assets/models/Menu/lobby.obj"));
     Transform& t = this->getComponent<Transform>(scene);
-    t.position = glm::vec3(0.f, 1.5f, 35.f);
+    t.position = glm::vec3(0.f, 0.5f, 40.f);
     t.rotation = glm::vec3(0.f, 180.f, 0.f);
 
     this->players.resize(MAX_PLAYER_COUNT);
