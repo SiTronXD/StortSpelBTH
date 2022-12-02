@@ -186,10 +186,10 @@ void LobbyScene::update()
             //    );
             //}
             //else
-            //{
+            {
                 this->helpPacket << (int)NetworkEvent::START;
                 this->getNetworkHandler()->sendDataToServerTCP(helpPacket);
-            //}
+            }
         }
     }
 

@@ -6,6 +6,7 @@
 ServerGameMode::~ServerGameMode()
 {
     aiHandler.clean();
+    this->sceneType = SceneType::GameModeScene;
 }
 
 void ServerGameMode::init()
@@ -61,7 +62,7 @@ void ServerGameMode::update(float dt)
     if (this->spawnHandler.allDead() && this->newRoomFrame)
     {
         this->newRoomFrame = false;
-        std::cout << "all dead" << std::endl;
+        std::cout << typeid(this).name() << ": all dead" << std::endl;
         this->addEvent({(int)GameEvent::ROOM_CLEAR});
         // Call when a room is cleared
         roomHandler.roomCompleted();

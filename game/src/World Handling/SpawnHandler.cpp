@@ -49,10 +49,9 @@ void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
     tankComp.life = tankComp.FULL_HEALTH;
     transform.scale.y = tankComp.origScaleY;
 
-    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
+    if (currScene->getSceneType() == SceneType::GameModeScene)
     {
-        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->tankIDs[tankIdx]});    
-        //((NetworkScene*)currScene)->addEvent({(int)GameEvent::ENTITY_SET_HP, this->tankIDs[tankIdx], tankComp.life});    
+        ((ServerGameMode*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->tankIDs[tankIdx]});       
     }
 }
 
@@ -67,10 +66,9 @@ void SpawnHandler::spawnLich(int lichIdx, const glm::vec3& pos)
     LichComponent& lichComp = currScene->getComponent<LichComponent>(this->lichIDs[lichIdx]);
     lichComp.life = lichComp.FULL_HEALTH;
 
-    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
+    if (currScene->getSceneType() == SceneType::GameModeScene)
     {
-        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->lichIDs[lichIdx]});    
-       //((NetworkScene*)currScene)->addEvent({(int)GameEvent::ENTITY_SET_HP, this->lichIDs[lichIdx], lichComp.life});    
+        ((ServerGameMode*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->lichIDs[lichIdx]});       
     }
 }
 
@@ -91,10 +89,9 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
 
     swarmComp.group->aliveMembers.push(0);
 
-    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
+    if (currScene->getSceneType() == SceneType::GameModeScene)
     {
         ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->swarmIDs[swarmIdx]});    
-        //((NetworkScene*)currScene)->addEvent({(int)GameEvent::ENTITY_SET_HP, this->swarmIDs[swarmIdx], swarmComp.life});    
     }
 }
 
@@ -113,7 +110,7 @@ void SpawnHandler::createEntities()
 
     //TODO: Cause crash on second run, therefore disabled in distribution... 
 #ifdef _CONSOLE 
-    if (dynamic_cast<NetworkScene*>(currScene) == nullptr)
+    if (currScene->getSceneType() != SceneType::GameModeScene)
     {
         this->aiHandler->addImguiToFSM("swarmFSM", this->SwarmImgui());
         this->aiHandler->addImguiToFSM("lichFSM", this->LichImgui());
