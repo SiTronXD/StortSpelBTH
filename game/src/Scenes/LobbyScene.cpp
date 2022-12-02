@@ -62,16 +62,21 @@ void LobbyScene::init()
     );
 
     int camEntity = this->createEntity();
-    this->setComponent<Camera>(camEntity);
+    this->setComponent<Camera>(camEntity, 55.f);
     this->setMainCamera(camEntity);
-    this->getComponent<Transform>(camEntity).position = glm::vec3(0, 0, 0);
+    this->getComponent<Transform>(camEntity).position = glm::vec3(0, 0, -20);
     this->getComponent<Transform>(camEntity).rotation = glm::vec3(0, 0, 0);
 
     scene = this->createEntity();
-    this->setComponent<MeshComponent>(scene, (int)this->getResourceManager()->addMesh("assets/models/Menu/lobby.obj"));
+    this->setComponent<MeshComponent>(scene, (int)this->getResourceManager()->addMesh("assets/models/Menu/lobbyScene_no_candles.obj"));
     Transform& t = this->getComponent<Transform>(scene);
     t.position = glm::vec3(0.f, 0.5f, 40.f);
     t.rotation = glm::vec3(0.f, 180.f, 0.f);
+
+    candle = this->createEntity();
+    this->setComponent<MeshComponent>(candle, (int)this->getResourceManager()->addMesh("assets/models/Menu/candle.obj"));
+    this->setComponent<PointLight>(candle, glm::vec3(-0.5, 0, 15), glm::vec3(40, 10, 5));
+    this->getComponent<PointLight>(candle).positionOffset = glm::vec3(0, 10, 0);
 
     this->players.resize(MAX_PLAYER_COUNT);
     this->playersNames.resize(MAX_PLAYER_COUNT);
@@ -94,10 +99,10 @@ void LobbyScene::init()
     }
     this->setActive(players[0]);
 
-    startButton.position = glm::vec2(0.0f, -400.f);
+    startButton.position = glm::vec2(0.0f, -450.f);
     startButton.dimension = glm::vec2(275.0f, 100.0f);
 
-    disconnectButton.position = glm::vec2(-700.f, -400.f);
+    disconnectButton.position = glm::vec2(-850.f, -450.f);
     disconnectButton.dimension = glm::vec2(225.0f, 75.0f);
 }
 
@@ -120,7 +125,33 @@ void LobbyScene::start()
 
 void LobbyScene::update()
 {
-    
+    //Transform& t = this->getComponent<Transform>(scene);
+    Transform& t = this->getComponent<Transform>(candle);
+    ImGui::Begin("Candle transform");
+    ImGui::SliderFloat("Position X", &t.position.x, -50.0f, 50.0f);
+    ImGui::SliderFloat("Position Y", &t.position.y, -50.0f, 50.0f);
+    ImGui::SliderFloat("Position Z", &t.position.z, -50.0f, 50.0f);
+
+    ImGui::SliderFloat("Rotation X", &t.rotation.x, -180.0f, 180.0f);
+    ImGui::SliderFloat("Rotation Y", &t.rotation.y, -180.0f, 180.0f);
+    ImGui::SliderFloat("Rotation Z", &t.rotation.z, -180.0f, 180.0f);
+
+    ImGui::SliderFloat("Scale X", &t.scale.x, 0.0f, 5.0f);
+    ImGui::SliderFloat("Scale Y", &t.scale.y, 0.0f, 5.0f);
+    ImGui::SliderFloat("Scale Z", &t.scale.z, 0.0f, 5.0f);
+    ImGui::End();
+
+    //Transform& tC = this->getComponent<Transform>(this->getMainCameraID());
+    PointLight& tC = this->getComponent<PointLight>(candle);
+    ImGui::Begin("Pointlight");
+    ImGui::SliderFloat("Position offset X", &tC.positionOffset.x, -50.0f, 50.0f);
+    ImGui::SliderFloat("Position offset Y", &tC.positionOffset.y, -50.0f, 50.0f);
+    ImGui::SliderFloat("Position offset Z", &tC.positionOffset.z, -50.0f, 50.0f);
+                                               
+    ImGui::SliderFloat("Color R", &tC.color.x, 0.0f, 50.0f);
+    ImGui::SliderFloat("Color G", &tC.color.y, 0.0f, 50.0f);
+    ImGui::SliderFloat("Color B", &tC.color.z, 0.0f, 50.0f);
+    ImGui::End();
     // Set model position and player names
     auto netPlayers = this->networkHandler->getPlayers();
     if (netPlayers.size() != this->activePlayers - 1)

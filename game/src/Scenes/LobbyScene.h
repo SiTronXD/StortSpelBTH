@@ -29,6 +29,7 @@ private:
 	};
 
 	Entity scene;
+    Entity candle;
 
 	UIArea startButton;
 	UIArea disconnectButton;
