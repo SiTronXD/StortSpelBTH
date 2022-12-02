@@ -168,7 +168,7 @@ void TankFSM::resetTimers(Entity entityID)
 	tankComp.huntTimer        = tankComp.huntTimerOrig;   
 	tankComp.chargeTimer      = tankComp.chargeTimerOrig; 
 	tankComp.runTimer	      = tankComp.runTimerOrig;    
-	tankComp.groundHumpTimer  = 0.0f;//tankComp.groundHumpTimerOrig;     
+	tankComp.groundHumpTimer  = tankComp.groundHumpTimerOrig;     
 	tankComp.friendHealTimer  = tankComp.friendHealTimerOrig;     
 
 }

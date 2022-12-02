@@ -81,37 +81,42 @@ void TankBT::groundHumpShortcut(Entity entityID)
 {
 	Collider& tankCol = getTheScene()->getComponent<Collider>(entityID);
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	Rigidbody& tankRb = getTheScene()->getComponent<Rigidbody>(entityID);
+	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	tankComp.chargeTimer = tankComp.chargeTimerOrig;
 	tankComp.hasRunTarget = false;
-
-	if(tankComp.groundHumpTimer <= 0)
+	if(glm::length(tankRb.velocity) <= 0.1f && (tankTrans.position.y - tankCol.radius) <= 1.0f)
 	{
-		if(canActivateNewHump(entityID))
+		if(tankComp.groundHumpTimer <= 0)
 		{
-            Log::write("Stomp!", BT_FILTER);
-            uint32_t newHump = activateHump(entityID);
-            Transform& hTrans = getTheScene()->getComponent<Transform>(newHump);
-            hTrans.position = getTheScene()->getComponent<Transform>(entityID).position;
-            hTrans.position.y -= tankCol.radius - 0.5f;
-            tankComp.humps.insert({newHump, 1.0f});
-            tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
-			
-            ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
-			if(netScene)
-            {
-                netScene->addEvent({(int)GameEvent::DO_HUMP, (int)newHump}, {hTrans.position.x, hTrans.position.y, hTrans.position.z});
-            }            
+			if(canActivateNewHump(entityID))
+			{
+		        Log::write("Stomp!", BT_FILTER);
+		        uint32_t newHump = activateHump(entityID);
+		        Transform& hTrans = getTheScene()->getComponent<Transform>(newHump);
+		        hTrans.position = getTheScene()->getComponent<Transform>(entityID).position;
+		        hTrans.position.y -= tankCol.radius - 0.5f;
+		        tankComp.humps.insert({newHump, 1.0f});
+		        tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
+				
+		        ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+				if(netScene)
+		        {
+		            netScene->addEvent({(int)GameEvent::DO_HUMP, (int)newHump}, {hTrans.position.x, hTrans.position.y, hTrans.position.z});
+		        }            
+			}
+			else
+			{
+				Log::write("No avaliable humps! (TELL AI PEOPLE THIS MESSAGE WAS SHOWN!)");
+			}
+		   
 		}
 		else
 		{
-			Log::write("No avaliable humps! (TELL AI PEOPLE THIS MESSAGE WAS SHOWN!)");
+			tankComp.groundHumpTimer -= get_dt();
 		}
-       
 	}
-	else
-	{
-		tankComp.groundHumpTimer -= get_dt();
-	}
+	
 
 	int playerID = getPlayerID(entityID);
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
@@ -152,17 +157,25 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 	glm::vec3 to = entityTransform.position;
 	float maxDist = glm::length(to - from);
 	glm::vec3 dir = glm::normalize(from - to);
-	Ray rayToPlayer{from, -dir};    
+	glm::vec3 offset = entityTransform.right() * (entityCollider.radius +1.0f);
+	Ray rayToPlayer{from, -dir};  
+	Ray rayToPlayer_right{from + offset, -dir};    
+	Ray rayToPlayer_left{from - offset, -dir};    
 	Ray rayRight{to, entityTransform.right()};    
 	Ray rayLeft{to, -entityTransform.right()};    
 	float left_right_maxDist = entityCollider.radius + 3.0f;
     RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, maxDist);
-	//drawRaySimple(rayToPlayer, maxDist);
-	if(rp.hit)
+    RayPayload rp1 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_right, maxDist);
+    RayPayload rp2 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_left, maxDist);
+	drawRaySimple(rayToPlayer, maxDist);
+	drawRaySimple(rayToPlayer_right, maxDist);
+	drawRaySimple(rayToPlayer_left, maxDist);
+	if(rp.hit || rp1.hit || rp2.hit)
 	{
 		
-		if(!getTheScene()->getComponent<Collider>(rp.entity).isTrigger &&
-			rp.entity != entityID)
+		if((sceneHandler->getScene()->hasComponents<Collider>(rp.entity) && !getTheScene()->getComponent<Collider>(rp.entity).isTrigger && rp.entity != entityID) || 
+			(sceneHandler->getScene()->hasComponents<Collider>(rp1.entity) && !getTheScene()->getComponent<Collider>(rp1.entity).isTrigger && rp1.entity != entityID) ||
+			(sceneHandler->getScene()->hasComponents<Collider>(rp2.entity) && !getTheScene()->getComponent<Collider>(rp2.entity).isTrigger && rp2.entity != entityID))
 		{
 			ret = false;
 			somethingInTheWay = true;
@@ -171,9 +184,9 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 			RayPayload r_right= BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayRight, left_right_maxDist);
 			RayPayload r_left = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayLeft, left_right_maxDist);
 			RayPayload r_forward = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, left_right_maxDist);
-			//drawRaySimple(rayToPlayer, left_right_maxDist);
-			//drawRaySimple(rayRight, left_right_maxDist);
-			//drawRaySimple(rayLeft, left_right_maxDist);
+			drawRaySimple(rayToPlayer, left_right_maxDist);
+			drawRaySimple(rayRight, left_right_maxDist);
+			drawRaySimple(rayLeft, left_right_maxDist);
 
 			if(r_forward.hit && !getTheScene()->getComponent<Collider>(r_forward.entity).isTrigger)
 			{
@@ -595,22 +608,10 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	Collider& tankCol = getTheScene()->getComponent<Collider>(entityID);
 	Rigidbody& rb = getTheScene()->getComponent<Rigidbody>(entityID);
 
-	tankComp.humps.clear();
-	for(auto h: tankComp.humpEnteties)
-	{
-		getTheScene()->setInactive(h);
-        ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
-        if(netScene)
-        {
-            netScene->addEvent({(int)GameEvent::INACTIVATE, (int)h});
-        }
-	}
-	tankComp.groundHumpTimer = 0.0f;
 
 	glm::vec3 dir;
 	if(!rayChecking(entityID, dir))
 	{
-        avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, playerTrans.position, dir, glm::vec3(0.0f, -3.0f, 0.0f)); 
 		rb.velocity = dir * tankComp.idleSpeed;
 		return ret;
 	}
