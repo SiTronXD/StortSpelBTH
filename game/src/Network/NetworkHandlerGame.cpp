@@ -260,13 +260,16 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
         break;
     case GameEvent::PUSH_PLAYER: // Can't confirm yet if this works
         tcpPacket >> i0; 
-		v0 = this->getVec(tcpPacket);
-        this->sceneHandler->getScene()->getComponent<Rigidbody>(player).velocity = v0;
-        this->sceneHandler->getScriptHandler()->setScriptComponentValue(
-            this->sceneHandler->getScene()->getComponent<Script>(player),
-            1.0f,
-            "pushTimer"
-        );
+		if(i0 == ID)
+		{
+			v0 = this->getVec(tcpPacket);
+			this->sceneHandler->getScene()->getComponent<Rigidbody>(player).velocity = v0;
+			this->sceneHandler->getScriptHandler()->setScriptComponentValue(
+			    this->sceneHandler->getScene()->getComponent<Script>(player),
+			    1.0f,
+			    "pushTimer"
+			);
+		}
         break;
     case GameEvent::PLAYER_SETHP:
         tcpPacket >> i0 >> i1;

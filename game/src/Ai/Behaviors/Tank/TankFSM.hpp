@@ -60,7 +60,7 @@ struct TankComponent
 	float shieldSpeed				= 5.0f;
 	float cahargeSpeed				= 200.0f;
     float sightRadius				= 200.0f; // I'll can attack you
-    float peronalSpaceRadius		= 100.0f; // This is my personal space, get away!
+    float peronalSpaceRadius		= 75.0f; // This is my personal space, get away!
 	float friendVisitRadius			= 15.0f; //When go this close to friends
 	float combatRotSpeed			= 50.0f;
 	float idleRotSpeed				= 40.0f;
@@ -102,7 +102,7 @@ struct TankComponent
 	float runTimerOrig				= 3.0f;
 	float runTimer					= huntTimerOrig;
 	float groundHumpTimerOrig		= 3.0f;
-	float groundHumpTimer			= 0.0f;
+	float groundHumpTimer			= groundHumpTimerOrig;
 	float friendHealTimerOrig		= 1.0f;
 	float friendHealTimer			= huntTimerOrig;
 	std::unordered_map<uint32_t, float> humps;	//Represents the shockwaves radius fromt the hump attack
@@ -126,6 +126,7 @@ class TankFSM : public FSM
 {
 private:
     static Entity getPlayerID(Entity entityID);
+    static std::vector<Entity> getAllPlayerIDs(Entity entityID);
 private:
 	static bool idleToAler(Entity entityID);
 	static bool alertToCombat(Entity entityID);
@@ -168,6 +169,10 @@ private:
 	static float	get_dt();
 	static Scene*	getTheScene();
 	static bool		falseIfDead(Entity entityID);
+	static void		generalUpdate(Entity entityID);
+	static void		deactivateHump(Entity entityID, uint32_t what);
+	static void		updateHump(Entity entityID, uint32_t what);
+	static void		updateHumps(Entity entityID);
 protected:
 	// Inherited via FSM
 	virtual void registerEntityComponents(Entity entityId) override
