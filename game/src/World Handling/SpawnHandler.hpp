@@ -65,7 +65,7 @@ public:
     inline static const float PERCENTAGE_LICHS   = 0.25f;
     inline static const float PERCENTAGE_SWARMS  = 0.75f;
 
-    const float enemiesPerTiles = 0.05f;//0.10f
+    const float enemiesPerTiles = 0.25f;//0.05f;//0.10f
 
     inline static const int NR_BLOBS_IN_GROUP = 3;
 
@@ -73,7 +73,7 @@ public:
     inline static const int MAX_NR_LICHS        = (int)(MAX_NR_OF_ENEMIES * PERCENTAGE_LICHS);
     inline static const int MAX_NR_SWARMGROUPS  = (int)((MAX_NR_OF_ENEMIES * PERCENTAGE_SWARMS)/NR_BLOBS_IN_GROUP);
 
-    inline static const bool USE_DEBUG = true;
+    inline static const bool USE_DEBUG = false;
     inline static const int NR_TANK_DBG         = 0;
     inline static const int NR_LICH_DBG         = 3;
     inline static const int NR_SWARM_GROUPS_DBG = 0;
