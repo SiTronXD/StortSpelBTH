@@ -2,6 +2,7 @@
 #include "../Systems/CombatSystem.hpp"
 #include "ServerGameMode.h"
 #include "../Scenes/GameScene.h"
+#include "vengine/network/ServerEngine/Timer.h"
 
 const float NetworkHandlerGame::UPDATE_RATE = ServerUpdateRate;
 LichAttack* NetworkHandlerGame::lich_fire  = new LichAttack();
@@ -133,9 +134,25 @@ int NetworkHandlerGame::getSeed()
 	}
 
 	this->seed = -1;
-	while (this->seed == -1)
+    int tries = 0;
+    Timer timer;
+    static float maxWaitTimeForSeed = 3.5f; 
+    float waitingTimeForSeed = 0;
+	while (this->seed == -1 && tries < 4)
 	{
 		this->update();
+        this->getClient()->update(timer.getDT());  //double force to get a send
+        waitingTimeForSeed += timer.getDT();
+        if (waitingTimeForSeed > maxWaitTimeForSeed)
+        {
+			sf::Packet packet;
+			packet << (int)GameEvent::SEED;
+			this->sendDataToServerTCP(packet);
+            waitingTimeForSeed = 0;
+            tries++;
+            std::cout << "Client: asking for seed again" << std::endl;
+		}
+        timer.updateDeltaTime();
 	}
 	return this->seed;
 }
@@ -232,11 +249,15 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		v0 = this->getVec(tcpPacket);
 		this->spawnHealArea(v0);
 		break;
-    case GameEvent::SPAWN_ENEMY:
+    case GameEvent::SPAWN_ENEMY: {
         tcpPacket >> i0 >> i1;
         v0 = this->getVec(tcpPacket);
 		serverEntities.insert(std::pair<int, int>(i1, spawnEnemy(i0, v0)));
-		break;
+		//just create a enemy with interpolation
+        entityToPosScale.insert({i0, std::pair<glm::vec3, glm::vec3>(v0, glm::vec3(1))});
+        entityLastPosScale.insert({i0, std::pair<glm::vec3, glm::vec3>(v0, glm::vec3(1))});
+		}
+        break;
     case GameEvent::PUSH_PLAYER: // Can't confirm yet if this works
         tcpPacket >> i0; 
 		v0 = this->getVec(tcpPacket);
@@ -275,6 +296,23 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 
         
 		break;
+    case GameEvent::ENTITY_SET_HP:
+        tcpPacket >> i0 >> i1;
+		if (serverEntities.find(i0) != serverEntities.end())
+        {
+			int e = serverEntities.find(i0)->second;
+			if (this->sceneHandler->getScene()->hasComponents<SwarmComponent>(e)) {
+				this->sceneHandler->getScene()->getComponent<SwarmComponent>(e).life = i1;
+			}
+            else if(this->sceneHandler->getScene()->hasComponents<LichComponent>(e)) {
+				this->sceneHandler->getScene()->getComponent<LichComponent>(e).life = i1;
+			}
+			else if(this->sceneHandler->getScene()->hasComponents<TankComponent>(e)) {
+				this->sceneHandler->getScene()->getComponent<TankComponent>(e).life = i1;
+			}
+            
+		}
+		break;
     case GameEvent::INACTIVATE:
         tcpPacket >> i0;
         if (serverEntities.find(i0) != serverEntities.end())
@@ -300,10 +338,10 @@ void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 	glm::vec3 vec;
 	Transform* t;
 	AnimationComponent* anim;
+    this->timer = 0;
 	switch ((GameEvent)event)
 	{
 	case GameEvent::UPDATE_PLAYER:
-		this->timer = 0;
 		udpPacket >> i0;
 		i1 = -1;
 		for (int i = 0; i < this->otherPlayersServerId.size(); i++)
@@ -354,7 +392,12 @@ void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 			// Get and set position and rotation
             v0 = getVec(udpPacket);
             v1 = getVec(udpPacket);
-            sceneHandler->getScene()->getComponent<Transform>(serverEntities.find(i1)->second).position = v0;
+            v2 = getVec(udpPacket);
+            entityLastPosScale[i1].first = entityToPosScale[i1].first;
+			entityLastPosScale[i1].second = entityToPosScale[i1].second;
+			entityToPosScale[i1].first = v0;
+			entityToPosScale[i1].second = v2;
+            
             sceneHandler->getScene()->getComponent<Transform>(serverEntities.find(i1)->second).rotation = v1;
 
 			// Get and set animation // don't know how this should be made
@@ -410,15 +453,15 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 		// Get how they should take damage
         if (serverScene->hasComponents<SwarmComponent>(si0))
         {
-			serverScene->getComponent<SwarmComponent>(si0).life -= si1;  
+			si2 = (serverScene->getComponent<SwarmComponent>(si0).life -= si1);
 		}
         else if (serverScene->hasComponents<TankComponent>(si0))
         {
-			serverScene->getComponent<TankComponent>(si0).life -= si1;  
+			si2 = (serverScene->getComponent<TankComponent>(si0).life -= si1);  
 		}
         else if (serverScene->hasComponents<LichComponent>(si0))
         {
-			serverScene->getComponent<LichComponent>(si0).life -= si1;  
+			si2 = (serverScene->getComponent<LichComponent>(si0).life -= si1);
 		}
         if (serverScene->hasComponents<Transform>(si0))
         {
@@ -438,13 +481,24 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 			
         }
         
-        
+		break;
+    case GameEvent::ROOM_CLEAR:
+        this->newRoomFrame = false;
+        roomHandler->roomCompleted();
+		this->numRoomsCleared++;
 		break;
 	default:
 		packet << event;
 		server->sendToAllClientsTCP(packet);
 		break;
 	}
+}
+
+void NetworkHandlerGame::setRoomHandler(RoomHandler& roomHandler)
+{
+    this->roomHandler = &roomHandler;
+    newRoomFrame = false;
+    this->numRoomsCleared = 0;
 }
 
 void NetworkHandlerGame::handleUDPEventServer(Server* server, int clientID, sf::Packet& udpPacket, int event)
@@ -611,6 +665,10 @@ void NetworkHandlerGame::interpolatePositions()
 	this->timer += Time::getDT();
 
 	float percent = this->timer / UPDATE_RATE;
+    if (percent > 1.5)//we have gone to far without and update
+    {
+		return;    
+	}
 	for (int i = 0; i < this->playerEntities.size(); i++)
 	{
 		Transform& t = scene->getComponent<Transform>(this->playerEntities[i]);
@@ -626,6 +684,16 @@ void NetworkHandlerGame::interpolatePositions()
 				"mixamorig:RightHand") * glm::translate(glm::mat4(1.f), glm::vec3(0.f, 1.f, 0.f)) *
 			glm::rotate(glm::mat4(1.f), glm::radians(-90.f), glm::vec3(0.f, 0.f, 1.f)));
 	}
+	for (auto const& [key, val] : serverEntities)
+	{
+		Transform& t = scene->getComponent<Transform>(serverEntities[key]);
+		if (entityToPosScale.find(key) != entityToPosScale.end() && sceneHandler->getScene()->hasComponents<Transform>(val))
+		{
+		    t.position = entityLastPosScale[key].first + percent * (entityToPosScale[key].first - entityLastPosScale[key].first);
+			t.scale = entityLastPosScale[key].second + percent * (entityToPosScale[key].second - entityLastPosScale[key].second);
+		}
+	}
+    
 }
 
 void NetworkHandlerGame::spawnItemRequest(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir)

@@ -723,6 +723,8 @@ BTStatus SwarmBT::playDeathAnim(Entity entityID)
 BTStatus SwarmBT::die(Entity entityID)
 {
     BTStatus ret = BTStatus::Success;
+    static int chanceToSpawnPerk = 2;
+    static int chanceToSpawnability = 1;
 
     HealthComp& playerHealth = sceneHandler->getScene()->getComponent<HealthComp>(getPlayerID(entityID));
     if (playerHealth.health <= (playerHealth.maxHealth - 10))
@@ -736,17 +738,17 @@ BTStatus SwarmBT::die(Entity entityID)
     {
         int itemID, type = -1, otherType;
         float multiplier;
-        if (spawnLoot < 2)
+        if (spawnLoot < chanceToSpawnPerk)
         {
             type = (int)ItemType::PERK;
             otherType = rand() % PerkType::emptyPerk;
             multiplier = 0.2f;
         }
-        else if (spawnLoot == 2)
+        else if (spawnLoot <= chanceToSpawnPerk + chanceToSpawnability)
         {
             type = (int)ItemType::ABILITY;
             otherType = (AbilityType)(rand() % 2);
-            multiplier = 0.2f;
+            multiplier = 0.0f;
         }
         if (type != -1)
         {
@@ -819,7 +821,7 @@ BTStatus SwarmBT::die(Entity entityID)
 
     //TODO: Sometgin goes wrong when we remove from group.
     //SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
-    sceneHandler->getScene()->getComponent<Transform>(entityID).position = glm::vec3(0,-300,0);
+    //sceneHandler->getScene()->getComponent<Transform>(entityID).position = glm::vec3(0,-300,0);
     SwarmGroup* swarmGroup = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID).group;
     swarmGroup->aliveMembers.pop();
 
