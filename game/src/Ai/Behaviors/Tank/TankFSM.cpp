@@ -351,7 +351,6 @@ bool TankFSM::combatToIdel(Entity entityID)
         tankComp.huntTimer -= get_dt();
     }
 
-
     if(ret)
     {
         tankComp.inCombat = false;
