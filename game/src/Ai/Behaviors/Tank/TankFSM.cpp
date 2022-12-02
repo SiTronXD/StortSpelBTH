@@ -3,17 +3,35 @@
 #include "../../../Network/ServerGameMode.h"
 
 Entity TankFSM::getPlayerID(Entity entityID){
+    int playerID = -1;
     // if network exist take player from there
     NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
     if (s != nullptr)
+    {   
+        float nearset = 99999999.0f;
+        Transform& trans = s->getComponent<Transform>(entityID);
+        for(auto p: *s->getPlayers())
+        {
+            Transform& pTrans = s->getComponent<Transform>(p);
+            HealthComp& pHealth = s->getComponent<HealthComp>(p);
+            float dist = glm::length(trans.position - pTrans.position);
+            if(dist < nearset && pHealth.health > 0.0f)
+            {
+                nearset = dist;
+                playerID = p;
+            }
+        }
+        //return s->getNearestPlayer(entityID);
+    }
+    // else find player from script
+    else
     {
-            return s->getNearestPlayer(entityID);
+        std::string playerString = "playerID";
+        FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
     }
 
-    // else find player from script
-    int playerID = -1;
-    std::string playerString = "playerID";
-    FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
+    
+  
     return playerID;
 }
 
@@ -93,6 +111,7 @@ void TankFSM::updateHumps(Entity entityID)
 		else if(h.second/2.0f >= minHitDist && h.second/2.0f <= maxHitDist && (playerTrans.position.y < 1.0f))
 		{
 			//PlayerHit!
+            toRemove.push_back(h.first);
 			glm::vec3 to = playerTrans.position;
 			glm::normalize(to);
 			getTheScene()->getComponent<HealthComp>(playerID).health -= (int)tankComp.humpHit;
@@ -107,8 +126,6 @@ void TankFSM::updateHumps(Entity entityID)
                 glm::vec3 dir = glm::normalize(to - tankTrans.position);
                 playerRB.velocity = dir * tankComp.humpForce;
                 playerRB.velocity.y += tankComp.humpYForce;
-
-                toRemove.push_back(h.first);
 			}
             else
             {
@@ -120,11 +137,7 @@ void TankFSM::updateHumps(Entity entityID)
                 ((NetworkSceneHandler*)FSM::sceneHandler)
                     ->getScene()
                     ->addEvent({(int)GameEvent::PUSH_PLAYER, playerID}, 
-						{
-						dir.x,
-						dir.y,
-						dir.z
-						});
+						{dir.x,dir.y,dir.z});
 			}
 		}
 	}
