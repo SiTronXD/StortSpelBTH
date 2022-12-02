@@ -19,7 +19,8 @@ double heavyFunction(double value);
 
 GameScene::GameScene() :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
-    perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1)
+    perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1), 
+    deathTimer(2.f), isDead(false)
 {
     Input::setHideCursor(true);
 }
@@ -211,9 +212,29 @@ void GameScene::update()
         // Switch scene if the player is dead
         if (this->hasComponents<Combat>(this->playerID))
         {
-            if (this->getComponent<HealthComp>(this->playerID).health <= 0.0f)
+            Script& playerScript = this->getComponent<Script>(this->playerID);
+            int tempHealth = this->getComponent<HealthComp>(this->playerID).health;
+            if (tempHealth <= 0.0f && !this->isDead)
             {
-                this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+                this->isDead = true;
+                this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
+            }
+            else if (this->isDead)
+            {
+                if (this->deathTimer >= 0.f)
+                {
+                    this->deathTimer -= Time::getDT();
+                    int currentAnim = -1;
+                    this->getScriptHandler()->getScriptComponentValue(playerScript, currentAnim, "currentAnimation");
+                    if (currentAnim != 7)
+                    {
+                        this->getScriptHandler()->setScriptComponentValue(playerScript, tempHealth, "currentHealth");
+                    }
+                }
+                else
+                {
+                    this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+                }
             }
         }
         this->spawnHandler.updateImgui();
