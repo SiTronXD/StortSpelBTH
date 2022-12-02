@@ -718,8 +718,11 @@ ImguiLambda SpawnHandler::LichImgui()
         int& health             = lichComponent.life;
         float& mana             = lichComponent.mana;
         float& speed            = lichComponent.speed;
-        float& attackRange      = lichComponent.attackRadius;
+        float& huntSpeed            = lichComponent.huntSpeed;
         float& sightRange       = lichComponent.sightRadius;
+        float& personalspaceRad = lichComponent.peronalSpaceRadius;
+        float& attackRange      = lichComponent.attackRadius;
+        float& nonoRadius       = lichComponent.nonoRadius;        
         float& gravity 		    = entityRigidBody.gravityMult;
         bool& tempAttack        = lichComponent.tempAttack;
         std::string tempStrat   = lichComponent.lastAttack;
@@ -738,13 +741,17 @@ ImguiLambda SpawnHandler::LichImgui()
         ImGui::Separator();    
 
         ImGui::Text(tempStrat.c_str());
+        
         ImGui::Checkbox("Attack", &tempAttack);
         ImGui::SliderFloat("mana", &mana, 0, 100);
         ImGui::SliderInt("health", &health, 0, lichComponent.FULL_HEALTH);
         ImGui::SliderFloat("speed", &speed, 0, 100);
+        ImGui::SliderFloat("huntSpeed", &huntSpeed, 0, 100);
         ImGui::SliderFloat("gravity", &gravity, 0, 10);
-        ImGui::SliderFloat("attackRange", &attackRange, 0, 100);
-        ImGui::SliderFloat("sightRange", &sightRange, 0, 100);
+        ImGui::SliderFloat("sightRange", &sightRange, 0, 200);
+        ImGui::SliderFloat("personalspaceRadius", &personalspaceRad, 0, 200);
+        ImGui::SliderFloat("attackRange", &attackRange, 0, 200);
+        ImGui::SliderFloat("nonoRadius", &nonoRadius, 0, 200);
     };
 }
 
@@ -764,8 +771,8 @@ ImguiLambda SpawnHandler::SwarmImgui()
             float& posY                     = entityTransform.position.y;
             float& rotSpeed                 = entitySwarmComponent.idleRotSpeed;
             int& health            = entitySwarmComponent.life;
-            float& jumpForce		=entitySwarmComponent.jumpForce;
-            float& jumpForceY		=entitySwarmComponent.jumpY;
+            float& jumpForce	   = entitySwarmComponent.jumpForce;
+            float& jumpForceY	   = entitySwarmComponent.jumpY;
             float& speed           = entitySwarmComponent.speed;
             float& attackRange     = entitySwarmComponent.attackRange;
             float& sightRange      = entitySwarmComponent.sightRadius;
@@ -790,7 +797,7 @@ ImguiLambda SpawnHandler::SwarmImgui()
             ImGui::SliderFloat("rot speed", &rotSpeed, 0, 200);
             ImGui::SliderFloat("jumpForce", &jumpForce, 0, 100);
             ImGui::SliderFloat("jumpForceY", &jumpForceY, 0, 100);
-             ImGui::SliderFloat("gravity", &gravity, 0, 10);
+            ImGui::SliderFloat("gravity", &gravity, 0, 10);
             ImGui::SliderFloat("attackRange", &attackRange, 0, 100);
             ImGui::SliderFloat("sightRange", &sightRange, 0, 100);		
             ImGui::InputFloat("attack/s", &attackPerSec);		
