@@ -80,10 +80,6 @@ void SpawnHandler::spawnEnemiesIntoRoom()
 void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
 {
     currScene->setActive(this->tankIDs[tankIdx]);
-    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
-    {
-        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->tankIDs[tankIdx]});    
-    }
     Transform& transform = currScene->getComponent<Transform>(this->tankIDs[tankIdx]);
         
     transform.position = pos;
@@ -94,6 +90,11 @@ void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
     TankComponent& tankComp = currScene->getComponent<TankComponent>(this->tankIDs[tankIdx]);
     tankComp.life = tankComp.FULL_HEALTH;
     transform.scale.y = tankComp.origScaleY;
+
+    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
+    {
+        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->tankIDs[tankIdx]});       
+    }
 }
 
 uint32_t SpawnHandler::spawnLich(int lichIdx, std::vector<const TileInfo*> tileInfos)
@@ -166,10 +167,6 @@ uint32_t SpawnHandler::spawnSwarmGroup(const int swarmStartIdx, std::vector<cons
 void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
 {
     currScene->setActive(this->swarmIDs[swarmIdx]);
-    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
-    {
-        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->swarmIDs[swarmIdx]});    
-    }
 
     Transform& transform = currScene->getComponent<Transform>(this->swarmIDs[swarmIdx]);
     
@@ -189,6 +186,10 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
 
     swarmComp.setGroupMidPos(this->currScene);
     swarmComp.setGroupRadius(this->currScene);
+    if (currScene->getSceneType() == SceneType::NetworkScene)
+    {
+        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->swarmIDs[swarmIdx]});    
+    }
 }
 
 void SpawnHandler::initTanks()
