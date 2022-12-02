@@ -613,12 +613,12 @@ bool TileInfo::amIMyNeighboursNeighbour(int myID, const std::vector<TileInfo>& a
         goodNeighbour = false;
     }
 
-
-    if( this->idUpOf() == TileInfo::NONE  && this->idDownOf() == TileInfo::NONE  && this->idLeftOf() == TileInfo::NONE && this->idRightOf() == TileInfo::NONE) 
-    {
-        assert(false);
-        return false; 
-    }
+	//NOTE: Without this check we will be able to spawn on tiles without neighbours, if this is a problem we should do something about it later... 
+    // if( this->idUpOf() == TileInfo::NONE  && this->idDownOf() == TileInfo::NONE  && this->idLeftOf() == TileInfo::NONE && this->idRightOf() == TileInfo::NONE) 
+    // {
+    //     assert(false);
+    //     return false; 
+    // }
 
     return goodNeighbour;
 
