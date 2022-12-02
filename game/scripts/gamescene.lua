@@ -19,7 +19,7 @@ scene.setComponent(playerID, CompType.Mesh, playerMesh)
 scene.setComponent(playerID, CompType.Animation, {})
 
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
-scene.setComponent(playerID, CompType.Collider, { type = ColliderType.Capsule, radius = 2, height = 11, offset = vector.new(0, 7.3, 0) })
+scene.setComponent(playerID, CompType.Collider, { type = ColliderType.Capsule, radius = 2, height = 10, offset = vector.new(0, 7.3, 0) })
 scene.setComponent(playerID, CompType.Rigidbody, { mass = 1, gravityMult = 5, rotFactor = vector.fill(0), friction = 0.1 })
 scene.getComponent(cam, CompType.Script).playerID = playerID
 
@@ -52,6 +52,10 @@ scene.getComponent(uiID, CompType.Script).uiStamSideTexID =
 	resources.addTexture("assets/textures/UI/UIBarSide.png")
 scene.getComponent(uiID, CompType.Script).uiBorderTexID = 
 	resources.addTexture("assets/textures/UI/UIBorder.png")
+scene.getComponent(uiID, CompType.Script).pauseBackgroundTexID = 
+	resources.addTexture("assets/textures/UI/frame.png")
+scene.getComponent(uiID, CompType.Script).buttonTexID = 
+	resources.addTexture("assets/textures/UI/button.png")
 
 --[[local p = scene.createPrefab("scripts/prefabs/prefab.lua")
 

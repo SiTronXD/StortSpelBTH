@@ -15,6 +15,17 @@ function script:update(dt)
 	local xSize = 960 * 0.35
 	local ySize = 40 * 0.35
 
+	local resumePosX = 0.0
+	local resumePosY = 100.0
+	local resumeWidth = 500.0
+	local resumeHeigth = 100.0
+
+	local exitPosX = 0.0
+	local exitPosY = -100.0
+	local exitWidth = 500.0
+	local exitHeigth = 100.0
+
+
 	-- Clamped percentage for HP
 	local staminaPercent = self.playerScript.currentStamina * 0.01
 	local staminaMaxPercent = self.playerScript.maxStamina * 0.01
@@ -59,6 +70,18 @@ function script:update(dt)
 	-- Perks and Ability UI Border
 	uiRenderer.setTexture(self.uiBorderTexID)
 	uiRenderer.renderTexture(vector(0.0, 0.0), vector(1920.0, 1080.0))
+
+	
+	if paused then
+		uiRenderer.setTexture(self.pauseBackgroundTexID)
+		uiRenderer.renderTexture(vector(0.0, 0.0), vector(1920.0, 1080.0))
+		uiRenderer.renderString("game paused", vector(0.0, 400), vector(80, 80));
+		uiRenderer.setTexture(self.buttonTexID)
+		uiRenderer.renderTexture(vector(resumePosX, resumePosY), vector(resumeWidth, resumeHeigth))
+		uiRenderer.renderTexture(vector(exitPosX, exitPosY), vector(exitWidth, exitHeigth))
+		uiRenderer.renderString("resume", vector(resumePosX, resumePosY), vector(50, 50));
+		uiRenderer.renderString("exit", vector(exitPosX, exitPosY), vector(50, 50));
+	end
 end
 
 return script
