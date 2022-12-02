@@ -36,7 +36,6 @@ public:
 
 				// Decrease timer
 				this->entityTimers[(Entity) entity] -= deltaTime;
-				Log::write("DECREASE ENTITY TIMER");
 
 				// Remove entity
 				if (this->entityTimers[(Entity) entity] <= 0.0f)

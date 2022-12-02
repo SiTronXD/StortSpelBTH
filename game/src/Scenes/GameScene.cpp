@@ -47,22 +47,22 @@ void GameScene::initParticleSystems()
         this->setComponent<ParticleSystem>(this->bloodParticleSystemEntities[i]);
         ParticleSystem& bloodPS = this->getComponent<ParticleSystem>(this->bloodParticleSystemEntities[i]);
         std::strcpy(bloodPS.name, "BloodPS");
-        bloodPS.maxlifeTime = 1.0f;
+        bloodPS.maxlifeTime = 0.7f;
         bloodPS.numParticles = 64;
         bloodPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/bloodParticle.png");
         bloodPS.startSize = glm::vec2(0.4f);
         bloodPS.endSize = glm::vec2(0.0f);
         bloodPS.startColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
         bloodPS.endColor = glm::vec4(0.2f, 0.0f, 0.0f, 0.0f);
-        bloodPS.velocityStrength = 25.0f;
-        bloodPS.acceleration = glm::vec3(0.0f, -20.0f, 0.0f);
+        bloodPS.velocityStrength = 30.0f;
+        bloodPS.acceleration = glm::vec3(0.0f, -30.0f, 0.0f);
         bloodPS.spawnRate = 0.01f;
         bloodPS.spawn = true;
         bloodPS.respawnSetting = RespawnSetting::EXPLOSION;
         bloodPS.coneSpawnVolume.diskRadius = 1.5f;
-        bloodPS.coneSpawnVolume.coneAngle = 57.2f;
+        bloodPS.coneSpawnVolume.coneAngle = 70.0f;
         bloodPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 0.0f, 1.0f);
-        bloodPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, -0.5f, 0.0f);
+        bloodPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, 10.0f, 0.0f);
     }
 
     // Fotstep particle system
@@ -613,8 +613,10 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
           swarmComp.inAttack = false;
           swarmComp.touchedPlayer = true;
           //aiCombat.timer = aiCombat.lightAttackTime;
-          this->getComponent<HealthComp>(player).health -=
+          HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+          playerHealth.health -=
               (int)aiCombat.lightHit;
+          playerHealth.srcDmgEntity = other;
             
           Log::write("WAS HIT", BT_FILTER);
         }
@@ -626,8 +628,10 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
       {
         auto& aiCombat = this->getComponent<AiCombatTank>(other);
         tankComp.canAttack = false;
-        this->getComponent<HealthComp>(player).health -=
+        HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+        playerHealth.health -=
             (int)aiCombat.directHit;
+        playerHealth.srcDmgEntity = other;
             
         Log::write("WAS HIT", BT_FILTER);
       }

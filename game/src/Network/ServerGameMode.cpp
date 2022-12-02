@@ -254,8 +254,10 @@ void ServerGameMode::onCollisionStay(Entity e1, Entity e2) {
           swarmComp.inAttack = false;
           swarmComp.touchedPlayer = true;
           //aiCombat.timer = aiCombat.lightAttackTime;
-          this->getComponent<HealthComp>(player).health -=
+          HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+          playerHealth.health -=
               (int)aiCombat.lightHit;
+          playerHealth.srcDmgEntity = other;
           //this->addEvent({GameEvent::});
             
           Log::write("WAS HIT", BT_FILTER);
@@ -268,8 +270,10 @@ void ServerGameMode::onCollisionStay(Entity e1, Entity e2) {
       {
         auto& aiCombat = this->getComponent<AiCombatTank>(other);
         tankComp.canAttack = false;
-        this->getComponent<HealthComp>(player).health -=
+        HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+        playerHealth.health -=
             (int)aiCombat.directHit;
+        playerHealth.srcDmgEntity = other;
             
         Log::write("WAS HIT", BT_FILTER);
       }

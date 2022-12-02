@@ -152,7 +152,8 @@ public:
 			if (this->lostHealth > healthComp.health)
 			{
 				this->lostHealth = healthComp.health;
-				takeDmg();
+				takeDmg(healthComp.srcDmgEntity);
+				healthComp.srcDmgEntity = -1;
 			}
 
 #ifdef _CONSOLE
@@ -262,7 +263,7 @@ public:
 		}
 	}
 
-	void takeDmg()
+	void takeDmg(Entity srcDmgEntity)
 	{
 		if (!this->scene->getComponent<AudioSource>(this->takeDmgAudioSource).isPlaying())
 		{
@@ -270,10 +271,24 @@ public:
 				this->takeDmgAudioSource, 10.f);
 		}
 
-		// Particle system
+		// Particle system transform
 		Entity bloodParticleSystemEntity = this->scene->createEntity();
-		this->scene->getComponent<Transform>(bloodParticleSystemEntity) =
-			this->scene->getComponent<Transform>(this->playerID);
+		Transform& bloodTransform = this->scene->getComponent<Transform>(bloodParticleSystemEntity);
+		bloodTransform = this->scene->getComponent<Transform>(this->playerID);
+		if (srcDmgEntity != -1)
+		{
+			// Rotate particle system depending on incoming damage
+			Transform& srcDmgEntityTransform = 
+				this->scene->getComponent<Transform>(srcDmgEntity);
+			glm::vec3 dir = -(srcDmgEntityTransform.position - bloodTransform.position);
+			dir.y = 0.0f;
+			const glm::mat4 customMatrix = 
+				glm::translate(glm::mat4(1.0f), bloodTransform.position) * 
+				SMath::rotateTowards(dir);
+			bloodTransform.setMatrix(customMatrix);
+		}
+
+		// Particle system spawn
 		this->scene->setComponent<ParticleSystem>(bloodParticleSystemEntity);
 		ParticleSystem& bloodPS = this->scene->getComponent<ParticleSystem>(bloodParticleSystemEntity);
 		bloodPS = ((GameScene*) this->scene)->getBloodParticleSystem();
