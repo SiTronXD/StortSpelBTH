@@ -28,6 +28,9 @@ private:
   UIArea resumeButton;
   UIArea exitButton;
 
+  float deathTimer;
+  bool isDead;
+  
   bool safetyCleanDone = false;
   uint32_t timeWhenEnteredRoom = 0;
   const uint32_t delayToSafetyDelete = 2;
