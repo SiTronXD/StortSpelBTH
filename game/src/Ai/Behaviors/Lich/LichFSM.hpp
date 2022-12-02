@@ -206,7 +206,6 @@ private:
 	static bool creepToAlerted(Entity entityID);
     static bool creepToIdle(Entity entityID);
     static bool alertToHunt(Entity entityID);
-    static bool alertToCombat(Entity entityID);
     static bool huntToIdle(Entity entityID);
     static bool huntToCombat(Entity entityID);
     static bool escapeToCombat(Entity entityID);
@@ -221,8 +220,7 @@ private:
 	EntityEvent idle_to_creep{   "idle to creep",      idleToCreep};
 	EntityEvent creep_to_alerted{"creep to alerted",   creepToAlerted};
 	EntityEvent creep_to_idle{   "creep to idle",      creepToIdle};
-    EntityEvent alert_to_hunt{   "alert to hunt",      alertToHunt};    
-    EntityEvent alert_to_combat{ "alert to combat",    alertToCombat};    
+    EntityEvent alert_to_hunt{   "alert to hunt",      alertToHunt};  
     EntityEvent hunt_to_idle{    "hunt to idle",       huntToIdle};
     EntityEvent hunt_to_combat{  "hunt to combat",     huntToCombat};
     EntityEvent combat_to_idle{  "combat to dead",     combatToIdle};
@@ -267,7 +265,6 @@ protected:
 		addEntityTransition("creep",    LichFSM::creep_to_alerted,     "alerted");
 		addEntityTransition("creep",    LichFSM::creep_to_idle,        "idle");
 		addEntityTransition("alerted",  LichFSM::alert_to_hunt,        "hunt");
-		addEntityTransition("alerted",  LichFSM::alert_to_combat,      "combat");
 		addEntityTransition("hunt",     LichFSM::hunt_to_idle,         "idle");
 		addEntityTransition("hunt",     LichFSM::hunt_to_combat,       "combat");
 		addEntityTransition("combat",   LichFSM::combat_to_idle,       "idle");
