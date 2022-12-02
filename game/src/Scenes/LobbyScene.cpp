@@ -68,15 +68,21 @@ void LobbyScene::init()
     this->getComponent<Transform>(camEntity).rotation = glm::vec3(0, 0, 0);
 
     scene = this->createEntity();
-    this->setComponent<MeshComponent>(scene, (int)this->getResourceManager()->addMesh("assets/models/Menu/lobbyScene_no_candles.obj"));
+    this->setComponent<MeshComponent>(scene, (int)this->getResourceManager()->addMesh("assets/models/Menu/lobby.obj"));
     Transform& t = this->getComponent<Transform>(scene);
     t.position = glm::vec3(0.f, 0.5f, 40.f);
     t.rotation = glm::vec3(0.f, 180.f, 0.f);
 
-    candle = this->createEntity();
-    this->setComponent<MeshComponent>(candle, (int)this->getResourceManager()->addMesh("assets/models/Menu/candle.obj"));
-    this->setComponent<PointLight>(candle, glm::vec3(-0.5, 0, 15), glm::vec3(40, 10, 5));
-    this->getComponent<PointLight>(candle).positionOffset = glm::vec3(0, 10, 0);
+    addCandle(glm::vec3(8, 0, -24));
+    addCandle(glm::vec3(-8, 0, -24));
+    addCandle(glm::vec3(22, 0, -14.5));
+    addCandle(glm::vec3(-22, 0, -14.5));
+    addCandle(glm::vec3(26.5, 0, 0));
+    addCandle(glm::vec3(-26, 0, 0));
+    addCandle(glm::vec3(22, 0, 14.5));
+    addCandle(glm::vec3(-22, 0, 14.5));
+    addCandle(glm::vec3(8, 0, 24));
+    addCandle(glm::vec3(-8, 0, 24));
 
     this->players.resize(MAX_PLAYER_COUNT);
     this->playersNames.resize(MAX_PLAYER_COUNT);
@@ -102,7 +108,7 @@ void LobbyScene::init()
     startButton.position = glm::vec2(0.0f, -450.f);
     startButton.dimension = glm::vec2(275.0f, 100.0f);
 
-    disconnectButton.position = glm::vec2(-850.f, -450.f);
+    disconnectButton.position = glm::vec2(-800.f, -450.f);
     disconnectButton.dimension = glm::vec2(225.0f, 75.0f);
 }
 
@@ -123,35 +129,44 @@ void LobbyScene::start()
     this->getComponent<Transform>(light).position = glm::vec3(0, 0, 0);
 }
 
+void LobbyScene::addCandle(glm::vec3 position) 
+{
+    Entity candle = this->createEntity();
+    this->setComponent<MeshComponent>(candle, (int)this->getResourceManager()->addMesh("assets/models/Menu/candle.obj"));
+    this->setComponent<PointLight>(candle, glm::vec3(0.5, -7, 26), glm::vec3(40, 10, 5));
+    this->getComponent<Transform>(candle).position = position;
+    candles.push_back(candle);
+}
+
 void LobbyScene::update()
 {
     //Transform& t = this->getComponent<Transform>(scene);
-    Transform& t = this->getComponent<Transform>(candle);
-    ImGui::Begin("Candle transform");
-    ImGui::SliderFloat("Position X", &t.position.x, -50.0f, 50.0f);
-    ImGui::SliderFloat("Position Y", &t.position.y, -50.0f, 50.0f);
-    ImGui::SliderFloat("Position Z", &t.position.z, -50.0f, 50.0f);
-
-    ImGui::SliderFloat("Rotation X", &t.rotation.x, -180.0f, 180.0f);
-    ImGui::SliderFloat("Rotation Y", &t.rotation.y, -180.0f, 180.0f);
-    ImGui::SliderFloat("Rotation Z", &t.rotation.z, -180.0f, 180.0f);
-
-    ImGui::SliderFloat("Scale X", &t.scale.x, 0.0f, 5.0f);
-    ImGui::SliderFloat("Scale Y", &t.scale.y, 0.0f, 5.0f);
-    ImGui::SliderFloat("Scale Z", &t.scale.z, 0.0f, 5.0f);
-    ImGui::End();
-
-    //Transform& tC = this->getComponent<Transform>(this->getMainCameraID());
-    PointLight& tC = this->getComponent<PointLight>(candle);
-    ImGui::Begin("Pointlight");
-    ImGui::SliderFloat("Position offset X", &tC.positionOffset.x, -50.0f, 50.0f);
-    ImGui::SliderFloat("Position offset Y", &tC.positionOffset.y, -50.0f, 50.0f);
-    ImGui::SliderFloat("Position offset Z", &tC.positionOffset.z, -50.0f, 50.0f);
-                                               
-    ImGui::SliderFloat("Color R", &tC.color.x, 0.0f, 50.0f);
-    ImGui::SliderFloat("Color G", &tC.color.y, 0.0f, 50.0f);
-    ImGui::SliderFloat("Color B", &tC.color.z, 0.0f, 50.0f);
-    ImGui::End();
+    //Transform& t = this->getComponent<Transform>(candle);
+    //ImGui::Begin("Candle transform");
+    //ImGui::SliderFloat("Position X", &t.position.x, -50.0f, 50.0f);
+    //ImGui::SliderFloat("Position Y", &t.position.y, -50.0f, 50.0f);
+    //ImGui::SliderFloat("Position Z", &t.position.z, -50.0f, 50.0f);
+    //
+    //ImGui::SliderFloat("Rotation X", &t.rotation.x, -180.0f, 180.0f);
+    //ImGui::SliderFloat("Rotation Y", &t.rotation.y, -180.0f, 180.0f);
+    //ImGui::SliderFloat("Rotation Z", &t.rotation.z, -180.0f, 180.0f);
+    //
+    //ImGui::SliderFloat("Scale X", &t.scale.x, 0.0f, 5.0f);
+    //ImGui::SliderFloat("Scale Y", &t.scale.y, 0.0f, 5.0f);
+    //ImGui::SliderFloat("Scale Z", &t.scale.z, 0.0f, 5.0f);
+    //ImGui::End();
+    //
+    ////Transform& tC = this->getComponent<Transform>(this->getMainCameraID());
+    //PointLight& tC = this->getComponent<PointLight>(candle);
+    //ImGui::Begin("Pointlight");
+    //ImGui::SliderFloat("Position offset X", &tC.positionOffset.x, -50.0f, 50.0f);
+    //ImGui::SliderFloat("Position offset Y", &tC.positionOffset.y, -50.0f, 50.0f);
+    //ImGui::SliderFloat("Position offset Z", &tC.positionOffset.z, -50.0f, 50.0f);
+    //                                           
+    //ImGui::SliderFloat("Color R", &tC.color.x, 0.0f, 50.0f);
+    //ImGui::SliderFloat("Color G", &tC.color.y, 0.0f, 50.0f);
+    //ImGui::SliderFloat("Color B", &tC.color.z, 0.0f, 50.0f);
+    //ImGui::End();
     // Set model position and player names
     auto netPlayers = this->networkHandler->getPlayers();
     if (netPlayers.size() != this->activePlayers - 1)
@@ -190,14 +205,15 @@ void LobbyScene::update()
     this->getUIRenderer()->renderString(
         this->getNetworkHandler()->getClientName(),
         this->POSITIONS[0] + glm::vec3(0.0f, 20.0f, 0.0f),
-        glm::vec2(100.0f)
+        glm::vec2(200.0f)
     );
+
     for (int i = 0; i < this->playersNames.size(); i++)
     {
         this->getUIRenderer()->renderString(
             playersNames[i],
             this->POSITIONS[i + 1] + glm::vec3(0.0f, 20.0f, 0.0f),
-            glm::vec2(100.0f)
+            glm::vec2(200.0f)
         );
     }
     this->getUIRenderer()->renderString(
