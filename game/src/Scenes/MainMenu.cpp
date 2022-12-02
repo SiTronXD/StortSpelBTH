@@ -1,6 +1,8 @@
 #include "MainMenu.h"
 #include "GameScene.h"
+#ifdef WIN32
 #include "LevelEditor.h"
+#endif 
 #include "logInScene.h"
 #include "../ServerGameModes/NetworkLobbyScene.h"
 #include "../Network/ServerGameMode.h"
@@ -89,6 +91,7 @@ void MainMenu::start()
   this->quitButton = this->createEntity();
   this->backButton = this->createEntity();
   this->fullscreenButton = this->createEntity();
+  this->howToPlayButton = this->createEntity();
   this->levelEditButton = this->createEntity();
 
   UIArea area{};
@@ -179,10 +182,12 @@ void MainMenu::update()
 		this->howToPlay();
 		break;
 
+#ifdef WIN32
 	case LevelEdit:
 		this->switchScene(new LevelEditor(), "scripts/levelEditor.lua");
 		
 		break;
+#endif 
 
 	case Quit:
 		this->getSceneHandler()->getWindow()->close();
