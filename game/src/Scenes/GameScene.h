@@ -28,6 +28,8 @@ private:
   UIArea resumeButton;
   UIArea exitButton;
 
+  float deathTimer;
+  bool isDead;
   Entity playerID;
   Entity portal;
   Entity perk;

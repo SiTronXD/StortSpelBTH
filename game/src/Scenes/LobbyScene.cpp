@@ -17,7 +17,8 @@ void LobbyScene::init()
              "assets/models/Character/CharSpinAttack.fbx",
              "assets/models/Character/CharKnockbackAttack.fbx",
              "assets/models/Character/CharInwardAttack.fbx",
-             "assets/models/Character/CharSlashAttack.fbx"}
+             "assets/models/Character/CharSlashAttack.fbx",
+             "assets/models/Character/DeathAnim.fbx"}
         ), 
       "assets/textures/playerMesh"
   );
@@ -32,7 +33,8 @@ void LobbyScene::init()
              "spinAttack",
              "knockback",
              "mixAttack",
-             "slashAttack"}
+             "slashAttack",
+             "dead"}
         )
     );
    
