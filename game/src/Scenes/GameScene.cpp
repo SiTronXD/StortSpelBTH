@@ -105,6 +105,7 @@ void GameScene::start()
         int seed = this->networkHandler->getSeed();
         Log::write("Seed from server: " + std::to_string(seed));
         roomHandler.generate(seed);
+        networkHandler->setRoomHandler(roomHandler);
     }
     else
     {
@@ -243,18 +244,9 @@ void GameScene::update()
                 this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
             }
         }
-        if (this->spawnHandler.allDead() && this->newRoomFrame)
+        if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
         {
-            Log::warning("DOORS ARE OPEN ALL THE TIME, TO PREVENT BEING STUCK. PLZ FIX!");
-            this->newRoomFrame = false;
-            // Call when a room is cleared
-            this->roomHandler.roomCompleted();
-            this->numRoomsCleared++;
-
-            if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
-            {
-                this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
-            }
+            this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
         }
 
         // Network

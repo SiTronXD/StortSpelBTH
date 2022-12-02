@@ -2,6 +2,7 @@
 #include "../Systems/CombatSystem.hpp"
 #include "ServerGameMode.h"
 #include "../Scenes/GameScene.h"
+#include "vengine/network/ServerEngine/Timer.h"
 
 const float NetworkHandlerGame::UPDATE_RATE = ServerUpdateRate;
 LichAttack* NetworkHandlerGame::lich_fire  = new LichAttack();
@@ -133,9 +134,25 @@ int NetworkHandlerGame::getSeed()
 	}
 
 	this->seed = -1;
-	while (this->seed == -1)
+    int tries = 0;
+    Timer timer;
+    static float maxWaitTimeForSeed = 3.5f; 
+    float waitingTimeForSeed = 0;
+	while (this->seed == -1 && tries < 4)
 	{
 		this->update();
+        this->getClient()->update(timer.getDT());  //double force to get a send
+        waitingTimeForSeed += timer.getDT();
+        if (waitingTimeForSeed > maxWaitTimeForSeed)
+        {
+			sf::Packet packet;
+			packet << (int)GameEvent::SEED;
+			this->sendDataToServerTCP(packet);
+            waitingTimeForSeed = 0;
+            tries++;
+            std::cout << "Client: asking for seed again" << std::endl;
+		}
+        timer.updateDeltaTime();
 	}
 	return this->seed;
 }
@@ -465,11 +482,23 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
         }
         
 		break;
+    case GameEvent::ROOM_CLEAR:
+        this->newRoomFrame = false;
+        roomHandler->roomCompleted();
+		this->numRoomsCleared++;
+		break;
 	default:
 		packet << event;
 		server->sendToAllClientsTCP(packet);
 		break;
 	}
+}
+
+void NetworkHandlerGame::setRoomHandler(RoomHandler& roomHandler)
+{
+    this->roomHandler = &roomHandler;
+    newRoomFrame = false;
+    this->numRoomsCleared = 0;
 }
 
 void NetworkHandlerGame::handleUDPEventServer(Server* server, int clientID, sf::Packet& udpPacket, int event)

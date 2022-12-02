@@ -186,7 +186,7 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos)
 
     swarmComp.setGroupMidPos(this->currScene);
     swarmComp.setGroupRadius(this->currScene);
-    if (currScene->getSceneType() == SceneType::GameModeScene)
+    if (currScene->getSceneType() == SceneType::NetworkScene)
     {
         ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->swarmIDs[swarmIdx]});    
     }

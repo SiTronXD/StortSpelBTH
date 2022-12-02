@@ -308,7 +308,6 @@ void ServerGameMode::onCollisionStay(Entity e1, Entity e2) {
           //aiCombat.timer = aiCombat.lightAttackTime;
           this->getComponent<HealthComp>(player).health -=
               (int)aiCombat.lightHit;
-          //this->addEvent({GameEvent::});
             
           Log::write("WAS HIT", BT_FILTER);
         }

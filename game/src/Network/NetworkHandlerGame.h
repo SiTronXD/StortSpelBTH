@@ -5,6 +5,7 @@
 #include "../Components/Abilities.h"
 #include "../Ai/Behaviors/Lich/LichBTs.hpp"
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
+#include "../World Handling/Room Handler.h"
 
 class CombatSystem;
 enum class GameEvent
@@ -98,6 +99,10 @@ private:
     int alterMesh;
     int humpMesh;
 
+    bool newRoomFrame;
+    int numRoomsCleared;
+    RoomHandler* roomHandler;
+
     static LichAttack* lich_fire   ;
     static LichAttack* lich_ice    ;
     static LichAttack* lich_light  ;
@@ -119,6 +124,7 @@ public:
 
 	void setCombatSystem(CombatSystem* system);
 	int getSeed();
+    void setRoomHandler(RoomHandler& roomHandler);
 
 	virtual void handleTCPEventClient(sf::Packet& tcpPacket, int event) override;
 	virtual void handleUDPEventClient(sf::Packet& udpPacket, int event) override;
