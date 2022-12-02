@@ -3,7 +3,7 @@
 #include <vengine.h>
 #include <unordered_map>
 
-class BloodSystem : public System
+class ParticleRemoveComponent : public System
 {
 private:
 	std::vector<Entity> toRemove;
@@ -12,11 +12,11 @@ private:
 	Scene* scene;
 
 public:
-	BloodSystem(Scene* scene)
+	ParticleRemoveComponent(Scene* scene)
 		: scene(scene)
 	{ }
 
-	virtual ~BloodSystem()
+	virtual ~ParticleRemoveComponent()
 	{ }
 
 	bool update(entt::registry& reg, float deltaTime) final
@@ -26,31 +26,31 @@ public:
 		auto func = [&](const auto entity, Transform& transform, ParticleSystem& particleSystem)
 		{
 			// Found blood particle system
-			if (strcmp(particleSystem.name, "BloodPS") == 0)
+			if (strcmp(particleSystem.name, "SwarmPS") == 0)
 			{
 				// Entity was recently created
-				if (this->entityTimers.count((Entity) entity) <= 0)
+				if (this->entityTimers.count((Entity)entity) <= 0)
 				{
-					this->entityTimers[(Entity) entity] = particleSystem.maxlifeTime;
+					this->entityTimers[(Entity)entity] = particleSystem.maxlifeTime;
 				}
 
 				// Decrease timer
-				this->entityTimers[(Entity) entity] -= deltaTime;
+				this->entityTimers[(Entity)entity] -= deltaTime;
 
 				// Remove entity
-				if (this->entityTimers[(Entity) entity] <= 0.0f)
+				if (this->entityTimers[(Entity)entity] <= 0.0f)
 				{
-					this->entityTimers.erase((Entity) entity);
-					this->toRemove.push_back((Entity) entity);
+					this->entityTimers.erase((Entity)entity);
+					this->toRemove.push_back((Entity)entity);
 				}
 			}
 		};
 		view.each(func);
 
-		// Remove entities
+		// Remove component from entities
 		for (const auto& e : this->toRemove)
 		{
-			this->scene->removeEntity(e);
+			this->scene->removeComponent<ParticleSystem>(e);
 		}
 		this->toRemove.clear();
 

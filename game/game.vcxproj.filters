@@ -76,7 +76,9 @@
     <ClInclude Include="src\Components\HealthComp.h" />
     <ClInclude Include="src\Components\HealArea.h" />
     <ClInclude Include="src\Systems\HealSystem.hpp" />
-    <ClInclude Include="src\Systems\BloodSystem.hpp" />
+    <ClInclude Include="src\Systems\ParticleRemoveEntity.hpp" />
+    <ClInclude Include="src\Systems\ParticleRemoveComponent.hpp" />
+    <ClInclude Include="src\World Handling\ParticleSystemGenerator.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

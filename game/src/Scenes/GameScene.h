@@ -12,6 +12,7 @@
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
 #include "../Components/AICombatTank.hpp"
+#include "../World Handling/ParticleSystemGenerator.hpp"
 
 class NetworkHandlerGame;
 
@@ -55,12 +56,9 @@ private:
   uint32_t portalOffMesh;
   uint32_t portalOnMesh;
 
-  Entity healParticleSystemEntity;
-  ParticleSystem healParticleSystem;
-
-  std::vector<Entity> bloodParticleSystemEntities;
-  std::vector<ParticleSystem> bloodParticleSystems;
-  uint32_t currentBloodIndex;
+  ParticleSystemInstance healParticleSystem;
+  ParticleSystemInstance bloodParticleSystems;
+  ParticleSystemInstance swarmParticleSystems;
 
   bool deletedParticleSystems;
 
@@ -81,12 +79,9 @@ public:
   virtual void onCollisionStay(Entity e1, Entity e2) override;
   virtual void onCollisionExit(Entity e1, Entity e2) override;
 
-  inline const ParticleSystem& getHealParticleSystem() const { return this->healParticleSystem; }
-  inline const ParticleSystem& getBloodParticleSystem()
-  { 
-	  this->currentBloodIndex = (this->currentBloodIndex + 1) % this->bloodParticleSystems.size();
-	  return this->bloodParticleSystems[this->currentBloodIndex]; 
-  }
+  inline const ParticleSystem& getHealParticleSystem() { return this->healParticleSystem.getParticleSystem(); }
+  inline const ParticleSystem& getBloodParticleSystem() { return this->bloodParticleSystems.getParticleSystem(); }
+  inline const ParticleSystem& getSwarmParticleSystem() { return this->swarmParticleSystems.getParticleSystem(); }
 
 private:
 

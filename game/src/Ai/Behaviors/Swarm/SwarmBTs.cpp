@@ -5,6 +5,7 @@
 #include "../../../Components/Perks.h"
 #include "SwarmFSM.hpp"
 #include "../../../Network/ServerGameMode.h"
+#include "../../../Scenes/GameScene.h"
 #include <limits>
 
 #define get_dt() BehaviorTree::sceneHandler->getAIHandler()->getDeltaTime()
@@ -542,26 +543,27 @@ BTStatus SwarmBT::attack(Entity entityID)
 {
     BTStatus ret = BTStatus::Running;
 
+    Scene* scene = BehaviorTree::sceneHandler->getScene();
     Transform& thisTransform =
-        BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(entityID
+        scene->getComponent<Transform>(entityID
         );
     Transform& playerTransform =
-        BehaviorTree::sceneHandler->getScene()->getComponent<Transform>(
+        scene->getComponent<Transform>(
             getPlayerID(sceneHandler, entityID)
         );
     SwarmComponent& swarmComp =
-        BehaviorTree::sceneHandler->getScene()->getComponent<SwarmComponent>(
+        scene->getComponent<SwarmComponent>(
             entityID
         );
     AiCombatSwarm& combat =
-        BehaviorTree::sceneHandler->getScene()->getComponent<AiCombatSwarm>(
+        scene->getComponent<AiCombatSwarm>(
             entityID
         );
     Rigidbody& rigidbody =
-        BehaviorTree::sceneHandler->getScene()->getComponent<Rigidbody>(entityID
+        scene->getComponent<Rigidbody>(entityID
         );
     Collider& sawrmCollider =
-        BehaviorTree::sceneHandler->getScene()->getComponent<Collider>(entityID
+        scene->getComponent<Collider>(entityID
         );
 
     glm::vec3 dir = playerTransform.position - thisTransform.position;
@@ -584,6 +586,16 @@ BTStatus SwarmBT::attack(Entity entityID)
         {
             swarmComp.grounded = true;
             swarmComp.groundTimer = swarmComp.groundTimerOrig;
+
+            // Particle system
+            if (!scene->hasComponents<ParticleSystem>(entityID))
+            {
+                scene->setComponent<ParticleSystem>(entityID);
+                ParticleSystem& partSys = 
+                    scene->getComponent<ParticleSystem>(entityID);
+                partSys = ((GameScene*) scene)->getSwarmParticleSystem();
+                partSys.spawn = true;
+            }
         }
 
     if (!swarmComp.grounded && swarmComp.groundTimer > 0.0f)
