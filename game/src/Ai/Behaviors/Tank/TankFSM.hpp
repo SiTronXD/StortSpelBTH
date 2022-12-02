@@ -126,6 +126,7 @@ class TankFSM : public FSM
 {
 private:
     static Entity getPlayerID(Entity entityID);
+    static std::vector<Entity> getAllPlayerIDs(Entity entityID);
 private:
 	static bool idleToAler(Entity entityID);
 	static bool alertToCombat(Entity entityID);

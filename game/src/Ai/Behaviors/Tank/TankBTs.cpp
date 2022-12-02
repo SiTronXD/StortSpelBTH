@@ -10,6 +10,7 @@ Scene* TankBT::getTheScene()
 void TankBT::updateCanBeHit(Entity entityID)
 {
     int playerID = getPlayerID(entityID);
+	if(playerID == -1){return;}
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
@@ -119,6 +120,7 @@ void TankBT::groundHumpShortcut(Entity entityID)
 	
 
 	int playerID = getPlayerID(entityID);
+	if(playerID == -1){return;}
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 
 
@@ -145,6 +147,7 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 	bool canGoLeft=true;
 
 	int player_id = getPlayerID(entityID);
+	if(player_id == -1){return ret;}
 	Collider& entityCollider = getTheScene()->getComponent<Collider>(entityID);
 	Collider& playerCollider = getTheScene()->getComponent<Collider>(player_id);
 	Transform& entityTransform = getTheScene()->getComponent<Transform>(entityID);
@@ -167,9 +170,9 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
     RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, maxDist);
     RayPayload rp1 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_right, maxDist);
     RayPayload rp2 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_left, maxDist);
-	drawRaySimple(rayToPlayer, maxDist);
-	drawRaySimple(rayToPlayer_right, maxDist);
-	drawRaySimple(rayToPlayer_left, maxDist);
+	//drawRaySimple(rayToPlayer, maxDist);
+	//drawRaySimple(rayToPlayer_right, maxDist);
+	//drawRaySimple(rayToPlayer_left, maxDist);
 	if(rp.hit || rp1.hit || rp2.hit)
 	{
 		
@@ -184,9 +187,9 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 			RayPayload r_right= BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayRight, left_right_maxDist);
 			RayPayload r_left = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayLeft, left_right_maxDist);
 			RayPayload r_forward = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, left_right_maxDist);
-			drawRaySimple(rayToPlayer, left_right_maxDist);
-			drawRaySimple(rayRight, left_right_maxDist);
-			drawRaySimple(rayLeft, left_right_maxDist);
+			//drawRaySimple(rayToPlayer, left_right_maxDist);
+			//drawRaySimple(rayRight, left_right_maxDist);
+			//drawRaySimple(rayLeft, left_right_maxDist);
 
 			if(r_forward.hit && !getTheScene()->getComponent<Collider>(r_forward.entity).isTrigger)
 			{
@@ -294,17 +297,33 @@ float TankBT::get_dt()
 
 int TankBT::getPlayerID(int entityID)
 {
-	// if network exist take player from there
+	int playerID = -1;
+    // if network exist take player from there
     NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
-    if (s != nullptr && entityID != -1)
+    if (s != nullptr)
+    {   
+        float nearset = 99999999.0f;
+        Transform& trans = s->getComponent<Transform>(entityID);
+        for(auto p: *s->getPlayers())
         {
-            return s->getNearestPlayer(entityID);
+            Transform& pTrans = s->getComponent<Transform>(p);
+            HealthComp& pHealth = s->getComponent<HealthComp>(p);
+            float dist = glm::length(trans.position - pTrans.position);
+            if(dist < nearset && pHealth.health > 0.0f)
+            {
+                nearset = dist;
+                playerID = p;
+            }
         }
-
+        //return s->getNearestPlayer(entityID);
+    }
     // else find player from script
-    int playerID = -1;
-    std::string playerString = "playerID";
-    sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
+    else
+    {
+        std::string playerString = "playerID";
+        BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
+    }
+  
     return playerID;
 }
 
@@ -562,6 +581,7 @@ BTStatus TankBT::playerInPersonalSpace(Entity entityID)
 
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     int playerID = getPlayerID(entityID);
+	if(playerID == -1){return ret;}
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
     float tank_player_dist	= glm::length(playerTrans.position - tankTrans.position);
@@ -588,6 +608,7 @@ BTStatus TankBT::playerOutsidePersonalSpace(Entity entityID)
 	BTStatus ret = BTStatus::Failure;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     int playerID = getPlayerID(entityID);
+	if(playerID == -1){return ret;}
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
     float tank_player_dist	= glm::length(playerTrans.position - tankTrans.position);
@@ -603,6 +624,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	BTStatus ret = BTStatus::Running;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	int playerID			= getPlayerID(entityID);
+	if(playerID == -1){return ret;}
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
 	Collider& tankCol = getTheScene()->getComponent<Collider>(entityID);
@@ -732,6 +754,7 @@ BTStatus TankBT::HoldShield(Entity entityID)
 	
 
 	int playerID = getPlayerID(entityID);
+	if(playerID == -1){return ret;}
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	rotateTowards(entityID, playerTrans.position, tankComp.shildRotSpeed, 5.0f);
 
@@ -748,6 +771,7 @@ BTStatus TankBT::playAlertAnim(Entity entityID)
 
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     int playerID = getPlayerID(entityID);
+	if(playerID == -1){return ret;}
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 	Transform& tankTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Collider& tankCol = sceneHandler->getScene()->getComponent<Collider>(entityID);
@@ -821,6 +845,7 @@ BTStatus TankBT::die(Entity entityID)
 	BTStatus ret = BTStatus::Failure;
 
 	int playerID = getPlayerID(entityID);
+	if(playerID == -1){return ret;}
 	HealthComp& playerHealth = sceneHandler->getScene()->getComponent<HealthComp>(playerID);
 	if (playerHealth.health <= (playerHealth.maxHealth - 10))
 	{

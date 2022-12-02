@@ -29,10 +29,37 @@ Entity TankFSM::getPlayerID(Entity entityID){
         std::string playerString = "playerID";
         FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
     }
-
-    
   
     return playerID;
+}
+
+std::vector<Entity> TankFSM::getAllPlayerIDs(Entity entityID)
+{
+    std::vector<Entity> players;
+    // if network exist take player from there
+    NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+    if (s != nullptr)
+    {   
+        Transform& trans = s->getComponent<Transform>(entityID);
+        for(auto p: *s->getPlayers())
+        {
+            HealthComp& pHealth = s->getComponent<HealthComp>(p);
+            if(pHealth.health > 0.0f)
+            {
+                players.push_back(p);
+            }
+        }
+    }
+    // else find player from script
+    else
+    {
+        int playerID;
+        std::string playerString = "playerID";
+        FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
+        players.push_back(playerID);
+    }
+  
+    return players;
 }
 
 bool TankFSM::falseIfDead(Entity entityID)
@@ -86,66 +113,69 @@ void TankFSM::updateHump(Entity entityID, uint32_t what)
 
 void TankFSM::updateHumps(Entity entityID)
 {
-    int playerID = getPlayerID(entityID);
-	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
-	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
-	Collider& playerCol = getTheScene()->getComponent<Collider>(playerID);	
-	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
-	std::vector<int> toRemove;
+    for(auto p: getAllPlayerIDs(entityID))
+    {
+        TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	    Transform& playerTrans = getTheScene()->getComponent<Transform>(p);
+	    Collider& playerCol = getTheScene()->getComponent<Collider>(p);	
+	    Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
+	    std::vector<int> toRemove;
 
-    for(auto& h: tankComp.humps)
-	{
-		h.second += tankComp.humpShockwaveSpeed * get_dt();
+        for(auto& h: tankComp.humps)
+	    {
+	    	h.second += tankComp.humpShockwaveSpeed * get_dt();
 
-		updateHump(entityID, h.first);
-        Transform& humpTrans = getTheScene()->getComponent<Transform>(h.first);
+	    	updateHump(entityID, h.first);
+            Transform& humpTrans = getTheScene()->getComponent<Transform>(h.first);
 
-		float dist = glm::length(playerTrans.position - humpTrans.position);
-		float minHitDist = dist - playerCol.radius;
-		float maxHitDist = dist + playerCol.radius;
+	    	float dist = glm::length(playerTrans.position - humpTrans.position);
+	    	float minHitDist = dist - playerCol.radius;
+	    	float maxHitDist = dist + playerCol.radius;
 
-		if(h.second/2.0f >= tankComp.humpShockwaveShieldRadius)
-		{
-			toRemove.push_back(h.first);
-		}
-		else if(h.second/2.0f >= minHitDist && h.second/2.0f <= maxHitDist && (playerTrans.position.y < 1.0f))
-		{
-			//PlayerHit!
-            toRemove.push_back(h.first);
-			glm::vec3 to = playerTrans.position;
-			glm::normalize(to);
-			getTheScene()->getComponent<HealthComp>(playerID).health -= (int)tankComp.humpHit;
-            std::cout<<"Player humped!\n";
-			//single player
-			if (dynamic_cast<NetworkSceneHandler*>(FSM::sceneHandler) == nullptr) 
-			{
-				Script& playerScript = getTheScene()->getComponent<Script>(playerID);
-				FSM::sceneHandler->getScriptHandler()->setScriptComponentValue(playerScript , 1.0f, "pushTimer");
-                Rigidbody& playerRB = getTheScene()->getComponent<Rigidbody>(playerID);
+	    	if(h.second/2.0f >= tankComp.humpShockwaveShieldRadius)
+	    	{
+	    		toRemove.push_back(h.first);
+	    	}
+	    	else if(h.second/2.0f >= minHitDist && h.second/2.0f <= maxHitDist && (playerTrans.position.y < 1.0f))
+	    	{
+	    		//PlayerHit!
+                toRemove.push_back(h.first);
+	    		glm::vec3 to = playerTrans.position;
+	    		glm::normalize(to);
+	    		getTheScene()->getComponent<HealthComp>(p).health -= (int)tankComp.humpHit;
+                std::cout<<"Player humped!\n";
+	    		//single player
+	    		if (dynamic_cast<NetworkSceneHandler*>(FSM::sceneHandler) == nullptr) 
+	    		{
+	    			Script& playerScript = getTheScene()->getComponent<Script>(p);
+	    			FSM::sceneHandler->getScriptHandler()->setScriptComponentValue(playerScript , 1.0f, "pushTimer");
+                    Rigidbody& playerRB = getTheScene()->getComponent<Rigidbody>(p);
 
-                glm::vec3 dir = glm::normalize(to - tankTrans.position);
-                playerRB.velocity = dir * tankComp.humpForce;
-                playerRB.velocity.y += tankComp.humpYForce;
-			}
-            else
-            {
-				//send pushPlayer
-                glm::vec3 dir = glm::normalize(to - tankTrans.position);
-                dir *= tankComp.humpForce;
-                dir.y += tankComp.humpYForce;
-				//trust that push timer never changes
-                ((NetworkSceneHandler*)FSM::sceneHandler)
-                    ->getScene()
-                    ->addEvent({(int)GameEvent::PUSH_PLAYER, playerID}, 
-						{dir.x,dir.y,dir.z});
-			}
-		}
-	}
-	for(auto r: toRemove)
-	{
-		deactivateHump(entityID, r);
-		tankComp.humps.erase(r);
-	}
+                    glm::vec3 dir = glm::normalize(to - tankTrans.position);
+                    playerRB.velocity = dir * tankComp.humpForce;
+                    playerRB.velocity.y += tankComp.humpYForce;
+	    		}
+                else
+                {
+	    			//send pushPlayer
+                    glm::vec3 dir = glm::normalize(to - tankTrans.position);
+                    dir *= tankComp.humpForce;
+                    dir.y += tankComp.humpYForce;
+	    			//trust that push timer never changes
+                    ((NetworkSceneHandler*)FSM::sceneHandler)
+                        ->getScene()
+                        ->addEvent({(int)GameEvent::PUSH_PLAYER, p}, 
+	    					{dir.x,dir.y,dir.z});
+	    		}
+	    	}
+	    }
+	    for(auto r: toRemove)
+	    {
+	    	deactivateHump(entityID, r);
+	    	tankComp.humps.erase(r);
+	    }
+    }
+	
 }
 
 Scene* TankFSM::getTheScene()
@@ -229,6 +259,7 @@ bool TankFSM::playerInSight(Entity entityID)
 {
     TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     int playerID = getPlayerID(entityID);
+    if(playerID == -1){return false;}
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
     float tank_player_dist = glm::length(playerTrans.position - tankTrans.position);

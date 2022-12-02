@@ -18,17 +18,33 @@ float LichBT::get_dt()
 
 int LichBT::getPlayerID(Entity entityID)
 {
+	int playerID = -1;
     // if network exist take player from there
     NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
     if (s != nullptr)
+    {   
+        float nearset = 99999999.0f;
+        Transform& trans = s->getComponent<Transform>(entityID);
+        for(auto p: *s->getPlayers())
         {
-            return s->getNearestPlayer(entityID);
+            Transform& pTrans = s->getComponent<Transform>(p);
+            HealthComp& pHealth = s->getComponent<HealthComp>(p);
+            float dist = glm::length(trans.position - pTrans.position);
+            if(dist < nearset && pHealth.health > 0.0f)
+            {
+                nearset = dist;
+                playerID = p;
+            }
         }
-
+        //return s->getNearestPlayer(entityID);
+    }
     // else find player from script
-    int playerID = -1;
-    std::string playerString = "playerID";
-    BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
+    else
+    {
+        std::string playerString = "playerID";
+        BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
+    }
+  
     return playerID;
 }
 
@@ -94,6 +110,7 @@ bool LichBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 	bool canGoLeft=true;
 
 	int player_id = getPlayerID(entityID);
+    if(player_id == -1){return ret;}
 	Collider& entityCollider = getTheScene()->getComponent<Collider>(entityID);
 	Collider& playerCollider = getTheScene()->getComponent<Collider>(player_id);
 	Transform& entityTransform = getTheScene()->getComponent<Transform>(entityID);
@@ -185,6 +202,7 @@ bool LichBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 void LichBT::givePointsForPlayerHealth	(Entity entityID, float& l_points, float& i_points, float& f_points)
 {
     int playerID = getPlayerID(entityID);
+    if(playerID == -1){return;}
     int playerHealth = 0;
     HealthComp& playerHealthComp = getTheScene()->getComponent<HealthComp>(playerID);
     playerHealth = playerHealthComp.health;
@@ -211,6 +229,7 @@ void LichBT::givePointsForOwnHealth		(Entity entityID, float& l_points, float& i
 void LichBT::givePointsForDistance	    (Entity entityID, float& l_points, float& i_points, float& f_points)
 {
     int playerID = getPlayerID(entityID);
+    if(playerID == -1){return;}
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
@@ -432,6 +451,7 @@ BTStatus LichBT::creepyLook(Entity entityID)
 {
     BTStatus ret = BTStatus::Running;
     int playerID = getPlayerID(entityID);
+    if(playerID == -1){return ret;}
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     rotateTowards(entityID, playerTrans.position, lichComp.creepRotSpeed);
@@ -443,6 +463,7 @@ BTStatus LichBT::huntingPlayer(Entity entityID)
     BTStatus ret = BTStatus::Running;
     
     int playerID = getPlayerID(entityID);
+    if(playerID == -1){return ret;}
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
     Rigidbody& lichRb = getTheScene()->getComponent<Rigidbody>(entityID);
@@ -469,6 +490,7 @@ BTStatus LichBT::playerInNoNoZone(Entity entityID)
 {
     BTStatus ret = BTStatus::Failure;
     int playerID = getPlayerID(entityID);
+    if(playerID == -1){return ret;}
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
@@ -484,6 +506,7 @@ BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
 {
     BTStatus ret = BTStatus::Running;
     int playerID = getPlayerID(entityID);
+    if(playerID == -1){return ret;}
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
     Rigidbody& lichRb = getTheScene()->getComponent<Rigidbody>(entityID);
@@ -556,6 +579,7 @@ BTStatus LichBT::pickBestStrategy(Entity entityID)
     float firePoints            = 0.0f;
 
     int playerID                = getPlayerID(entityID);
+    if(playerID == -1){return ret;}
     int playerHealth            = 0;
 
     //singleplayer
@@ -639,6 +663,7 @@ BTStatus LichBT::attack(Entity entityID)
     BTStatus ret = BTStatus::Failure;
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     int playerID = getPlayerID(entityID);
+    if(playerID == -1){return ret;}
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
 
@@ -732,6 +757,7 @@ BTStatus LichBT::playerNotVisible(Entity entityID)
 {
     BTStatus ret = BTStatus::Failure;
     int playerID = getPlayerID(entityID);
+    if(playerID == -1){return ret;}
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
     LichComponent lichComp = getTheScene()->getComponent<LichComponent>(entityID);
@@ -752,6 +778,7 @@ BTStatus LichBT::runAwayFromPlayer(Entity entityID)
 {
     BTStatus ret = BTStatus::Running;
     int playerID = getPlayerID(entityID);
+    if(playerID == -1){return ret;}
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
     Rigidbody& lichRb = getTheScene()->getComponent<Rigidbody>(entityID);
@@ -793,6 +820,7 @@ BTStatus LichBT::die(Entity entityID)
    BTStatus ret = BTStatus::Failure;
 
 	int playerID = getPlayerID(entityID);
+    if(playerID == -1){return ret;}
    //TODO : this was changed from combat to networkCombat see if it works
 	HealthComp& playerHealth = sceneHandler->getScene()->getComponent<HealthComp>(playerID);
 	if (playerHealth.health <= (playerHealth.maxHealth - 10))
@@ -816,6 +844,7 @@ BTStatus LichBT::alerted(Entity entityID)
 
 	LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
 	int playerID = getPlayerID(entityID);
+    if(playerID == -1){return ret;}
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 	Transform& lichTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Collider& lichCol = sceneHandler->getScene()->getComponent<Collider>(entityID);
