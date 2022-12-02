@@ -11,6 +11,7 @@ class LobbyScene : public Scene
 private:
 	uint32_t fontTextureId;
 	uint32_t backgroundId;
+	uint32_t buttonId;
 	std::string serverIP;
 
 	uint32_t activePlayers;
