@@ -41,8 +41,8 @@ void LichBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 	lichTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
 	glm::vec2 lichPos			= glm::vec2(lichTrans.position.x, lichTrans.position.z);
-	glm::vec2 curRot			= -glm::normalize(glm::vec2(lichTrans.forward().x, lichTrans.forward().z));
-	glm::vec2 lich_to_friend	= glm::normalize(targetPos - lichPos);
+	glm::vec2 curRot			= -safeNormalize(glm::vec2(lichTrans.forward().x, lichTrans.forward().z));
+	glm::vec2 lich_to_friend	= safeNormalize(targetPos - lichPos);
 
 	float angle_between			= glm::degrees(glm::acos(glm::dot(lich_to_friend, curRot)));
 	lichComp.tempRotAngle       = angle_between;
@@ -60,8 +60,8 @@ void LichBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 	lichTrans.updateMatrix();
 	targetPos			= glm::vec2(target.x, target.z);
 	lichPos				= glm::vec2(lichTrans.position.x, lichTrans.position.z);
-	curRot				= -glm::normalize(glm::vec2(lichTrans.forward().x, lichTrans.forward().z));
-	lich_to_friend		= glm::normalize(targetPos - lichPos);
+	curRot				= -safeNormalize(glm::vec2(lichTrans.forward().x, lichTrans.forward().z));
+	lich_to_friend		= safeNormalize(targetPos - lichPos);
 	angle_between		= glm::degrees(glm::acos(glm::dot(lich_to_friend, curRot)));
 	//If angle got bigger, then change direction
 	if(lichComp.tempRotAngle < angle_between)
@@ -105,7 +105,7 @@ bool LichBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 	from = from + playerTransform.up() * 3.0f;
 	glm::vec3 to = entityTransform.position;
 	float maxDist = glm::length(to - from);
-	glm::vec3 dir = glm::normalize(from - to);
+	glm::vec3 dir = safeNormalize(from - to);
 	Ray rayToPlayer{from, -dir};    
 	Ray rayRight{to, entityTransform.right()};    
 	Ray rayLeft{to, -entityTransform.right()};    
@@ -173,7 +173,7 @@ bool LichBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 		dir = -entityTransform.forward();
 	}
 	rotateTowards(entityID, playerTransform.position, lichComp.creepRotSpeed, 5.0f);
-	glm::normalize(dir);
+	safeNormalize(dir);
 	dir.y = 0;
 	moveDir = dir;
 
@@ -356,7 +356,7 @@ BTStatus LichBT::goToAlter(Entity entityID)
 
     glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, alterTrans.position);
     avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, alterTrans.position, moveDir, glm::vec3(0.0f, -3.0f, 0.0f));
-	moveDir = glm::normalize(moveDir);
+	moveDir = safeNormalize(moveDir);
     lichRb.velocity = moveDir * lichComp.speed;
     rotateTowards(entityID, alterTrans.position, lichComp.idleTurnSpeed);
 
@@ -451,7 +451,7 @@ BTStatus LichBT::huntingPlayer(Entity entityID)
 
     rayChecking(entityID, moveDir);
 
-	moveDir = glm::normalize(moveDir);
+	moveDir = safeNormalize(moveDir);
     avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, playerTrans.position, moveDir, glm::vec3(0.0f, -3.0f, 0.0f));
     lichRb.velocity = moveDir * lichComp.huntSpeed;
     rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
@@ -490,7 +490,7 @@ BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, playerTrans.position);
     //avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, playerTrans.position, moveDir, glm::vec3(0.0f, -3.0f, 0.0f)); //TODO: Check if this improves or not
-	moveDir = -glm::normalize(moveDir);
+	moveDir = -safeNormalize(moveDir);
     lichRb.velocity = moveDir * lichComp.huntSpeed;
 
     rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
@@ -678,7 +678,7 @@ BTStatus LichBT::attack(Entity entityID)
                 Rigidbody&  orbRB    = getTheScene()->getComponent<Rigidbody>(projectileID);
                 
                 orbTrans.position = lichTrans.position + (-lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
-                auto spellVector = glm::normalize(playerTrans.position - lichTrans.position) * LichComponent::spellForce;
+                auto spellVector = safeNormalize(playerTrans.position - lichTrans.position) * LichComponent::spellForce;
                 spellVector.y = 0;  //TODO: What if player is on top of something... Will not aim att player
                 orbRB.velocity = spellVector;
                 orb.orbPower = lichComp.curAttack;                
@@ -687,7 +687,7 @@ BTStatus LichBT::attack(Entity entityID)
             else
             {
                 glm::vec3 initialOrbPos = lichTrans.position + (-lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
-                glm::vec3 spellVector = glm::normalize(playerTrans.position - lichTrans.position) * LichComponent::spellForce;
+                glm::vec3 spellVector = safeNormalize(playerTrans.position - lichTrans.position) * LichComponent::spellForce;
                 spellVector.y = 0;  //TODO: What if player is on top of something... Will not aim att player
                 
                 netScene->addEvent({(int)GameEvent::THROW_ORB, (int)projectileID },{initialOrbPos.x,initialOrbPos.y,initialOrbPos.z, spellVector.x, spellVector.y,spellVector.z});
@@ -758,12 +758,12 @@ BTStatus LichBT::runAwayFromPlayer(Entity entityID)
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, playerTrans.position);
     //avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, playerTrans.position, moveDir, glm::vec3(0.0f, -3.0f, 0.0f)); //TODO: Check if this improves or not
-	moveDir = -glm::normalize(moveDir);
+	moveDir = -safeNormalize(moveDir);
     lichRb.velocity = moveDir * lichComp.huntSpeed;
     //rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
 
     
-    glm::vec3 player_to_lich = glm::normalize(lichTrans.position - playerTrans.position);
+    glm::vec3 player_to_lich = safeNormalize(lichTrans.position - playerTrans.position);
     glm::vec3 lookAtPos = lichTrans.position + player_to_lich * 2.0f;
     rotateTowards(entityID, lookAtPos, lichComp.huntRotSpeed);
 
