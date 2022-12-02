@@ -114,37 +114,38 @@ bool LichBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 	//drawRaySimple(rayToPlayer, maxDist);
 	if(rp.hit)
 	{
-		
-		if(!getTheScene()->getComponent<Collider>(rp.entity).isTrigger &&
-			rp.entity != entityID)
-		{
-			ret = false;
-			somethingInTheWay = true;
-			entityTransform.updateMatrix();
+		if(getTheScene()->hasComponents<Collider>(rp.entity)){
+            if(!getTheScene()->getComponent<Collider>(rp.entity).isTrigger &&
+                rp.entity != entityID)
+            {
+                ret = false;
+                somethingInTheWay = true;
+                entityTransform.updateMatrix();
 
-			RayPayload r_right= BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayRight, left_right_maxDist);
-			RayPayload r_left = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayLeft, left_right_maxDist);
-			RayPayload r_forward = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, left_right_maxDist);
-			//drawRaySimple(rayToPlayer, left_right_maxDist);
-			//drawRaySimple(rayRight, left_right_maxDist);
-			//drawRaySimple(rayLeft, left_right_maxDist);
+                RayPayload r_right= BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayRight, left_right_maxDist);
+                RayPayload r_left = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayLeft, left_right_maxDist);
+                RayPayload r_forward = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, left_right_maxDist);
+                //drawRaySimple(rayToPlayer, left_right_maxDist);
+                //drawRaySimple(rayRight, left_right_maxDist);
+                //drawRaySimple(rayLeft, left_right_maxDist);
 
-			if(r_forward.hit && !getTheScene()->getComponent<Collider>(r_forward.entity).isTrigger)
-			{
-				canGoForward = false;
-			}
-			if(r_right.hit && !getTheScene()->getComponent<Collider>(r_right.entity).isTrigger)
-			{
-				canGoRight = false;
-				lichComp.attackGoRight = false;
-			}
-			if(r_left.hit && !getTheScene()->getComponent<Collider>(r_left.entity).isTrigger)
-			{
-				canGoLeft = false;
-				lichComp.attackGoRight = true;
-			}
+                if(r_forward.hit && !getTheScene()->getComponent<Collider>(r_forward.entity).isTrigger)
+                {
+                    canGoForward = false;
+                }
+                if(r_right.hit && !getTheScene()->getComponent<Collider>(r_right.entity).isTrigger)
+                {
+                    canGoRight = false;
+                    lichComp.attackGoRight = false;
+                }
+                if(r_left.hit && !getTheScene()->getComponent<Collider>(r_left.entity).isTrigger)
+                {
+                    canGoLeft = false;
+                    lichComp.attackGoRight = true;
+                }
 
-		}
+            }
+        }
 	}
 
 	if(somethingInTheWay)
