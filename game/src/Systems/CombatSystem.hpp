@@ -525,7 +525,10 @@ public:
 	void updateMovementSpeed(Combat& combat, Perks& perk, bool doUpgrade = true)
 	{
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		float moveTimers[4] = { 0.f, 0.f, 0.f, 0.f };
+		int currentAnimation = 0;
+		this->script->getScriptComponentValue(playerScript, currentAnimation, "currentAnimation");
+		float moveTimers[3] = { 0.f, 0.f, 0.f };
+
 		if (doUpgrade)
 		{
 			setDefaultMovementSpeed(combat);
@@ -569,6 +572,15 @@ public:
 		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
 		this->script->setScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
 		this->script->setScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
+
+		if (currentAnimation == 2)
+		{
+			this->script->setScriptComponentValue(playerScript, 3, "currentAnimation");
+		}
+		else if (currentAnimation == 3)
+		{
+			this->script->setScriptComponentValue(playerScript, 2, "currentAnimation");
+		}
 	}
 
 	void updateStamina(Combat& combat, Perks& perk, bool doUpgrade = true)
