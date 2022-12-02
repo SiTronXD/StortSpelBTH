@@ -67,6 +67,12 @@ void LobbyScene::init()
     this->getComponent<Transform>(camEntity).position = glm::vec3(0, 0, 0);
     this->getComponent<Transform>(camEntity).rotation = glm::vec3(0, 0, 0);
 
+    scene = this->createEntity();
+    this->setComponent<MeshComponent>(scene, (int)this->getResourceManager()->addMesh("assets/models/Menu/lobby.obj"));
+    Transform& t = this->getComponent<Transform>(scene);
+    t.position = glm::vec3(0.f, 0.5f, 40.f);
+    t.rotation = glm::vec3(0.f, 180.f, 0.f);
+
     this->players.resize(MAX_PLAYER_COUNT);
     this->playersNames.resize(MAX_PLAYER_COUNT);
     for (int i = 0; i < 4; i++)
@@ -104,6 +110,9 @@ void LobbyScene::start()
     this->getComponent<Transform>(background).scale.y = 100;
 
     int light = this->createEntity();
+    this->setComponent<DirectionalLight>(
+        light, glm::vec3(-0.5f, -1.0f, 1.0f), glm::vec3(0.6f)
+    );
     this->setComponent<PointLight>(light);
     this->getComponent<PointLight>(light).color = glm::vec3(10, 10, 10);
     this->getComponent<Transform>(light).position = glm::vec3(0, 0, 0);
@@ -111,6 +120,7 @@ void LobbyScene::start()
 
 void LobbyScene::update()
 {
+    
     // Set model position and player names
     auto netPlayers = this->networkHandler->getPlayers();
     if (netPlayers.size() != this->activePlayers - 1)
