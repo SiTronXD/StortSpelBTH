@@ -72,16 +72,16 @@ function script:update(dt)
 	uiRenderer.renderTexture(vector(0.0, 0.0), vector(1920.0, 1080.0))
 
 	
-	if paused then
-		uiRenderer.setTexture(self.pauseBackgroundTexID)
-		uiRenderer.renderTexture(vector(0.0, 0.0), vector(1920.0, 1080.0))
-		uiRenderer.renderString("game paused", vector(0.0, 400), vector(80, 80));
-		uiRenderer.setTexture(self.buttonTexID)
-		uiRenderer.renderTexture(vector(resumePosX, resumePosY), vector(resumeWidth, resumeHeigth))
-		uiRenderer.renderTexture(vector(exitPosX, exitPosY), vector(exitWidth, exitHeigth))
-		uiRenderer.renderString("resume", vector(resumePosX, resumePosY), vector(50, 50));
-		uiRenderer.renderString("exit", vector(exitPosX, exitPosY), vector(50, 50));
-	end
+	-- if paused then
+	-- 	uiRenderer.setTexture(self.pauseBackgroundTexID)
+	-- 	uiRenderer.renderTexture(vector(0.0, 0.0), vector(1920.0, 1080.0))
+	-- 	uiRenderer.renderString("game paused", vector(0.0, 400), vector(80, 80));
+	-- 	uiRenderer.setTexture(self.buttonTexID)
+	-- 	uiRenderer.renderTexture(vector(resumePosX, resumePosY), vector(resumeWidth, resumeHeigth))
+	-- 	uiRenderer.renderTexture(vector(exitPosX, exitPosY), vector(exitWidth, exitHeigth))
+	-- 	uiRenderer.renderString("resume", vector(resumePosX, resumePosY), vector(50, 50));
+	-- 	uiRenderer.renderString("exit", vector(exitPosX, exitPosY), vector(50, 50));
+	-- end
 end
 
 return script
