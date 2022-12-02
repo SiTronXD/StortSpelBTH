@@ -49,9 +49,9 @@ void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos)
     tankComp.life = tankComp.FULL_HEALTH;
     transform.scale.y = tankComp.origScaleY;
 
-    if (currScene->getSceneType() == SceneType::GameModeScene)
+    if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
     {
-        ((ServerGameMode*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->tankIDs[tankIdx]});       
+        ((NetworkScene*)currScene)->addEvent({(int)GameEvent::ACTIVATE, this->tankIDs[tankIdx]});       
     }
 }
 
@@ -110,7 +110,7 @@ void SpawnHandler::createEntities()
 
     //TODO: Cause crash on second run, therefore disabled in distribution... 
 #ifdef _CONSOLE 
-    if (currScene->getSceneType() != SceneType::GameModeScene)
+    if (dynamic_cast<NetworkScene*>(currScene) == nullptr)
     {
         this->aiHandler->addImguiToFSM("swarmFSM", this->SwarmImgui());
         this->aiHandler->addImguiToFSM("lichFSM", this->LichImgui());
