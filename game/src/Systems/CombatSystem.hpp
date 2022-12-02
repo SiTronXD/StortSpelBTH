@@ -2,22 +2,33 @@
 
 #include <vengine.h>
 #include "../Components/Combat.h"
+#include "../Components/HealthComp.h"
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
+#include "../Network/NetworkHandlerGame.h"
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
-#include <string>
+
+#include "../Components/HealArea.h"
+
+enum SoundSourceEnum { takeDmgSource, moveSource, attackSource };
+enum AttackSoundEnum { swing };
 
 class CombatSystem : public System
 {
 private:
-
 	Scene* scene;
 	ResourceManager* resourceMng;
 	PhysicsEngine* physics;
 	UIRenderer* uiRenderer;
 	ScriptHandler* script;
+	NetworkHandlerGame* networkHandler;
 	Entity playerID;
 	Entity swordID;
-	Entity heal;
+	const bool* paused;
+
+	int lostHealth;
+	std::vector<uint32_t> attackSounds;
+	uint32_t moveSound;
+	uint32_t takeDmgSound;
 
 	int swordMesh;
 	int perkMeshes[5];
@@ -28,17 +39,28 @@ private:
 
 public:
 
-	CombatSystem(Scene* scene, ResourceManager* resourceMng, Entity playerID, 
-		PhysicsEngine* physics, UIRenderer* uiRenderer, ScriptHandler* script)
-		: scene(scene), resourceMng(resourceMng), playerID(playerID), heal(-1),
-		swordID(-1), physics(physics), uiRenderer(uiRenderer), script(script)
+	CombatSystem(Scene* scene, ResourceManager* resourceMng, Entity playerID, const bool* paused,
+		PhysicsEngine* physics, UIRenderer* uiRenderer, ScriptHandler* script, NetworkHandlerGame* networkHandler)
+		: scene(scene), resourceMng(resourceMng), playerID(playerID), paused(paused),
+		swordID(-1), physics(physics), uiRenderer(uiRenderer), script(script), networkHandler(networkHandler)
 	{
+		this->networkHandler->setCombatSystem(this);
 		if (scene->hasComponents<Combat>(playerID))
 		{
 			Combat& combat = scene->getComponent<Combat>(playerID);
 			combat.combos.emplace_back("Light Light Light ");
 			combat.combos.emplace_back("Light Heavy Light ");
 			combat.combos.emplace_back("Heavy Light Heavy ");
+
+			this->takeDmgSound = this->resourceMng->addSound("assets/Sounds/OufSound.ogg");
+			this->moveSound = this->resourceMng->addSound("assets/Sounds/RunningSound.ogg");
+			this->attackSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/SwishSound.ogg"));
+
+			this->scene->setComponent<MultipleAudioSources>(this->playerID);
+			MultipleAudioSources& multiAudio = this->scene->getComponent<MultipleAudioSources>(this->playerID);
+			multiAudio.audioSource[takeDmgSource].setBuffer(this->takeDmgSound);
+			multiAudio.audioSource[moveSource].setBuffer(this->moveSound);
+			multiAudio.audioSource[attackSource].setBuffer(this->attackSounds[swing]);
 
 			this->swordID = this->scene->createEntity();
 			this->swordMesh = this->resourceMng->addMesh("assets/models/MainSword.fbx", "assets/textures");
@@ -56,6 +78,8 @@ public:
 			this->perkMeshes[4] = this->resourceMng->addMesh("assets/models/Perk_Stamina.obj");
 			this->abilityMeshes[0] = this->resourceMng->addMesh("assets/models/KnockbackAbility.obj");
 			this->abilityMeshes[1] = this->resourceMng->addMesh("assets/models/HealingAbility.obj");
+
+			this->lostHealth = this->scene->getComponent<HealthComp>(this->playerID).health;
 		}
 	}
 
@@ -74,55 +98,87 @@ public:
 				dealDamage(combat);
 			}
 
-			if (combat.isHealing)
+            // Check if player is trying to attack
+            if (Input::isMouseButtonPressed(Mouse::LEFT))
+            {
+				lightAttack(combat);
+            }
+            else if (Input::isMouseButtonPressed(Mouse::RIGHT))
+            {
+				heavyAttack(combat);
+            }
+            else if (Input::isKeyPressed(Keys::F))
+            {
+				useAbility(combat);
+            }
+
+            // Check if player wants to drop a perk
+            if (Input::isKeyPressed(Keys::ONE))
+            {
+				removePerk(combat, combat.perks[0]);
+            }
+            if (Input::isKeyPressed(Keys::TWO))
+            {
+				removePerk(combat, combat.perks[1]);
+            }
+            if (Input::isKeyPressed(Keys::THREE))
+            {
+				removePerk(combat, combat.perks[2]);
+            }
+            if (Input::isKeyPressed(Keys::FOUR))
+            {
+				removePerk(combat, combat.perks[3]);
+            }
+            if (Input::isKeyPressed(Keys::FIVE))
+            {
+				removeAbility(combat, combat.ability);
+            }
+
+			MultipleAudioSources& multiAudio = this->scene->getComponent<MultipleAudioSources>(this->playerID);
+			if (this->scene->getAnimationStatus(this->playerID, "").animationName == "run")
 			{
-				healPlayer(combat, deltaTime);
+				if (!multiAudio.audioSource[moveSource].isPlaying())
+				{
+					playerEffectSound(moveSource, this->moveSound, true, 10.f);
+				}
+			}
+			else if (this->scene->getAnimationStatus(this->playerID, "").animationName != "run")
+			{
+				if (multiAudio.audioSource[moveSource].isPlaying())
+				{
+					multiAudio.audioSource[moveSource].stop();
+				}
 			}
 
-			// Check if player is trying to attack
-			if (Input::isMouseButtonPressed(Mouse::LEFT))
+			HealthComp& healthComp = this->scene->getComponent<HealthComp>(this->playerID);
+			if (this->lostHealth > healthComp.health)
 			{
-				lightAttack(combat);
+				this->lostHealth = healthComp.health;
+				takeDmg();
 			}
-			else if (Input::isMouseButtonPressed(Mouse::RIGHT))
+
+#ifdef _CONSOLE
+			float animMultis[6] = { combat.animationMultiplier[0], combat.animationMultiplier[1], combat.animationMultiplier[2],
+			combat.animationMultiplier[3], combat.animationMultiplier[4], combat.animationMultiplier[5] };
+
+			ImGui::Begin("AnimationMultipliers");
+			ImGui::SliderFloat("Light Anim", &animMultis[0], 0.f, 10.f);
+			ImGui::SliderFloat("Heavy Anim", &animMultis[1], 0.f, 10.f);
+			ImGui::SliderFloat("Combo1 Anim", &animMultis[2], 0.f, 10.f);
+			ImGui::SliderFloat("Combo2 Anim", &animMultis[3], 0.f, 10.f);
+			ImGui::SliderFloat("Combo3 Anim", &animMultis[4], 0.f, 10.f);
+			ImGui::SliderFloat("Knockback Anim", &animMultis[5], 0.f, 10.f);
+			ImGui::End();
+			for (size_t i = 0; i < 6; i++)
 			{
-				heavyAttack(combat);
+				combat.animationMultiplier[i] = animMultis[i];
 			}
-			else if (Input::isKeyPressed(Keys::F))
-			{
-				useAbility(combat);
-			}
-			// Check if player wants to drop a perk
-			if (Input::isKeyPressed(Keys::ONE))
-			{
-				removePerk(combat, combat.perks[0]);
-			}
-			if (Input::isKeyPressed(Keys::TWO))
-			{
-				removePerk(combat, combat.perks[1]);
-			}
-			if (Input::isKeyPressed(Keys::THREE))
-			{
-				removePerk(combat, combat.perks[2]);
-			}
-			if (Input::isKeyPressed(Keys::FOUR))
-			{
-				removePerk(combat, combat.perks[3]);
-			}
-			if (Input::isKeyPressed(Keys::FIVE))
-			{
-				removeAbility(combat, combat.ability);
-			}
+#endif
 		};
 		view.each(foo);
 
 		return false;
 	}
-
-	int getHealth(Combat& combat)
-	{
-		return combat.health;
-	};
 
 	ActiveAttack checkActiveAttack(Combat& combat)
 	{
@@ -137,31 +193,31 @@ public:
 			}
 			return combat.activeAttack;
 		case lightActive:
-			if (combat.attackTimer < 0.f)
+			if (combat.attackTimer <= 0.f)
 			{
 				combat.activeAttack = noActive;
 			}
 			return combat.activeAttack;
 		case heavyActive:
-			if (combat.attackTimer < 0.f)
+			if (combat.attackTimer <= 0.f)
 			{
 				combat.activeAttack = noActive;
 			}
 			return combat.activeAttack;
 		case comboActive1:
-			if (combat.attackTimer < 0.f)
+			if (combat.attackTimer <= 0.f)
 			{
 				combat.activeAttack = noActive;
 			}
 			return combat.activeAttack;
 		case comboActive2:
-			if (combat.attackTimer < 0.f)
+			if (combat.attackTimer <= 0.f)
 			{
 				combat.activeAttack = noActive;
 			}
 			return combat.activeAttack;
 		case comboActive3:
-			if (combat.attackTimer < 0.f)
+			if (combat.attackTimer <= 0.f)
 			{
 				combat.activeAttack = noActive;
 			}
@@ -184,53 +240,31 @@ public:
 			swordTrans.updateMatrix();
 			std::vector<int> hitID = physics->testContact(this->scene->getComponent<Collider>(this->swordID),
 				swordTrans.position);
-
-			for (size_t i = 0; i < hitID.size(); i++)
+			for (size_t i = 0; i < hitID.size(); i++) 
 			{
-				if (scene->hasComponents<SwarmComponent>(hitID[i]))
+				this->canHit = true;
+				for (size_t j = 0; j < this->hitEnemies.size(); j++)
 				{
-					for (size_t j = 0; j < this->hitEnemies.size(); j++)
+					if (this->hitEnemies[j] == hitID[i])
 					{
-						if (this->hitEnemies[j] == hitID[i])
-						{
-							this->canHit = false;
-						}
-						else
-						{
-							this->canHit = true;
-						}
-					}
-					if (this->canHit == true)
-					{
-						SwarmComponent& enemy = this->scene->getComponent<SwarmComponent>(hitID[i]);
-						enemy.life -= (int)combat.dmgArr[combat.activeAttack];
-						hitEnemy(combat, hitID[i]);
+					    this->canHit = false;
+			            break;
 					}
 				}
-				else if (scene->hasComponents<TankComponent>(hitID[i]))
+				if (this->canHit)
 				{
-					for (size_t j = 0; j < this->hitEnemies.size(); j++)
-					{
-						if (this->hitEnemies[j] == hitID[i])
-						{
-							this->canHit = false;
-						}
-						else
-						{
-							this->canHit = true;
-						}
-					}
-					if (this->canHit == true)
-					{
-						TankComponent& enemy = this->scene->getComponent<TankComponent>(hitID[i]);
-						if (enemy.canBeHit)
-						{
-							enemy.life -= (int)combat.dmgArr[combat.activeAttack];
-							hitEnemy(combat, hitID[i]);
-						}
-					}
+					this->networkHandler->sendHitOn(hitID[i], (int)combat.dmgArr[combat.activeAttack], combat.knockbackArr[combat.activeAttack]);
+					this->hitEnemies.emplace_back(hitID[i]);
 				}
 			}
+		}
+	}
+
+	void takeDmg()
+	{
+		if (!this->scene->getComponent<MultipleAudioSources>(this->playerID).audioSource[takeDmgSource].isPlaying())
+		{
+			playerEffectSound(takeDmgSource, this->takeDmgSound, false, 10.f);
 		}
 	}
 
@@ -246,14 +280,37 @@ public:
 
 	void setupAttack(std::string animName, int animIdx, float cdValue, float animMultiplier)
 	{
-		this->scene->setAnimation(this->playerID, animName);
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		this->script->setScriptComponentValue(playerScript, animIdx, "currentAnimation");
-		this->script->setScriptComponentValue(playerScript, cdValue, "animTimer");
-		this->scene->getComponent<AnimationComponent>(this->playerID).timeScale = animMultiplier;
-		Transform& swordTrans = this->scene->getComponent<Transform>(this->swordID);
-		swordTrans.updateMatrix();
-		this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 12.f, (swordTrans.right() * swordTrans.forward()), true));
+		bool cannotAttack = false;
+		this->script->getScriptComponentValue(playerScript, cannotAttack, "isDodging");
+		if (!cannotAttack)
+		{
+			if (!this->scene->getComponent<MultipleAudioSources>(this->playerID).audioSource[attackSource].isPlaying())
+			{
+				playerEffectSound(attackSource, this->attackSounds[swing], false, 10.f);
+			}
+
+			int currentAnimation = 0;
+			this->script->getScriptComponentValue(playerScript, currentAnimation, "currentAnimation");
+
+			if (animIdx == 6)
+			{
+				this->script->setScriptComponentValue(playerScript, true, "wholeBody");
+				this->script->setScriptComponentValue(playerScript, false, "canMove");
+				this->scene->blendToAnimation(this->playerID, animName, "", 0.18f, animMultiplier);
+			}
+			else
+			{
+				this->script->setScriptComponentValue(playerScript, false, "wholeBody");
+				this->scene->blendToAnimation(this->playerID, animName, "UpperBody", 0.18f, animMultiplier);
+			}
+			this->script->setScriptComponentValue(playerScript, true, "isAttacking");
+			this->script->setScriptComponentValue(playerScript, animIdx, "currentAnimation");
+			this->script->setScriptComponentValue(playerScript, cdValue, "animTimer");
+			Transform& swordTrans = this->scene->getComponent<Transform>(this->swordID);
+			swordTrans.updateMatrix();
+			this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 12.f, (swordTrans.right() * swordTrans.forward()), true));
+		}
 	}
 
 	bool lightAttack(Combat& combat)
@@ -278,7 +335,7 @@ public:
 			}
 			else
 			{
-				setupAttack("lightAttack", 4, combat.lightAttackCd, combat.animationMultiplier[lightActive]);
+				setupAttack("lightAttack", 5, combat.lightAttackCd, combat.animationMultiplier[lightActive]);
 				return true;
 			}
 		}
@@ -339,7 +396,7 @@ public:
 				if (checkCombo(combat)) { return true; }
 				else
 				{
-					setupAttack("knockback", 9, combat.knockbackCd, combat.animationMultiplier[knockbackActive]);
+					setupAttack("knockback", 5, combat.knockbackCd, combat.animationMultiplier[knockbackActive]);
 					return true;
 				}
 			}
@@ -353,41 +410,16 @@ public:
 		{
 			if (checkActiveAttack(combat) == noActive)
 			{
-				combat.healTimer = combat.healCd;
-				combat.isHealing = true;
 				combat.ability.abilityType = emptyAbility;
 
-				this->heal = this->scene->createEntity();
-				this->scene->setComponent<MeshComponent>(this->heal, this->abilityMeshes[healAbility]);
-				this->scene->setComponent<PointLight>(this->heal, { glm::vec3(0.f, 10.f, 0.f), glm::vec3(9.f, 7.f, 9.f) });
-				Transform& healTrans = this->scene->getComponent<Transform>(this->heal);
-				Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
-				healTrans.position = glm::vec3(playerTrans.position.x, 0.f, playerTrans.position.z);
+				glm::vec3& pos = this->scene->getComponent<Transform>(this->playerID).position;
+				pos.y = 0.0f;
+				this->networkHandler->useHealAbilityRequest(pos);
 
 				return true;
 			}
 		}
 		return false;
-	}
-
-	void healPlayer(Combat& combat, float deltaTime)
-	{
-		Transform& healTrans = this->scene->getComponent<Transform>(this->heal);
-		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
-		if (combat.health < combat.maxHealth)
-		{
-			glm::vec3 playerToHeal = healTrans.position - playerTrans.position;
-			float distSqrd = glm::dot(playerToHeal, playerToHeal);
-			if (distSqrd < combat.healRadius * combat.healRadius)
-			{
-				combat.hpRegenConverter += combat.hpRegen * deltaTime;
-				if (combat.hpRegenConverter > 1.f)
-				{
-					combat.health += (int)(combat.hpRegenConverter);
-					combat.hpRegenConverter -= 1.f;
-				}
-			}
-		}
 	}
 
 	// Executes combo attack.
@@ -405,14 +437,14 @@ public:
 			combat.attackTimer = combat.comboMixCd;
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive2;
-			setupAttack("mixAttack", 7, combat.comboMixCd, combat.animationMultiplier[comboActive2]);
+			setupAttack("mixAttack", 5, combat.comboMixCd, combat.animationMultiplier[comboActive2]);
 		}
 		else if (idx == 2)
 		{
 			combat.attackTimer = combat.comboHeavyCd;
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive3;
-			setupAttack("slashAttack", 8, combat.comboHeavyCd, combat.animationMultiplier[comboActive3]);
+			setupAttack("slashAttack", 5, combat.comboHeavyCd, combat.animationMultiplier[comboActive3]);
 		}
 	};
 
@@ -430,18 +462,18 @@ public:
 		return false;
 	};
 
-	void updateHealth(Combat& combat, Perks& perk, bool doUpgrade = true)
+	void updateHealth(Combat& combat, HealthComp& healthComp, Perks& perk, bool doUpgrade = true)
 	{
 		if (doUpgrade)
 		{
-			setDefaultHp(combat);
+			setDefaultHp(combat, healthComp);
 			combat.hpMultiplier += perk.multiplier;
 		}
-		float tempHp = (float)combat.maxHealth * combat.hpMultiplier;
-		combat.maxHealth = (int)tempHp;
+		float tempHp = (float)healthComp.maxHealth * combat.hpMultiplier;
+		healthComp.maxHealth = (int)tempHp;
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		this->script->setScriptComponentValue(playerScript, combat.maxHealth, "maxHealth");
-		combat.health = std::min(combat.health, combat.maxHealth);
+		this->script->setScriptComponentValue(playerScript, healthComp.maxHealth, "maxHealth");
+		healthComp.health = std::min(healthComp.health, healthComp.maxHealth);
 	}
 
 	void updateDmg(Combat& combat, Perks& perk, bool doUpgrade = true)
@@ -462,20 +494,24 @@ public:
 		if (doUpgrade)
 		{
 			setDefaultAtttackSpeed(combat);
-			combat.attackSpeedMultiplier -= perk.multiplier;
-			for (size_t i = 0; i < 6; i++)
-			{
-				combat.animationMultiplier[i] += perk.multiplier;
-			}
-			if (combat.attackSpeedMultiplier < 0.3f)
+			combat.totalAtkSpeedMulti -= perk.multiplier;
+			if (combat.totalAtkSpeedMulti < 0.3f)
 			{
 				combat.attackSpeedMultiplier = 0.3f;
-				combat.animationMultiplier[0] = 1.9f;
-				combat.animationMultiplier[1] = 1.7f;
-				combat.animationMultiplier[2] = 2.8f;
-				combat.animationMultiplier[3] = 2.8f;
-				combat.animationMultiplier[4] = 2.8f;
-				combat.animationMultiplier[5] = 1.7f;
+				combat.animationMultiplier[0] = 2.8f;
+				combat.animationMultiplier[1] = 2.4f;
+				combat.animationMultiplier[2] = 4.6f;
+				combat.animationMultiplier[3] = 4.6f;
+				combat.animationMultiplier[4] = 4.6f;
+				combat.animationMultiplier[5] = 2.4f;
+			}
+			else
+			{
+				combat.attackSpeedMultiplier -= perk.multiplier;
+				for (size_t i = 0; i < 6; i++)
+				{
+					combat.animationMultiplier[i] += perk.multiplier + perk.multiplier;
+				}
 			}
 		}
 		combat.lightAttackCd *= combat.attackSpeedMultiplier;
@@ -488,39 +524,39 @@ public:
 
 	void updateMovementSpeed(Combat& combat, Perks& perk, bool doUpgrade = true)
 	{
+		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+		int currentAnimation = 0;
+		this->script->getScriptComponentValue(playerScript, currentAnimation, "currentAnimation");
+		float moveTimers[3] = { 0.f, 0.f, 0.f };
+
 		if (doUpgrade)
 		{
 			setDefaultMovementSpeed(combat);
-			combat.movementMultiplier += perk.multiplier;
-			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-
-			float moveTimers[4] = { 0.f, 0.f, 0.f, 0.f };
-			this->script->getScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
-			this->script->getScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
-			this->script->getScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
-			this->script->getScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
-			for (size_t i = 0; i < 4; i++)
+			combat.totalMoveMulti += perk.multiplier;
+			if (combat.totalMoveMulti > 2.f)
 			{
-				moveTimers[i] += perk.multiplier;
-			}
-			this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
-			this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
-			this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
-			this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
-			if (combat.movementMultiplier < 0.3f)
-			{
-				combat.movementMultiplier = 0.3f;
-				moveTimers[0] = 1.7f;
+				combat.movementMultiplier = 2.f;
+				moveTimers[0] = 2.f;
 				moveTimers[1] = 1.4f;
-				moveTimers[2] = 1.9f;
-				moveTimers[3] = 3.2f;
+				moveTimers[2] = 2.4f;
 				this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
-				this->script->setScriptComponentValue(playerScript, moveTimers[3], "dodgeAnimTime");
+			}
+			else
+			{
+				combat.movementMultiplier += perk.multiplier;
+				this->script->getScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
+				this->script->getScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
+				this->script->getScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
+				moveTimers[0] += perk.multiplier;
+				moveTimers[1] += perk.multiplier;
+				moveTimers[2] += perk.multiplier;
+				this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
+				this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
+				this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
 			}
 		}
-		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 		int maxSpeed = 0;
 		int sprintSpeed = 0;
 		int dodgeSpeed = 0;
@@ -536,6 +572,15 @@ public:
 		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
 		this->script->setScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
 		this->script->setScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
+
+		if (currentAnimation == 2)
+		{
+			this->script->setScriptComponentValue(playerScript, 3, "currentAnimation");
+		}
+		else if (currentAnimation == 3)
+		{
+			this->script->setScriptComponentValue(playerScript, 2, "currentAnimation");
+		}
 	}
 
 	void updateStamina(Combat& combat, Perks& perk, bool doUpgrade = true)
@@ -557,12 +602,12 @@ public:
 		this->script->setScriptComponentValue(playerScript, currentStam, "currentStamina");
 	}
 
-	void setDefaultHp(Combat& combat)
+	void setDefaultHp(Combat& combat, HealthComp& healthComp)
 	{
-		float tempHp = (float)combat.maxHealth / combat.hpMultiplier;
-		combat.maxHealth = (int)(tempHp + 0.5f);
+		float tempHp = (float)healthComp.maxHealth / combat.hpMultiplier;
+		healthComp.maxHealth = (int)(tempHp + 0.5f);
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		this->script->setScriptComponentValue(playerScript, combat.maxHealth, "maxHealth");
+		this->script->setScriptComponentValue(playerScript, healthComp.maxHealth, "maxHealth");
 	}
 
 	void setDefaultDmg(Combat& combat)
@@ -592,21 +637,26 @@ public:
 	void setDefaultMovementSpeed(Combat& combat)
 	{
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		int maxSpeed = 0;
-		int sprintSpeed = 0;
-		int dodgeSpeed = 0;
-		this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
-		this->script->getScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
-		this->script->getScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
-		float tempMaxSpeed = (float)maxSpeed / combat.movementMultiplier;
-		float tempSprintSpeed = (float)sprintSpeed / combat.movementMultiplier;
-		float tempDodgeSpeed = (float)dodgeSpeed / combat.movementMultiplier;
-		maxSpeed = (int)tempMaxSpeed;
-		sprintSpeed = (int)tempSprintSpeed;
-		dodgeSpeed = (int)tempDodgeSpeed;
-		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
-		this->script->setScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
-		this->script->setScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
+		//int maxSpeed = 0;
+		//int sprintSpeed = 0;
+		//int dodgeSpeed = 0;
+		//this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
+		//this->script->getScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
+		//this->script->getScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
+		//float tempMaxSpeed = (float)maxSpeed / combat.movementMultiplier;
+		//float tempSprintSpeed = (float)sprintSpeed / combat.movementMultiplier;
+		//float tempDodgeSpeed = (float)dodgeSpeed / combat.movementMultiplier;
+		//maxSpeed = (int)tempMaxSpeed;
+		//sprintSpeed = (int)tempSprintSpeed;
+		//dodgeSpeed = (int)tempDodgeSpeed;
+		this->script->setScriptComponentValue(playerScript, 30, "maxSpeed");
+		this->script->setScriptComponentValue(playerScript, 60, "sprintSpeed");
+		this->script->setScriptComponentValue(playerScript, 100, "dodgeSpeed");
+
+		this->script->setScriptComponentValue(playerScript, 1.f, "idleAnimTime");
+		this->script->setScriptComponentValue(playerScript, 0.7f, "runAnimTime");
+		this->script->setScriptComponentValue(playerScript, 1.2f, "sprintAnimTime");
+		this->script->setScriptComponentValue(playerScript, 3.f, "dodgeAnimTime");
 	}
 
 	void setDefaultStamina(Combat& combat)
@@ -638,81 +688,47 @@ public:
 
 	void spawnPerk(Perks& perk)
 	{
-		switch (perk.perkType)
-		{
-		case hpUpPerk:
-		{
-			Entity newPerk = this->scene->createEntity();
-			this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[hpUpPerk]);
-			setupPerkSpawn(newPerk, perk);
-		}
-		break;
-		case dmgUpPerk:
-		{
-			Entity newPerk = this->scene->createEntity();
-			this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[dmgUpPerk]);
-			setupPerkSpawn(newPerk, perk);
-		}
-		break;
-		case attackSpeedUpPerk:
-		{
-			Entity newPerk = this->scene->createEntity();
-			this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[attackSpeedUpPerk]);
-			setupPerkSpawn(newPerk, perk);
-		}
-		break;
-		case movementUpPerk:
-		{
-			Entity newPerk = this->scene->createEntity();
-			this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[movementUpPerk]);
-			setupPerkSpawn(newPerk, perk);
-		}
-		break;
-		case staminaUpPerk:
-		{
-			Entity newPerk = this->scene->createEntity();
-			this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[staminaUpPerk]);
-			setupPerkSpawn(newPerk, perk);
-		}
-		break;
-		}
+		Entity newPerk = this->scene->createEntity();
+		this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[perk.perkType]);
+		setupPerkSpawn(newPerk, perk);
 	}
 
 	void removePerk(Combat& combat, Perks& perk)
 	{
 		if (perk.perkType != emptyPerk)
 		{
+			Transform& t = this->scene->getComponent<Transform>(this->playerID);
+			HealthComp& healthComp = this->scene->getComponent<HealthComp>(this->playerID);
+			t.updateMatrix();
+			this->networkHandler->spawnItemRequest(perk.perkType, perk.multiplier, t.position + glm::vec3(0.0f, 8.0f, 0.0f), glm::normalize(t.forward() + glm::vec3(0.0f, 0.5f, 0.0f)));
 			switch (perk.perkType)
 			{
 			case hpUpPerk:
-				setDefaultHp(combat);
+				setDefaultHp(combat, healthComp);
 				combat.hpMultiplier -= perk.multiplier;
-				updateHealth(combat, perk, false);
-				spawnPerk(perk);
+				updateHealth(combat, healthComp, perk, false);
 				break;
 			case dmgUpPerk:
 				setDefaultDmg(combat);
 				combat.dmgMultiplier -= perk.multiplier;
 				updateDmg(combat, perk, false);
-				spawnPerk(perk);
 				break;
 			case attackSpeedUpPerk:
 				setDefaultAtttackSpeed(combat);
-				combat.attackSpeedMultiplier += perk.multiplier;
+				combat.totalAtkSpeedMulti += perk.multiplier;
+				combat.attackSpeedMultiplier = glm::clamp(combat.totalAtkSpeedMulti, 0.3f, 1.f);
 				updateAttackSpeed(combat, perk, false);
-				spawnPerk(perk);
 				break;
 			case movementUpPerk:
 				setDefaultMovementSpeed(combat);
-				combat.movementMultiplier -= perk.multiplier;
+				combat.totalMoveMulti -= perk.multiplier;
+				combat.movementMultiplier = glm::clamp(combat.totalMoveMulti, 1.f, 2.f);
 				updateMovementSpeed(combat, perk, false);
-				spawnPerk(perk);
 				break;
 			case staminaUpPerk:
 				setDefaultStamina(combat);
 				combat.staminaMultiplier -= perk.multiplier;
 				updateStamina(combat, perk, false);
-				spawnPerk(perk);
 				break;
 			}
 			perk.multiplier = 0;
@@ -762,17 +778,10 @@ public:
 	{
 		if (ability.abilityType != emptyAbility)
 		{
-			switch (ability.abilityType)
-			{
-			case knockbackAbility:
-				spawnAbility(ability);
-				combat.ability.abilityType = emptyAbility;
-				break;
-			case healAbility:
-				spawnAbility(ability);
-				combat.ability.abilityType = emptyAbility;
-				break;
-			}
+			Transform& t = this->scene->getComponent<Transform>(this->playerID);
+			t.updateMatrix();
+			this->networkHandler->spawnItemRequest(ability.abilityType, t.position + glm::vec3(0.0f, 8.0f, 0.0f), glm::normalize(t.forward() + glm::vec3(0.0f, 0.5f, 0.0f)));
+			combat.ability.abilityType = emptyAbility;
 		}
 	}
 
@@ -792,63 +801,77 @@ public:
 	{
 		Collider& playerColl = this->scene->getComponent<Collider>(this->playerID);
 		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
+		glm::vec3 up = this->scene->getComponent<Transform>(this->scene->getMainCameraID()).up();
 		std::vector<int> hitID = this->physics->testContact(playerColl, playerTrans.position, playerTrans.rotation);
 		for (size_t i = 0; i < hitID.size(); i++)
 		{
 			if (this->scene->hasComponents<Perks>(hitID[i]))
 			{
-				if (this->scene->entityValid(hitID[i]))
+				glm::vec3 pos = this->scene->getComponent<Transform>(hitID[i]).position;
+				Perks& perk = this->scene->getComponent<Perks>(hitID[i]);
+
+				this->uiRenderer->renderString(
+					PERK_NAMES[perk.perkType] + " boost of " + std::to_string((int)((perk.multiplier) * 100.0f)) + "%",
+					pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f), 1.0f);
+				this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 7.5f, 0.0f) - up * 2.5f, glm::vec2(100.0f), 1.0f);
+
+				if (Input::isKeyPressed(Keys::E))
 				{
-					glm::vec3 pos = this->scene->getComponent<Transform>(hitID[i]).position;
-					Perks& perk = this->scene->getComponent<Perks>(hitID[i]);
-
-					this->uiRenderer->renderString(
-						PERK_NAMES[perk.perkType] + " boost of " + std::to_string((int)((perk.multiplier) * 100.0f)) + "%",
-						pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f), 1.0f);
-					this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f), 1.0f);
-
-					if (Input::isKeyPressed(Keys::E))
+					// Another check instead of checking every frame (only when E is pressed)
+					if (canPickupPerk())
 					{
-						glm::vec3 pos = this->scene->getComponent<Transform>(hitID[i]).position;
-						Perks& perk = this->scene->getComponent<Perks>(hitID[i]);
-
-						this->uiRenderer->renderString(
-							PERK_NAMES[perk.perkType] + " boost of " + std::to_string((int)((perk.multiplier + 1) * 100.0f)) + "%",
-							pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f));
-						this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f));
-
-						for (size_t j = 0; j < 4; j++)
-						{
-							if (combat.perks[j].perkType == emptyPerk)
-							{
-								combat.perks[j] = perk;
-								switch (combat.perks[j].perkType)
-								{
-								case hpUpPerk:
-									updateHealth(combat, combat.perks[j]);
-									this->scene->removeEntity(hitID[i]);
-									break;
-								case dmgUpPerk:
-									updateDmg(combat, combat.perks[j]);
-									this->scene->removeEntity(hitID[i]);
-									break;
-								case attackSpeedUpPerk:
-									updateAttackSpeed(combat, combat.perks[j]);
-									this->scene->removeEntity(hitID[i]);
-									break;
-								case movementUpPerk:
-									updateMovementSpeed(combat, combat.perks[j]);
-									this->scene->removeEntity(hitID[i]);
-									break;
-								case staminaUpPerk:
-									updateStamina(combat, combat.perks[j]);
-									this->scene->removeEntity(hitID[i]);
-									break;
-								}
-								j = 4;
-							}
-						}
+						this->networkHandler->pickUpItemRequest(hitID[i], ItemType::PERK);
 					}
+				}
+			}
+		}
+	}
+
+	bool canPickupPerk()
+	{
+		Combat& combat = this->scene->getComponent<Combat>(this->playerID);
+		for (size_t i = 0; i < 4; i++)
+		{
+			if (combat.perks[i].perkType == emptyPerk)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void pickupPerk(Entity entity)
+	{
+		if (this->scene->hasComponents<Perks>(entity))
+		{
+			Combat& combat = this->scene->getComponent<Combat>(this->playerID);
+			HealthComp& healthComp = this->scene->getComponent<HealthComp>(this->playerID);
+			Perks& perk = this->scene->getComponent<Perks>(entity);
+			for (size_t j = 0; j < 4; j++)
+			{
+				if (combat.perks[j].perkType == emptyPerk)
+				{
+					combat.perks[j] = perk;
+					switch (combat.perks[j].perkType)
+					{
+					case hpUpPerk:
+						updateHealth(combat, healthComp, combat.perks[j]);
+						break;
+					case dmgUpPerk:
+						updateDmg(combat, combat.perks[j]);
+						break;
+					case attackSpeedUpPerk:
+						updateAttackSpeed(combat, combat.perks[j]);
+						break;
+					case movementUpPerk:
+						updateMovementSpeed(combat, combat.perks[j]);
+						break;
+					case staminaUpPerk:
+						updateStamina(combat, combat.perks[j]);
+						break;
+					}
+					this->scene->removeEntity(entity);
+					j = 4;
 				}
 			}
 		}
@@ -858,49 +881,48 @@ public:
 	{
 		Collider& playerColl = this->scene->getComponent<Collider>(this->playerID);
 		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
+		glm::vec3 up = this->scene->getComponent<Transform>(this->scene->getMainCameraID()).up();
 		std::vector<int> hitID = this->physics->testContact(playerColl, playerTrans.position, playerTrans.rotation);
 		for (size_t i = 0; i < hitID.size(); i++)
 		{
 			if (this->scene->hasComponents<Abilities>(hitID[i]))
 			{
-				if (this->scene->entityValid(hitID[i]))
+				glm::vec3 pos = this->scene->getComponent<Transform>(hitID[i]).position;
+				Abilities& ability = this->scene->getComponent<Abilities>(hitID[i]);
+
+				this->uiRenderer->renderString(
+					ABILITY_NAMES[ability.abilityType] + " ability",
+					pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f), 1.0f);
+				this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 7.5f, 0.0f) - up * 2.5f, glm::vec2(100.0f), 1.0f);
+
+				if (Input::isKeyPressed(Keys::E) && combat.ability.abilityType == emptyAbility)
 				{
-					glm::vec3 pos = this->scene->getComponent<Transform>(hitID[i]).position;
-					Abilities& ability = this->scene->getComponent<Abilities>(hitID[i]);
-
-					this->uiRenderer->renderString(
-						ABILITY_NAMES[ability.abilityType] + " ability",
-						pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f), 1.0f);
-					this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f), 1.0f);
-
-					if (Input::isKeyPressed(Keys::E))
-					{
-						glm::vec3 pos = this->scene->getComponent<Transform>(hitID[i]).position;
-						Abilities& ability = this->scene->getComponent<Abilities>(hitID[i]);
-
-						this->uiRenderer->renderString(
-							ABILITY_NAMES[ability.abilityType] + " ability",
-							pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f));
-						this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 5.0f, 0.0f), glm::vec2(100.0f));
-
-						if (combat.ability.abilityType == emptyAbility)
-						{
-							combat.ability = ability;
-							switch (combat.ability.abilityType)
-							{
-							case knockbackAbility:
-								combat.ability.abilityType = knockbackAbility;
-								this->scene->removeEntity(hitID[i]);
-								break;
-							case healAbility:
-								combat.ability.abilityType = healAbility;
-								this->scene->removeEntity(hitID[i]);
-								break;
-							}
-						}
-					}
+					this->networkHandler->pickUpItemRequest(hitID[i], ItemType::ABILITY);
 				}
 			}
+		}
+	}
+
+	void playerEffectSound(int sourceIdx, int soundIdx, bool loop, float volume)
+	{
+		MultipleAudioSources& multiAudio = this->scene->getComponent<MultipleAudioSources>(this->playerID);
+		if (multiAudio.audioSource[sourceIdx].getBuffer() != soundIdx)
+		{
+			multiAudio.audioSource[sourceIdx].setBuffer(soundIdx);
+		}
+		multiAudio.audioSource[sourceIdx].setVolume(volume);
+		multiAudio.audioSource[sourceIdx].setLooping(loop);
+		multiAudio.audioSource[sourceIdx].play();
+	}
+	
+	void pickUpAbility(Entity entity)
+	{
+		Combat& combat = this->scene->getComponent<Combat>(this->playerID);
+		if (this->scene->hasComponents<Abilities>(entity) && combat.ability.abilityType == emptyAbility)
+		{
+			Abilities& ability = this->scene->getComponent<Abilities>(entity);
+			combat.ability = ability;
+			this->scene->removeEntity(entity);
 		}
 	}
 
@@ -909,6 +931,15 @@ public:
 		if (combat.attackTimer > 0.f)
 		{
 			combat.attackTimer -= deltaTime;
+		}
+		else if (combat.attackTimer < 0.f)
+		{
+			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+			this->script->setScriptComponentValue(playerScript, true, "canMove");
+			this->script->setScriptComponentValue(playerScript, false, "isAttacking");
+			this->script->setScriptComponentValue(playerScript, 4, "currentAnimation");
+			this->scene->syncedBlendToAnimation(this->playerID, "LowerBody", "UpperBody", 0.3f);
+			combat.attackTimer = 0.f;
 		}
 		if (combat.knockbackTimer > 0.f)
 		{
@@ -922,15 +953,6 @@ public:
 		{
 			combat.comboOrder.clear();
 			combat.comboClearTimer = 0.f;
-		}
-		if (combat.healTimer > 0.f)
-		{
-			combat.healTimer -= deltaTime;
-		}
-		else
-		{
-			combat.isHealing = false;
-			this->scene->removeEntity(this->heal);
 		}
 	}
 };

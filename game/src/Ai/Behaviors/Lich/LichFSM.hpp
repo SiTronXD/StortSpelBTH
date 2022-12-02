@@ -49,16 +49,17 @@ struct Orb {
     int timeAtCast = 0;
     LichAttack* orbPower; 
 
-    inline void setInactive(Entity entityID)
+    inline void setInactive(Entity entityID, SceneHandler* sceneHandler)
     {        
-        Rigidbody& rb = LichBT::getTheScene()->getComponent<Rigidbody>(entityID);
+        Rigidbody& rb = sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
         rb.velocity = glm::vec3(0.f,0.f,0.f);
-        LichBT::getTheScene()->setInactive(static_cast<int>(entityID));
+        sceneHandler->getScene()->setInactive(static_cast<int>(entityID));
     }
-    inline void onCollision(Entity entityID)
+    inline void onCollision(Entity entityID, SceneHandler* sceneHandler)
     {
         //TODO: Some effect? 
-        this->setInactive(entityID);
+        this->setInactive(entityID, sceneHandler);
+
     }
 };
 
@@ -76,7 +77,7 @@ public:
             [&](const auto& entity, Orb& orb){
                 if(orb.timeAtCast + Orb::LIFE_TIME < Time::getTimeSinceStart() )
                 {
-                    orb.setInactive(static_cast<int>(entity));
+                    orb.setInactive(static_cast<int>(entity),sceneHandler);
                 }
             }
         );
@@ -123,9 +124,11 @@ struct LichComponent
     int ESCAPE_HEALTH           = FULL_HEALTH / 4; 
     int BACK_TO_FIGHT_HEALTH    = FULL_HEALTH / 2; 
     int numBones                = 0;
+    int life                    = FULL_HEALTH;    
+
 
     //Floats
-    float life                  = (float)FULL_HEALTH;    
+    float life_float            = 0.0f;//Dont touch!
     float tempRotAngle			= 0.0f;//Dont touch!
     float creepRotSpeed         = 60.0f;
     float huntRotSpeed          = 200.0f;
@@ -145,8 +148,8 @@ struct LichComponent
     float attackRadius          = 80.0f; // I'm actually able to shoot at you!
     float nonoRadius            = 40.0f; // Too close, I will back away from you! (while shooting) 
 
-    float closeToGrave          = 10.f + LichComponent::graveWidth;
-    float closeToAlter          = 10.f + LichComponent::alterWidth;
+    float closeToGrave          = 20.f + LichComponent::graveWidth;
+    float closeToAlter          = 20.f + LichComponent::alterWidth;
         //Stats
     float maxMana               = 100.0f;
     float mana                  = maxMana;
@@ -167,6 +170,7 @@ struct LichComponent
     bool regeningMana           = false;
     bool chargingAttack         = true;
     bool tempAttack             = false;//For testing strategy picker
+    bool attackGoRight          = false;
 
     bool carryingBones = false;
 
@@ -195,6 +199,8 @@ struct LichComponent
 
 class LichFSM : public FSM
 {
+private:
+    static Entity getPlayerID(Entity entityID);
 private:
 	static bool idleToCreep(Entity entityID);
 	static bool creepToAlerted(Entity entityID);
@@ -282,7 +288,6 @@ protected:
 
 
     //Helper functions
-    static int		getPlayerID();
 	static float	get_dt();
 	static Scene*	getTheScene();
 	static bool		falseIfDead(Entity entityID);

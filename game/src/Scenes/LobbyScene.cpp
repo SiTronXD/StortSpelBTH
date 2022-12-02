@@ -1,174 +1,226 @@
 #include "LobbyScene.h"
-#include "GameSceneNetwork.h"
+#include "GameScene.h"
 #include "MainMenu.h"
 
-LobbyScene::LobbyScene() {}
+LobbyScene::LobbyScene(const std::string& serverIP) : serverIP(serverIP) {}
 LobbyScene::~LobbyScene() {}
 
 void LobbyScene::init()
 {
-    //TODO : FIX THIS!
-  
-  int playerModel = this->getResourceManager()->addAnimations(
-      std::vector<std::string>({"assets/models/Character/CharRun.fbx"}), 
+  this->playerModel = this->getResourceManager()->addAnimations(
+        std::vector<std::string>(
+            {"assets/models/Character/CharIdle.fbx",
+             "assets/models/Character/CharRun.fbx",
+             "assets/models/Character/CharDodge.fbx",
+             "assets/models/Character/CharOutwardAttack.fbx",
+             "assets/models/Character/CharHeavyAttack.fbx",
+             "assets/models/Character/CharSpinAttack.fbx",
+             "assets/models/Character/CharKnockbackAttack.fbx",
+             "assets/models/Character/CharInwardAttack.fbx",
+             "assets/models/Character/CharSlashAttack.fbx"}
+        ), 
       "assets/textures/playerMesh"
   );
-  this->getNetworkHandler()->setMeshes("PlayerMesh", playerModel);
-
+    this->getResourceManager()->mapAnimations(
+        playerModel,
+        std::vector<std::string>(
+            {"idle",
+             "run",
+             "dodge",
+             "lightAttack",
+             "heavyAttack",
+             "spinAttack",
+             "knockback",
+             "mixAttack",
+             "slashAttack"}
+        )
+    );
+   
   TextureSamplerSettings samplerSettings{};
   samplerSettings.filterMode = vk::Filter::eNearest;
   samplerSettings.unnormalizedCoordinates = VK_TRUE;
+    this->networkHandler = dynamic_cast<NetworkHandlerGame*>(this->getNetworkHandler());
 
-  this->backgroundId =
-      this->getResourceManager()->addTexture("assets/textures/UI/background.png"
-      );
+    this->backgroundId =
+        this->getResourceManager()->addTexture("assets/textures/blackTex.png"
+        );
+    this->buttonId =
+        this->getResourceManager()->addTexture("assets/textures/UI/button.png");
 
-  this->fontTextureId = Scene::getResourceManager()->addTexture(
-      "assets/textures/UI/testBitmapFont.png", {samplerSettings, true}
-  );
-  Scene::getUIRenderer()->setBitmapFont(
-      {"abcdefghij",
-       "klmnopqrst",
-       "uvwxyz+-.'",
-       "0123456789",
-       "!?,<>:()#^",
-       "@         "},
-      this->fontTextureId,
-      glm::vec2(16,16)
-  );
+    this->fontTextureId = Scene::getResourceManager()->addTexture(
+        "assets/textures/UI/font.png", {samplerSettings, true}
+    );
+    Scene::getUIRenderer()->setBitmapFont(
+        {"abcdefghij",
+        "klmnopqrst",
+        "uvwxyz+-.'",
+        "0123456789",
+        "!?,<>:()#^",
+        "@%        "},
+        this->fontTextureId,
+        glm::vec2(50,50)
+    );
 
-  int camEntity = this->createEntity();
-  this->setComponent<Camera>(camEntity);
-  this->setMainCamera(camEntity);
-  this->getComponent<Transform>(camEntity).position = glm::vec3(0, 0, 0);
-  this->getComponent<Transform>(camEntity).rotation = glm::vec3(0, 0, 0);
+    int camEntity = this->createEntity();
+    this->setComponent<Camera>(camEntity);
+    this->setMainCamera(camEntity);
+    this->getComponent<Transform>(camEntity).position = glm::vec3(0, 0, 0);
+    this->getComponent<Transform>(camEntity).rotation = glm::vec3(0, 0, 0);
 
-  playerPositions.push_back(glm::vec3(0, -10, 15));
-  playerPositions.push_back(glm::vec3(10, -10, 18));
-  playerPositions.push_back(glm::vec3(-10, -10, 18));
-  playerPositions.push_back(glm::vec3(-5, -10, 21));
+    scene = this->createEntity();
+    this->setComponent<MeshComponent>(scene, (int)this->getResourceManager()->addMesh("assets/models/Menu/lobby.obj"));
+    Transform& t = this->getComponent<Transform>(scene);
+    t.position = glm::vec3(0.f, 0.5f, 40.f);
+    t.rotation = glm::vec3(0.f, 180.f, 0.f);
 
-  this->startButton = this->createEntity();
-  this->disconnectButton = this->createEntity();
+    this->players.resize(MAX_PLAYER_COUNT);
+    this->playersNames.resize(MAX_PLAYER_COUNT);
+    for (int i = 0; i < 4; i++)
+    {
+        this->players[i] = this->createEntity();
+        this->setComponent<MeshComponent>(this->players[i], playerModel);
+        this->setComponent<AnimationComponent>(this->players[i]);
+        this->setInactive(this->players[i]);
+        Transform& t = this->getComponent<Transform>(this->players[i]);
+        t.position = this->POSITIONS[i];
+        t.rotation = glm::vec3(0, 180, 0);
 
-  UIArea area{};
-  area.position = glm::vec2(800.f, 0.f);
-  area.dimension = glm::vec2(20 * 10, 20);
-  this->setComponent<UIArea>(this->startButton, area);
+        if (i != 0)
+        {
+            MeshComponent& mesh = this->getComponent<MeshComponent>(this->players[i]);
+            this->getResourceManager()->makeUniqueMaterials(mesh);
+            mesh.overrideMaterials[0].tintColor = this->networkHandler->playerColors[i];
+        }
+    }
+    this->setActive(players[0]);
 
-  area.position = glm::vec2(-800.f, -60.f);
-  area.dimension = glm::vec2(20 * 10, 20);
-  this->setComponent<UIArea>(this->disconnectButton, area);
+    startButton.position = glm::vec2(0.0f, -400.f);
+    startButton.dimension = glm::vec2(275.0f, 100.0f);
 
-  int mainPlayer = this->createEntity();
-  this->setComponent<MeshComponent>(mainPlayer, playerModel);  //TODO : change to player model
-  this->getComponent<Transform>(mainPlayer).position = playerPositions[0];
+    disconnectButton.position = glm::vec2(-700.f, -400.f);
+    disconnectButton.dimension = glm::vec2(225.0f, 75.0f);
 }
 
-void LobbyScene::start() {
-  if (!this->getNetworkHandler()->hasServer())
-  {
-      this->getNetworkHandler()->sendTCPDataToClient(
-          TCPPacketEvent({GameEvents::GetPlayerNames})
-      );  
-  }  
+void LobbyScene::start() 
+{
+    int background = this->createEntity();
+    this->setComponent<MeshComponent>(background, 0);
+    this->getComponent<Transform>(background).position.z = 100;
+    this->getComponent<Transform>(background).scale.x = 200;
+    this->getComponent<Transform>(background).scale.y = 100;
 
-  int background = this->createEntity();
-  this->setComponent<MeshComponent>(background, 0);
-  this->getComponent<Transform>(background).position.z = 100;
-  this->getComponent<Transform>(background).scale.x = 200;
-  this->getComponent<Transform>(background).scale.y = 100;
-
-  int light = this->createEntity();
-  this->setComponent<PointLight>(light);
-  this->getComponent<PointLight>(light).color = glm::vec3(255, 200, 200);
-  this->getComponent<Transform>(light).position = glm::vec3(0, 0, 0);
+    int light = this->createEntity();
+    this->setComponent<DirectionalLight>(
+        light, glm::vec3(-0.5f, -1.0f, 1.0f), glm::vec3(0.6f)
+    );
+    this->setComponent<PointLight>(light);
+    this->getComponent<PointLight>(light).color = glm::vec3(10, 10, 10);
+    this->getComponent<Transform>(light).position = glm::vec3(0, 0, 0);
 }
 
 void LobbyScene::update()
 {
-  //set model position and player names
-  if (this->getNetworkHandler()->getPlayers().size() > players.size())
+    
+    // Set model position and player names
+    auto netPlayers = this->networkHandler->getPlayers();
+    if (netPlayers.size() != this->activePlayers - 1)
     {
-      for (int i = players.size();
-           i < this->getNetworkHandler()->getPlayers().size();
-           i++)
+        this->playersNames.clear();
+        this->activePlayers = netPlayers.size() + 1;
+        this->getComponent<AnimationComponent>(this->players[0]).aniSlots[0].timer = 0.0f;
+        for (int i = 0; i < netPlayers.size(); i++)
         {
-          int e = this->getNetworkHandler()->getPlayers()[i].first;
-          this->players.push_back(e);
-          this->getComponent<Transform>(e).position = playerPositions[i + 1];
-          this->playersNames.push_back(
-              this->getNetworkHandler()->getPlayers()[i].second
-          );
+            this->setActive(this->players[i + 1]);
+            this->playersNames.push_back(
+                this->getNetworkHandler()->getPlayers()[i].second
+            );
+            this->getComponent<AnimationComponent>(this->players[i + 1]).aniSlots[0].timer = 0.0f;
+        }
+        for (int i = this->activePlayers; i < MAX_PLAYER_COUNT; i++)
+        {
+            this->setInactive(this->players[i]);
         }
     }
 
-  //write player names in lobby
-  Scene::getUIRenderer()->setTexture(this->fontTextureId);
-  this->getUIRenderer()->renderString(
-      this->getNetworkHandler()->getClientName(),
-      glm::vec2(1920 / 2 - 500, 1080.f / 2 - 140 - (70 * 0)),
-      glm::vec2(40.f, 40.f),
-      0,
-      StringAlignment::LEFT
-  );
-  for (int i = 0; i < this->playersNames.size(); i++)
+    // Button backtgrounds
+    this->getUIRenderer()->setTexture(this->buttonId);
+    this->getUIRenderer()->renderTexture(
+        this->disconnectButton.position, this->disconnectButton.dimension,
+        glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.85f + this->disconnectButton.isHovering() * 0.15f));
+    if (this->getNetworkHandler()->hasServer())
     {
-      this->getUIRenderer()->renderString(
-          playersNames[i],
-          glm::vec2(1920 / 2 - 500,
-          1080.f / 2 - 140 - (70 * (i + 1))),
-          glm::vec2(40.f,
-          40.f),
-          0,
-          StringAlignment::LEFT
-      );
+        this->getUIRenderer()->renderTexture(
+            this->startButton.position, this->startButton.dimension,
+            glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.85f + this->startButton.isHovering() * 0.15f));
     }
 
-  //start game
-  if (getNetworkHandler()->hasServer())
+    // Write player names in lobby
+    this->getUIRenderer()->setTexture(this->backgroundId);
+    this->getUIRenderer()->renderString(
+        this->getNetworkHandler()->getClientName(),
+        this->POSITIONS[0] + glm::vec3(0.0f, 20.0f, 0.0f),
+        glm::vec2(100.0f)
+    );
+    for (int i = 0; i < this->playersNames.size(); i++)
     {
-      this->getUIRenderer()->setTexture(this->fontTextureId);
-      this->getUIRenderer()->renderString(
-          "start match", glm::vec2(800.f, 0.f), glm::vec2(20.f, 20.f)
-      );
-      if (this->getComponent<UIArea>(this->startButton).isClicking())
+        this->getUIRenderer()->renderString(
+            playersNames[i],
+            this->POSITIONS[i + 1] + glm::vec3(0.0f, 20.0f, 0.0f),
+            glm::vec2(100.0f)
+        );
+    }
+    this->getUIRenderer()->renderString(
+        "address code: " + this->serverIP,
+        glm::vec2(0.0f, 450.0f),
+        glm::vec2(40.0f)
+    );
+
+    // Start game
+    if (this->getNetworkHandler()->getStatus() == ServerStatus::RUNNING)
+    {
+        this->switchScene(
+            new GameScene(), "scripts/gamescene.lua"
+        );
+    }
+    else if (this->getNetworkHandler()->hasServer())
+    {
+        this->getUIRenderer()->renderString(
+            "start", this->startButton.position, glm::vec2(50.0f), 0.0f, StringAlignment::CENTER
+        );
+        if (this->startButton.isClicking())
         {
-          //send two
-          std::cout << "pressed start" << std::endl;
-          this->getNetworkHandler()->sendTCPDataToClient(TCPPacketEvent{GameEvents::START});
-          this->getSceneHandler()->setScene(
-              new GameSceneNetwork(), "scripts/gamescene.lua"
-          );
+            // Start singleplayer
+            if (this->activePlayers == 1)
+            {
+                this->getNetworkHandler()->disconnectClient();
+                this->getNetworkHandler()->deleteServer();
+                this->switchScene(
+                    new GameScene(), "scripts/gamescene.lua"
+                );
+            }
+            else
+            {
+                this->helpPacket << (int)NetworkEvent::START;
+                this->getNetworkHandler()->sendDataToServerTCP(helpPacket);
+            }
         }
-      
     }
-  else
+
+    if (!this->getNetworkHandler()->isConnected())
     {
-      if (this->getNetworkHandler()->getClient() != nullptr &&
-          this->getNetworkHandler()->getClient()->hasStarted())
-        {
-          this->getSceneHandler()->setScene(
-              new GameSceneNetwork(), "scripts/gamescene.lua"
-          );
-      }
-  }
+        this->getNetworkHandler()->disconnectClient();
+        this->getNetworkHandler()->deleteServer();
+        this->switchScene(new MainMenu, "scripts/MainMenu.lua");
+    }
 
-  if (this->getNetworkHandler()->getClient() != nullptr && this->getNetworkHandler()->getClient()->isConnected())
-  {
-      this->getUIRenderer()->setTexture(this->fontTextureId);
-      this->getUIRenderer()->renderString("disconnect", glm::vec2(-800.f, -60.f), glm::vec2(20.f, 20.f));
-      if (this->getComponent<UIArea>(disconnectButton).isClicking()) {
-          this->getNetworkHandler()->disconnectClient();
-          this->getNetworkHandler()->deleteServer();
-          this->getSceneHandler()->setScene(new MainMenu, "scripts/MainMenu.lua");
-      }
-  }
-  else
-  {
-      this->getNetworkHandler()->deleteServer();
-      this->getSceneHandler()->setScene(new MainMenu, "scripts/MainMenu.lua");
-  }
+    this->getUIRenderer()->renderString(
+        "disconnect", this->disconnectButton.position, glm::vec2(25.0f), 0.0f, StringAlignment::CENTER
+    );
+    if (this->disconnectButton.isClicking()) {
+        this->getNetworkHandler()->disconnectClient();
+        this->getNetworkHandler()->deleteServer();
+        this->getSceneHandler()->setScene(new MainMenu, "scripts/MainMenu.lua");
+    }
 
-  
+    this->helpPacket.clear();
 }

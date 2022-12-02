@@ -3,11 +3,13 @@
 #include "../Systems/AiCombatSystem.hpp"
 #include "../Systems/AiMovementSystem.hpp"
 #include "../Systems/CameraMovementSystem.hpp"
-#include "../Systems/CombatSystem.hpp"
 #include "../Systems/HealthBarSystem.hpp"
+#include "../Systems/HealSystem.hpp"
 #include "../Systems/MovementSystem.hpp"
+#include "../Network/NetworkHandlerGame.h"
 #include "vengine/application/Time.hpp"
 #include "GameOverScene.h"
+#include "MainMenu.h"
 
 #ifdef _CONSOLE
 // decreaseFps used for testing game with different framerates
@@ -19,6 +21,7 @@ GameScene::GameScene() :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
     perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1)
 {
+    Input::setHideCursor(true);
 }
 
 GameScene::~GameScene()
@@ -32,7 +35,7 @@ void GameScene::init()
     samplerSettings.unnormalizedCoordinates = VK_TRUE;
 
     int fontTextureId = Scene::getResourceManager()->addTexture(
-        "assets/textures/UI/testBitmapFont.png", { samplerSettings, true });
+        "assets/textures/UI/font.png", { samplerSettings, true });
     Scene::getUIRenderer()->setBitmapFont(
         { "abcdefghij",
          "klmnopqrst",
@@ -41,7 +44,7 @@ void GameScene::init()
          "!?,<>:()#^",
          "@%        " },
         fontTextureId,
-        glm::uvec2(16, 16));
+        glm::uvec2(50, 50));
 
     int swarm =
         this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
@@ -49,9 +52,7 @@ void GameScene::init()
     roomHandler.init(
         this,
         this->getResourceManager(), true);
-    roomHandler.generate(rand());    
-    createPortal();
-    // simon
+    
     ResourceManager* resourceMng = this->getResourceManager();
     this->abilityMeshes[0] = resourceMng->addMesh("assets/models/KnockbackAbility.obj");
     this->abilityMeshes[1] = resourceMng->addMesh("assets/models/Ability_Healing.obj");
@@ -61,10 +62,8 @@ void GameScene::init()
     this->perkMeshes[3] = resourceMng->addMesh("assets/models/Perk_Movement.obj");
     this->perkMeshes[4] = resourceMng->addMesh("assets/models/Perk_Stamina.obj");
 
-    this->abilityTextures[0] =
-        resourceMng->addTexture("assets/textures/UI/KnockbackAbility.png");
-    this->abilityTextures[1] =
-        resourceMng->addTexture("assets/textures/UI/HealingAbility.png");
+    this->abilityTextures[0] = resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
+    this->abilityTextures[1] = resourceMng->addTexture("assets/textures/UI/HealingAbility.png");
     this->abilityTextures[2] = resourceMng->addTexture("assets/textures/UI/empty.png");
     this->perkTextures[0] = resourceMng->addTexture("assets/textures/UI/hpUp.png");
     this->perkTextures[1] = resourceMng->addTexture("assets/textures/UI/dmgUp.png");
@@ -72,211 +71,195 @@ void GameScene::init()
     this->perkTextures[3] = resourceMng->addTexture("assets/textures/UI/moveUp.png");
     this->perkTextures[4] = resourceMng->addTexture("assets/textures/UI/staminaUp.png");
     this->perkTextures[5] = resourceMng->addTexture("assets/textures/UI/empty.png");
-    this->hpBarBackgroundTextureID =
-        resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
-    this->hpBarTextureID =
-        resourceMng->addTexture("assets/textures/UI/hpBar.png");
+    this->hpBarBackgroundTextureID = resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
+    this->hpBarTextureID = resourceMng->addTexture("assets/textures/UI/hpBar.png");
 
     // Temporary light
     this->dirLightEntity = this->createEntity();
     this->setComponent<DirectionalLight>(
         this->dirLightEntity,
-        glm::vec3(-1.0f, -1.0f, -1.0f),
-        glm::vec3(0.6f)
+        glm::vec3(0.35f, -1.0f, 0.35f),
+        glm::vec3(0.3f)
         );
     DirectionalLight& dirLight = this->getComponent<DirectionalLight>(this->dirLightEntity);
-    dirLight.cascadeSizes[0] = 0.044f;
-    dirLight.cascadeSizes[1] = 0.149f;
-    dirLight.cascadeSizes[2] = 1.0f;
+    dirLight.cascadeSizes[0] = 45.0f;
+    dirLight.cascadeSizes[1] = 120.0f;
+    dirLight.cascadeSizes[2] = 693.0f;
     dirLight.cascadeDepthScale = 36.952f;
     dirLight.shadowMapMinBias = 0.00001f;
     dirLight.shadowMapAngleBias = 0.0004f;
 
+}
+
+void GameScene::start()
+{
+    this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, "playerID");
+
+    this->networkHandler = dynamic_cast<NetworkHandlerGame*>(this->getNetworkHandler());
+    this->networkHandler->init();
+    this->networkHandler->setPlayerEntity(playerID);
+    this->networkHandler->createOtherPlayers(this->getComponent<MeshComponent>(playerID).meshID);
+
+    if (networkHandler->isConnected())
+    {
+        int seed = this->networkHandler->getSeed();
+        Log::write("Seed from server: " + std::to_string(seed));
+        roomHandler.generate(seed);
+    }
+    else
+    {
+        roomHandler.generate(rand());
+    }
+    
+    createPortal();
+
+    this->setComponent<HealthComp>(playerID);
+    this->setComponent<Combat>(playerID);
+    this->createSystem<CombatSystem>(
+        this,
+        this->getResourceManager(),
+        this->playerID,
+        &this->paused,
+        this->getPhysicsEngine(),
+        this->getUIRenderer(),
+        this->getScriptHandler(),
+        this->networkHandler
+    );
+    this->createSystem<HealSystem>(
+        this->playerID,
+        this
+    );
     this->createSystem<HealthBarSystem>(
         this->hpBarBackgroundTextureID,
         this->hpBarTextureID,
         this,
         this->getUIRenderer()
         );
-}
 
-void GameScene::start()
-{
-    std::string playerName = "playerID";
-    this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
+    if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
+    {
+        this->networkHandler->spawnItemRequest(healAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(hpUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(movementUpPerk, 1.0f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+    }
+
+    // Pause menu
+    this->resumeButton.position = glm::vec2(0.0f, 100.0f);
+    this->exitButton.position = glm::vec2(0.0f, -100.0f);
+    this->resumeButton.dimension = glm::vec2(500.0f, 100.0f);
+    this->exitButton.dimension = glm::vec2(500.0f, 100.0f);
 
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
-    this->getAudioHandler()->setMusicVolume(0.2f);
+    this->getAudioHandler()->setMusicVolume(0.0f);
     this->getAudioHandler()->playMusic();
-
-    this->setComponent<Combat>(playerID);
-    this->createSystem<CombatSystem>(
-        this,
-        this->getResourceManager(),
-        this->playerID,
-        this->getPhysicsEngine(),
-        this->getUIRenderer(),
-        this->getScriptHandler());
-
-    this->ability = this->createEntity();
-    this->setComponent<MeshComponent>(this->ability, this->abilityMeshes[knockbackAbility]);
-    Transform& abilityTrans = this->getComponent<Transform>(this->ability);
-    abilityTrans.position = glm::vec3(50.f, 8.f, 0.f);
-    abilityTrans.scale = glm::vec3(3.f);
-    this->setComponent<Collider>(
-        this->ability, Collider::createSphere(4.f, glm::vec3(0), true));
-    this->setComponent<Abilities>(this->ability, knockbackAbility);
-    this->setComponent<PointLight>(this->ability, { glm::vec3(0.f), glm::vec3(7.f, 9.f, 5.f) });
-    this->setScriptComponent(this->ability, "scripts/spin.lua");
-
-    this->ability1 = this->createEntity();
-    this->setComponent<MeshComponent>(this->ability1, this->abilityMeshes[healAbility]);
-    Transform& abilityTrans1 = this->getComponent<Transform>(this->ability1);
-    abilityTrans1.position = glm::vec3(50.f, 8.f, 20.f);
-    abilityTrans1.scale = glm::vec3(3.f);
-    this->setComponent<Collider>(
-        this->ability1, Collider::createSphere(4.f, glm::vec3(0), true));
-    this->setComponent<Abilities>(this->ability1, healAbility);
-    this->setComponent<PointLight>(this->ability1, { glm::vec3(0.f), glm::vec3(7.f, 9.f, 5.f) });
-    this->setScriptComponent(this->ability1, "scripts/spin.lua");
-
-    this->perk = this->createEntity();
-    this->setComponent<MeshComponent>(this->perk, this->perkMeshes[hpUpPerk]);
-    Transform& perkTrans = this->getComponent<Transform>(this->perk);
-    perkTrans.position = glm::vec3(30.f, 6.f, 20.f);
-    perkTrans.scale = glm::vec3(2.f);
-    this->setComponent<Collider>(
-        this->perk, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-    this->setComponent<PointLight>(this->perk, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
-    this->setComponent<Perks>(this->perk);
-    Perks& perkSetting = this->getComponent<Perks>(this->perk);
-    perkSetting.multiplier = 0.5f;
-    perkSetting.perkType = hpUpPerk;
-    this->setScriptComponent(this->perk, "scripts/spin.lua");
-
-    this->perk1 = this->createEntity();
-    this->setComponent<MeshComponent>(this->perk1, this->perkMeshes[dmgUpPerk]);
-    Transform& perkTrans1 = this->getComponent<Transform>(this->perk1);
-    perkTrans1.position = glm::vec3(30.f, 6.f, -20.f);
-    perkTrans1.scale = glm::vec3(2.f);
-    this->setComponent<Collider>(
-        this->perk1, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-    this->setComponent<PointLight>(this->perk1, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
-    this->setComponent<Perks>(this->perk1);
-    Perks& perkSetting1 = this->getComponent<Perks>(this->perk1);
-    perkSetting1.multiplier = 0.5f;
-    perkSetting1.perkType = dmgUpPerk;
-    this->setScriptComponent(this->perk1, "scripts/spin.lua");
-
-    this->perk2 = this->createEntity();
-    this->setComponent<MeshComponent>(this->perk2, this->perkMeshes[attackSpeedUpPerk]);
-    Transform& perkTrans2 = this->getComponent<Transform>(this->perk2);
-    perkTrans2.position = glm::vec3(30.f, 6.f, 0.f);
-    perkTrans2.scale = glm::vec3(2.f);
-    this->setComponent<Collider>(
-        this->perk2, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-    this->setComponent<PointLight>(this->perk2, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
-    this->setComponent<Perks>(this->perk2);
-    Perks& perkSetting2 = this->getComponent<Perks>(this->perk2);
-    perkSetting2.multiplier = 0.5f;
-    perkSetting2.perkType = attackSpeedUpPerk;
-    this->setScriptComponent(this->perk2, "scripts/spin.lua");
-
-    this->perk3 = this->createEntity();
-    this->setComponent<MeshComponent>(this->perk3, this->perkMeshes[movementUpPerk]);
-    Transform& perkTrans3 = this->getComponent<Transform>(this->perk3);
-    perkTrans3.position = glm::vec3(30.f, 6.f, -40.f);
-    perkTrans3.scale = glm::vec3(2.f);
-    this->setComponent<Collider>(
-        this->perk3, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-    this->setComponent<PointLight>(this->perk3, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
-    this->setComponent<Perks>(this->perk3);
-    Perks& perkSetting3 = this->getComponent<Perks>(this->perk3);
-    perkSetting3.multiplier = 1.f;
-    perkSetting3.perkType = movementUpPerk;
-    this->setScriptComponent(this->perk3, "scripts/spin.lua");
-
-    this->perk4 = this->createEntity();
-    this->setComponent<MeshComponent>(this->perk4, this->perkMeshes[staminaUpPerk]);
-    Transform& perkTrans4 = this->getComponent<Transform>(this->perk4);
-    perkTrans4.position = glm::vec3(30.f, 6.f, -60.f);
-    perkTrans4.scale = glm::vec3(2.f);
-    this->setComponent<Collider>(
-        this->perk4, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
-    this->setComponent<PointLight>(this->perk4, { glm::vec3(0.f), glm::vec3(5.f, 7.f, 9.f) });
-    this->setComponent<Perks>(this->perk4);
-    Perks& perkSetting4 = this->getComponent<Perks>(this->perk4);
-    perkSetting4.multiplier = 0.5f;
-    perkSetting4.perkType = staminaUpPerk;
-    this->setScriptComponent(this->perk4, "scripts/spin.lua");
-
-    // Ai management
-    this->aiHandler = this->getAIHandler();
-    this->aiHandler->init(this->getSceneHandler());
+	
+    // If we are not multiplayer we do this by ourself
+    if (!networkHandler->isConnected())
+    {
+        // Ai management
+        this->aiHandler = this->getAIHandler();
+        this->aiHandler->init(this->getSceneHandler());
     
-    spawnHandler.init(&this->roomHandler, this, 
+        spawnHandler.init(&this->roomHandler, this,
         this->getSceneHandler(),this->aiHandler,
         this->getResourceManager(),this->getUIRenderer());
+    }
         
     this->createSystem<OrbSystem>(this->getSceneHandler());
 }
 
 void GameScene::update()
-{    
-    if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
-    {
-        this->newRoomFrame = true;
-        this->spawnHandler.spawnEnemiesIntoRoom();
+{
+    
+    if (!networkHandler->isConnected())
+    {   
+        this->aiHandler->update(Time::getDT());
 
+        if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
+        {
+            this->newRoomFrame = true;
         this->timeWhenEnteredRoom = Time::getTimeSinceStart();
         this->safetyCleanDone = false; 
 
-    }    
-    if(!this->safetyCleanDone)
-    {
-        
-        if(this->timeWhenEnteredRoom + delayToSafetyDelete < Time::getTimeSinceStart())
-        {
-            this->spawnHandler.killAllEnemiesOutsideRoom();
-            this->safetyCleanDone = true;
+            this->spawnHandler.spawnEnemiesIntoRoom();
         }
+        if(!this->safetyCleanDone)
+        {
+            
+            if(this->timeWhenEnteredRoom + delayToSafetyDelete < Time::getTimeSinceStart())
+            {
+                this->spawnHandler.killAllEnemiesOutsideRoom();
+                this->safetyCleanDone = true;
+            }
+        }
+        if (this->spawnHandler.allDead() && this->newRoomFrame)
+        {
+            this->newRoomFrame = false;
+            // Call when a room is cleared
+            this->roomHandler.roomCompleted();
+            this->numRoomsCleared++;
+
+            if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+            {
+                this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
+            }
+        }
+        // Switch scene if the player is dead
+        if (this->hasComponents<Combat>(this->playerID))
+        {
+            if (this->getComponent<HealthComp>(this->playerID).health <= 0.0f)
+            {
+                this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+            }
+        }
+        this->spawnHandler.updateImgui();
+        this->imguiUpdate();
     }
-
-    this->aiHandler->update(Time::getDT());
-    this->spawnHandler.updateImgui();
-    this->imguiUpdate();
-
-    if (this->spawnHandler.allDead() && this->newRoomFrame)
+    else
     {
-        this->newRoomFrame = false;
-
-        // Call when a room is cleared
-        this->roomHandler.roomCompleted();
-        this->numRoomsCleared++;
-
-        if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+        if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
         {
-            this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
+            this->newRoomFrame = true;
         }
-    }
 
-    /*if (this->hasComponents<Collider, Rigidbody>(this->playerID))
-      {
-          Rigidbody& rb = this->getComponent<Rigidbody>(this->playerID);
-          glm::vec3 vec = glm::vec3(Input::isKeyDown(Keys::LEFT) - Input::isKeyDown(Keys::RIGHT), 0.0f, Input::isKeyDown(Keys::UP) - Input::isKeyDown(Keys::DOWN));
-          float y = rb.velocity.y;
-          rb.velocity = vec * 10.0f;
-          rb.velocity.y = y + Input::isKeyPressed(Keys::SPACE) * 5.0f;
-      }*/  
-
-      // Switch scene if the player is dead
-    if (this->hasComponents<Combat>(this->playerID))
-    {
-        if (this->getComponent<Combat>(this->playerID).health <= 0.0f)
+         // Server is diconnected
+        if (this->networkHandler->getStatus() == ServerStatus::DISCONNECTED)
         {
-            this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+            this->networkHandler->disconnectClient();
+            this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
         }
+
+        // If player is dead make the player not able to move
+        // and server shall say if we shall switch scene
+        if (this->hasComponents<HealthComp>(this->playerID))
+        {
+            if (this->getComponent<HealthComp>(this->playerID).health <= 0.0f)
+            {
+                this->networkHandler->disconnectClient(); // TEMP: probably will be in game over scene later
+                this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+            }
+        }
+        if (this->spawnHandler.allDead() && this->newRoomFrame)
+        {
+            Log::warning("DOORS ARE OPEN ALL THE TIME, TO PREVENT BEING STUCK. PLZ FIX!");
+            this->newRoomFrame = false;
+            // Call when a room is cleared
+            this->roomHandler.roomCompleted();
+            this->numRoomsCleared++;
+
+            if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+            {
+                this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
+            }
+        }
+
+        // Network
+        this->networkHandler->updatePlayer();
+        this->networkHandler->interpolatePositions();
     }
 
     Combat& playerCombat = this->getComponent<Combat>(this->playerID);
@@ -301,13 +284,9 @@ void GameScene::update()
     }
 
     // Render HP bar UI
-    float hpPercent = 1.0f;
-    float maxHpPercent = 1.0f;
-    if (this->hasComponents<Combat>(this->playerID))
-    {
-        hpPercent = playerCombat.health * 0.01f;
-        maxHpPercent = playerCombat.maxHealth * 0.01f;
-    }
+    HealthComp& playerHealth = this->getComponent<HealthComp>(this->playerID);
+    float hpPercent = playerHealth.health * 0.01f;
+    float maxHpPercent = playerHealth.maxHealth * 0.01f;
     float xPos = -600.f;
     float yPos = -472.f;
     float xSize = 1200.f * 0.35f;
@@ -324,19 +303,44 @@ void GameScene::update()
         glm::vec2(xSize * hpPercent, ySize)
     );
 
-    
+    // Paused
+    if (Input::isKeyPressed(Keys::ESC))
+    {
+        this->paused = !this->paused;
+        this->getScriptHandler()->setGlobal(this->paused, "paused");
+        Input::setHideCursor(!this->paused);
+        this->getComponent<Rigidbody>(this->playerID).velocity = glm::vec3(0.0f);
+    }
+    if (this->paused)
+    {
+        if (this->resumeButton.isClicking())
+        {
+            this->paused = false;
+            this->getScriptHandler()->setGlobal(this->paused, "paused");
+            Input::setHideCursor(!this->paused);
+        }
+        else if (this->exitButton.isClicking())
+        {
+            this->networkHandler->disconnectClient();
+            this->networkHandler->deleteServer();
+            this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
+        }
+    }
+
 #ifdef _CONSOLE
 
     // Cascades
    DirectionalLight& dirLight = this->getComponent<DirectionalLight>(this->dirLightEntity);
-   ImGui::Begin("Shadows");
-   ImGui::SliderFloat("Cascade size 0", &dirLight.cascadeSizes[0], 0.0f, 1.0f);
-   ImGui::SliderFloat("Cascade size 1", &dirLight.cascadeSizes[1], 0.0f, 1.0f);
-   ImGui::SliderFloat("Cascade size 2", &dirLight.cascadeSizes[2], 0.0f, 1.0f);
+   ImGui::Begin("Directional light");
+   ImGui::SliderFloat("XZ direction", &dirLight.direction.x, 0.0f, 1.0f );
+   ImGui::SliderFloat("Cascade size 0", &dirLight.cascadeSizes[0], 0.0f, 1000.0f);
+   ImGui::SliderFloat("Cascade size 1", &dirLight.cascadeSizes[1], 0.0f, 1000.0f);
+   ImGui::SliderFloat("Cascade size 2", &dirLight.cascadeSizes[2], 0.0f, 1000.0f);
    ImGui::SliderFloat("Cascade depth", &dirLight.cascadeDepthScale, 1.0f, 50.0f);
    ImGui::Checkbox("Visualize cascades", &dirLight.cascadeVisualization);
    ImGui::SliderFloat("Shadow map angle bias", &dirLight.shadowMapAngleBias, 0.0f, 0.005f);
    ImGui::End();
+   dirLight.direction.z = dirLight.direction.x;
 
     static bool renderDebug = false;
     if (ImGui::Begin("Debug"))
@@ -363,7 +367,6 @@ void GameScene::update()
 #endif
 
 }
-
 
 void GameScene::onTriggerStay(Entity e1, Entity e2)
 {
@@ -477,7 +480,7 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
           swarmComp.inAttack = false;
           swarmComp.touchedPlayer = true;
           //aiCombat.timer = aiCombat.lightAttackTime;
-          this->getComponent<Combat>(player).health -=
+          this->getComponent<HealthComp>(player).health -=
               (int)aiCombat.lightHit;
             
           Log::write("WAS HIT", BT_FILTER);
@@ -488,10 +491,9 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
       auto& tankComp = this->getComponent<TankComponent>(other);
       if (tankComp.canAttack)
       {
-        auto& aiCombat = this->getComponent<AiCombatTank>(other);
         tankComp.canAttack = false;
-        this->getComponent<Combat>(player).health -=
-            (int)aiCombat.directHit;
+        this->getComponent<HealthComp>(player).health -=
+            (int)tankComp.directHit;
             
         Log::write("WAS HIT", BT_FILTER);
       }
@@ -499,9 +501,9 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
     else if (this->hasComponents<Orb>(other)) 
     {
         auto& orb = this->getComponent<Orb>(other);
-        this->getComponent<Combat>(player).health -=
+        this->getComponent<HealthComp>(player).health -=
             orb.orbPower->damage;
-        orb.onCollision(other);
+        orb.onCollision(other, this->getSceneHandler());
     }
   }
   else 
@@ -512,7 +514,7 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
         Entity collidingOrb = this->hasComponents<Orb>(e1) ? e1 : e2; 
         
         auto& orb = this->getComponent<Orb>(collidingOrb);        
-        orb.onCollision(collidingOrb);
+        orb.onCollision(collidingOrb, this->getSceneHandler());
         
     }
   }
@@ -544,12 +546,12 @@ void GameScene::imguiUpdate()
     std::string playerString = "playerID";
     int playerID;
     getScriptHandler()->getGlobal(playerID, playerString);
-    auto& playerCombat = getComponent<Combat>(playerID);
+    auto& playerHealthComp = getComponent<HealthComp>(playerID);
     if(ImGui::Button("INVINCIBLE Player")){
-        playerCombat.health = INT_MAX;         
+        playerHealthComp.health = INT_MAX;
     }
     if(ImGui::Button("Kill Player")){
-        playerCombat.health = 0; 
+        playerHealthComp.health = 0; 
     }
 
     ImGui::End();

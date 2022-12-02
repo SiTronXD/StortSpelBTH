@@ -65,22 +65,22 @@ public:
     inline static const float PERCENTAGE_LICHS   = 0.25f;
     inline static const float PERCENTAGE_SWARMS  = 0.75f;
 
-    const float enemiesPerTiles = 0.10f;
+    const float enemiesPerTiles = 0.25f;//0.05f;//0.10f
 
     inline static const int NR_BLOBS_IN_GROUP = 3;
 
-    inline static const int MAX_NR_TANKS        = MAX_NR_OF_ENEMIES * PERCENTAGE_TANKS;
-    inline static const int MAX_NR_LICHS        = MAX_NR_OF_ENEMIES * PERCENTAGE_LICHS;
-    inline static const int MAX_NR_SWARMGROUPS  = (MAX_NR_OF_ENEMIES * PERCENTAGE_SWARMS)/NR_BLOBS_IN_GROUP;
+    inline static const int MAX_NR_TANKS        = (int)(MAX_NR_OF_ENEMIES * PERCENTAGE_TANKS);
+    inline static const int MAX_NR_LICHS        = (int)(MAX_NR_OF_ENEMIES * PERCENTAGE_LICHS);
+    inline static const int MAX_NR_SWARMGROUPS  = (int)((MAX_NR_OF_ENEMIES * PERCENTAGE_SWARMS)/NR_BLOBS_IN_GROUP);
 
-    inline static const bool USE_DEBUG = true;
+    inline static const bool USE_DEBUG = false;
     inline static const int NR_TANK_DBG         = 0;
-    inline static const int NR_LICH_DBG         = 2;
+    inline static const int NR_LICH_DBG         = 3;
     inline static const int NR_SWARM_GROUPS_DBG = 0;
 
 private:
     RoomHandler*     roomHandler      = nullptr;
-    GameScene*       currScene        = nullptr;
+    Scene*           currScene        = nullptr;
     SceneHandler*    sceneHandler     = nullptr;
     AIHandler*       aiHandler        = nullptr;
     ResourceManager* resourceManager  = nullptr;
@@ -138,7 +138,8 @@ public:
     }
 
     void init(RoomHandler* roomHandler, 
-             GameScene* currentGameScene, 
+             //GameScene* currentGameScene, 
+             Scene* currentGameScene, 
              SceneHandler* sceneHandler, 
              AIHandler* aiHandler,
              ResourceManager* resourceManager,

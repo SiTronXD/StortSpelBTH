@@ -22,9 +22,9 @@ void RoomTesting::init()
 	this->setComponent<DirectionalLight>(cam,
 		{glm::vec3(0.f, -1.f, 0.f), glm::vec3(1.f)});
 	DirectionalLight& light = this->getComponent<DirectionalLight>(cam);
-	light.cascadeSizes[0] = 0.044f;
-	light.cascadeSizes[1] = 0.149f;
-	light.cascadeSizes[2] = 1.0f;
+	light.cascadeSizes[0] = 400.f;
+	light.cascadeSizes[1] = 3.f;
+	light.cascadeSizes[2] = 3.f;
 	light.cascadeDepthScale = 36.952f;
 	light.shadowMapMinBias = 0.00001f;
 	light.shadowMapAngleBias = 0.0004f;
@@ -73,7 +73,22 @@ void RoomTesting::update()
 			this->getPhysicsEngine()->renderDebugShapes(colls);
 		}
 
-	}ImGui::End();
+	}
+	ImGui::End();
+
+	if (ImGui::Begin("Directional light"))
+	{
+		ImGui::PushItemWidth(-100.f);
+		DirectionalLight& dirLight = this->getComponent<DirectionalLight>(cam);
+		ImGui::SliderFloat("Cascade size 0", &dirLight.cascadeSizes[0], 0.0f, 1000.0f);
+		ImGui::SliderFloat("Cascade size 1", &dirLight.cascadeSizes[1], 0.0f, 1000.0f);
+		ImGui::SliderFloat("Cascade size 2", &dirLight.cascadeSizes[2], 0.0f, 1000.0f);
+		ImGui::SliderFloat("Cascade depth", &dirLight.cascadeDepthScale, 1.0f, 50.0f);
+		ImGui::Checkbox("Visualize cascades", &dirLight.cascadeVisualization);
+		ImGui::SliderFloat("Shadow map angle bias", &dirLight.shadowMapAngleBias, 0.0f, 0.005f);
+		ImGui::PopItemWidth();
+	}
+	ImGui::End();
 
 	Transform& plaTra = this->getComponent<Transform>(player);
 	if (Input::isKeyDown(Keys::LEFT))

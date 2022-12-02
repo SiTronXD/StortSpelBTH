@@ -62,15 +62,17 @@ class LichBT : public BehaviorTree
 
 
 	//Helper funcs
-	static int		getPlayerID();
+	static int		getPlayerID(Entity entityID);
 	static float	get_dt();
 	static Scene*	getTheScene();
-	static void rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision = 5.0f);
+	static void		rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision = 5.0f);
+	static void		drawRaySimple(Ray& ray, float dist, glm::vec3 color = glm::vec3(1.0f, 0.0f, 0.0f));
+	static bool		rayChecking(Entity entityID, glm::vec3& moveDir);
 
-	static void givePointsForPlayerHealth	(Entity entityID, float& l_points, float& i_points, float& f_points);
-	static void givePointsForOwnHealth		(Entity entityID, float& l_points, float& i_points, float& f_points);
-	static void givePointsForDistance	    (Entity entityID, float& l_points, float& i_points, float& f_points);
-	static void setStrategyBasedOnPoints	(Entity entityID, float& l_points, float& i_points, float& f_points);
+	static void		givePointsForPlayerHealth	(Entity entityID, float& l_points, float& i_points, float& f_points);
+	static void		givePointsForOwnHealth		(Entity entityID, float& l_points, float& i_points, float& f_points);
+	static void		givePointsForDistance	    (Entity entityID, float& l_points, float& i_points, float& f_points);
+	static void		setStrategyBasedOnPoints	(Entity entityID, float& l_points, float& i_points, float& f_points);
 
     static Entity getFreeOrb(Entity entityID, ATTACK_STRATEGY type);
 

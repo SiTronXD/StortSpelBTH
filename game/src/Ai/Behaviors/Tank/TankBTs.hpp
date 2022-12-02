@@ -51,14 +51,20 @@ class TankBT : public BehaviorTree
 	static void rotateTowardsTarget(Entity entityID, float precision);
 	static void rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision);
 	static bool rotationDone(Entity entityID, glm::vec3 target, float rotSpeed, float precision);
+	static bool rayChecking(Entity entityID, glm::vec3& moveDir);
+	static void drawRaySimple(Ray& ray, float dist, glm::vec3 color = glm::vec3(1.0f, 0.0f, 0.0f));
 
-	static int		getPlayerID();
+	static int		getPlayerID(int entityID);
 	static float	get_dt();
 	static Scene*	getTheScene();
 	static void		updateCanBeHit(Entity entityID);
 	static void		groundHumpShortcut(Entity entityID, float maxRad);
 	static void		giveFriendsHealth(Entity entityID);
-
+	static uint32_t	activateHump(Entity entityID);
+	static void		deactivateHump(Entity entityID, uint32_t what);
+	static void		updateHump(Entity entityID, uint32_t what);
+	static int		numActiveHumps(Entity entityID);
+	static bool		canActivateNewHump(Entity entityID);
 };
 
 

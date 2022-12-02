@@ -1,5 +1,20 @@
 #include "SwarmFSM.hpp"
 
+Entity SwarmFSM::getPlayerID(Entity entityID){
+    // if network exist take player from there
+    NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+    if (s != nullptr)
+    {
+            return s->getNearestPlayer(entityID);
+    }
+
+    // else find player from script
+    int playerID = -1;
+    std::string playerString = "playerID";
+    FSM::sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
+    return playerID;
+}
+
 float SwarmFSM::getEntityDist(Entity one, Entity two)
 {
 	Transform& trans1 = FSM::sceneHandler->getScene()->getComponent<Transform>(one);
@@ -19,7 +34,7 @@ bool SwarmFSM::idle_alerted(Entity entityID)
 		return false;
 	}
 
-    float swarmPlayerLen = getEntityDist(entityID, getPlayerID(sceneHandler));
+    float swarmPlayerLen = getEntityDist(entityID, getPlayerID(entityID));
 
 	if (swarmPlayerLen <= enemySwarmComp.sightRadius || 
 		enemySwarmComp.group->inCombat)
@@ -66,7 +81,7 @@ bool SwarmFSM::idle_escape(Entity entityID)
 		return false;
 	}
     
-	float swarmPlayerLen = getEntityDist(entityID, getPlayerID(sceneHandler));
+	float swarmPlayerLen = getEntityDist(entityID, getPlayerID(entityID));
 	float groupHealth = enemySwarmComp.getGroupHealth(FSM::sceneHandler->getScene());
 
 	if (swarmPlayerLen <= enemySwarmComp.sightRadius && 
@@ -88,7 +103,7 @@ bool SwarmFSM::combat_idle(Entity entityID)
 		return false;
 	}
 
-	Entity playerID = getPlayerID(sceneHandler);
+	Entity playerID = getPlayerID(entityID);
 
 	Transform& playerTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(playerID);
 	Transform& enemyTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(entityID);
@@ -180,7 +195,7 @@ bool SwarmFSM::combat_escape(Entity entityID)
 		return false;
 	}
 
-	Entity playerID = getPlayerID(sceneHandler);
+	Entity playerID = getPlayerID(entityID);
 	bool ShouldEscape = false;
 	float swarmPlayerLen = getEntityDist(entityID, playerID);
 	if (swarmPlayerLen <= enemySwarmComp.sightRadius || enemySwarmComp.group->inCombat)
@@ -223,7 +238,7 @@ bool SwarmFSM::escape_idle(Entity entityID)
 	Rigidbody& enemyRb = FSM::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
 
     float velAbs = abs(glm::length(enemyRb.velocity));
-    float swarmPlayerDist = getEntityDist(entityID, getPlayerID(sceneHandler));
+    float swarmPlayerDist = getEntityDist(entityID, getPlayerID(entityID));
 	float groupHealth = enemySwarmComp.getGroupHealth(FSM::sceneHandler->getScene());
 
 	if (swarmPlayerDist > enemySwarmComp.sightRadius &&
@@ -277,7 +292,7 @@ bool SwarmFSM::escape_combat(Entity entityID)
 	Transform& enemyTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(entityID);
     Transform& playerTransform =
         FSM::sceneHandler->getScene()->getComponent<Transform>(
-            getPlayerID(sceneHandler)
+            getPlayerID(entityID)
         );
 
     float velAbs = abs(glm::length(enemyRb.velocity));

@@ -166,7 +166,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_STATISTICS;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)deps\vengine\src\vengine\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -204,7 +204,7 @@ SET ERRORLEVEL=0</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_STATISTICS;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)deps\vengine\src\vengine\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -240,7 +240,7 @@ SET ERRORLEVEL=0</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions);_SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_STATISTICS;_CRT_SECURE_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions);_SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)deps\vengine\src\vengine\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -271,11 +271,14 @@ SET ERRORLEVEL=0</Command>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\LevelEditor\ObjectHandler.cpp" />
+    <ClCompile Include="src\Network\ServerGameMode.cpp" />
     <ClCompile Include="src\Ai\Behaviors\HelperFuncs.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Lich\LichBTs.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Lich\LichFSM.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Tank\TankBTs.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Tank\TankFSM.cpp" />
+    <ClCompile Include="src\Network\NetworkHandlerGame.cpp" />
     <ClCompile Include="src\Scenes\GameOverScene.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmBTs.cpp" />
@@ -285,17 +288,22 @@ SET ERRORLEVEL=0</Command>
     <ClCompile Include="src\Scenes\GameSceneNetwork.cpp" />
     <ClCompile Include="src\Scenes\LobbyScene.cpp" />
     <ClCompile Include="src\Scenes\logInScene.cpp" />
+    <ClCompile Include="src\ServerGameModes\NetworkGameScene.cpp" />
+    <ClCompile Include="src\ServerGameModes\NetworkLobbyScene.cpp" />
+    <ClCompile Include="src\Scenes\LevelEditor.cpp" />
     <ClCompile Include="src\World Handling\Room Generator.cpp" />
     <ClCompile Include="src\World Handling\Room Handler.cpp" />
     <ClCompile Include="src\World Handling\Room Layout.cpp" />
     <ClCompile Include="src\ServerGameModes\TheServerGame.cpp" />
-    <ClCompile Include="src\Scenes\NetworkAI.cpp" />
     <ClCompile Include="src\Scenes\MainMenu.cpp" />
     <ClCompile Include="src\World Handling\SpawnHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
     <ClInclude Include="Components\Movement.h" />
+    <ClInclude Include="src\Components\HealArea.h" />
+    <ClInclude Include="src\Components\HealthComp.h" />
+    <ClInclude Include="src\Network\ServerGameMode.h" />
     <ClInclude Include="src\Components\Abilities.h" />
     <ClInclude Include="src\Ai\Behaviors\HelperFuncs.hpp" />
     <ClInclude Include="src\Ai\Behaviors\Lich\LichBTs.hpp" />
@@ -306,6 +314,9 @@ SET ERRORLEVEL=0</Command>
     <ClInclude Include="src\Components\AiCombatSwarm.h" />
     <ClInclude Include="src\Components\AICombatTank.hpp" />
     <ClInclude Include="src\Components\Perks.h" />
+    <ClInclude Include="src\LevelEditor\mayaStructures.h" />
+    <ClInclude Include="src\LevelEditor\ObjectHandler.h" />
+    <ClInclude Include="src\Network\NetworkHandlerGame.h" />
     <ClInclude Include="src\Network\NetworkDataFetcher.hpp" />
     <ClInclude Include="src\Scenes\GameOverScene.h" />
     <ClInclude Include="src\Ai\Behaviors\Swarm\SwarmBTs.hpp" />
@@ -316,16 +327,19 @@ SET ERRORLEVEL=0</Command>
     <ClInclude Include="src\Components\Combat.h" />
     <ClInclude Include="src\Components\Movement.h" />
     <ClInclude Include="src\Scenes\GameScene.h" />
+    <ClInclude Include="src\Scenes\LevelEditor.h" />
     <ClInclude Include="src\Scenes\RoomTesting.h" />
     <ClInclude Include="src\Scenes\GameSceneNetwork.h" />
     <ClInclude Include="src\Scenes\LobbyScene.h" />
     <ClInclude Include="src\Scenes\logInScene.h" />
+    <ClInclude Include="src\ServerGameModes\NetworkGameScene.h" />
+    <ClInclude Include="src\ServerGameModes\NetworkLobbyScene.h" />
     <ClInclude Include="src\Systems\AiCombatSystem.hpp" />
     <ClInclude Include="src\Systems\AiMovementSystem.hpp" />
-    <ClInclude Include="src\Scenes\NetworkAI.h" />
     <ClInclude Include="src\ServerGameModes\TheServerGame.h" />
     <ClInclude Include="src\Systems\CameraMovementSystem.hpp" />
     <ClInclude Include="src\Systems\CombatSystem.hpp" />
+    <ClInclude Include="src\Systems\HealSystem.hpp" />
     <ClInclude Include="src\Systems\HealthBarSystem.hpp" />
     <ClInclude Include="src\Systems\MovementSystem.hpp" />
     <ClInclude Include="src\World Handling\Room Generator.h" />
@@ -341,6 +355,7 @@ SET ERRORLEVEL=0</Command>
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
+    <None Include="scripts\levelEditor.lua" />
     <None Include="scripts\moveRock.lua">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">true</ExcludedFromBuild>
@@ -348,8 +363,6 @@ SET ERRORLEVEL=0</Command>
     </None>
     <None Include="src\Scripts\Prefab.lua" />
     <None Include="src\Scripts\Prefabs.lua" />
-    <None Include="src\Scripts\PuzzleCreatorLua.lua" />
-    <None Include="src\Scripts\PuzzleLoader.lua" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

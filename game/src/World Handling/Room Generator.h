@@ -15,6 +15,7 @@ struct Tile
     enum Type : int
     {
         Unused = -1,
+        AI,
         Border,
         InnerBorder,
         OneXOne,
@@ -48,34 +49,31 @@ public:
     
     static const uint32_t BIG_TILE_MIN_DIST = 1u;
 
-    static const uint32_t WIDTH_HEIGHT = 50u;//40u;
+    static const uint32_t WIDTH_HEIGHT = 50u;
     static const uint32_t BORDER_SIZE = 3u;
     static const uint32_t RADIUS = 4u;//3u;
     static const uint32_t NUM_BRANCHES = 3u;
-    static const uint32_t BRANCH_DEPTH = 3u;//2u;
-    static const uint32_t BRANCH_DIST = 3u;//2u;
+    static const uint32_t BRANCH_DEPTH = 3u;
+    static const uint32_t BRANCH_DIST = 3u;
     static const uint32_t MAX_ANGLE = 60u;
 private:
     VRandom& random;
 
     Tile::Type** tiles2D;
-    std::vector<Tile> mainTiles;
-    std::vector<Tile> bigTiles;
-    std::vector<Tile> borders;
-    std::vector<Tile> innerBorders;
-    std::vector<Tile> exitPathsTiles;
+    std::vector<Tile> tiles;
 
     glm::ivec2 minMaxPos[4]; // x, -x, z, -z
     glm::ivec2 exitTilesPos[4];
     glm::ivec2 middle;
     glm::ivec2 size;
 
-    void drawCircle(const glm::ivec2& center, uint32_t radius);
+    void drawCircle(const glm::ivec2& center, uint32_t radius, Tile::Type target, Tile::Type placeType);
 
     void setBorders();
     void findMinMax();
     void setExits(bool* doors);
     void setBigTiles();
+    void findAITiles(bool* doors);
     void finalize();
 
     // Helpers
@@ -97,18 +95,6 @@ public:
 
     const glm::ivec2* getMinMax() const;
     const glm::ivec2* getExits() const;
-    const glm::ivec2& getMiddle() const;
-    const glm::ivec2& getSize() const;
 
-    uint32_t getNumMainTiles() const;
-    uint32_t getNumBigTiles() const;
-    uint32_t getNumBorders() const;
-    uint32_t getNumInnerBorders() const;
-    uint32_t getNumExitTiles() const;
-
-    const Tile& getMainTile(uint32_t index) const;
-    const Tile& getBigTile(uint32_t index) const;
-    const Tile& getBorder(uint32_t index) const;
-    const Tile& getInnerBorder(uint32_t index) const;
-    const Tile& getExitTile(uint32_t index) const;
+    const std::vector<Tile>& getTiles() const;
 };
