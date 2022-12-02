@@ -54,7 +54,7 @@ uint32_t TankBT::activateHump(Entity entityID)
 		{
 			getTheScene()->setActive(e);
 			ret = e;
-			//std::cout<<"New hump!\nNum Humps active: "<<numActiveHumps(entityID)<<"Num actual humps: "<<tankComp.humps.size()<<std::endl;
+			std::cout<<"New hump!\nNum Humps active: "<<numActiveHumps(entityID)<<"Num actual humps: "<<tankComp.humps.size()<<std::endl;
 			break;
 		}
 	}
@@ -72,7 +72,7 @@ void TankBT::deactivateHump(Entity entityID, uint32_t what)
             if(netScene != nullptr){
                 netScene->addEvent({(int)GameEvent::INACTIVATE, (int)e});
             }
-			//std::cout<<"Removing hump!\n";
+			std::cout<<"Removing hump!\n";
 			break;
 		}
 	}
@@ -120,7 +120,7 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
             uint32_t newHump = activateHump(entityID);
             Transform& hTrans = getTheScene()->getComponent<Transform>(newHump);
             hTrans.position = getTheScene()->getComponent<Transform>(entityID).position;
-            hTrans.position.y -= tankCol.radius - 0.5f;
+            hTrans.position.y = 0.0f;
             tankComp.humps.insert({newHump, 1.0f});
             tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
 			
@@ -387,10 +387,10 @@ int TankBT::getPlayerID(int entityID)
 void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 {
 	Log::write("Rotating");
-	if (getTheScene()->getAnimationStatus(entityID).animationName != "Walk")
+	/*if (getTheScene()->getAnimationStatus(entityID).animationName != "Walk")
 	{
 		getTheScene()->setAnimation(entityID, "Walk");
-	}
+	}*/
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	if(tankComp.firendTarget.id == entityID)
@@ -439,10 +439,10 @@ void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 }
 void TankBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision)
 {
-	if (getTheScene()->getAnimationStatus(entityID).animationName != "Walk")
+	/*if (getTheScene()->getAnimationStatus(entityID).animationName != "Walk")
 	{
 		getTheScene()->setAnimation(entityID, "Walk");
-	}
+	}*/
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	//Rotate towards target start
@@ -493,7 +493,7 @@ bool TankBT::rotationDone(Entity entityID, glm::vec3 target, float rotSpeed, flo
 	tankTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
 	glm::vec2 tankPos			= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	glm::vec2 curRot			=-glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	glm::vec2 curRot			= glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
 	glm::vec2 tank_to_friend	= glm::normalize(targetPos - tankPos);
 
 	float angle_between			= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
@@ -713,17 +713,20 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	glm::vec3 dir;
 	if(!rayChecking(entityID, dir))
 	{
+		Log::write("Charging at player");
         avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, playerTrans.position, dir, glm::vec3(0.0f, -3.0f, 0.0f)); 
 		rb.velocity = dir * tankComp.idleSpeed;
 		return ret;
 	}
-
-	/*if (getTheScene()->getAnimationStatus(entityID).animationName != "Charge")
-	{
-		getTheScene()->setAnimation(entityID, "Charge");
-	}*/
-
+	
 	Log::write("Charge");
+	/*AnimationStatus status = getTheScene()->getAnimationStatus(entityID);
+	if (status.animationName != "Charge" || status.timeScale != 1.5f)
+	{
+		getTheScene()->setAnimation(entityID, "Charge", "", 1.5f);
+	}*/
+	getTheScene()->setAnimation(entityID, "Charge", "", 1.5f);
+
 	if(!tankComp.hasRunTarget && (tankComp.chargeTimer > 0.0f || !rotationDone(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f)))
 	{
 		rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
@@ -738,6 +741,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.runDir = glm::normalize(playerTrans.position - tankTrans.position);
 		tankComp.hasRunTarget = true;
 		tankComp.canAttack = true;
+		getTheScene()->setAnimationTimeScale(entityID, 0.1f);
 	}
 
 	
@@ -747,7 +751,6 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	{
 		tankComp.runTimer -= get_dt();
 		rb.velocity = tankComp.runDir * tankComp.cahargeSpeed;
-		getTheScene()->setAnimationTimeScale(entityID, 0.0f);
 	}
 	else
 	{

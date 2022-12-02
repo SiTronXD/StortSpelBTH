@@ -344,7 +344,7 @@ void SpawnHandler::createTank()
     rb.friction = 3.0f;
     rb.mass = 10.0f;
     Transform& transform = this->currScene->getComponent<Transform>(this->tankIDs.back());
-    this->currScene->setComponent<Collider>(this->tankIDs.back(), Collider::createSphere(4.0f * transform.scale.x, glm::vec3(0.0f, 3.0f, 0.0f)));
+    this->currScene->setComponent<Collider>(this->tankIDs.back(), Collider::createSphere(TankComponent::colliderRadius, glm::vec3(0.0f, 19.5f, 0.0f)));
     this->aiHandler->createAIEntity(this->tankIDs.back(), "tankFSM");
     TankComponent& tankComp = this->currScene->getComponent<TankComponent>(this->tankIDs.back());
     tankComp.origScaleY = transform.scale.y;

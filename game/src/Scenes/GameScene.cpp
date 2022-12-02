@@ -171,6 +171,8 @@ void GameScene::start()
         this->getResourceManager(),this->getUIRenderer());
     }
     this->createSystem<OrbSystem>(this->getSceneHandler());
+
+    this->spawnHandler.spawnEnemiesIntoRoom(); //TODO: This very bad, remove if in main
 }
 
 void GameScene::update()
