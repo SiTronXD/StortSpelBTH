@@ -7,6 +7,7 @@
 #include "../Systems/HealSystem.hpp"
 #include "../Systems/MovementSystem.hpp"
 #include "../Network/NetworkHandlerGame.h"
+#include "vengine/application/Time.hpp"
 #include "GameOverScene.h"
 #include "MainMenu.h"
 
@@ -163,31 +164,41 @@ void GameScene::start()
         this->aiHandler = this->getAIHandler();
         this->aiHandler->init(this->getSceneHandler());
     
-        spawnHandler.init(&this->roomHandler, this, 
+        spawnHandler.init(&this->roomHandler, this,
         this->getSceneHandler(),this->aiHandler,
         this->getResourceManager(),this->getUIRenderer());
     }
+        
+    this->createSystem<OrbSystem>(this->getSceneHandler());
 }
 
 void GameScene::update()
 {
+    
     if (!networkHandler->isConnected())
-     {   
+    {   
         this->aiHandler->update(Time::getDT());
 
-        // TODO: Move to SpawnHandler ---- 
         if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
         {
             this->newRoomFrame = true;
+        this->timeWhenEnteredRoom = Time::getTimeSinceStart();
+        this->safetyCleanDone = false; 
 
             this->spawnHandler.spawnEnemiesIntoRoom();
         }
-        // ---- TODO: Move to SpawnHandler ^^^^
-
+        if(!this->safetyCleanDone)
+        {
+            
+            if(this->timeWhenEnteredRoom + delayToSafetyDelete < Time::getTimeSinceStart())
+            {
+                this->spawnHandler.killAllEnemiesOutsideRoom();
+                this->safetyCleanDone = true;
+            }
+        }
         if (this->spawnHandler.allDead() && this->newRoomFrame)
         {
             this->newRoomFrame = false;
-
             // Call when a room is cleared
             this->roomHandler.roomCompleted();
             this->numRoomsCleared++;
@@ -197,7 +208,6 @@ void GameScene::update()
                 this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
             }
         }
-
         // Switch scene if the player is dead
         if (this->hasComponents<Combat>(this->playerID))
         {
@@ -206,6 +216,8 @@ void GameScene::update()
                 this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
             }
         }
+        this->spawnHandler.updateImgui();
+        this->imguiUpdate();
     }
     else
     {
@@ -229,6 +241,19 @@ void GameScene::update()
             {
                 this->networkHandler->disconnectClient(); // TEMP: probably will be in game over scene later
                 this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+            }
+        }
+        if (this->spawnHandler.allDead() && this->newRoomFrame)
+        {
+            Log::warning("DOORS ARE OPEN ALL THE TIME, TO PREVENT BEING STUCK. PLZ FIX!");
+            this->newRoomFrame = false;
+            // Call when a room is cleared
+            this->roomHandler.roomCompleted();
+            this->numRoomsCleared++;
+
+            if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+            {
+                this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
             }
         }
 
@@ -352,7 +377,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 		Entity other = e1 == player ? e2 : e1;
     
 
-		if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
+		if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room            
 		{
 			this->switchScene(new GameScene(), "scripts/gamescene.lua");
 		}
@@ -466,16 +491,35 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
       auto& tankComp = this->getComponent<TankComponent>(other);
       if (tankComp.canAttack)
       {
-        auto& aiCombat = this->getComponent<AiCombatTank>(other);
         tankComp.canAttack = false;
         this->getComponent<HealthComp>(player).health -=
-            (int)aiCombat.directHit;
+            (int)tankComp.directHit;
             
         Log::write("WAS HIT", BT_FILTER);
       }
     }
+    else if (this->hasComponents<Orb>(other)) 
+    {
+        auto& orb = this->getComponent<Orb>(other);
+        this->getComponent<HealthComp>(player).health -=
+            orb.orbPower->damage;
+        orb.onCollision(other, this->getSceneHandler());
+    }
+  }
+  else 
+  { // Collision between two things that isnt player
+    
+    if(this->hasComponents<Orb>(e1) || this->hasComponents<Orb>(e2))
+    {
+        Entity collidingOrb = this->hasComponents<Orb>(e1) ? e1 : e2; 
+        
+        auto& orb = this->getComponent<Orb>(collidingOrb);        
+        orb.onCollision(collidingOrb, this->getSceneHandler());
+        
+    }
   }
 
+    //Swarm collides with swarm
   if (this->hasComponents<SwarmComponent>(e1) &&
       this->hasComponents<SwarmComponent>(e2))
   {
@@ -494,6 +538,23 @@ void GameScene::onCollisionExit(Entity e1, Entity e2)
     this->getComponent<SwarmComponent>(e2).touchedFriend = false;
   }
 
+}
+
+void GameScene::imguiUpdate()
+{
+    ImGui::Begin("Game Scene");
+    std::string playerString = "playerID";
+    int playerID;
+    getScriptHandler()->getGlobal(playerID, playerString);
+    auto& playerHealthComp = getComponent<HealthComp>(playerID);
+    if(ImGui::Button("INVINCIBLE Player")){
+        playerHealthComp.health = INT_MAX;
+    }
+    if(ImGui::Button("Kill Player")){
+        playerHealthComp.health = 0; 
+    }
+
+    ImGui::End();
 }
 
 void GameScene::createPortal()

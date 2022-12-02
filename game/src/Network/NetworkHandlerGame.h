@@ -3,6 +3,8 @@
 #include <vengine.h>
 #include "../Components/Perks.h"
 #include "../Components/Abilities.h"
+#include "../Ai/Behaviors/Lich/LichBTs.hpp"
+#include "../Ai/Behaviors/Lich/LichFSM.hpp"
 
 class CombatSystem;
 enum class GameEvent
@@ -16,6 +18,13 @@ enum class GameEvent
 	PICKUP_ITEM, // Client -> Server: Want to pick up item. Server -> Client: Pick up the item
 	USE_HEAL, // Client -> Server: Want to use heal. Server -> Client: Spawn heal entity
 	SPAWN_ENEMY,// Type, ServerID, Position,
+    SPAWN_ORB, // id, Type, Position
+    SPAWN_OBJECT, // id, type, position, rotation, scale 
+    SPAWN_GROUND_HUMP, // nrOf, id
+    DO_HUMP, // id, position 
+    UPDATE_HUMP, // id, position 
+    SET_POS_OBJECT, // id, position
+    THROW_ORB, // Id, initialPosition, Direction
 	PLAYER_TAKE_DAMAGE, // What player, how much damage
 	PLAYER_SETHP, // What player, how much hp
 	PUSH_PLAYER, // What player, direction
@@ -32,6 +41,12 @@ enum class ItemType
 {
 	PERK,
 	ABILITY,
+};
+
+enum class ObjectTypes
+{
+    LICH_GRAVE,
+    LICH_ALTER
 };
 
 class NetworkHandlerGame : public NetworkHandler
@@ -76,10 +91,23 @@ private:
 	int abilityMeshes[AbilityType::emptyAbility];
 	int healAreaMesh;
 	int swordMesh;
+    int graveMesh;
+    int alterMesh;
+    int humpMesh;
 
-	Entity spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
+    static LichAttack* lich_fire   ;
+    static LichAttack* lich_ice    ;
+    static LichAttack* lich_light  ;
+
+    Entity spawnOrbs(int orbType);
+    Entity spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	Entity spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
-	Entity spawnHealArea(glm::vec3 pos);
+    Entity spawnObject(
+        const ObjectTypes& type, const glm::vec3& pos, const glm::vec3& rot,
+        const glm::vec3& scale
+    );
+    Entity spawnHealArea(glm::vec3 pos);
+    Entity createHump();
 
 	Entity spawnEnemy(const int& type, const glm::vec3& pos);
 public:

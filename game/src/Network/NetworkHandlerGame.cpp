@@ -4,6 +4,9 @@
 #include "../Scenes/GameScene.h"
 
 const float NetworkHandlerGame::UPDATE_RATE = ServerUpdateRate;
+LichAttack* NetworkHandlerGame::lich_fire  = new LichAttack();
+LichAttack* NetworkHandlerGame::lich_ice   = new LichAttack();
+LichAttack* NetworkHandlerGame::lich_light = new LichAttack();
 
 Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir)
 {
@@ -106,6 +109,14 @@ void NetworkHandlerGame::init()
 	this->abilityMeshes[1] = this->resourceManger->addMesh("assets/models/Ability_Healing.obj");
 	this->healAreaMesh = this->resourceManger->addMesh("assets/models/HealingAbility.obj");
 	this->swordMesh = this->resourceManger->addMesh("assets/models/MainSword.fbx", "assets/textures");
+
+    this->graveMesh = this->resourceManger->addMesh("assets/models/grave.obj");
+    this->alterMesh = this->resourceManger->addMesh("assets/models/alter.obj");
+    this->humpMesh = this->resourceManger->addMesh("assets/models/hump.obj");//TODO : ADD THE humpMesh!!!
+
+    NetworkHandlerGame::lich_fire->setStats(ATTACK_STRATEGY::FIRE);
+    NetworkHandlerGame::lich_ice->setStats(ATTACK_STRATEGY::ICE);
+    NetworkHandlerGame::lich_light->setStats(ATTACK_STRATEGY::LIGHT);
 }
 
 void NetworkHandlerGame::cleanup()
@@ -155,6 +166,44 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 			this->itemIDs.push_back(this->spawnItem((AbilityType)i2, v0, v1));
 		}
 		break;
+    case GameEvent::SPAWN_OBJECT:
+         //id, type, position, rotation, scale 
+         tcpPacket >> i0 >> i1;
+         v0 = this->getVec(tcpPacket);
+         v1 = this->getVec(tcpPacket);
+         v2 = this->getVec(tcpPacket);
+
+         this->serverEntities.insert({i0, spawnObject((ObjectTypes)i1, v0,v1,v2)});
+
+        break;
+    case GameEvent::SPAWN_GROUND_HUMP:
+        tcpPacket >> i0;
+        for(int i = 0; i < i0; i++){
+            tcpPacket >> i1;
+            serverEntities.insert({i1, createHump()});
+        }
+        break;
+    case GameEvent::DO_HUMP:
+        tcpPacket >> i0;
+        v0 = this->getVec(tcpPacket);
+        this->sceneHandler->getScene()->setActive(serverEntities[i0]);
+        this->sceneHandler->getScene()->getComponent<Transform>(serverEntities[i0]).position = v0;
+
+        break;
+    case GameEvent::UPDATE_HUMP:
+        tcpPacket >> i0;
+        v0 = this->getVec(tcpPacket);
+        this->sceneHandler->getScene()->getComponent<Transform>(serverEntities[i0]).scale = v0;
+
+        break;
+    case GameEvent::SET_POS_OBJECT:
+         //id, position
+         tcpPacket >> i0;
+         v0 = this->getVec(tcpPacket);
+
+        this->sceneHandler->getScene()->getComponent<Transform>(serverEntities[i0]).position = v0;
+         
+        break;
 	case GameEvent::PICKUP_ITEM:
 		// Index -> ItemType
 		tcpPacket >> i0 >> i1;
@@ -205,6 +254,26 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 			this->sceneHandler->getScene()->getComponent<HealthComp>(player).health = i1;   
 		}
 		// Else give hp to other players visually
+		break;
+    case GameEvent::SPAWN_ORB:
+        tcpPacket >> i0 >> i1;
+        serverEntities.insert({i0,spawnOrbs(i1)});
+        
+		break;
+    case GameEvent::THROW_ORB:
+        tcpPacket >> i0;
+        v0 = this->getVec(tcpPacket);
+        v1 = this->getVec(tcpPacket);
+        
+        if(serverEntities.find(i0) != serverEntities.end())
+        {
+            this->sceneHandler->getScene()->setActive(serverEntities[i0]);
+            this->sceneHandler->getScene()->getComponent<Transform>(serverEntities[i0]).position = v0;
+            this->sceneHandler->getScene()->getComponent<Rigidbody>(serverEntities[i0]).velocity = v1;
+            this->sceneHandler->getScene()->getComponent<Orb>(serverEntities[i0]).timeAtCast = Time::getTimeSinceStart();
+        }
+
+        
 		break;
     case GameEvent::INACTIVATE:
         tcpPacket >> i0;
@@ -356,7 +425,17 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 			sv1 = serverScene->getComponent<Transform>(si0).position;
 			sv2 = serverScene->getComponent<Transform>(serverScene->getPlayer(clientID)).position;
 			sv0 = glm::normalize(sv2 - sv1);
-			serverScene->getComponent<Rigidbody>(si0).velocity = glm::vec3(-sv0.x, 0.f, -sv0.z) * sf0;
+            if(serverScene->hasComponents<Rigidbody>(si0)){
+                serverScene->getComponent<Rigidbody>(si0).velocity = glm::vec3(-sv0.x, 0.f, -sv0.z) * sf0;
+            }else {
+                std::cout << "ERROR; something is fucked up with Rigidbody on Monster Take Damage\n";
+                std::cout << "ERROR; is Lich " << serverScene->hasComponents<LichComponent>(si0) << "\n";
+                std::cout << "ERROR; is Tank"  << serverScene->hasComponents<TankComponent>(si0)<< "\n";
+                std::cout << "ERROR; is Swarm" << serverScene->hasComponents<SwarmComponent>(si0)<< "\n";
+                
+                assert(false);
+            }
+			
         }
         
         
@@ -441,6 +520,12 @@ void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
 			TankComponent& enemy = sceneHandler->getScene()->getComponent<TankComponent>(entityID);
                   enemy.life -= damage;
                   isEnemy = true;
+		}
+        else if (sceneHandler->getScene()->hasComponents<LichComponent>(entityID)) {
+			LichComponent& enemy = sceneHandler->getScene()->getComponent<LichComponent>(entityID);
+                  enemy.life -= damage;
+                  isEnemy = true;
+                  std::cout << "LichWas HIT\n";
 		}
 		//if (sceneHandler->getScene()->hasComponents<LichComponent>(entityID)) {
 		//
@@ -631,4 +716,117 @@ void NetworkHandlerGame::useHealAbilityRequest(glm::vec3 position)
 	{
 		this->spawnHealArea(position);
 	}
+}
+Entity NetworkHandlerGame::spawnOrbs(int orbType)
+{
+    static int fireOrb_mesh  = this->resourceManger->addMesh("assets/models/fire_orb.obj");
+    static int lightOrb_mesh = this->resourceManger->addMesh("assets/models/light_orb.obj");
+    static int iceOrb_mesh   = this->resourceManger->addMesh("assets/models/ice_orb.obj");
+
+    Entity orb = this->sceneHandler->getScene()->createEntity();
+    if (orbType == (int)ATTACK_STRATEGY::FIRE)
+    {
+        this->sceneHandler->getScene()->setComponent<MeshComponent>(orb, fireOrb_mesh);
+        this->sceneHandler->getScene()->setComponent<Collider>(
+            orb, Collider::createSphere(LichComponent::orbRadius)
+        );
+        this->sceneHandler->getScene()->setComponent<Orb>(orb);
+        this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
+        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = NetworkHandlerGame::lich_fire;
+        Rigidbody& rb =
+            this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
+        rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+        rb.gravityMult = 0.0f;
+        rb.friction = 3.0f;
+        rb.mass = 10.0f;
+    }
+    else if (orbType == (int)ATTACK_STRATEGY::ICE)
+    {
+        this->sceneHandler->getScene()->setComponent<MeshComponent>(orb, iceOrb_mesh);
+        this->sceneHandler->getScene()->setComponent<Collider>(
+            orb, Collider::createSphere(LichComponent::orbRadius)
+        );
+        this->sceneHandler->getScene()->setComponent<Orb>(orb);
+        this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
+        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = NetworkHandlerGame::lich_ice;
+        Rigidbody& rb =
+            this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
+        rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+        rb.gravityMult = 0.0f;
+        rb.friction = 3.0f;
+        rb.mass = 10.0f;
+    }
+    else if (orbType == (int)ATTACK_STRATEGY::LIGHT)
+    {
+        this->sceneHandler->getScene()->setComponent<MeshComponent>(orb, lightOrb_mesh);
+        this->sceneHandler->getScene()->setComponent<Collider>(
+            orb, Collider::createSphere(LichComponent::orbRadius)
+        );
+        this->sceneHandler->getScene()->setComponent<Orb>(orb);
+        this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
+        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = NetworkHandlerGame::lich_light;
+        Rigidbody& rb =
+            this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
+        rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
+        rb.gravityMult = 0.0f;
+        rb.friction = 3.0f;
+        rb.mass = 10.0f;
+    }
+
+    this->sceneHandler->getScene()->setInactive(orb);
+
+    return orb;
+}
+Entity NetworkHandlerGame::spawnObject(
+    const ObjectTypes& type, const glm::vec3& pos, const glm::vec3& rot,
+    const glm::vec3& scale
+)
+{
+    Entity entity = this->sceneHandler->getScene()->createEntity();
+    switch (type)
+        {
+            case ObjectTypes::LICH_ALTER:
+                this->sceneHandler->getScene()->setComponent<MeshComponent>(
+                    entity, this->alterMesh
+                );
+                this->sceneHandler->getScene()->setComponent<Collider>(
+                    entity,
+                    Collider::createBox(glm::vec3{
+                        LichComponent::alterWidth,
+                        LichComponent::alterHeight,
+                        LichComponent::alterDepth})
+                );
+
+                break;
+            case ObjectTypes::LICH_GRAVE:
+                this->sceneHandler->getScene()->setComponent<MeshComponent>(
+                    entity, this->graveMesh
+                );
+                this->sceneHandler->getScene()->setComponent<Collider>(
+                    entity,
+                    Collider::createBox(glm::vec3{
+                        LichComponent::graveWidth,
+                        LichComponent::graveHeight,
+                        LichComponent::graveDepth})
+                );
+                break;
+            default:
+                break;
+        }
+    this->sceneHandler->getScene()->getComponent<Transform>(entity).position =
+        pos;
+    this->sceneHandler->getScene()->getComponent<Transform>(entity).rotation =
+        rot;
+    this->sceneHandler->getScene()->getComponent<Transform>(entity).scale =
+        scale;
+    return entity;
+}
+
+Entity NetworkHandlerGame::createHump(){
+    int e = sceneHandler->getScene()->createEntity();
+
+    sceneHandler->getScene()->setComponent<MeshComponent>(e, humpMesh);
+    sceneHandler->getScene()->setInactive(e);
+
+    return e;
 }

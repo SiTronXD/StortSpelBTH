@@ -14,7 +14,7 @@ function script:init()
     
 	self.moveDir = vector()
 	self.currentSpeed = vector()
-	self.maxSpeed = 30
+	self.maxSpeed = 60 -- 30.0
     self.sprintSpeed = 60
     self.isSprinting = false
 	self.speedIncrease = 200
@@ -27,7 +27,7 @@ function script:init()
     self.maxHealth = 100
     self.maxStamina = 100
     self.currentStamina = 100
-    self.sprintStamDrain = 20.0
+    self.sprintStamDrain = 0.0 -- 20.0
     self.staminaRegen = 20.0
     self.staminaRegenCd = 2.0
     self.staminaTimer = 0.0
