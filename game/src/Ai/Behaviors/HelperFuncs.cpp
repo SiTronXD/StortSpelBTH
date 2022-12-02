@@ -224,3 +224,41 @@ glm::vec3 rotateVec(glm::vec3 rot, float deg, glm::vec3 axis)
 
 	return glm::normalize(ret);
 }
+glm::vec3 safeNormalize(glm::vec3& vec)
+{
+    if (glm::length(vec) != 0.f)
+    {
+        return glm::normalize(vec);
+    }
+    Log::error("Tried to normalize zero vector; glm::vec3");
+    return glm::vec3(1.f, 1.f, 1.f);
+}
+
+glm::vec2 safeNormalize(glm::vec2& vec)
+{
+    if (glm::length(vec) != 0.f)
+    {
+        return glm::normalize(vec);
+    }
+    Log::error("Tried to normalize zero vector; glm::vec2");
+    return glm::vec2(1.f, 1.f);
+}
+glm::vec3 safeNormalize(glm::vec3&& vec)
+{
+    if (glm::length(vec) != 0.f)
+    {
+        return glm::normalize(vec);
+    }
+    Log::error("Tried to normalize zero vector; glm::vec3");
+    return glm::vec3(1.f, 1.f, 1.f);
+}
+
+glm::vec2 safeNormalize(glm::vec2&& vec)
+{
+    if (glm::length(vec) != 0.f)
+    {
+        return glm::normalize(vec);
+    }
+    Log::error("Tried to normalize zero vector; glm::vec2");
+    return glm::vec2(1.f, 1.f);
+}

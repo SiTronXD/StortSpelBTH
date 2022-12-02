@@ -57,8 +57,8 @@ void SwarmBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, f
 	swarmTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
 	glm::vec2 swarmpos			= glm::vec2(swarmTrans.position.x, swarmTrans.position.z);
-	glm::vec2 curRot			= -glm::normalize(glm::vec2(swarmTrans.forward().x, swarmTrans.forward().z));
-	glm::vec2 swarm_to_friend	= glm::normalize(targetPos - swarmpos);
+	glm::vec2 curRot			= -safeNormalize(glm::vec2(swarmTrans.forward().x, swarmTrans.forward().z));
+	glm::vec2 swarm_to_friend	= safeNormalize(targetPos - swarmpos);
 
 	float angle_between			= glm::degrees(glm::acos(glm::dot(swarm_to_friend, curRot)));
 	swarmComp.tempRotAngle = angle_between;
@@ -76,8 +76,8 @@ void SwarmBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, f
 	swarmTrans.updateMatrix();
 	targetPos			= glm::vec2(target.x, target.z);
 	swarmpos				= glm::vec2(swarmTrans.position.x, swarmTrans.position.z);
-	curRot				= -glm::normalize(glm::vec2(swarmTrans.forward().x, swarmTrans.forward().z));
-	swarm_to_friend		= glm::normalize(targetPos - swarmpos);
+	curRot				= -safeNormalize(glm::vec2(swarmTrans.forward().x, swarmTrans.forward().z));
+	swarm_to_friend		= safeNormalize(targetPos - swarmpos);
 	angle_between		= glm::degrees(glm::acos(glm::dot(swarm_to_friend, curRot)));
 	//If angle got bigger, then change direction
 	if(swarmComp.tempRotAngle < angle_between)
@@ -185,10 +185,10 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 	rayForward.dir = forward;
 	//Ray forward left
 	rayForwardLeft.pos = swarmTransform.position;
-	rayForwardLeft.dir = glm::normalize(forward - right);
+	rayForwardLeft.dir = safeNormalize(forward - right);
 	//Ray forward right
 	rayForwardRight.pos = swarmTransform.position;
-	rayForwardRight.dir = glm::normalize(forward + right);
+	rayForwardRight.dir = safeNormalize(forward + right);
 	
 	float maxDist = swarmCol.radius + 1.5f;
 	RayPayload rpForward = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayForward, maxDist);
@@ -216,7 +216,7 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 	bool foundSpecialCase = false;
 	if(outsideRadius(entityID))
 	{
-		swarmComp.dir = glm::normalize(swarmComp.group->idleMidPos - swarmTransform.position);
+		swarmComp.dir = safeNormalize(swarmComp.group->idleMidPos - swarmTransform.position);
 		foundSpecialCase = true;
 	}
 	else if(stuckInCorner(rpLeft, rpRight, rpForward) && !swarmComp.idleIgnoreCol)
@@ -291,7 +291,7 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 		else if(swarmComp.lonelyTimer > swarmComp.lonelyTime)
 		{	
 			swarmComp.lonelyTimer = 0.f;
-			swarmComp.lonelyDir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));	
+			swarmComp.lonelyDir = safeNormalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));	
 			float a = 4.1f;
 			swarmComp.idleMoveTo = swarmTransform.position + swarmComp.lonelyDir * std::numeric_limits<float>().max(); 
 		}
@@ -452,7 +452,7 @@ BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
     thisTransform.updateMatrix();
 
     glm::vec3 dir =
-        -glm::normalize(playerTransform.position - thisTransform.position);
+        -safeNormalize(playerTransform.position - thisTransform.position);
     dir.y = 0;
     float tempYvel = rigidbody.velocity.y;
     rigidbody.velocity = dir * swarmComp.speed;
@@ -516,7 +516,7 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 	from = from + playerTransform.up() * 3.0f;
 	glm::vec3 to = entityTransform.position;
 	float maxDist = glm::length(to - from);
-	glm::vec3 dir = glm::normalize(to - from);
+	glm::vec3 dir = safeNormalize(to - from);
 	Ray rayToPlayer{from, dir};    
 	Ray rayRight{to, entityTransform.right()};    
 	Ray rayLeft{to, entityTransform.right()};    
@@ -560,7 +560,7 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 	}
 
 	rotateTowards(entityID, playerTransform.position, swarmComp.idleRotSpeed, 5.0f);
-	glm::normalize(dir);
+	safeNormalize(dir);
 	dir.y = 0;
     float tempYvel =  rigidbody.velocity.y;
     rigidbody.velocity = -dir * swarmComp.speed;
@@ -573,7 +573,7 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 	newPlayerPos = newPlayerPos + playerTransform.up() * 3.0f;
     
     glm::vec3& entityPos	= entityTransform.position;
-    glm::vec3 dirEntityToPlayer = glm::normalize(newPlayerPos - entityTransform.position);
+    glm::vec3 dirEntityToPlayer = safeNormalize(newPlayerPos - entityTransform.position);
     float distEntityToPlayer	= glm::length(newPlayerPos - entityPos);
     
 	int safetyBreak = 0;
@@ -584,7 +584,7 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
     {
 		newPlayerPos = playerTransform.position;
 		newPlayerPos = newPlayerPos + playerTransform.up() * 3.0f;
-        dirEntityToPlayer = glm::normalize(newPlayerPos - entityPos);
+        dirEntityToPlayer = safeNormalize(newPlayerPos - entityPos);
         distEntityToPlayer	= glm::length(newPlayerPos - entityPos);
         Ray rayToPlayer{entityPos, dirEntityToPlayer};    
         RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, distEntityToPlayer);
@@ -680,7 +680,7 @@ BTStatus SwarmBT::attack(Entity entityID)
 
     glm::vec3 dir = playerTransform.position - thisTransform.position;
     dir.y += swarmComp.jumpY;
-    dir = glm::normalize(dir);
+    dir = safeNormalize(dir);
 
     thisTransform.rotation.y = lookAtY(thisTransform, playerTransform);
     thisTransform.updateMatrix();
@@ -807,7 +807,7 @@ BTStatus SwarmBT::die(Entity entityID)
 	    	Rigidbody& perkRb = sceneHandler->getScene()->getComponent<Rigidbody>(perkEnt);
 	    	glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
 	    	perkRb.gravityMult = 6.f;
-	    	perkRb.velocity = glm::normalize(spawnDir) * 20.f;
+	    	perkRb.velocity = safeNormalize(spawnDir) * 20.f;
 	    	sceneHandler->getScene()->setComponent<Perks>(perkEnt, perk);
 	    	sceneHandler->getScene()->setComponent<PointLight>(perkEnt, glm::vec3(5.f, 7.f, 9.f));
 	    	sceneHandler->getScene()->setScriptComponent(perkEnt, "scripts/spin.lua");*/
@@ -832,7 +832,7 @@ BTStatus SwarmBT::die(Entity entityID)
 	    	Rigidbody& abilityRb = sceneHandler->getScene()->getComponent<Rigidbody>(abilityEnt);
 	    	glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
 	    	abilityRb.gravityMult = 4.f;
-	    	abilityRb.velocity = glm::normalize(spawnDir) * 40.f;
+	    	abilityRb.velocity = safeNormalize(spawnDir) * 40.f;
 	    	sceneHandler->getScene()->setComponent<Abilities>(abilityEnt, ability);
 	    	sceneHandler->getScene()->setComponent<PointLight>(abilityEnt, glm::vec3(7.f, 9.f, 5.f));*/
 	    }

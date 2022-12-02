@@ -16,7 +16,7 @@ void TankBT::updateCanBeHit(Entity entityID)
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	glm::vec3 tank_player_vec = playerTrans.position - tankTrans.position;
 	float tank_player_len = glm::length(tank_player_vec);
-	tank_player_vec = glm::normalize(tank_player_vec);
+	tank_player_vec = safeNormalize(tank_player_vec);
 	float hitDeg = (360.0f - tankComp.shieldAngle)/2.0f;
 	hitDeg = 180 - hitDeg;
 	if(tank_player_len < tankComp.peronalSpaceRadius)
@@ -159,7 +159,7 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 	from = from + playerTransform.up() * 3.0f;
 	glm::vec3 to = entityTransform.position;
 	float maxDist = glm::length(to - from);
-	glm::vec3 dir = glm::normalize(from - to);
+	glm::vec3 dir = safeNormalize(from - to);
 	glm::vec3 offset = entityTransform.right() * (entityCollider.radius +1.0f);
 	Ray rayToPlayer{from, -dir};  
 	Ray rayToPlayer_right{from + offset, -dir};    
@@ -235,7 +235,7 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 		dir = -entityTransform.forward();
 	}
 	rotateTowards(entityID, playerTransform.position, tankComp.idleRotSpeed, 5.0f);
-	glm::normalize(dir);
+	safeNormalize(dir);
 	dir.y = 0;
 	moveDir = dir;
 
@@ -339,8 +339,8 @@ void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 	tankTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(tankComp.firendTarget.pos.x, tankComp.firendTarget.pos.z);
 	glm::vec2 tankPos			= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	glm::vec2 curRot			= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
-	glm::vec2 tank_to_friend	= glm::normalize(targetPos - tankPos);
+	glm::vec2 curRot			= -safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	glm::vec2 tank_to_friend	= safeNormalize(targetPos - tankPos);
 
 	float angle_between			= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
 	tankComp.tempRotAngle = angle_between;
@@ -358,8 +358,8 @@ void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 	tankTrans.updateMatrix();
 	targetPos			= glm::vec2(tankComp.firendTarget.pos.x, tankComp.firendTarget.pos.z);
 	tankPos				= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	curRot				= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
-	tank_to_friend		= glm::normalize(targetPos - tankPos);
+	curRot				= -safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	tank_to_friend		= safeNormalize(targetPos - tankPos);
 	angle_between		= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
 	//If angle got bigger, then change direction
 	if(tankComp.tempRotAngle < angle_between)
@@ -383,8 +383,8 @@ void TankBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 	tankTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
 	glm::vec2 tankPos			= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	glm::vec2 curRot			= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
-	glm::vec2 tank_to_friend	= glm::normalize(targetPos - tankPos);
+	glm::vec2 curRot			= -safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	glm::vec2 tank_to_friend	= safeNormalize(targetPos - tankPos);
 
 	float angle_between			= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
 	tankComp.tempRotAngle = angle_between;
@@ -402,8 +402,8 @@ void TankBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 	tankTrans.updateMatrix();
 	targetPos			= glm::vec2(target.x, target.z);
 	tankPos				= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	curRot				= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
-	tank_to_friend		= glm::normalize(targetPos - tankPos);
+	curRot				= -safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	tank_to_friend		= safeNormalize(targetPos - tankPos);
 	angle_between		= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
 	//If angle got bigger, then change direction
 	if(tankComp.tempRotAngle < angle_between)
@@ -426,8 +426,8 @@ bool TankBT::rotationDone(Entity entityID, glm::vec3 target, float rotSpeed, flo
 	tankTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
 	glm::vec2 tankPos			= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	glm::vec2 curRot			= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
-	glm::vec2 tank_to_friend	= glm::normalize(targetPos - tankPos);
+	glm::vec2 curRot			= -safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	glm::vec2 tank_to_friend	= safeNormalize(targetPos - tankPos);
 
 	float angle_between			= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
 
@@ -539,7 +539,7 @@ BTStatus TankBT::MoveAround(Entity entityID)
 	}
 	Transform& tankTrans	= getTheScene()->getComponent<Transform>(entityID);
 	glm::vec3 moveDir		= pathFindingManager.getDirTo(tankTrans.position, tankComp.firendTarget.pos);
-	moveDir = glm::normalize(moveDir);
+	moveDir = safeNormalize(moveDir);
 
 	Rigidbody& tankRb		= getTheScene()->getComponent<Rigidbody>(entityID);
 	Collider& tankCol		= getTheScene()->getComponent<Collider>(entityID);
@@ -650,7 +650,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.runTarget = playerTrans.position;
 		tankComp.runOrigin = tankTrans.position;
 		tankComp.runDist = glm::length(playerTrans.position - tankTrans.position);
-		tankComp.runDir = glm::normalize(playerTrans.position - tankTrans.position);
+		tankComp.runDir = safeNormalize(playerTrans.position - tankTrans.position);
 		tankComp.hasRunTarget = true;
 		tankComp.canAttack = true;
 	}
@@ -739,7 +739,7 @@ BTStatus TankBT::moveTowardsGroup(Entity entityID)
 	Transform& tankTrans	= getTheScene()->getComponent<Transform>(entityID);
 	Rigidbody& tankRb		= getTheScene()->getComponent<Rigidbody>(entityID);
 	glm::vec3 moveDir		= pathFindingManager.getDirTo(tankTrans.position, tankComp.shieldTargetPos);
-	moveDir					= glm::normalize(moveDir);
+	moveDir					= safeNormalize(moveDir);
 	avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, tankComp.firendTarget.pos, moveDir, glm::vec3(0.0f, -3.0f, 0.0f));
 	tankRb.velocity			= moveDir * tankComp.shieldSpeed;
 	return ret;

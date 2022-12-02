@@ -9,7 +9,8 @@
 
 #include "../Components/HealArea.h"
 
-enum SoundEnum { takeDmg, swingSword };
+enum SoundSourceEnum { takeDmgSource, moveSource, attackSource };
+enum AttackSoundEnum { swing };
 
 class CombatSystem : public System
 {
@@ -25,13 +26,9 @@ private:
 	const bool* paused;
 
 	int lostHealth;
-
-	Entity takeDmgAudioSource;
-	Entity attackAudioSource;
-	Entity moveAudioSource;
 	std::vector<uint32_t> attackSounds;
-	std::vector<uint32_t> moveSounds;
-	std::vector<uint32_t> takeDmgSounds;
+	uint32_t moveSound;
+	uint32_t takeDmgSound;
 
 	int swordMesh;
 	int perkMeshes[5];
@@ -55,15 +52,15 @@ public:
 			combat.combos.emplace_back("Light Heavy Light ");
 			combat.combos.emplace_back("Heavy Light Heavy ");
 
-			this->takeDmgSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/OufSound.ogg"));
+			this->takeDmgSound = this->resourceMng->addSound("assets/Sounds/OufSound.ogg");
+			this->moveSound = this->resourceMng->addSound("assets/Sounds/RunningSound.ogg");
 			this->attackSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/SwishSound.ogg"));
-			this->moveSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/RunningSound.ogg"));
-			this->attackAudioSource = this->scene->createEntity();
-			this->takeDmgAudioSource = this->scene->createEntity();
-			this->moveAudioSource = this->scene->createEntity();
-			this->scene->setComponent<AudioSource>(this->attackAudioSource, this->attackSounds[0]);
-			this->scene->setComponent<AudioSource>(this->takeDmgAudioSource, this->takeDmgSounds[0]);
-			this->scene->setComponent<AudioSource>(this->moveAudioSource, this->moveSounds[0]);
+
+			this->scene->setComponent<MultipleAudioSources>(this->playerID);
+			MultipleAudioSources& multiAudio = this->scene->getComponent<MultipleAudioSources>(this->playerID);
+			multiAudio.audioSource[takeDmgSource].setBuffer(this->takeDmgSound);
+			multiAudio.audioSource[moveSource].setBuffer(this->moveSound);
+			multiAudio.audioSource[attackSource].setBuffer(this->attackSounds[swing]);
 
 			this->swordID = this->scene->createEntity();
 			this->swordMesh = this->resourceMng->addMesh("assets/models/MainSword.fbx", "assets/textures");
@@ -137,13 +134,20 @@ public:
 				removeAbility(combat, combat.ability);
             }
 
-			if (this->scene->getAnimationStatus(this->playerID, "").animationName == "run" && !this->scene->getComponent<AudioSource>(this->moveAudioSource).isPlaying())
+			MultipleAudioSources& multiAudio = this->scene->getComponent<MultipleAudioSources>(this->playerID);
+			if (this->scene->getAnimationStatus(this->playerID, "").animationName == "run")
 			{
-				playerEffectSound(this->moveSounds[0], this->scene->getComponent<Transform>(this->playerID).position, this->moveAudioSource, 10.f);
+				if (!multiAudio.audioSource[moveSource].isPlaying())
+				{
+					playerEffectSound(moveSource, this->moveSound, true, 10.f);
+				}
 			}
 			else if (this->scene->getAnimationStatus(this->playerID, "").animationName != "run")
 			{
-				this->scene->getComponent<AudioSource>(this->moveAudioSource).stop();
+				if (multiAudio.audioSource[moveSource].isPlaying())
+				{
+					multiAudio.audioSource[moveSource].stop();
+				}
 			}
 
 			HealthComp& healthComp = this->scene->getComponent<HealthComp>(this->playerID);
@@ -249,10 +253,6 @@ public:
 				}
 				if (this->canHit)
 				{
-					//if (!this->scene->getComponent<AudioSource>(this->otherSound).isPlaying())
-					//{
-					//	playerEffectSound(this->otherSounds[0], this->scene->getComponent<Transform>(hitID[i]).position, this->otherSound, 12.f);
-					//}
 					this->networkHandler->sendHitOn(hitID[i], (int)combat.dmgArr[combat.activeAttack], combat.knockbackArr[combat.activeAttack]);
 					this->hitEnemies.emplace_back(hitID[i]);
 				}
@@ -262,10 +262,9 @@ public:
 
 	void takeDmg()
 	{
-		if (!this->scene->getComponent<AudioSource>(this->takeDmgAudioSource).isPlaying())
+		if (!this->scene->getComponent<MultipleAudioSources>(this->playerID).audioSource[takeDmgSource].isPlaying())
 		{
-			playerEffectSound(this->takeDmgSounds[0], this->scene->getComponent<Transform>(this->playerID).position,
-				this->takeDmgAudioSource, 10.f);
+			playerEffectSound(takeDmgSource, this->takeDmgSound, false, 10.f);
 		}
 	}
 
@@ -282,25 +281,36 @@ public:
 	void setupAttack(std::string animName, int animIdx, float cdValue, float animMultiplier)
 	{
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		int currentAnimation = 0;
-		this->script->getScriptComponentValue(playerScript, currentAnimation, "currentAnimation");
+		bool cannotAttack = false;
+		this->script->getScriptComponentValue(playerScript, cannotAttack, "isDodging");
+		if (!cannotAttack)
+		{
+			if (!this->scene->getComponent<MultipleAudioSources>(this->playerID).audioSource[attackSource].isPlaying())
+			{
+				playerEffectSound(attackSource, this->attackSounds[swing], false, 10.f);
+			}
 
-		if (animIdx == 6)
-		{
-			this->script->setScriptComponentValue(playerScript, true, "wholeBody");
-			this->script->setScriptComponentValue(playerScript, false, "canMove");
-			this->scene->blendToAnimation(this->playerID, animName, "", 0.18f, animMultiplier);
+			int currentAnimation = 0;
+			this->script->getScriptComponentValue(playerScript, currentAnimation, "currentAnimation");
+
+			if (animIdx == 6)
+			{
+				this->script->setScriptComponentValue(playerScript, true, "wholeBody");
+				this->script->setScriptComponentValue(playerScript, false, "canMove");
+				this->scene->blendToAnimation(this->playerID, animName, "", 0.18f, animMultiplier);
+			}
+			else
+			{
+				this->script->setScriptComponentValue(playerScript, false, "wholeBody");
+				this->scene->blendToAnimation(this->playerID, animName, "UpperBody", 0.18f, animMultiplier);
+			}
+			this->script->setScriptComponentValue(playerScript, true, "isAttacking");
+			this->script->setScriptComponentValue(playerScript, animIdx, "currentAnimation");
+			this->script->setScriptComponentValue(playerScript, cdValue, "animTimer");
+			Transform& swordTrans = this->scene->getComponent<Transform>(this->swordID);
+			swordTrans.updateMatrix();
+			this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 12.f, (swordTrans.right() * swordTrans.forward()), true));
 		}
-		else
-		{
-			this->script->setScriptComponentValue(playerScript, false, "wholeBody");
-			this->scene->blendToAnimation(this->playerID, animName, "UpperBody", 0.18f, animMultiplier);
-		}
-		this->script->setScriptComponentValue(playerScript, animIdx, "currentAnimation");
-		this->script->setScriptComponentValue(playerScript, cdValue, "animTimer");
-		Transform& swordTrans = this->scene->getComponent<Transform>(this->swordID);
-		swordTrans.updateMatrix();
-		this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 12.f, (swordTrans.right() * swordTrans.forward()), true));
 	}
 
 	bool lightAttack(Combat& combat)
@@ -325,8 +335,6 @@ public:
 			}
 			else
 			{
-				playerEffectSound(this->attackSounds[0], 
-					this->scene->getComponent<Transform>(this->playerID).position, this->attackAudioSource, 7.f);
 				setupAttack("lightAttack", 5, combat.lightAttackCd, combat.animationMultiplier[lightActive]);
 				return true;
 			}
@@ -517,7 +525,10 @@ public:
 	void updateMovementSpeed(Combat& combat, Perks& perk, bool doUpgrade = true)
 	{
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		float moveTimers[4] = { 0.f, 0.f, 0.f, 0.f };
+		int currentAnimation = 0;
+		this->script->getScriptComponentValue(playerScript, currentAnimation, "currentAnimation");
+		float moveTimers[3] = { 0.f, 0.f, 0.f };
+
 		if (doUpgrade)
 		{
 			setDefaultMovementSpeed(combat);
@@ -561,6 +572,15 @@ public:
 		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
 		this->script->setScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
 		this->script->setScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
+
+		if (currentAnimation == 2)
+		{
+			this->script->setScriptComponentValue(playerScript, 3, "currentAnimation");
+		}
+		else if (currentAnimation == 3)
+		{
+			this->script->setScriptComponentValue(playerScript, 2, "currentAnimation");
+		}
 	}
 
 	void updateStamina(Combat& combat, Perks& perk, bool doUpgrade = true)
@@ -883,14 +903,16 @@ public:
 		}
 	}
 
-	void playerEffectSound(uint32_t effect, glm::vec3 pos, Entity& soundSource, float volume)
+	void playerEffectSound(int sourceIdx, int soundIdx, bool loop, float volume)
 	{
-		Transform& soundTrans = this->scene->getComponent<Transform>(soundSource);
-		soundTrans.position = pos;
-		AudioSource& sound = this->scene->getComponent<AudioSource>(soundSource);
-		//sound.setBuffer(effect);
-		sound.setVolume(volume);
-		sound.play();
+		MultipleAudioSources& multiAudio = this->scene->getComponent<MultipleAudioSources>(this->playerID);
+		if (multiAudio.audioSource[sourceIdx].getBuffer() != soundIdx)
+		{
+			multiAudio.audioSource[sourceIdx].setBuffer(soundIdx);
+		}
+		multiAudio.audioSource[sourceIdx].setVolume(volume);
+		multiAudio.audioSource[sourceIdx].setLooping(loop);
+		multiAudio.audioSource[sourceIdx].play();
 	}
 	
 	void pickUpAbility(Entity entity)
@@ -914,6 +936,7 @@ public:
 		{
 			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 			this->script->setScriptComponentValue(playerScript, true, "canMove");
+			this->script->setScriptComponentValue(playerScript, false, "isAttacking");
 			this->script->setScriptComponentValue(playerScript, 4, "currentAnimation");
 			this->scene->syncedBlendToAnimation(this->playerID, "LowerBody", "UpperBody", 0.3f);
 			combat.attackTimer = 0.f;

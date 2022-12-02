@@ -10,12 +10,8 @@
 #include <random>
 #include <vector>
 
-
 class GameScene;
-
 using ImguiLambda = std::function<void(FSM* fsm, uint32_t entityId)>;
-
-
 
 class TilePicker
 {
@@ -65,7 +61,7 @@ public:
     inline static const float PERCENTAGE_LICHS   = 0.25f;
     inline static const float PERCENTAGE_SWARMS  = 0.75f;
 
-    const float enemiesPerTiles = 0.05f;//0.10f
+    const float enemiesPerTiles = 0.25f;//0.05f;//0.10f
 
     inline static const int NR_BLOBS_IN_GROUP = 3;
 
