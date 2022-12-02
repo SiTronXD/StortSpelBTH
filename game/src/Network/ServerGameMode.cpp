@@ -6,7 +6,7 @@
 ServerGameMode::~ServerGameMode()
 {
     aiHandler.clean();
-    //this->sceneType = SceneType::GameModeScene;
+    this->sceneType = SceneType::GameModeScene;
 }
 
 void ServerGameMode::init()
