@@ -119,7 +119,6 @@ bool LichFSM::alertToHunt(Entity entityID)
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     Transform& lichTrans   = getTheScene()->getComponent<Transform>(entityID);
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-
     //TODO: Add animation
     if(lichComp.alertDone)
     {
@@ -135,7 +134,6 @@ bool LichFSM::alertToHunt(Entity entityID)
     return ret;
     
 }
-
 
 bool LichFSM::huntToIdle(Entity entityID)
 {
