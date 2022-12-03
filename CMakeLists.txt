@@ -90,8 +90,6 @@ if(${CMAKE_BUILD_TYPE} MATCHES "Debug" )
 target_compile_definitions(3D_VEngine_GameDemo PRIVATE "_DEBUG" )
 endif()
 
-set(VENGINE_USE_PROFILING true)
-
 add_subdirectory(deps/vengine/src)
 
 target_include_directories(3D_VEngine_GameDemo PUBLIC  deps/vengine/src/vengine)           # Needed for vengine.h
