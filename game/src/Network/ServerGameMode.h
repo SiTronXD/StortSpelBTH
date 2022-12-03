@@ -24,6 +24,9 @@ private:
 	std::vector<std::vector<Entity>> itemIDs;
     std::vector<int> entities;
     std::vector<HealthComp> lastPlayerHps;
+    std::vector<HealthComp> lastSwarmHp;
+    std::vector<HealthComp> lastLichHp;
+    std::vector<HealthComp> lastTankHp;
 
 	AIHandler aiHandler;
     SpawnHandler spawnHandler;

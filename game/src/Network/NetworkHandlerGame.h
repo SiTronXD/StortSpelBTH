@@ -5,6 +5,7 @@
 #include "../Components/Abilities.h"
 #include "../Ai/Behaviors/Lich/LichBTs.hpp"
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
+#include "../World Handling/Room Handler.h"
 
 class CombatSystem;
 enum class GameEvent
@@ -27,6 +28,7 @@ enum class GameEvent
     THROW_ORB, // Id, initialPosition, Direction
 	PLAYER_TAKE_DAMAGE, // What player, how much damage
 	PLAYER_SETHP, // What player, how much hp
+	ENTITY_SET_HP, //What entity, how much hp
 	PUSH_PLAYER, // What player, direction
 	MONSTER_TAKE_DAMAGE,
 	INACTIVATE, //what entity
@@ -76,6 +78,8 @@ private:
 	// Interpolation of other transforms
 	std::vector<glm::vec3> playerPosLast;
 	std::vector<glm::vec3> playerPosCurrent;
+    std::map<int, std::pair<glm::vec3, glm::vec3>> entityToPosScale;
+    std::map<int, std::pair<glm::vec3, glm::vec3>> entityLastPosScale;
 
 	// Client helpers
 	int i0, i1, i2;
@@ -94,6 +98,10 @@ private:
     int graveMesh;
     int alterMesh;
     int humpMesh;
+
+    bool newRoomFrame;
+    int numRoomsCleared;
+    RoomHandler* roomHandler;
 
     static LichAttack* lich_fire   ;
     static LichAttack* lich_ice    ;
@@ -116,6 +124,7 @@ public:
 
 	void setCombatSystem(CombatSystem* system);
 	int getSeed();
+    void setRoomHandler(RoomHandler& roomHandler);
 
 	virtual void handleTCPEventClient(sf::Packet& tcpPacket, int event) override;
 	virtual void handleUDPEventClient(sf::Packet& udpPacket, int event) override;

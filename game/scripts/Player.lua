@@ -14,7 +14,7 @@ function script:init()
     
 	self.moveDir = vector()
 	self.currentSpeed = vector()
-	self.maxSpeed = 60 -- 30.0
+	self.maxSpeed = 30.0
     self.sprintSpeed = 60
     self.isSprinting = false
 	self.speedIncrease = 200
@@ -25,9 +25,10 @@ function script:init()
     self.transform.rotation = vector(0, 0, 0)
 
     self.maxHealth = 100
+    self.currentHealth = 100
     self.maxStamina = 100
     self.currentStamina = 100
-    self.sprintStamDrain = 0.0 -- 20.0
+    self.sprintStamDrain = 20.0
     self.staminaRegen = 20.0
     self.staminaRegenCd = 2.0
     self.staminaTimer = 0.0
@@ -47,12 +48,12 @@ function script:init()
     self.isAttacking = false
     self.isMoving = false
     self.canMove = true
+    self.isDead = false
     self.onGround = false
     self.jumpTimer = 0
 
-    self.activeAnimation = {idle = 1, run = 2, sprint = 3, dodge = 4, attack = 5, moveAttack = 6}
-        --lightAttack = 5, heavyAttack = 6, spinCombo = 7, mixCombo = 8, 
-        --heavyCombo = 9, knockback = 10}
+    self.activeAnimation = { idle = 1, run = 2, sprint = 3, 
+        dodge = 4, attack = 5, moveAttack = 6, dead = 7 }
     self.currentAnimation = 1
     self.idleAnimTime = 1.0
     self.runAnimTime = 0.7
@@ -65,6 +66,11 @@ function script:update(dt)
         local rb = scene.getComponent(self.ID, CompType.Rigidbody)
         rb.velocity = vector()
         scene.setComponent(self.ID, CompType.Rigidbody, rb)
+        return
+    end
+    if (self.currentAnimation == self.activeAnimation.dead) then
+        local rb = scene.getComponent(self.ID, CompType.Rigidbody)
+        rb.velocity = vector(0)
         return
     end
 
@@ -206,7 +212,7 @@ function script:update(dt)
         self.animTimer = self.animTimer - dt
     end
 
-    if (input.isKeyPressed(Keys.CTRL))
+    if (input.isKeyPressed(Keys.CTRL) and not self.isDead)
     then
         if (self.animTimer < 0.0)
         then
@@ -222,7 +228,7 @@ function script:update(dt)
         end
     end
 
-    if (input.isKeyDown(Keys.SHIFT) and not self.isDodging)
+    if (input.isKeyDown(Keys.SHIFT) and not self.isDodging and not self.isDead)
     then
         if (self.animTimer < 0.0)
         then
@@ -237,7 +243,7 @@ function script:update(dt)
         end
     end
 
-    if (not self.isSprinting and not self.isDodging)
+    if (not self.isSprinting and not self.isDodging and not self.isDead)
     then
         if (self.animTimer < 0.0)
         then
@@ -261,6 +267,15 @@ function script:update(dt)
                 scene.blendToAnimation(self.ID, "idle", "LowerBody", 0.2, self.idleAnimTime)
                 self.currentAnimation = self.activeAnimation.idle
             end
+        end
+    end
+
+    if self.currentHealth <= 0
+    then
+        if self.currentAnimation ~= self.activeAnimation.dead
+        then
+            scene.blendToAnimation(self.ID, "dead", "", 0.3, 1.0)
+            self.currentAnimation = self.activeAnimation.dead
         end
     end
 

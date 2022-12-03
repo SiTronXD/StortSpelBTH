@@ -1,6 +1,7 @@
 #pragma once
 #include "vengine.h"
 #include "SwarmBTs.hpp"
+#include "../../../Components/HealthComp.h"
 #include "../../../Components/AiCombatSwarm.h"
 
 

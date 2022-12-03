@@ -17,7 +17,8 @@ void LobbyScene::init()
              "assets/models/Character/CharSpinAttack.fbx",
              "assets/models/Character/CharKnockbackAttack.fbx",
              "assets/models/Character/CharInwardAttack.fbx",
-             "assets/models/Character/CharSlashAttack.fbx"}
+             "assets/models/Character/CharSlashAttack.fbx",
+             "assets/models/Character/DeathAnim.fbx"}
         ), 
       "assets/textures/playerMesh"
   );
@@ -32,7 +33,8 @@ void LobbyScene::init()
              "spinAttack",
              "knockback",
              "mixAttack",
-             "slashAttack"}
+             "slashAttack",
+             "dead"}
         )
     );
    
@@ -190,16 +192,15 @@ void LobbyScene::update()
         if (this->startButton.isClicking())
         {
             // Start singleplayer
-            
-            // if (this->activePlayers == 1)
-            // {
-            //     this->getNetworkHandler()->disconnectClient();
-            //     this->getNetworkHandler()->deleteServer();
-            //     this->switchScene(
-            //         new GameScene(), "scripts/gamescene.lua"
-            //     );
-            // }
-            // else
+            //if (this->activePlayers == 1)
+            //{
+            //    this->getNetworkHandler()->disconnectClient();
+            //    this->getNetworkHandler()->deleteServer();
+            //    this->switchScene(
+            //        new GameScene(), "scripts/gamescene.lua"
+            //    );
+            //}
+            //else
             {
                 this->helpPacket << (int)NetworkEvent::START;
                 this->getNetworkHandler()->sendDataToServerTCP(helpPacket);

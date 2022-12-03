@@ -10,6 +10,7 @@ Scene* TankBT::getTheScene()
 void TankBT::updateCanBeHit(Entity entityID)
 {
     int playerID = getPlayerID(entityID);
+	if(playerID == -1){return;}
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
@@ -44,6 +45,7 @@ int	TankBT::numActiveHumps(Entity entityID)
 	}
 	return ret;
 }
+
 uint32_t TankBT::activateHump(Entity entityID)
 {
 	uint32_t ret = -1;
@@ -60,37 +62,7 @@ uint32_t TankBT::activateHump(Entity entityID)
 	}
 	return ret;
 }
-void TankBT::deactivateHump(Entity entityID, uint32_t what)
-{
-	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
-	for(auto e: tankComp.humpEnteties)
-	{
-		if(e == what)
-		{
-			getTheScene()->setInactive(e);
-            ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
-            if(netScene != nullptr){
-                netScene->addEvent({(int)GameEvent::INACTIVATE, (int)e});
-            }
-			//std::cout<<"Removing hump!\n";
-			break;
-		}
-	}
-}
-void TankBT::updateHump(Entity entityID, uint32_t what)
-{
-	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 
-	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
-	Transform& trans = getTheScene()->getComponent<Transform>(what);
-	trans.scale.x = trans.scale.z = tankComp.humps[what];
-	trans.position.x = tankTrans.position.x;
-	trans.position.z = tankTrans.position.z;
-    ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
-    if(netScene != nullptr){
-        netScene->addEvent({(int)GameEvent::UPDATE_HUMP, (int)what}, {trans.scale.x,trans.scale.y,trans.scale.z});
-    }
-}
 bool TankBT::canActivateNewHump(Entity entityID)
 {
 	bool ret = false;
@@ -105,114 +77,58 @@ bool TankBT::canActivateNewHump(Entity entityID)
 	}
 	return ret;
 }
-void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
+
+void TankBT::groundHumpShortcut(Entity entityID)
 {
 	Collider& tankCol = getTheScene()->getComponent<Collider>(entityID);
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	Rigidbody& tankRb = getTheScene()->getComponent<Rigidbody>(entityID);
+	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	tankComp.chargeTimer = tankComp.chargeTimerOrig;
 	tankComp.hasRunTarget = false;
-
-	if(tankComp.groundHumpTimer <= 0)
+	if(glm::length(tankRb.velocity) <= 0.1f && (tankTrans.position.y - tankCol.radius) <= 1.0f)
 	{
-		if(canActivateNewHump(entityID))
+		if(tankComp.groundHumpTimer <= 0)
 		{
-            Log::write("Stomp!", BT_FILTER);
-            uint32_t newHump = activateHump(entityID);
-            Transform& hTrans = getTheScene()->getComponent<Transform>(newHump);
-            hTrans.position = getTheScene()->getComponent<Transform>(entityID).position;
-            hTrans.position.y -= tankCol.radius - 0.5f;
-            tankComp.humps.insert({newHump, 1.0f});
-            tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
-			
-            ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
-			if(netScene)
-            {
-                netScene->addEvent({(int)GameEvent::DO_HUMP, (int)newHump}, {hTrans.position.x, hTrans.position.y, hTrans.position.z});
-            }            
+			if(canActivateNewHump(entityID))
+			{
+		        Log::write("Stomp!", BT_FILTER);
+		        uint32_t newHump = activateHump(entityID);
+		        Transform& hTrans = getTheScene()->getComponent<Transform>(newHump);
+		        hTrans.position = getTheScene()->getComponent<Transform>(entityID).position;
+		        hTrans.position.y -= tankCol.radius - 0.5f;
+		        tankComp.humps.insert({newHump, 1.0f});
+		        tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
+				
+		        ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+				if(netScene)
+		        {
+		            netScene->addEvent({(int)GameEvent::DO_HUMP, (int)newHump}, {hTrans.position.x, hTrans.position.y, hTrans.position.z});
+		        }            
+			}
+			else
+			{
+				Log::write("No avaliable humps! (TELL AI PEOPLE THIS MESSAGE WAS SHOWN!)");
+			}
+		   
 		}
 		else
 		{
-			Log::write("No avaliable humps! (TELL AI PEOPLE THIS MESSAGE WAS SHOWN!)");
+			tankComp.groundHumpTimer -= get_dt();
 		}
-       
 	}
-	else
-	{
-		tankComp.groundHumpTimer -= get_dt();
-	}
+	
 
 	int playerID = getPlayerID(entityID);
-	
+	if(playerID == -1){return;}
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
-	Collider& playerCol = getTheScene()->getComponent<Collider>(playerID);	
-	// Script& playerScript = getTheScene()->getComponent<Script>(playerID);
-	bool playerGrounded = false;
-	// BehaviorTree::sceneHandler->getScriptHandler()->getScriptComponentValue(playerScript, playerGrounded, "onGround");
-	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
-	std::vector<int> toRemove;
+
 
 
 	rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
-
-	for(auto& h: tankComp.humps)
-	{
-		h.second += tankComp.humpShockwaveSpeed * get_dt();
-
-		updateHump(entityID, h.first);
-
-		float dist = glm::length(playerTrans.position - tankTrans.position);
-		float minHitDist = dist - playerCol.radius;
-		float maxHitDist = dist + playerCol.radius;
-
-		if(h.second/2.0f >= maxRad)
-		{
-			toRemove.push_back(h.first);
-		}
-		else if(h.second/2.0f >= minHitDist && h.second/2.0f <= maxHitDist && (playerTrans.position.y < 1.f))
-		{
-			//PlayerHit!
-			glm::vec3 to = playerTrans.position;
-			safeNormalize(to);
-			getTheScene()->getComponent<HealthComp>(playerID).health -= (int)tankComp.humpHit;
-
-			//single player
-			if (dynamic_cast<NetworkSceneHandler*>(BehaviorTree::sceneHandler) == nullptr) 
-			{
-				Script& playerScript = getTheScene()->getComponent<Script>(playerID);
-				BehaviorTree::sceneHandler->getScriptHandler()->setScriptComponentValue(playerScript , 1.0f, "pushTimer");
-                Rigidbody& playerRB = getTheScene()->getComponent<Rigidbody>(playerID);
-
-                glm::vec3 dir = safeNormalize(to - tankTrans.position);
-                playerRB.velocity = dir * tankComp.humpForce;
-                playerRB.velocity.y += tankComp.humpYForce;
-                
-			}
-            else
-            {
-				//send pushPlayer
-                glm::vec3 dir = safeNormalize(to - tankTrans.position);
-                dir *= tankComp.humpForce;
-                dir.y += tankComp.humpYForce;
-				//trust that push timer never changes
-                ((NetworkSceneHandler*)BehaviorTree::sceneHandler)
-                    ->getScene()
-                    ->addEvent({(int)GameEvent::PUSH_PLAYER, playerID}, 
-						{
-						dir.x,
-						dir.y,
-						dir.z
-						});
-			}
-		}
-	}
-	for(auto r: toRemove)
-	{
-		deactivateHump(entityID, r);
-		tankComp.humps.erase(r);
-	}
-
 	updateCanBeHit(entityID);
 }
+
 void TankBT::drawRaySimple(Ray& ray, float dist, glm::vec3 color)
 {
 	//Draw ray
@@ -231,6 +147,7 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 	bool canGoLeft=true;
 
 	int player_id = getPlayerID(entityID);
+	if(player_id == -1){return ret;}
 	Collider& entityCollider = getTheScene()->getComponent<Collider>(entityID);
 	Collider& playerCollider = getTheScene()->getComponent<Collider>(player_id);
 	Transform& entityTransform = getTheScene()->getComponent<Transform>(entityID);
@@ -243,17 +160,25 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 	glm::vec3 to = entityTransform.position;
 	float maxDist = glm::length(to - from);
 	glm::vec3 dir = safeNormalize(from - to);
-	Ray rayToPlayer{from, -dir};    
+	glm::vec3 offset = entityTransform.right() * (entityCollider.radius +1.0f);
+	Ray rayToPlayer{from, -dir};  
+	Ray rayToPlayer_right{from + offset, -dir};    
+	Ray rayToPlayer_left{from - offset, -dir};    
 	Ray rayRight{to, entityTransform.right()};    
 	Ray rayLeft{to, -entityTransform.right()};    
 	float left_right_maxDist = entityCollider.radius + 3.0f;
     RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, maxDist);
+    RayPayload rp1 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_right, maxDist);
+    RayPayload rp2 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_left, maxDist);
 	//drawRaySimple(rayToPlayer, maxDist);
-	if(rp.hit)
+	//drawRaySimple(rayToPlayer_right, maxDist);
+	//drawRaySimple(rayToPlayer_left, maxDist);
+	if(rp.hit || rp1.hit || rp2.hit)
 	{
 		
-		if(!getTheScene()->getComponent<Collider>(rp.entity).isTrigger &&
-			rp.entity != entityID)
+		if((sceneHandler->getScene()->hasComponents<Collider>(rp.entity) && !getTheScene()->getComponent<Collider>(rp.entity).isTrigger && rp.entity != entityID) || 
+			(sceneHandler->getScene()->hasComponents<Collider>(rp1.entity) && !getTheScene()->getComponent<Collider>(rp1.entity).isTrigger && rp1.entity != entityID) ||
+			(sceneHandler->getScene()->hasComponents<Collider>(rp2.entity) && !getTheScene()->getComponent<Collider>(rp2.entity).isTrigger && rp2.entity != entityID))
 		{
 			ret = false;
 			somethingInTheWay = true;
@@ -372,17 +297,33 @@ float TankBT::get_dt()
 
 int TankBT::getPlayerID(int entityID)
 {
-	// if network exist take player from there
+	int playerID = -1;
+    // if network exist take player from there
     NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
-    if (s != nullptr && entityID != -1)
+    if (s != nullptr)
+    {   
+        float nearset = 99999999.0f;
+        Transform& trans = s->getComponent<Transform>(entityID);
+        for(auto p: *s->getPlayers())
         {
-            return s->getNearestPlayer(entityID);
+            Transform& pTrans = s->getComponent<Transform>(p);
+            HealthComp& pHealth = s->getComponent<HealthComp>(p);
+            float dist = glm::length(trans.position - pTrans.position);
+            if(dist < nearset && pHealth.health > 0.0f)
+            {
+                nearset = dist;
+                playerID = p;
+            }
         }
-
+        //return s->getNearestPlayer(entityID);
+    }
     // else find player from script
-    int playerID = -1;
-    std::string playerString = "playerID";
-    sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
+    else
+    {
+        std::string playerString = "playerID";
+        BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
+    }
+  
     return playerID;
 }
 
@@ -640,6 +581,7 @@ BTStatus TankBT::playerInPersonalSpace(Entity entityID)
 
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     int playerID = getPlayerID(entityID);
+	if(playerID == -1){return ret;}
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
     float tank_player_dist	= glm::length(playerTrans.position - tankTrans.position);
@@ -656,7 +598,7 @@ BTStatus TankBT::GroundHump(Entity entityID)
 	BTStatus ret = BTStatus::Running;
 
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
-	groundHumpShortcut(entityID, tankComp.humpShockwaveAttackRadius);
+	groundHumpShortcut(entityID);
 
 	return ret;
 }
@@ -666,6 +608,7 @@ BTStatus TankBT::playerOutsidePersonalSpace(Entity entityID)
 	BTStatus ret = BTStatus::Failure;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     int playerID = getPlayerID(entityID);
+	if(playerID == -1){return ret;}
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
     float tank_player_dist	= glm::length(playerTrans.position - tankTrans.position);
@@ -681,27 +624,16 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	BTStatus ret = BTStatus::Running;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	int playerID			= getPlayerID(entityID);
+	if(playerID == -1){return ret;}
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
 	Collider& tankCol = getTheScene()->getComponent<Collider>(entityID);
 	Rigidbody& rb = getTheScene()->getComponent<Rigidbody>(entityID);
 
-	tankComp.humps.clear();
-	for(auto h: tankComp.humpEnteties)
-	{
-		getTheScene()->setInactive(h);
-        ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
-        if(netScene)
-        {
-            netScene->addEvent({(int)GameEvent::INACTIVATE, (int)h});
-        }
-	}
-	tankComp.groundHumpTimer = 0.0f;
 
 	glm::vec3 dir;
 	if(!rayChecking(entityID, dir))
 	{
-        avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, playerTrans.position, dir, glm::vec3(0.0f, -3.0f, 0.0f)); 
 		rb.velocity = dir * tankComp.idleSpeed;
 		return ret;
 	}
@@ -822,10 +754,11 @@ BTStatus TankBT::HoldShield(Entity entityID)
 	
 
 	int playerID = getPlayerID(entityID);
+	if(playerID == -1){return ret;}
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	rotateTowards(entityID, playerTrans.position, tankComp.shildRotSpeed, 5.0f);
 
-	groundHumpShortcut(entityID, tankComp.humpShockwaveShieldRadius);
+	groundHumpShortcut(entityID);
 
 	updateCanBeHit(entityID);
 
@@ -838,6 +771,7 @@ BTStatus TankBT::playAlertAnim(Entity entityID)
 
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     int playerID = getPlayerID(entityID);
+	if(playerID == -1){return ret;}
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 	Transform& tankTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Collider& tankCol = sceneHandler->getScene()->getComponent<Collider>(entityID);
@@ -911,6 +845,7 @@ BTStatus TankBT::die(Entity entityID)
 	BTStatus ret = BTStatus::Failure;
 
 	int playerID = getPlayerID(entityID);
+	if(playerID == -1){return ret;}
 	HealthComp& playerHealth = sceneHandler->getScene()->getComponent<HealthComp>(playerID);
 	if (playerHealth.health <= (playerHealth.maxHealth - 10))
 	{
