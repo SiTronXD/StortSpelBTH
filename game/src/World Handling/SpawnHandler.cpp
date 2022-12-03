@@ -203,15 +203,10 @@ void SpawnHandler::initTanks()
 
 void SpawnHandler::createEntities() 
 {
-    //SWARM
-    static SwarmFSM swarmFSM;
-    this->aiHandler->addFSM(&swarmFSM, "swarmFSM");
-
-    static LichFSM lichFSM;
-    this->aiHandler->addFSM(&lichFSM, "lichFSM");
-    
-    static TankFSM tankFSM;
-    this->aiHandler->addFSM(&tankFSM, "tankFSM");
+    //Create all enemy FSMs
+    this->aiHandler->addFSM<SwarmFSM>("swarmFSM");
+    this->aiHandler->addFSM<LichFSM>( "lichFSM" );
+    this->aiHandler->addFSM<TankFSM>( "tankFSM" );
 
     //TODO: Cause crash on second run, therefore disabled in distribution... 
 #ifdef _CONSOLE 
