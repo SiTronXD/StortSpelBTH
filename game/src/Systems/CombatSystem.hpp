@@ -173,6 +173,26 @@ public:
 			{
 				combat.animationMultiplier[i] = animMultis[i];
 			}
+
+			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+			float runAnim = 0.f;
+            this->script->getScriptComponentValue(
+                playerScript, runAnim, "runAnimTime"
+            );
+			float sprintAnim = 0.f;
+            this->script->getScriptComponentValue(
+                playerScript, sprintAnim, "sprintAnimTime"
+            );
+			ImGui::Begin("Running Animation");
+            ImGui::SliderFloat("Running Anim", &runAnim, 0.f, 10.f);
+            ImGui::SliderFloat("Running Anim", &sprintAnim, 0.f, 10.f);
+            ImGui::End();
+            this->script->setScriptComponentValue(
+                playerScript, runAnim, "runAnimTime"
+            );
+            this->script->setScriptComponentValue(
+                playerScript, sprintAnim, "sprintAnimTime"
+            );
 #endif
 		};
 		view.each(foo);
@@ -537,8 +557,8 @@ public:
 			{
 				combat.movementMultiplier = 2.f;
 				moveTimers[0] = 2.f;
-				moveTimers[1] = 1.4f;
-				moveTimers[2] = 2.4f;
+                moveTimers[1] = 2.8f;  //1.4f;
+				moveTimers[2] = 5.6f; // 2.4f;
 				this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
@@ -654,8 +674,8 @@ public:
 		this->script->setScriptComponentValue(playerScript, 100, "dodgeSpeed");
 
 		this->script->setScriptComponentValue(playerScript, 1.f, "idleAnimTime");
-		this->script->setScriptComponentValue(playerScript, 0.7f, "runAnimTime");
-		this->script->setScriptComponentValue(playerScript, 1.2f, "sprintAnimTime");
+		this->script->setScriptComponentValue(playerScript, 1.8f, "runAnimTime"); // 0.7f
+		this->script->setScriptComponentValue(playerScript, 2.8f, "sprintAnimTime"); // 1.2f
 		this->script->setScriptComponentValue(playerScript, 3.f, "dodgeAnimTime");
 	}
 
