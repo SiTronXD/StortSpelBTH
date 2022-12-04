@@ -37,7 +37,7 @@ void NetworkGameScene::start()
   this->roomHandler.generate(this->roomSeed);
   
   // Ai management
-  this->aiHandler = new AIHandler();
+  this->aiHandler = new(__FILE__, __LINE__) AIHandler();
   this->aiHandler->init(this->getSceneHandler());
   spawnHandler.init(
       &this->roomHandler,

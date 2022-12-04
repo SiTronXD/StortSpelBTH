@@ -19,7 +19,7 @@ TheServerGame::~TheServerGame()
 void TheServerGame::start()
 {
   // Ai management
-  this->aiHandler = new AIHandler();
+  this->aiHandler = new(__FILE__, __LINE__) AIHandler();
   this->aiHandler->init(this->getSceneHandler());
   aiExample();
   int floor = this->createEntity();
@@ -215,7 +215,7 @@ void TheServerGame::aiExample()
   int group_size = 1;
   for (size_t j = 0; j < numOfGroups; j++)
     {
-      this->swarmGroups.push_back(new SwarmGroup);
+      this->swarmGroups.push_back(new(__FILE__, __LINE__) SwarmGroup);
       for (size_t i = 0; i < group_size; i++)
         {
           this->enemyIDs.push_back(this->createEnemy(1));

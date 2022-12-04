@@ -90,11 +90,11 @@ MeshData ObjectHandler::createMeshData(char* data)
     memcpy(&mesh, data + offset, sizeof(MeshHeader));
     offset += sizeof(MeshHeader);
     
-    VertexHeader* vertices = new VertexHeader[mesh.vertexCount];
+    VertexHeader* vertices = new(__FILE__, __LINE__) VertexHeader[mesh.vertexCount];
     memcpy(vertices, data + offset, sizeof(VertexHeader) * mesh.vertexCount);
     offset += sizeof(VertexHeader) * mesh.vertexCount;
     
-    int* indices = new int[mesh.indexCount];
+    int* indices = new(__FILE__, __LINE__) int[mesh.indexCount];
     memcpy(indices, data + offset, sizeof(int) * mesh.indexCount);
     
     MeshData meshData;
@@ -136,10 +136,10 @@ void ObjectHandler::updateMeshData(MeshData* meshData, char* data)
     
     memcpy(&mesh, data + offset, sizeof(MeshHeader));
     offset += sizeof(MeshHeader); 
-    VertexHeader* vertices = new VertexHeader[mesh.vertexCount];
+    VertexHeader* vertices = new(__FILE__, __LINE__) VertexHeader[mesh.vertexCount];
     memcpy(vertices, data + offset, sizeof(VertexHeader) * mesh.vertexCount);
     offset += sizeof(VertexHeader) * mesh.vertexCount;
-    int* indices = new int[mesh.indexCount];
+    int* indices = new(__FILE__, __LINE__) int[mesh.indexCount];
     memcpy(indices, data + offset, sizeof(int) * mesh.indexCount);
     
     meshData->vertexStreams.positions.clear();

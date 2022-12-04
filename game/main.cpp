@@ -40,13 +40,14 @@ int main(int argc, char* argv[])
 
     srand(seed);
     {
+        
         Engine engine;
-        engine.setCustomNetworkHandler(new NetworkHandlerGame());
-        engine.run("Presumed Dead", "", new LobbyScene());
+        engine.setCustomNetworkHandler(new(__FILE__, __LINE__) NetworkHandlerGame());
+        engine.run("Presumed Dead", "", new(__FILE__, __LINE__) LobbyScene());
         //engine.run("Presumed Dead", "", new RoomTesting());
         //engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
         //engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
     }
-
+    reportMemoryLeaks();
     return EXIT_SUCCESS;
 }

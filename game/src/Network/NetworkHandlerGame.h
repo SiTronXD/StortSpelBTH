@@ -103,9 +103,9 @@ private:
     int numRoomsCleared;
     RoomHandler* roomHandler;
 
-    static LichAttack* lich_fire   ;
-    static LichAttack* lich_ice    ;
-    static LichAttack* lich_light  ;
+    static LichAttack lich_fire   ;
+    static LichAttack lich_ice    ;
+    static LichAttack lich_light  ;
 
     Entity spawnOrbs(int orbType);
     Entity spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));

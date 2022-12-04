@@ -34,7 +34,7 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "VENGINE_USE_PROFILING": {
                     "type": "BOOL",
-                    "value": "ON"
+                    "value": "OFF"
                 }
                 
             }

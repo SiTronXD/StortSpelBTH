@@ -10,7 +10,7 @@ LevelEditor::~LevelEditor()
 
 void LevelEditor::init() 
 {
-  comlib = new Comlib(L"MayaBuffer", 150 * (1 << 20), Consumer);
+  comlib = new(__FILE__, __LINE__) Comlib(L"MayaBuffer", 150 * (1 << 20), Consumer);
 
   roomHandler.init(
       this,

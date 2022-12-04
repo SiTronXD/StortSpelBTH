@@ -194,7 +194,7 @@ void GameOverScene::update()
 	// Switch scene
 	if (Input::isKeyPressed(Keys::SPACE))
 	{
-		this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
+		this->switchScene(new(__FILE__, __LINE__) MainMenu(), "scripts/MainMenu.lua");
 	}
 
 	// Gravestone moving downwards and camera spinning

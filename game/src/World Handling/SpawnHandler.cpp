@@ -526,7 +526,7 @@ void SpawnHandler::createLich()
 void SpawnHandler::createSwarmGroup()
 {
     ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
-    this->swarmGroups.push_back(new SwarmGroup); //TODO: Does this work as expected? Do we need to clear (delete contents) this on every init? 
+    this->swarmGroups.push_back(new(__FILE__, __LINE__) SwarmGroup); //TODO: Does this work as expected? Do we need to clear (delete contents) this on every init? 
     for (size_t i = 0; i < SpawnHandler::NR_BLOBS_IN_GROUP; i++)
     {
         if (netScene == nullptr)

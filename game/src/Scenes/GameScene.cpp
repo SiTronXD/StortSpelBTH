@@ -234,7 +234,7 @@ void GameScene::update()
                 }
                 else
                 {
-                    this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+                    this->switchScene(new(__FILE__, __LINE__) GameOverScene(), "scripts/GameOverScene.lua");
                 }
             }
         }
@@ -252,7 +252,7 @@ void GameScene::update()
         if (this->networkHandler->getStatus() == ServerStatus::DISCONNECTED)
         {
             this->networkHandler->disconnectClient();
-            this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
+            this->switchScene(new(__FILE__, __LINE__) MainMenu(), "scripts/MainMenu.lua");
         }
 
         // If player is dead make the player not able to move
@@ -262,7 +262,7 @@ void GameScene::update()
             if (this->getComponent<HealthComp>(this->playerID).health <= 0.0f)
             {
                 this->networkHandler->disconnectClient(); // TEMP: probably will be in game over scene later
-                this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+                this->switchScene(new(__FILE__, __LINE__) GameOverScene(), "scripts/GameOverScene.lua");
             }
         }
         if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
@@ -336,7 +336,7 @@ void GameScene::update()
         {
             this->networkHandler->disconnectClient();
             this->networkHandler->deleteServer();
-            this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
+            this->switchScene(new(__FILE__, __LINE__) MainMenu(), "scripts/MainMenu.lua");
         }
     }
 
@@ -392,7 +392,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 
 		if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room            
 		{
-			this->switchScene(new GameScene(), "scripts/gamescene.lua");
+			this->switchScene(new(__FILE__, __LINE__) GameScene(), "scripts/gamescene.lua");
 		}
 	}
 }

@@ -145,8 +145,8 @@ void MainMenu::update()
             this->getUIRenderer()->renderString(
                 "loading...", glm::vec2(0.f, 0.f), glm::vec2(100.f, 100.f)
             );
-            this->getNetworkHandler()->createServer(new NetworkLobbyScene());
-			this->getSceneHandler()->setScene(new logInScene());
+            this->getNetworkHandler()->createServer(new(__FILE__, __LINE__) NetworkLobbyScene());
+			this->getSceneHandler()->setScene(new(__FILE__, __LINE__) logInScene());
 		}
         if (this->getComponent<UIArea>(joinGameButton).isClicking())
         {
@@ -154,7 +154,7 @@ void MainMenu::update()
             this->getUIRenderer()->renderString(
                 "loading...", glm::vec2(0.f, 0.f), glm::vec2(100.f, 100.f)
             );
-			this->getSceneHandler()->setScene(new logInScene());
+			this->getSceneHandler()->setScene(new(__FILE__, __LINE__) logInScene());
         }
         if (this->getComponent<UIArea>(settingsButton).isClicking())
         {
@@ -184,7 +184,7 @@ void MainMenu::update()
 
 #ifdef WIN32
 	case LevelEdit:
-		this->switchScene(new LevelEditor(), "scripts/levelEditor.lua");
+		this->switchScene(new(__FILE__, __LINE__) LevelEditor(), "scripts/levelEditor.lua");
 		
 		break;
 #endif 

@@ -80,12 +80,12 @@ void logInScene::update()
             if (this->getNetworkHandler()->connectClientToThis())
             {
                 std::string str = sf::IpAddress::getLocalAddress().toString();
-                this->getSceneHandler()->setScene(new LobbyScene(str.substr(str.length() - 3, 3)));
+                this->getSceneHandler()->setScene(new(__FILE__, __LINE__) LobbyScene(str.substr(str.length() - 3, 3)));
             }
             else
             {
                 this->getNetworkHandler()->deleteServer();
-                this->getSceneHandler()->setScene(new MainMenu(), "scripts/MainMenu.lua");
+                this->getSceneHandler()->setScene(new(__FILE__, __LINE__) MainMenu(), "scripts/MainMenu.lua");
             }
         }
         else
@@ -93,7 +93,7 @@ void logInScene::update()
             std::string startAddress = (ipAddress.find(".") != std::string::npos) ? "" : "192.168.1.";
             if (this->getNetworkHandler()->connectClient(startAddress + ipAddress))
             {
-                this->getSceneHandler()->setScene(new LobbyScene(ipAddress));
+                this->getSceneHandler()->setScene(new(__FILE__, __LINE__) LobbyScene(ipAddress));
             }
             else
             {
@@ -104,7 +104,7 @@ void logInScene::update()
     if (this->backButton.isClicking())
     {
         this->getNetworkHandler()->deleteServer();
-        this->getSceneHandler()->setScene(new MainMenu(), "scripts/MainMenu.lua");
+        this->getSceneHandler()->setScene(new(__FILE__, __LINE__) MainMenu(), "scripts/MainMenu.lua");
     }
 
     // Input fields

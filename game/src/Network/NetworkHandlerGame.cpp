@@ -5,9 +5,9 @@
 #include "vengine/network/ServerEngine/Timer.h"
 
 const float NetworkHandlerGame::UPDATE_RATE = ServerUpdateRate;
-LichAttack* NetworkHandlerGame::lich_fire  = new LichAttack();
-LichAttack* NetworkHandlerGame::lich_ice   = new LichAttack();
-LichAttack* NetworkHandlerGame::lich_light = new LichAttack();
+LichAttack NetworkHandlerGame::lich_fire  = LichAttack();
+LichAttack NetworkHandlerGame::lich_ice   = LichAttack();
+LichAttack NetworkHandlerGame::lich_light = LichAttack();
 
 Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir)
 {
@@ -115,9 +115,9 @@ void NetworkHandlerGame::init()
     this->alterMesh = this->resourceManger->addMesh("assets/models/alter.obj");
     this->humpMesh = this->resourceManger->addMesh("assets/models/hump.obj");//TODO : ADD THE humpMesh!!!
 
-    NetworkHandlerGame::lich_fire->setStats(ATTACK_STRATEGY::FIRE);
-    NetworkHandlerGame::lich_ice->setStats(ATTACK_STRATEGY::ICE);
-    NetworkHandlerGame::lich_light->setStats(ATTACK_STRATEGY::LIGHT);
+    NetworkHandlerGame::lich_fire.setStats(ATTACK_STRATEGY::FIRE);
+    NetworkHandlerGame::lich_ice.setStats(ATTACK_STRATEGY::ICE);
+    NetworkHandlerGame::lich_light.setStats(ATTACK_STRATEGY::LIGHT);
 }
 
 void NetworkHandlerGame::cleanup()
@@ -803,7 +803,7 @@ Entity NetworkHandlerGame::spawnOrbs(int orbType)
         );
         this->sceneHandler->getScene()->setComponent<Orb>(orb);
         this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
-        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = NetworkHandlerGame::lich_fire;
+        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = &NetworkHandlerGame::lich_fire;
         Rigidbody& rb =
             this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
         rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -819,7 +819,7 @@ Entity NetworkHandlerGame::spawnOrbs(int orbType)
         );
         this->sceneHandler->getScene()->setComponent<Orb>(orb);
         this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
-        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = NetworkHandlerGame::lich_ice;
+        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = &NetworkHandlerGame::lich_ice;
         Rigidbody& rb =
             this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
         rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -835,7 +835,7 @@ Entity NetworkHandlerGame::spawnOrbs(int orbType)
         );
         this->sceneHandler->getScene()->setComponent<Orb>(orb);
         this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
-        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = NetworkHandlerGame::lich_light;
+        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = &NetworkHandlerGame::lich_light;
         Rigidbody& rb =
             this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
         rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);

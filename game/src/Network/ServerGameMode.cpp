@@ -56,7 +56,7 @@ void ServerGameMode::update(float dt)
     // For now we only look at player 0
     if (this->roomHandler.playerNewRoom(this->getPlayer(0), this->getPhysicsEngine()))
     {
-        std::cout << "Server: player in new room" << std::endl;
+        std::cout << "Server: player in new(__FILE__, __LINE__) room" << std::endl;
         this->newRoomFrame = true;
         spawnHandler.spawnEnemiesIntoRoom();
     }
@@ -182,7 +182,7 @@ void ServerGameMode::makeDataSendToClient()
     {
         if (this->getComponent<HealthComp>(getPlayer(i)).health != lastPlayerHps[i].health)
         {
-            //send that player new hp
+            //send that player new(__FILE__, __LINE__) hp
             this->addEvent(
                 {(int)GameEvent::PLAYER_SETHP,
                  getPlayer(i),
@@ -228,7 +228,7 @@ void ServerGameMode::onTriggerStay(Entity e1, Entity e2) {
     
 		//if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
 		//{
-		//	this->switchScene(new GameScene(), "scripts/gamescene.lua");
+		//	this->switchScene(new(__FILE__, __LINE__) GameScene(), "scripts/gamescene.lua");
 		//}
 	}}
 

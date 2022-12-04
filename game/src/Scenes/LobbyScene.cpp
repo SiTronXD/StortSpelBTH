@@ -181,7 +181,7 @@ void LobbyScene::update()
     if (this->getNetworkHandler()->getStatus() == ServerStatus::RUNNING)
     {
         this->switchScene(
-            new GameScene(), "scripts/gamescene.lua"
+            new(__FILE__, __LINE__) GameScene(), "scripts/gamescene.lua"
         );
     }
     else if (this->getNetworkHandler()->hasServer())
@@ -192,15 +192,15 @@ void LobbyScene::update()
         if (this->startButton.isClicking())
         {
             // Start singleplayer
-            if (this->activePlayers == 1)
-            {
-               this->getNetworkHandler()->disconnectClient();
-               this->getNetworkHandler()->deleteServer();
-               this->switchScene(
-                   new GameScene(), "scripts/gamescene.lua"
-               );
-            }
-            else
+            // if (this->activePlayers == 1)
+            // {
+            //    this->getNetworkHandler()->disconnectClient();
+            //    this->getNetworkHandler()->deleteServer();
+            //    this->switchScene(
+            //        new(__FILE__, __LINE__) GameScene(), "scripts/gamescene.lua"
+            //    );
+            // }
+            // else
             {
                 this->helpPacket << (int)NetworkEvent::START;
                 this->getNetworkHandler()->sendDataToServerTCP(helpPacket);
@@ -212,7 +212,7 @@ void LobbyScene::update()
     {
         this->getNetworkHandler()->disconnectClient();
         this->getNetworkHandler()->deleteServer();
-        this->switchScene(new MainMenu, "scripts/MainMenu.lua");
+        this->switchScene(new(__FILE__, __LINE__) MainMenu, "scripts/MainMenu.lua");
     }
 
     this->getUIRenderer()->renderString(
@@ -221,7 +221,7 @@ void LobbyScene::update()
     if (this->disconnectButton.isClicking()) {
         this->getNetworkHandler()->disconnectClient();
         this->getNetworkHandler()->deleteServer();
-        this->getSceneHandler()->setScene(new MainMenu, "scripts/MainMenu.lua");
+        this->getSceneHandler()->setScene(new(__FILE__, __LINE__) MainMenu, "scripts/MainMenu.lua");
     }
 
     this->helpPacket.clear();
