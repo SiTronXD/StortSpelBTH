@@ -124,63 +124,6 @@ void TankBT::groundHumpShortcut(Entity entityID)
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 
 	rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
-
-	for(auto& h: tankComp.humps)
-	{
-		h.second += tankComp.humpShockwaveSpeed * get_dt();
-
-		updateHump(entityID, h.first);
-
-		float dist = glm::length(playerTrans.position - tankTrans.position);
-		float minHitDist = dist - playerCol.radius;
-		float maxHitDist = dist + playerCol.radius;
-
-		if(h.second/2.0f >= maxRad)
-		{
-			toRemove.push_back(h.first);
-		}
-		else if(h.second/2.0f >= minHitDist && h.second/2.0f <= maxHitDist && (playerTrans.position.y < 1.f))
-		{
-			//PlayerHit!
-			glm::vec3 to = playerTrans.position;
-			glm::normalize(to);
-			getTheScene()->getComponent<HealthComp>(playerID).health -= (int)tankComp.humpHit;
-
-			//single player
-			if (dynamic_cast<NetworkSceneHandler*>(BehaviorTree::sceneHandler) == nullptr) 
-			{
-				Script& playerScript = getTheScene()->getComponent<Script>(playerID);
-				BehaviorTree::sceneHandler->getScriptHandler()->setScriptComponentValue(playerScript , 1.0f, "pushTimer");
-                Rigidbody& playerRB = getTheScene()->getComponent<Rigidbody>(playerID);
-
-                glm::vec3 dir = glm::normalize(to - tankTrans.position);
-                playerRB.velocity = dir * tankComp.humpForce;
-                playerRB.velocity.y += tankComp.humpYForce;
-			}
-            else
-            {
-				//send pushPlayer
-                glm::vec3 dir = glm::normalize(to - tankTrans.position);
-                dir *= tankComp.humpForce;
-                dir.y += tankComp.humpYForce;
-				//trust that push timer never changes
-                ((NetworkSceneHandler*)BehaviorTree::sceneHandler)
-                    ->getScene()
-                    ->addEvent({(int)GameEvent::PUSH_PLAYER, playerID}, 
-						{
-						dir.x,
-						dir.y,
-						dir.z
-						});
-			}
-		}
-	}
-	for(auto r: toRemove)
-	{
-		deactivateHump(entityID, r);
-		tankComp.humps.erase(r);
-	}
-
 	updateCanBeHit(entityID);
 }
 
@@ -659,15 +602,16 @@ BTStatus TankBT::playerInPersonalSpace(Entity entityID)
 BTStatus TankBT::GroundHump(Entity entityID)
 {
 	AnimationStatus upperStatus = getTheScene()->getAnimationStatus(entityID, "UpperBody");
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	if (getTheScene()->getAnimationStatus(entityID).animationName != "GroundHump" || upperStatus.animationName != "GroundHump")
 	{
 		getTheScene()->blendToAnimation(entityID, "GroundHump", "", 0.18f, 1.09f);
+		tankComp.groundHumpTimer = 0.0f;
 	}
 
 	BTStatus ret = BTStatus::Running;
 
 	AnimationStatus status = getTheScene()->getAnimationStatus(entityID);
-	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	if (status.timer >= 2.075f || tankComp.hasDoneFirstHump)
 	{
 		tankComp.hasDoneFirstHump = true;
@@ -844,13 +788,14 @@ BTStatus TankBT::HoldShield(Entity entityID)
 		getTheScene()->setAnimationTimeScale(entityID, 0.0f, "UpperBody");
 	}
 	
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	if (statusLower.animationName != "GroundHump")
 	{
 		getTheScene()->blendToAnimation(entityID, "GroundHump", "LowerBody", 0.18f, 1.09f);
+		tankComp.groundHumpTimer = 0.0f;
 	}
 
 	BTStatus ret = BTStatus::Failure;
-	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 
 	giveFriendsHealth(entityID);
 
