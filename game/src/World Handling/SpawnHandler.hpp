@@ -10,12 +10,8 @@
 #include <random>
 #include <vector>
 
-
 class GameScene;
-
 using ImguiLambda = std::function<void(FSM* fsm, uint32_t entityId)>;
-
-
 
 class TilePicker
 {
