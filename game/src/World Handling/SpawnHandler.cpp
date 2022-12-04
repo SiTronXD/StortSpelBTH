@@ -305,7 +305,7 @@ Log::write("Killing all enemies outside room...");
 void SpawnHandler::createTank()
 {
     ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
-    int e;
+    /*int e;
     if (netScene == nullptr)
     {
         e = this->currScene->createEntity();
@@ -338,28 +338,32 @@ void SpawnHandler::createTank()
         this->resourceManager->createAnimationSlot(tank, "UpperBody", "Character1_Spine");
     }
     this->currScene->setComponent<MeshComponent>(this->tankIDs.back(), tank);
-    this->currScene->setComponent<AnimationComponent>(this->tankIDs.back());
+    this->currScene->setComponent<AnimationComponent>(this->tankIDs.back());*/
 
-    /*if (netScene == nullptr)
+    if (netScene == nullptr)
     {
         this->tankIDs.push_back(this->currScene->createEntity());
         this->allEntityIDs.push_back(this->tankIDs.back());
-        static int tank = this->resourceManager->addAnimations({
+        static int tank = -1;
+        if (tank == -1)
+        {
+            tank = this->resourceManager->addAnimations({
                         "assets/models/Tank/TankWalk.fbx",
                         "assets/models/Tank/TankCharge.fbx",
                         "assets/models/Tank/TankGroundHump.fbx",
                         "assets/models/Tank/TankRaiseShield.fbx"
-            },
-            "assets/textures/"
-        );
-        this->resourceManager->mapAnimations(tank, {
-            "Walk",
-            "Charge",
-            "GroundHump",
-            "RaiseShield",
-            });
-        this->resourceManager->createAnimationSlot(tank, "LowerBody", "Character1_Hips");
-        this->resourceManager->createAnimationSlot(tank, "UpperBody", "Character1_Spine");
+                },
+                "assets/textures/"
+            );
+            this->resourceManager->mapAnimations(tank, {
+                "Walk",
+                "Charge",
+                "GroundHump",
+                "RaiseShield",
+                });
+            this->resourceManager->createAnimationSlot(tank, "LowerBody", "Character1_Hips");
+            this->resourceManager->createAnimationSlot(tank, "UpperBody", "Character1_Spine");
+        }
         this->currScene->setComponent<MeshComponent>(this->tankIDs.back(), tank);
         this->currScene->setComponent<AnimationComponent>(this->tankIDs.back());
     }
@@ -367,7 +371,7 @@ void SpawnHandler::createTank()
     {
         this->tankIDs.push_back(netScene->spawnEnemy(0));
         this->allEntityIDs.push_back(this->tankIDs.back());
-    }*/
+    }
 
     this->currScene->setComponent<AiCombatTank>(this->tankIDs.back());
     this->currScene->setComponent<Rigidbody>(this->tankIDs.back());
@@ -434,7 +438,7 @@ void SpawnHandler::createLich()
     rb.friction = 3.0f;
     rb.mass = 10.0f;
     Transform& transform = this->currScene->getComponent<Transform>(this->lichIDs.back());
-    transform.scale = glm::vec3(1.0f, 3.0f, 1.0f); //TODO: Remove this line when we have real model 
+    //transform.scale = glm::vec3(1.0f, 3.0f, 1.0f); //TODO: Remove this line when we have real model 
     this->currScene->setComponent<Collider>(this->lichIDs.back(), Collider::createCapsule(LichComponent::colliderRadius, LichComponent::colliderHeight));
     this->aiHandler->createAIEntity(this->lichIDs.back(), "lichFSM");
     LichComponent& lichComp = this->currScene->getComponent<LichComponent>(this->lichIDs.back());
@@ -465,14 +469,25 @@ void SpawnHandler::createLich()
 
     if(netScene == nullptr)
     {
-        static int lich = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
         static int grave = this->resourceManager->addMesh("assets/models/grave.obj");
         static int alter = this->resourceManager->addMesh("assets/models/alter.obj");
         static int fireOrb_mesh = this->resourceManager->addMesh("assets/models/fire_orb.obj");
         static int lightOrb_mesh = this->resourceManager->addMesh("assets/models/light_orb.obj");
         static int iceOrb_mesh = this->resourceManager->addMesh("assets/models/ice_orb.obj");
 
+        static int lich = this->resourceManager->addAnimations({
+                "assets/models/Lich/StarLich_Walk.fbx",
+                "assets/models/Lich/StarLich_Attack.fbx",
+            },
+            "assets/textures/Lich/"
+            );
+        this->resourceManager->mapAnimations(lich,
+            {
+                "Walk",
+                "Attack"
+            });
         this->currScene->setComponent<MeshComponent>(this->lichIDs.back(), lich);
+        this->currScene->setComponent<AnimationComponent>(this->lichIDs.back());
 
         this->currScene->setComponent<MeshComponent>(graveID, grave);
         this->currScene->setComponent<MeshComponent>(alterID, alter);                
