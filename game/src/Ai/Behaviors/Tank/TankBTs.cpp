@@ -183,7 +183,6 @@ void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
                 glm::vec3 dir = glm::normalize(to - tankTrans.position);
                 playerRB.velocity = dir * tankComp.humpForce;
                 playerRB.velocity.y += tankComp.humpYForce;
-                
 			}
             else
             {
@@ -386,11 +385,6 @@ int TankBT::getPlayerID(int entityID)
 
 void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 {
-	Log::write("Rotating");
-	/*if (getTheScene()->getAnimationStatus(entityID).animationName != "Walk")
-	{
-		getTheScene()->setAnimation(entityID, "Walk");
-	}*/
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	if(tankComp.firendTarget.id == entityID)
@@ -439,10 +433,6 @@ void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 }
 void TankBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision)
 {
-	/*if (getTheScene()->getAnimationStatus(entityID).animationName != "Walk")
-	{
-		getTheScene()->setAnimation(entityID, "Walk");
-	}*/
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	//Rotate towards target start
@@ -488,7 +478,6 @@ void TankBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 
 bool TankBT::rotationDone(Entity entityID, glm::vec3 target, float rotSpeed, float precision)
 {
-	Log::write("Rotation Done");
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	tankTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
@@ -596,11 +585,11 @@ BTStatus TankBT::PickNewRandomTarget(Entity entityID)
 
 BTStatus TankBT::MoveAround(Entity entityID)
 {
-	Log::write("Moving");
 	BTStatus ret = BTStatus::Running;
-	if (getTheScene()->getAnimationStatus(entityID).animationName != "Walk")
+	AnimationStatus status = getTheScene()->getAnimationStatus(entityID);
+	if (status.animationName != "Walk")
 	{
-		getTheScene()->setAnimation(entityID, "Walk");
+		getTheScene()->blendToAnimation(entityID, "Walk");
 	}
 
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
@@ -655,20 +644,35 @@ BTStatus TankBT::playerInPersonalSpace(Entity entityID)
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
     float tank_player_dist	= glm::length(playerTrans.position - tankTrans.position);
-    if(tank_player_dist <= tankComp.peronalSpaceRadius)
+    if(tank_player_dist <= tankComp.peronalSpaceRadius && !tankComp.hasRunTarget)
     {
         ret = BTStatus::Success;
     }
+	else
+	{
+		tankComp.hasDoneFirstHump = false;
+	}
 
 	return ret;
 }
 
 BTStatus TankBT::GroundHump(Entity entityID)
 {
+	AnimationStatus upperStatus = getTheScene()->getAnimationStatus(entityID, "UpperBody");
+	if (getTheScene()->getAnimationStatus(entityID).animationName != "GroundHump" || upperStatus.animationName != "GroundHump")
+	{
+		getTheScene()->blendToAnimation(entityID, "GroundHump", "", 0.18f, 1.09f);
+	}
+
 	BTStatus ret = BTStatus::Running;
 
+	AnimationStatus status = getTheScene()->getAnimationStatus(entityID);
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
-	groundHumpShortcut(entityID, tankComp.humpShockwaveAttackRadius);
+	if (status.timer >= 2.075f || tankComp.hasDoneFirstHump)
+	{
+		tankComp.hasDoneFirstHump = true;
+		groundHumpShortcut(entityID, tankComp.humpShockwaveAttackRadius);
+	}
 
 	return ret;
 }
@@ -690,6 +694,16 @@ BTStatus TankBT::playerOutsidePersonalSpace(Entity entityID)
 
 BTStatus TankBT::ChargeAndRun(Entity entityID)
 {
+	AnimationStatus status = getTheScene()->getAnimationStatus(entityID, "");
+	if (status.animationName == "Charge" && status.timer >= 1.5f)
+	{
+		getTheScene()->setAnimationTimeScale(entityID, 0.0f);
+	}
+	else if (status.animationName != "Charge")
+	{
+		getTheScene()->blendToAnimation(entityID, "Charge");
+	}
+
 	BTStatus ret = BTStatus::Running;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	int playerID			= getPlayerID(entityID);
@@ -713,19 +727,10 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	glm::vec3 dir;
 	if(!rayChecking(entityID, dir))
 	{
-		Log::write("Charging at player");
         avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, playerTrans.position, dir, glm::vec3(0.0f, -3.0f, 0.0f)); 
 		rb.velocity = dir * tankComp.idleSpeed;
 		return ret;
 	}
-	
-	Log::write("Charge");
-	/*AnimationStatus status = getTheScene()->getAnimationStatus(entityID);
-	if (status.animationName != "Charge" || status.timeScale != 1.5f)
-	{
-		getTheScene()->setAnimation(entityID, "Charge", "", 1.5f);
-	}*/
-	getTheScene()->setAnimation(entityID, "Charge", "", 1.5f);
 
 	if(!tankComp.hasRunTarget && (tankComp.chargeTimer > 0.0f || !rotationDone(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f)))
 	{
@@ -741,10 +746,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.runDir = glm::normalize(playerTrans.position - tankTrans.position);
 		tankComp.hasRunTarget = true;
 		tankComp.canAttack = true;
-		getTheScene()->setAnimationTimeScale(entityID, 0.1f);
 	}
-
-	
 
 	if(glm::length(tankComp.runOrigin - tankTrans.position) < tankComp.runDist &&
 		tankComp.runTimer > 0.0f)
@@ -822,6 +824,11 @@ BTStatus TankBT::groupInPersonalSpece(Entity entityID)
 
 BTStatus TankBT::moveTowardsGroup(Entity entityID)
 {
+	AnimationStatus status = getTheScene()->getAnimationStatus(entityID);
+	if (status.animationName != "Walk")
+	{
+		getTheScene()->blendToAnimation(entityID, "Walk");
+	}
 	BTStatus ret			= BTStatus::Success;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	Transform& tankTrans	= getTheScene()->getComponent<Transform>(entityID);
@@ -835,18 +842,38 @@ BTStatus TankBT::moveTowardsGroup(Entity entityID)
 
 BTStatus TankBT::HoldShield(Entity entityID)
 {
-	Log::write("Hold Shield");
+	AnimationStatus statusUpper = getTheScene()->getAnimationStatus(entityID, "UpperBody");
+	AnimationStatus statusLower = getTheScene()->getAnimationStatus(entityID, "LowerBody");
+	if (statusUpper.animationName != "RaiseShield")
+	{
+		getTheScene()->blendToAnimation(entityID, "RaiseShield", "UpperBody");
+	}
+	else if (statusUpper.timer > 0.725f && statusUpper.timeScale != 0.0f)
+	{
+		statusUpper.timer = 0.725f;
+		getTheScene()->setAnimationTimeScale(entityID, 0.0f, "UpperBody");
+	}
+	
+	if (statusLower.animationName != "GroundHump")
+	{
+		getTheScene()->blendToAnimation(entityID, "GroundHump", "LowerBody", 0.18f, 1.09f);
+	}
+
 	BTStatus ret = BTStatus::Failure;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 
 	giveFriendsHealth(entityID);
-	
 
 	int playerID = getPlayerID(entityID);
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	rotateTowards(entityID, playerTrans.position, tankComp.shildRotSpeed, 5.0f);
 
-	groundHumpShortcut(entityID, tankComp.humpShockwaveShieldRadius);
+	if (statusLower.timer >= 2.075f || tankComp.hasDoneFirstHump)
+	{
+		tankComp.hasDoneFirstHump = true;
+		groundHumpShortcut(entityID, tankComp.humpShockwaveShieldRadius);
+	}
+	//groundHumpShortcut(entityID, tankComp.humpShockwaveShieldRadius);
 
 	updateCanBeHit(entityID);
 
@@ -923,7 +950,7 @@ BTStatus TankBT::playDeathAnim(Entity entityID)
 	}
 	else
 	{
-		tankTrans.rotation.y +=  1000*tankComp.deathAnimSpeed*get_dt();
+		tankTrans.rotation.y +=  500*tankComp.deathAnimSpeed*get_dt();
 		tankTrans.scale.y -= tankComp.deathAnimSpeed*get_dt();
 	}
 

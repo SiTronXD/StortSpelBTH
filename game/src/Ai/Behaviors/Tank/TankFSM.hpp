@@ -91,6 +91,7 @@ struct TankComponent
 	bool alertDone					= false;
 	bool canAttack					= false;
 	bool attackGoRight				= false;
+	bool hasDoneFirstHump			= false;
 
 	//Timers
 	float alertTimerOrig			= 1.0f;
