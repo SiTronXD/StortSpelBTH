@@ -7,8 +7,6 @@
 #include "vengine.h"
 
 #include "../HelperFuncs.hpp"
-//#include "ai/PathFinding.h"
-Entity getPlayerID(SceneHandler*sceneHandler);
 
 struct SwarmGroup
 {
@@ -63,7 +61,7 @@ class SwarmBT : public BehaviorTree
 
 
 	//Helper functions
-	static int		getPlayerID();
+	static int		getPlayerID(Entity entityID);
 	static float	get_dt();
 	static Scene*	getTheScene();
 	static void		rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision);

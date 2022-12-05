@@ -37,8 +37,8 @@ public:
 
 	void attack(SwarmComponent& combat, AiMovement& movement)
 	{
-		Combat& playerCombat = scene->getComponent<Combat>(playerID);
-		playerCombat.health -= (int)combat.lightHit;
+		HealthComp& playerHealth = scene->getComponent<HealthComp>(playerID);
+		playerHealth.health -= (int)combat.lightHit;
 		combat.timer = combat.lightAttackTime;
 	}
 };

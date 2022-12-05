@@ -20,6 +20,17 @@ float lookAtY(const glm::vec3& from, const glm::vec3& to)
     return angle; 
 }
 
+const glm::vec3 genRandomDir(const glm::vec3& manipulator)
+{
+    glm::vec3 temp = glm::vec3(
+        1/(float)(rand()%100)   * (rand()%2 == 0 ? 1.f : -1.f) * manipulator.x , 
+        1/(float)(rand()%100)   * (rand()%2 == 0 ? 1.f : -1.f) * manipulator.y , 
+        (1/(float)(rand()%100)) * (rand()%2 == 0 ? 1.f : -1.f) * manipulator.z );
+
+    // Safety check, illegal to normalize a nullptr
+    return glm::normalize(glm::length(temp) == 0 ? glm::vec3(1.f,1.f,1.f) : temp);
+}
+
 float getAngleBetween(const glm::vec3 one, const glm::vec3 two)
 {
     float angle_between			= glm::degrees(glm::acos(glm::dot(one, two)));
@@ -75,29 +86,34 @@ void avoidStuff(Entity entityID, SceneHandler* sceneHandler, bool& attackGoRight
 	RayPayload r_150			= sceneHandler->getPhysicsEngine()->raycast(ray150	, left_right_maxDist);	//Left
 	RayPayload r_180			= sceneHandler->getPhysicsEngine()->raycast(ray180	, left_right_maxDist);	//Left
 
+        
 	if(drawRays)
 	{
-		//Storing rays for drawing
-		std::unordered_map<Ray*, RayPayload*>rays;
-		rays.insert({&ray0,		&r_0});		
-		rays.insert({&ray30,	&r_30});
-		rays.insert({&ray60,	&r_60});
-		rays.insert({&ray90,	&r_90});
-		rays.insert({&ray120,	&r_120});
-		rays.insert({&ray150,	&r_150});
-		rays.insert({&ray180,	&r_180});
+        if(sceneHandler->getScene()->getNetworkHandler() != nullptr)
+        {
+      
+            //Storing rays for drawing
+            std::unordered_map<Ray*, RayPayload*>rays;
+            rays.insert({&ray0,		&r_0});		
+            rays.insert({&ray30,	&r_30});
+            rays.insert({&ray60,	&r_60});
+            rays.insert({&ray90,	&r_90});
+            rays.insert({&ray120,	&r_120});
+            rays.insert({&ray150,	&r_150});
+            rays.insert({&ray180,	&r_180});
 
-		for(auto r: rays)
-		{
-			if(r.second->hit)
-			{
-				drawRaySimple(sceneHandler, *r.first	, left_right_maxDist, glm::vec3(0.0f, 1.0f, 0.0f));	
-			}
-			else
-			{
-				drawRaySimple(sceneHandler, *r.first	, left_right_maxDist, glm::vec3(1.0f, 0.0f, 0.0f));	
-			}
-		}
+            for(auto r: rays)
+            {
+                if(r.second->hit)
+                {
+                    drawRaySimple(sceneHandler, *r.first	, left_right_maxDist, glm::vec3(0.0f, 1.0f, 0.0f));	
+                }
+                else
+                {
+                    drawRaySimple(sceneHandler, *r.first	, left_right_maxDist, glm::vec3(1.0f, 0.0f, 0.0f));	
+                }
+            }
+        }
 	}
 	
 	
@@ -207,4 +223,42 @@ glm::vec3 rotateVec(glm::vec3 rot, float deg, glm::vec3 axis)
 	ret = mat*rot;
 
 	return glm::normalize(ret);
+}
+glm::vec3 safeNormalize(glm::vec3& vec)
+{
+    if (glm::length(vec) != 0.f)
+    {
+        return glm::normalize(vec);
+    }
+    Log::error("Tried to normalize zero vector; glm::vec3");
+    return glm::vec3(1.f, 1.f, 1.f);
+}
+
+glm::vec2 safeNormalize(glm::vec2& vec)
+{
+    if (glm::length(vec) != 0.f)
+    {
+        return glm::normalize(vec);
+    }
+    Log::error("Tried to normalize zero vector; glm::vec2");
+    return glm::vec2(1.f, 1.f);
+}
+glm::vec3 safeNormalize(glm::vec3&& vec)
+{
+    if (glm::length(vec) != 0.f)
+    {
+        return glm::normalize(vec);
+    }
+    Log::error("Tried to normalize zero vector; glm::vec3");
+    return glm::vec3(1.f, 1.f, 1.f);
+}
+
+glm::vec2 safeNormalize(glm::vec2&& vec)
+{
+    if (glm::length(vec) != 0.f)
+    {
+        return glm::normalize(vec);
+    }
+    Log::error("Tried to normalize zero vector; glm::vec2");
+    return glm::vec2(1.f, 1.f);
 }

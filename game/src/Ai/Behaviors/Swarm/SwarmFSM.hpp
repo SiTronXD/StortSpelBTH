@@ -1,11 +1,14 @@
 #pragma once
 #include "vengine.h"
 #include "SwarmBTs.hpp"
+#include "../../../Components/HealthComp.h"
+#include "../../../Components/AiCombatSwarm.h"
 
 
 struct SwarmComponent
 {
     inline static const uint32_t colliderRadius = 4;
+    inline static const uint32_t GROUP_RAD_MULTIPLER = 4;
 
 	
 
@@ -176,7 +179,7 @@ struct SwarmComponent
 				max = dist;
 			}
 		}
-		this->group->idleRadius = max;
+		this->group->idleRadius = max * SwarmComponent::GROUP_RAD_MULTIPLER;
 	}
 };
 
@@ -185,6 +188,8 @@ class SwarmFSM : public FSM
 {
 private:
 	static float getEntityDist(Entity one, Entity two);
+    static int   getPlayerID(Entity entityID);
+    
 private:
 	static bool idle_alerted(Entity entityID);
 	static bool alerted_combat(Entity entityID);

@@ -1,37 +1,32 @@
---local playerMesh = resources.addMesh("assets/models/Amogus/source/1.fbx")
-local playerMesh = resources.addAnimations({ "assets/models/Character/CharIdle.fbx", "assets/models/Character/CharRun.fbx",
+local playerMesh = resources.addAnimations({ "assets/models/Character/CharIdle.fbx", "assets/models/Character/CharRun2.fbx", 
 "assets/models/Character/CharDodge.fbx", "assets/models/Character/CharOutwardAttack.fbx", "assets/models/Character/CharHeavyAttack.fbx", 
 "assets/models/Character/CharSpinAttack.fbx", "assets/models/Character/CharKnockbackAttack.fbx", 
-"assets/models/Character/CharInwardAttack.fbx", "assets/models/Character/CharSlashAttack.fbx" }, "assets/textures/playerMesh")
+"assets/models/Character/CharInwardAttack.fbx", "assets/models/Character/CharSlashAttack.fbx", 
+"assets/models/Character/DeathAnim.fbx" }, "assets/textures/playerMesh")
 resources.mapAnimations(playerMesh, {"idle", "run", "dodge", "lightAttack", "heavyAttack", 
-"spinAttack", "knockback", "mixAttack", "slashAttack"})
---local playerAttackMesh = resources.addMesh("assets/models/Hurricane Kick.fbx", "assets/textures/playerMesh")
-print(playerMesh)
+"spinAttack", "knockback", "mixAttack", "slashAttack", "dead" })
+resources.createAnimationSlot(playerMesh, "LowerBody", "mixamorig:Hips")
+resources.createAnimationSlot(playerMesh, "UpperBody", "mixamorig:Spine1")
+
+paused = false
 
 -- Camera
 local cam = scene.createPrefab("scripts/prefabs/CameraPrefab.lua")
 scene.setMainCamera(cam)
 
--- 
+-- Player
 playerID = scene.createEntity()
 scene.setComponent(playerID, CompType.Mesh, playerMesh)
-local playerAnim = 
-{ 
-	timer = 0.0, 
-	timeScale = 0.0
-}
-scene.setComponent(playerID, CompType.Animation, playerAnim)
+scene.setComponent(playerID, CompType.Animation, {})
+
 scene.setComponent(playerID, CompType.Script, "scripts/Player.lua")
-scene.setComponent(playerID, CompType.Collider, { type = ColliderType.Capsule, radius = 2, height = 11, offset = vector.new(0, 7.3, 0) })
+scene.setComponent(playerID, CompType.Collider, { type = ColliderType.Capsule, radius = 2, height = 10, offset = vector.new(0, 7.3, 0) })
 scene.setComponent(playerID, CompType.Rigidbody, { mass = 1, gravityMult = 5, rotFactor = vector.fill(0), friction = 0.1 })
 scene.getComponent(cam, CompType.Script).playerID = playerID
 
 local player = scene.getComponent(playerID, CompType.Script)
 player.camID = cam
 player.playerMesh = playerMesh
-player.playerAttackMesh = playerAttackMesh
-
-network.sendPlayer(playerID)
 
 -- UI
 local uiID = scene.createEntity()
@@ -48,8 +43,6 @@ scene.getComponent(uiID, CompType.Script).staminaBarTxtID =
 	resources.addTexture("assets/textures/UI/staminaBar.png")
 scene.getComponent(uiID, CompType.Script).perkSlotTextureID = 
 	resources.addTexture("assets/textures/UI/perkSlot.png", pixelArtSettings)
-scene.getComponent(uiID, CompType.Script).crosshairTextureID = 
-	resources.addTexture("assets/textures/UI/crosshair.png", pixelArtSettings)
 scene.getComponent(uiID, CompType.Script).uiHpMidTexID = 
 	resources.addTexture("assets/textures/UI/UIBarMid.png")
 scene.getComponent(uiID, CompType.Script).uiHpSideTexID = 
@@ -60,6 +53,10 @@ scene.getComponent(uiID, CompType.Script).uiStamSideTexID =
 	resources.addTexture("assets/textures/UI/UIBarSide.png")
 scene.getComponent(uiID, CompType.Script).uiBorderTexID = 
 	resources.addTexture("assets/textures/UI/UIBorder.png")
+scene.getComponent(uiID, CompType.Script).pauseBackgroundTexID = 
+	resources.addTexture("assets/textures/UI/frame.png")
+scene.getComponent(uiID, CompType.Script).buttonTexID = 
+	resources.addTexture("assets/textures/UI/button.png")
 
 --[[local p = scene.createPrefab("scripts/prefabs/prefab.lua")
 

@@ -4,15 +4,6 @@
 #include <string>
 #include "../../../Components/AiElite.hpp"
 
-enum ATTACK_STRATEGY
-{
-    NONE    = 0,  
-    LIGHT   = 1,
-    FIRE    = 2,
-    ICE     = 3,
-    _LAST
-
-};
 
 struct LichAttack
 {
@@ -29,19 +20,19 @@ struct LichAttack
         this->type = type;
         switch (type)
         {
-        case LIGHT:
+        case ATTACK_STRATEGY::LIGHT:
             this->damage = 10;
             this->manaCost = 5.0f;
             this->cooldownTimer = this->cooldownTimerOrig = 2.0f;
             this->castTimeTimer = this->castTimeTimerOrig = 0.5f;
             break;
-        case FIRE:
+        case ATTACK_STRATEGY::FIRE:
             this->damage = 65;
             this->manaCost = 30.0f;
             this->cooldownTimer = this->cooldownTimerOrig = 14.0f;
             this->castTimeTimer = this->castTimeTimerOrig = 4.0f;
             break;
-        case ICE:
+        case ATTACK_STRATEGY::ICE:
             this->damage = 25;
             this->manaCost = 10.0f;
             this->cooldownTimer = this->cooldownTimerOrig = 7.0f;
@@ -51,6 +42,48 @@ struct LichAttack
     }
 
 
+};
+
+struct Orb {
+    
+    inline static const int LIFE_TIME = 10; 
+    int timeAtCast = 0;
+    LichAttack* orbPower; 
+
+    inline void setInactive(Entity entityID, SceneHandler* sceneHandler)
+    {        
+        Rigidbody& rb = sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
+        rb.velocity = glm::vec3(0.f,0.f,0.f);
+        sceneHandler->getScene()->setInactive(static_cast<int>(entityID));
+    }
+    inline void onCollision(Entity entityID, SceneHandler* sceneHandler)
+    {
+        //TODO: Some effect? 
+        this->setInactive(entityID, sceneHandler);
+
+    }
+};
+
+class OrbSystem : public System 
+{
+private:
+    SceneHandler* sceneHandler; 
+public: 
+    OrbSystem(SceneHandler* sceneHandler) : sceneHandler(sceneHandler)
+    {}
+    
+    bool update(entt::registry& reg, float deltaTime)
+    {
+        reg.view<Orb>(entt::exclude<Inactive>).each(
+            [&](const auto& entity, Orb& orb){
+                if(orb.timeAtCast + Orb::LIFE_TIME < Time::getTimeSinceStart() )
+                {
+                    orb.setInactive(static_cast<int>(entity),sceneHandler);
+                }
+            }
+        );
+        return false; 
+    }
 };
 
 struct LichComponent
@@ -65,6 +98,15 @@ struct LichComponent
     inline static const uint32_t alterHeight = 8;
     inline static const uint32_t alterWidth = 3;
     inline static const uint32_t alterDepth = 3;
+
+    inline static const uint32_t orbRadius  = 3;
+    inline static const uint32_t orbSpawnDistFrom = 5;
+
+    inline static const uint32_t NR_ICE_ORBS   = 20;
+    inline static const uint32_t NR_FIRE_ORBS  = 20;
+    inline static const uint32_t NR_LIGHT_ORBS = 20;
+
+    inline static const float spellForce = 175;
 
 	LichComponent() 
     {
@@ -90,18 +132,21 @@ struct LichComponent
     float life_float            = 0.0f;//Dont touch!
     float tempRotAngle			= 0.0f;//Dont touch!
     float creepRotSpeed         = 60.0f;
-    float huntRotSpeed          = 60.0f;
+    float huntRotSpeed          = 200.0f;
+    float idleTurnSpeed         = 300.0f;
     float plunderDuration       = 4.f; 
+    float DropOffDuration       = 4.f; 
     float timeSincePlunderBegin = 0.f; 
+    float timeSinceAlterWaitBegin = 0.f; 
         //Alert
     float origScaleY			= 1.0f;
 	float alertScale			= 1.5f;
 	float alertAnimSpeed		= 3.0f;
 	float alertTempYpos			= 0.0f;
         //Radius
-    float sightRadius           = 80.0f; // I'll just look at you
-    float peronalSpaceRadius    = 70.0f; // To close! I will initiate hunt!
-    float attackRadius          = 60.0f; // I'm actually able to shoot at you!
+    float sightRadius           = 105.0f; // I'll just look at you
+    float peronalSpaceRadius    = 100.0f; // To close! I will initiate hunt!
+    float attackRadius          = 80.0f; // I'm actually able to shoot at you!
     float nonoRadius            = 40.0f; // Too close, I will back away from you! (while shooting) 
 
     float closeToGrave          = 20.f + LichComponent::graveWidth;
@@ -129,6 +174,11 @@ struct LichComponent
     bool attackGoRight          = false;
 
     bool carryingBones = false;
+
+    // Orbs
+    std::array<Entity, LichComponent::NR_FIRE_ORBS>  fireOrbs;
+    std::array<Entity, LichComponent::NR_ICE_ORBS>   iceOrbs;
+    std::array<Entity, LichComponent::NR_LIGHT_ORBS> lightOrbs;    
 
     // Movement Locations
     Entity alterID;
@@ -201,8 +251,11 @@ struct LichComponent
 class LichFSM : public FSM
 {
 private:
+    static Entity getPlayerID(Entity entityID);
+private:
 	static bool idleToCreep(Entity entityID);
 	static bool creepToAlerted(Entity entityID);
+    static bool creepToIdle(Entity entityID);
     static bool alertToHunt(Entity entityID);
     static bool huntToIdle(Entity entityID);
     static bool huntToCombat(Entity entityID);
@@ -217,7 +270,8 @@ private:
 
 	EntityEvent idle_to_creep{   "idle to creep",      idleToCreep};
 	EntityEvent creep_to_alerted{"creep to alerted",   creepToAlerted};
-    EntityEvent alert_to_hunt{   "alert to hunt",      alertToHunt};    
+	EntityEvent creep_to_idle{   "creep to idle",      creepToIdle};
+    EntityEvent alert_to_hunt{   "alert to hunt",      alertToHunt};  
     EntityEvent hunt_to_idle{    "hunt to idle",       huntToIdle};
     EntityEvent hunt_to_combat{  "hunt to combat",     huntToCombat};
     EntityEvent combat_to_idle{  "combat to dead",     combatToIdle};
@@ -260,6 +314,7 @@ protected:
 
 		addEntityTransition("idle",     LichFSM::idle_to_creep,        "creep");
 		addEntityTransition("creep",    LichFSM::creep_to_alerted,     "alerted");
+		addEntityTransition("creep",    LichFSM::creep_to_idle,        "idle");
 		addEntityTransition("alerted",  LichFSM::alert_to_hunt,        "hunt");
 		addEntityTransition("hunt",     LichFSM::hunt_to_idle,         "idle");
 		addEntityTransition("hunt",     LichFSM::hunt_to_combat,       "combat");
@@ -284,7 +339,6 @@ protected:
 
 
     //Helper functions
-    static int		getPlayerID();
 	static float	get_dt();
 	static Scene*	getTheScene();
 	static bool		falseIfDead(Entity entityID);

@@ -8,9 +8,19 @@
 #include "../HelperFuncs.hpp"
 //#include "ai/PathFinding.h"
 
+enum class ATTACK_STRATEGY
+{
+    NONE    = 0,  
+    LIGHT   = 1,
+    FIRE    = 2,
+    ICE     = 3,
+    _LAST
+
+};
 
 class LichBT : public BehaviorTree
 {
+    friend class Orb;
    protected:
 	// static int perkMeshes[3];
 	virtual void start() = 0;
@@ -52,7 +62,7 @@ class LichBT : public BehaviorTree
 
 
 	//Helper funcs
-	static int		getPlayerID();
+	static int		getPlayerID(Entity entityID);
 	static float	get_dt();
 	static Scene*	getTheScene();
 	static void		rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision = 5.0f);
@@ -64,7 +74,9 @@ class LichBT : public BehaviorTree
 	static void		givePointsForDistance	    (Entity entityID, float& l_points, float& i_points, float& f_points);
 	static void		setStrategyBasedOnPoints	(Entity entityID, float& l_points, float& i_points, float& f_points);
 
-	static bool		canUseAttack				(Entity entityID, std::string attack);
+    static Entity getFreeOrb(Entity entityID, ATTACK_STRATEGY type);
+
+	static bool canUseAttack				(Entity entityID, std::string attack);
 };
 
 class Lich_idle : public LichBT

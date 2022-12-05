@@ -11,12 +11,20 @@ private:
         Play = 1, 
         Settings = 2,
         HowToPlay = 3,
-        Quit = 4
+        LevelEdit = 4,
+        Quit = 5
     };
+
+    Entity backgroundScene;
+    Entity character;
+    Entity camera;
+    Entity signpost;
+    Entity light;
 
     State state;
     uint32_t fontTextureId;
-    uint32_t backgroundId;
+    uint32_t settingsBackgroundId;
+    uint32_t howToPlayBackgroundId;
     bool startGame;
 
     void howToPlay();
@@ -27,6 +35,7 @@ private:
     int playButton;
     int joinGameButton;
     int settingsButton;
+    int levelEditButton;
     int quitButton;
     int howToPlayButton;
 
