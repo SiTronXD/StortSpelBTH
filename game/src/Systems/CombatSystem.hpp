@@ -307,7 +307,7 @@ public:
 		Entity bloodParticleSystemEntity = this->scene->createEntity();
 		Transform& bloodTransform = this->scene->getComponent<Transform>(bloodParticleSystemEntity);
 		bloodTransform = this->scene->getComponent<Transform>(this->playerID);
-		if (srcDmgEntity != -1)
+		if (srcDmgEntity != -1 && this->scene->entityValid(srcDmgEntity))
 		{
 			// Rotate particle system depending on incoming damage
 			Transform& srcDmgEntityTransform = 
