@@ -59,6 +59,8 @@ private:
   ParticleSystemInstance healParticleSystem;
   ParticleSystemInstance bloodParticleSystems;
   ParticleSystemInstance swarmParticleSystems;
+  ParticleSystemInstance portalParticleSystemSide0;
+  ParticleSystemInstance portalParticleSystemSide1;
 
   bool deletedParticleSystems;
 

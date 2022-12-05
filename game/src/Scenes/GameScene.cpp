@@ -95,6 +95,28 @@ void GameScene::initParticleSystems()
     footstepPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
     footstepPS.coneSpawnVolume.localPosition = glm::vec3(0.0f);
     footstepPS.spawn = false;
+
+    // Portal particle system
+    ParticleSystem portalPS0{};
+    portalPS0.maxlifeTime = 3.0f;
+    portalPS0.numParticles = 32;
+    portalPS0.textureIndex = this->getResourceManager()->addTexture("assets/textures/portalParticle.png");
+    portalPS0.startSize = glm::vec2(0.0f);
+    portalPS0.endSize = glm::vec2(1.2f);
+    portalPS0.startColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    portalPS0.endColor = glm::vec4(0.2f, 0.2f, 0.2f, 0.0f);
+    portalPS0.velocityStrength = 10.0f;
+    portalPS0.acceleration = glm::vec3(0.0f, 2.0f, 0.0f);
+    portalPS0.coneSpawnVolume.diskRadius = 15.0f;
+    portalPS0.coneSpawnVolume.coneAngle = 0.0f;
+    portalPS0.coneSpawnVolume.localDirection = glm::vec3(0.0f, 0.0f, 1.0f);
+    portalPS0.coneSpawnVolume.localPosition = glm::vec3(0.0f, 5.0f, -30.0f);
+    ParticleSystem portalPS1{};
+    portalPS1 = portalPS0;
+    portalPS1.coneSpawnVolume.localDirection.z *= -1.0f;
+    portalPS1.coneSpawnVolume.localPosition.z *= -1.0f;
+    this->portalParticleSystemSide0.create(this, portalPS0, 1);
+    this->portalParticleSystemSide1.create(this, portalPS1, 1);
 }
 
 void GameScene::deleteInitialParticleSystems()
@@ -109,6 +131,8 @@ void GameScene::deleteInitialParticleSystems()
     this->healParticleSystem.removeEntities(this);
     this->bloodParticleSystems.removeEntities(this);
     this->swarmParticleSystems.removeEntities(this);
+    this->portalParticleSystemSide0.removeEntities(this);
+    this->portalParticleSystemSide1.removeEntities(this);
 
     // Find all particle entities
     std::vector<Entity> particleEntities;
@@ -289,19 +313,22 @@ void GameScene::update()
     this->deleteInitialParticleSystems();
 
 /*#ifdef _CONSOLE
-    if (this->entityValid(this->bloodParticleSystemEntity))
+    // Used for testing particle systems
+    if (this->entityValid(this->particleSystemEntity))
     {
+        ParticleSystem& portalPS = this->getComponent<ParticleSystem>(this->particleSystemEntity);
+
         ImGui::Begin("Particle System");
-        ImGui::SliderFloat3("Cone pos: ", &this->bloodPS->coneSpawnVolume.localPosition[0], -5.0f, 5.0f);
-        ImGui::SliderFloat3("Cone dir: ", &this->bloodPS->coneSpawnVolume.localDirection[0], -1.0f, 1.0f);
-        ImGui::SliderFloat("Disk radius: ", &this->bloodPS->coneSpawnVolume.diskRadius, 0.0f, 10.0f);
-        ImGui::SliderFloat("Cone angle: ", &this->bloodPS->coneSpawnVolume.coneAngle, 0.0f, 180.0f);
-        ImGui::SliderFloat("Velocity strength: ", &this->bloodPS->velocityStrength, 0.0f, 50.0f);
-        ImGui::SliderFloat("Spawn rate: ", &this->bloodPS->spawnRate, 0.0f, 1.0f);
-        ImGui::Checkbox("Spawn: ", &this->bloodPS->spawn);
+        ImGui::SliderFloat3("Cone pos: ", &portalPS.coneSpawnVolume.localPosition[0], -5.0f, 5.0f);
+        ImGui::SliderFloat3("Cone dir: ", &portalPS.coneSpawnVolume.localDirection[0], -1.0f, 1.0f);
+        ImGui::SliderFloat("Disk radius: ", &portalPS.coneSpawnVolume.diskRadius, 0.0f, 10.0f);
+        ImGui::SliderFloat("Cone angle: ", &portalPS.coneSpawnVolume.coneAngle, 0.0f, 180.0f);
+        ImGui::SliderFloat("Velocity strength: ", &portalPS.velocityStrength, 0.0f, 50.0f);
+        ImGui::SliderFloat("Spawn rate: ", &portalPS.spawnRate, 0.0f, 1.0f);
+        ImGui::Checkbox("Spawn: ", &portalPS.spawn);
         ImGui::End();
 
-        this->getDebugRenderer()->renderParticleSystemCone(this->bloodParticleSystemEntity);
+        this->getDebugRenderer()->renderParticleSystemCone(this->particleSystemEntity);
     }
 #endif*/
 
@@ -333,6 +360,15 @@ void GameScene::update()
             if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
             {
                 this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
+
+                // Particle effects
+                this->setComponent<ParticleSystem>(this->portal);
+                this->getComponent<ParticleSystem>(this->portal) = this->portalParticleSystemSide0.getParticleSystem();
+
+                Entity side1Entity = this->createEntity();
+                this->getComponent<Transform>(side1Entity) = this->getComponent<Transform>(this->portal);
+                this->setComponent<ParticleSystem>(side1Entity);
+                this->getComponent<ParticleSystem>(side1Entity) = this->portalParticleSystemSide1.getParticleSystem();
             }
         }
 
