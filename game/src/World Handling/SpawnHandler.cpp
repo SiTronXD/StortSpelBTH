@@ -525,6 +525,23 @@ void SpawnHandler::createLich()
 
 void SpawnHandler::createSwarmGroup()
 {
+    //if (!SwarmComponent::s_initialized)       // AUDIO TESTING
+//{
+//    SwarmComponent::s_takeDmg =
+//        this->resourceManager->addSound("assets/Sounds/OufSound.ogg");
+//    SwarmComponent::s_move =
+//        this->resourceManager->addSound("assets/Sounds/RunningSound.ogg");
+//    SwarmComponent::s_attack =
+//        this->resourceManager->addSound("assets/Sounds/SwishSound.ogg");
+
+//audioHandler->playSound(myEntity, soundBufferId)
+
+//audioHandler->requestAudioSource(entity, 2)
+//scene->getComponent<AudioSource>(entity).
+
+//    SwarmComponent::s_initialized = true;
+//}
+
     ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
     this->swarmGroups.push_back(new SwarmGroup); //TODO: Does this work as expected? Do we need to clear (delete contents) this on every init? 
     for (size_t i = 0; i < SpawnHandler::NR_BLOBS_IN_GROUP; i++)
@@ -540,6 +557,15 @@ void SpawnHandler::createSwarmGroup()
             this->swarmIDs.push_back(netScene->spawnEnemy(0));
         }
         this->allEntityIDs.push_back(this->swarmIDs.back());
+
+        //// ######## TESTING AUDIO FOR SWARM #################
+        //this->currScene->setComponent<MultipleAudioSources>(this->swarmIDs.back());
+        //MultipleAudioSources& multiAudio = this->currScene->getComponent<MultipleAudioSources>(this->swarmIDs.back());
+        //multiAudio.audioSource[0].setBuffer(SwarmComponent::s_takeDmg);
+        //multiAudio.audioSource[1].setBuffer(SwarmComponent::s_move);
+        //multiAudio.audioSource[2].setBuffer(SwarmComponent::s_attack);
+        //// ##################################################
+
         this->currScene->setComponent<AiCombatSwarm>(this->swarmIDs.back());
         this->currScene->setComponent<Collider>(this->swarmIDs.back(), Collider::createSphere(SwarmComponent::colliderRadius));
         this->currScene->setComponent<Rigidbody>(this->swarmIDs.back());
