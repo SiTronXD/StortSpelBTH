@@ -10,12 +10,8 @@
 #include <random>
 #include <vector>
 
-
 class GameScene;
-
 using ImguiLambda = std::function<void(FSM* fsm, uint32_t entityId)>;
-
-
 
 class TilePicker
 {
@@ -75,7 +71,7 @@ public:
 
     inline static const bool USE_DEBUG = false;
     inline static const int NR_TANK_DBG         = 0;
-    inline static const int NR_LICH_DBG         = 3;
+    inline static const int NR_LICH_DBG         = 1;
     inline static const int NR_SWARM_GROUPS_DBG = 0;
 
 private:
