@@ -304,23 +304,6 @@ Log::write("Killing all enemies outside room...");
 
 void SpawnHandler::createTank()
 {
-    if (!TankComponent::s_initialized)       // AUDIO TESTING
-    {
-        TankComponent::s_takeDmg =
-            this->resourceManager->addSound("assets/Sounds/OufSound.ogg");
-        //TankComponent::s_move =
-        //    this->resourceManager->addSound("assets/Sounds/RunningSound.ogg");
-        //TankComponent::s_attack =
-        //    this->resourceManager->addSound("assets/Sounds/SwishSound.ogg");
-    
-    //audioHandler->playSound(myEntity, soundBufferId)
-    //
-    //audioHandler->requestAudioSource(entity, 2)
-    //scene->getComponent<AudioSource>(entity).
-    
-        TankComponent::s_initialized = true;
-    }
-
     ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
     if (netScene == nullptr)
     {

@@ -13,10 +13,10 @@ Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 
 {
 	Scene* scene = this->sceneHandler->getScene();
 	Perks perk{ .multiplier = multiplier, .perkType = type };
-
+	
 	Entity e = scene->createEntity();
 	scene->setComponent<MeshComponent>(e, perkMeshes[type]);
-
+	
 	Transform& perkTrans = sceneHandler->getScene()->getComponent<Transform>(e);
 	perkTrans.position = pos;
 	perkTrans.scale = glm::vec3(2.0f);
@@ -118,6 +118,29 @@ void NetworkHandlerGame::init()
     NetworkHandlerGame::lich_fire->setStats(ATTACK_STRATEGY::FIRE);
     NetworkHandlerGame::lich_ice->setStats(ATTACK_STRATEGY::ICE);
     NetworkHandlerGame::lich_light->setStats(ATTACK_STRATEGY::LIGHT);
+
+	if (!TankComponent::s_initialized)
+	{
+		TankComponent::s_takeDmg =
+			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
+		TankComponent::s_initialized = true;
+	}
+	if (!LichComponent::s_initialized)       // AUDIO TESTING
+	{
+		LichComponent::s_takeDmg =
+			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
+		LichComponent::s_initialized = true;
+	}
+	if (!SwarmComponent::s_initialized)       // AUDIO TESTING
+	{
+		SwarmComponent::s_takeDmg =
+			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
+		SwarmComponent::s_move =
+			this->resourceManger->addSound("assets/Sounds/RunningSound.ogg");
+		SwarmComponent::s_attack =
+			this->resourceManger->addSound("assets/Sounds/SwishSound.ogg");
+		SwarmComponent::s_initialized = true;
+	}
 }
 
 void NetworkHandlerGame::cleanup()
