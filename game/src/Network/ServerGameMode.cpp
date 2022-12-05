@@ -58,7 +58,18 @@ void ServerGameMode::update(float dt)
     {
         std::cout << "Server: player in new room" << std::endl;
         this->newRoomFrame = true;
+        this->timeWhenEnteredRoom = Time::getTimeSinceStart();
+        this->safetyCleanDone = false; 
         spawnHandler.spawnEnemiesIntoRoom();
+    }
+    if(!this->safetyCleanDone)
+    {
+        
+        if(this->timeWhenEnteredRoom + delayToSafetyDelete < Time::getTimeSinceStart())
+        {
+            this->spawnHandler.killAllEnemiesOutsideRoom();
+            this->safetyCleanDone = true;
+        }
     }
 
     if (this->spawnHandler.allDead() && this->newRoomFrame)
@@ -74,6 +85,10 @@ void ServerGameMode::update(float dt)
         {
             this->addEvent({(int)GameEvent::SPAWN_PORTAL});
         }
+    }
+    if(this->spawnHandler.allDead() && !this->newRoomFrame)
+    {
+        int a = 3;
     }
 	// Send data to player
     makeDataSendToClient();
