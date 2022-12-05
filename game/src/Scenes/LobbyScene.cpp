@@ -10,7 +10,7 @@ void LobbyScene::init()
   this->playerModel = this->getResourceManager()->addAnimations(
         std::vector<std::string>(
             {"assets/models/Character/CharIdle.fbx",
-             "assets/models/Character/CharRun.fbx",
+             "assets/models/Character/CharRun2.fbx",
              "assets/models/Character/CharDodge.fbx",
              "assets/models/Character/CharOutwardAttack.fbx",
              "assets/models/Character/CharHeavyAttack.fbx",
