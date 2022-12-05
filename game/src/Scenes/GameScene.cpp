@@ -177,7 +177,7 @@ void GameScene::start()
 void GameScene::update()
 {
     
-    if (!networkHandler->isConnected())
+    if (!networkHandler->isConnected() && networkHandler->getStatus() == ServerStatus::WAITING)
     {   
         this->aiHandler->update(Time::getDT());
 
