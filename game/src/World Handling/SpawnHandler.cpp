@@ -369,7 +369,7 @@ void SpawnHandler::createTank()
     }
     else
     {
-        this->tankIDs.push_back(netScene->spawnEnemy(0));
+        this->tankIDs.push_back(netScene->spawnEnemy(2));
         this->allEntityIDs.push_back(this->tankIDs.back());
     }
 
@@ -416,7 +416,6 @@ void SpawnHandler::createTank()
 
 void SpawnHandler::createLich()
 {
-    
     ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
 
     // Create Lich
@@ -428,7 +427,7 @@ void SpawnHandler::createLich()
     }
     else
     {
-        this->lichIDs.push_back(netScene->spawnEnemy(0));
+        this->lichIDs.push_back(netScene->spawnEnemy(1));
     }
 
     this->currScene->setComponent<Rigidbody>(this->lichIDs.back());

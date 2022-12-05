@@ -175,7 +175,6 @@ void GameScene::start()
 
 void GameScene::update()
 {
-    
     if (!networkHandler->isConnected())
     {   
         this->aiHandler->update(Time::getDT());

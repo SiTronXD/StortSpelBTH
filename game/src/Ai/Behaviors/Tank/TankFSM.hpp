@@ -115,6 +115,12 @@ struct TankComponent
 	glm::vec3 runOrigin				= glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 runDir				= glm::vec3(0.0f, 0.0f, 0.0f);
 
+	//Current animation
+	int lowerCurrentAnim = 0;
+	int upperCurrentAnim = 0;
+	float shieldAnimTimer = 0.0f;
+	float chargeAnimTimer = 0.0f;
+	bool shieldAnimDone = false;
 
 	TankFriendTarget firendTarget;
 

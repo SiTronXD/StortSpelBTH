@@ -37,6 +37,23 @@ void LobbyScene::init()
              "dead"}
         )
     );
+
+    int tank = this->getResourceManager()->addAnimations({
+                        "assets/models/Tank/TankWalk.fbx",
+                        "assets/models/Tank/TankCharge.fbx",
+                        "assets/models/Tank/TankGroundHump.fbx",
+                        "assets/models/Tank/TankRaiseShield.fbx"
+        },
+        "assets/textures/"
+    );
+    this->getResourceManager()->mapAnimations(tank, {
+        "Walk",
+        "Charge",
+        "GroundHump",
+        "RaiseShield",
+        });
+    this->getResourceManager()->createAnimationSlot(tank, "LowerBody", "Character1_Hips");
+    this->getResourceManager()->createAnimationSlot(tank, "UpperBody", "Character1_Spine");
    
   TextureSamplerSettings samplerSettings{};
   samplerSettings.filterMode = vk::Filter::eNearest;
@@ -192,7 +209,7 @@ void LobbyScene::update()
         if (this->startButton.isClicking())
         {
             // Start singleplayer
-            if (this->activePlayers == 1)
+            /*if (this->activePlayers == 1)
             {
                this->getNetworkHandler()->disconnectClient();
                this->getNetworkHandler()->deleteServer();
@@ -200,7 +217,7 @@ void LobbyScene::update()
                    new GameScene(), "scripts/gamescene.lua"
                );
             }
-            else
+            else*/
             {
                 this->helpPacket << (int)NetworkEvent::START;
                 this->getNetworkHandler()->sendDataToServerTCP(helpPacket);

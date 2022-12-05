@@ -56,7 +56,7 @@ uint32_t TankBT::activateHump(Entity entityID)
 		{
 			getTheScene()->setActive(e);
 			ret = e;
-			std::cout<<"New hump!\nNum Humps active: "<<numActiveHumps(entityID)<<"Num actual humps: "<<tankComp.humps.size()<<std::endl;
+			//std::cout<<"New hump!\nNum Humps active: "<<numActiveHumps(entityID)<<"Num actual humps: "<<tankComp.humps.size()<<std::endl;
 			break;
 		}
 	}
@@ -528,13 +528,22 @@ BTStatus TankBT::PickNewRandomTarget(Entity entityID)
 BTStatus TankBT::MoveAround(Entity entityID)
 {
 	BTStatus ret = BTStatus::Running;
-	AnimationStatus status = getTheScene()->getAnimationStatus(entityID);
-	if (status.animationName != "Walk")
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	if (tankComp.lowerCurrentAnim != 0) // Walk
 	{
-		getTheScene()->blendToAnimation(entityID, "Walk");
+		tankComp.lowerCurrentAnim = 0;
+		tankComp.upperCurrentAnim = 0;
+		if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+		{
+			ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 0, 0, -1 });
+		}
+		else
+		{
+			getTheScene()->blendToAnimation(entityID, "Walk");
+		}
 	}
 
-	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	if(tankComp.firendTarget.id == entityID)
 	{
 		tankComp.firendTarget.id = -1;
@@ -601,21 +610,33 @@ BTStatus TankBT::playerInPersonalSpace(Entity entityID)
 
 BTStatus TankBT::GroundHump(Entity entityID)
 {
-	AnimationStatus upperStatus = getTheScene()->getAnimationStatus(entityID, "UpperBody");
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
-	if (getTheScene()->getAnimationStatus(entityID).animationName != "GroundHump" || upperStatus.animationName != "GroundHump")
+	if (tankComp.lowerCurrentAnim != 2 || tankComp.upperCurrentAnim != 2)
 	{
-		getTheScene()->blendToAnimation(entityID, "GroundHump", "", 0.18f, 1.09f);
-		tankComp.groundHumpTimer = 0.0f;
+		tankComp.lowerCurrentAnim = 2;
+		tankComp.upperCurrentAnim = 2;
+		tankComp.groundHumpTimer = 2.075f;
+		if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+		{
+			ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 0, 2, -1 });
+		}
+		else
+		{
+			getTheScene()->blendToAnimation(entityID, "GroundHump", "", 0.18f, 1.09f);
+		}
 	}
 
 	BTStatus ret = BTStatus::Running;
 
-	AnimationStatus status = getTheScene()->getAnimationStatus(entityID);
-	if (status.timer >= 2.075f || tankComp.hasDoneFirstHump)
+	if (tankComp.groundHumpTimer <= 0.0f || tankComp.hasDoneFirstHump)
 	{
 		tankComp.hasDoneFirstHump = true;
 		groundHumpShortcut(entityID);
+	}
+	else
+	{
+		tankComp.groundHumpTimer -= get_dt();
 	}
 
 	return ret;
@@ -639,18 +660,40 @@ BTStatus TankBT::playerOutsidePersonalSpace(Entity entityID)
 
 BTStatus TankBT::ChargeAndRun(Entity entityID)
 {
-	AnimationStatus status = getTheScene()->getAnimationStatus(entityID, "");
-	if (status.animationName == "Charge" && status.timer >= 1.5f)
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	if (tankComp.lowerCurrentAnim == 1 && tankComp.chargeAnimTimer >= 1.5f)
 	{
-		getTheScene()->setAnimationTimeScale(entityID, 0.0f);
+		if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+		{
+			ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM_TIMESCALE, entityID, -1 }, { 0.0f });
+		}
+		else
+		{
+			getTheScene()->setAnimationTimeScale(entityID, 0.0f);
+		}
 	}
-	else if (status.animationName != "Charge")
+	else if (tankComp.lowerCurrentAnim != 1)
 	{
-		getTheScene()->blendToAnimation(entityID, "Charge");
+		tankComp.lowerCurrentAnim = 1;
+		tankComp.upperCurrentAnim = 1;
+		tankComp.chargeAnimTimer = 0.0f;
+		if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+		{
+			ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 0, 1, -1 });
+		}
+		else
+		{
+			getTheScene()->blendToAnimation(entityID, "Charge");
+		}
+	}
+	else
+	{
+		tankComp.chargeAnimTimer += get_dt();
 	}
 
 	BTStatus ret = BTStatus::Running;
-	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	int playerID			= getPlayerID(entityID);
 	if(playerID == -1){return ret;}
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
@@ -758,13 +801,22 @@ BTStatus TankBT::groupInPersonalSpece(Entity entityID)
 
 BTStatus TankBT::moveTowardsGroup(Entity entityID)
 {
-	AnimationStatus status = getTheScene()->getAnimationStatus(entityID);
-	if (status.animationName != "Walk")
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	if (tankComp.lowerCurrentAnim != 0) // Walk
 	{
-		getTheScene()->blendToAnimation(entityID, "Walk");
+		tankComp.lowerCurrentAnim = 0;
+		tankComp.upperCurrentAnim = 0;
+		if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+		{
+			ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 0, 0, -1 });
+		}
+		else
+		{
+			getTheScene()->blendToAnimation(entityID, "Walk");
+		}
 	}
 	BTStatus ret			= BTStatus::Success;
-	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	Transform& tankTrans	= getTheScene()->getComponent<Transform>(entityID);
 	Rigidbody& tankRb		= getTheScene()->getComponent<Rigidbody>(entityID);
 	glm::vec3 moveDir		= pathFindingManager.getDirTo(tankTrans.position, tankComp.shieldTargetPos);
@@ -776,23 +828,53 @@ BTStatus TankBT::moveTowardsGroup(Entity entityID)
 
 BTStatus TankBT::HoldShield(Entity entityID)
 {
-	AnimationStatus statusUpper = getTheScene()->getAnimationStatus(entityID, "UpperBody");
-	AnimationStatus statusLower = getTheScene()->getAnimationStatus(entityID, "LowerBody");
-	if (statusUpper.animationName != "RaiseShield")
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	if (tankComp.upperCurrentAnim != 3)
 	{
-		getTheScene()->blendToAnimation(entityID, "RaiseShield", "UpperBody");
+		tankComp.upperCurrentAnim = 3;
+		tankComp.shieldAnimTimer = 0.0f;
+		tankComp.shieldAnimDone = false;
+		if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+		{
+			ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 0, 3, 1 });
+		}
+		else
+		{
+			getTheScene()->blendToAnimation(entityID, "RaiseShield", "UpperBody");
+		}
 	}
-	else if (statusUpper.timer > 0.725f && statusUpper.timeScale != 0.0f)
+	else if (tankComp.shieldAnimTimer > 0.725f && !tankComp.shieldAnimDone)
 	{
-		statusUpper.timer = 0.725f;
-		getTheScene()->setAnimationTimeScale(entityID, 0.0f, "UpperBody");
+		tankComp.shieldAnimDone = true;
+		if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+		{
+			ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM_TIMESCALE, entityID, 0, 1 }, { 0.0f });
+		}
+		else
+		{
+			getTheScene()->setAnimationTimeScale(entityID, 0.0f, "UpperBody");
+		}
+	}
+	else
+	{
+		tankComp.shieldAnimTimer += get_dt();
 	}
 	
-	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
-	if (statusLower.animationName != "GroundHump")
+	if (tankComp.lowerCurrentAnim != 2)
 	{
-		getTheScene()->blendToAnimation(entityID, "GroundHump", "LowerBody", 0.18f, 1.09f);
-		tankComp.groundHumpTimer = 0.0f;
+		tankComp.groundHumpTimer = 2.075f;
+		tankComp.lowerCurrentAnim = 2;
+		if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+		{
+			ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 0, 2, 0 });
+		}
+		else
+		{
+			getTheScene()->blendToAnimation(entityID, "GroundHump", "LowerBody", 0.18f, 1.09f);
+		}
 	}
 
 	BTStatus ret = BTStatus::Failure;
@@ -804,10 +886,14 @@ BTStatus TankBT::HoldShield(Entity entityID)
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	rotateTowards(entityID, playerTrans.position, tankComp.shildRotSpeed, 5.0f);
 
-	if (statusLower.timer >= 2.075f || tankComp.hasDoneFirstHump)
+	if (tankComp.groundHumpTimer <= 0.0f || tankComp.hasDoneFirstHump)
 	{
 		tankComp.hasDoneFirstHump = true;
 		groundHumpShortcut(entityID);
+	}
+	else
+	{
+		tankComp.groundHumpTimer -= get_dt();
 	}
 
 	updateCanBeHit(entityID);
