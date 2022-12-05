@@ -118,6 +118,8 @@ void LobbyScene::start()
     this->setComponent<PointLight>(light);
     this->getComponent<PointLight>(light).color = glm::vec3(10, 10, 10);
     this->getComponent<Transform>(light).position = glm::vec3(0, 0, 0);
+    this->getComponent<DirectionalLight>(light).shadowMapMinBias = 0.002f;
+    this->getComponent<DirectionalLight>(light).shadowMapAngleBias = 0.007f;
 }
 
 void LobbyScene::update()
