@@ -31,11 +31,13 @@ private:
 	AIHandler aiHandler;
     SpawnHandler spawnHandler;
     RoomHandler roomHandler;
+    int portal;
     int roomSeed;
     uint8_t numRoomsCleared;
     bool newRoomFrame;
 
 	void makeDataSendToClient();
+    void createPortal();
   public:
     virtual ~ServerGameMode();
 	virtual void init() override;
