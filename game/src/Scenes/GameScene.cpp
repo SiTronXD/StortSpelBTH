@@ -491,9 +491,8 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
         {
           swarmComp.inAttack = false;
           swarmComp.touchedPlayer = true;
-          //aiCombat.timer = aiCombat.lightAttackTime;
           this->getComponent<HealthComp>(player).health -=
-              (int)aiCombat.lightHit;
+              (int)swarmComp.lightHit;
             
           Log::write("WAS HIT", BT_FILTER);
         }
