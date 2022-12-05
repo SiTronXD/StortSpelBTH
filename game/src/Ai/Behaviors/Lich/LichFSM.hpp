@@ -6,9 +6,6 @@
 
 struct LichAttack
 {
-    inline static bool s_initialized = false; // IN PROGRESS
-    inline static int s_takeDmg = -1;
-
     ATTACK_STRATEGY type;
     float manaCost;
     int damage;
@@ -90,6 +87,9 @@ public:
 
 struct LichComponent
 {
+    inline static bool s_initialized = false; // IN PROGRESS
+    inline static int s_takeDmg = -1;
+
     inline static const uint32_t colliderRadius = 4;
     inline static const uint32_t colliderHeight = 12;
 

@@ -304,22 +304,22 @@ Log::write("Killing all enemies outside room...");
 
 void SpawnHandler::createTank()
 {
-    //if (!SwarmComponent::s_initialized)       // AUDIO TESTING
-    //{
-    //    SwarmComponent::s_takeDmg =
-    //        this->resourceManager->addSound("assets/Sounds/OufSound.ogg");
-    //    SwarmComponent::s_move =
-    //        this->resourceManager->addSound("assets/Sounds/RunningSound.ogg");
-    //    SwarmComponent::s_attack =
-    //        this->resourceManager->addSound("assets/Sounds/SwishSound.ogg");
+    if (!SwarmComponent::s_initialized)       // AUDIO TESTING
+    {
+        SwarmComponent::s_takeDmg =
+            this->resourceManager->addSound("assets/Sounds/OufSound.ogg");
+        SwarmComponent::s_move =
+            this->resourceManager->addSound("assets/Sounds/RunningSound.ogg");
+        SwarmComponent::s_attack =
+            this->resourceManager->addSound("assets/Sounds/SwishSound.ogg");
     
     //audioHandler->playSound(myEntity, soundBufferId)
-    
+    //
     //audioHandler->requestAudioSource(entity, 2)
     //scene->getComponent<AudioSource>(entity).
     
-    //    SwarmComponent::s_initialized = true;
-    //}
+        SwarmComponent::s_initialized = true;
+    }
 
     ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
     if (netScene == nullptr)
@@ -379,22 +379,22 @@ void SpawnHandler::createTank()
 
 void SpawnHandler::createLich()
 {
-    //if (!SwarmComponent::s_initialized)       // AUDIO TESTING
-    //{
-    //    SwarmComponent::s_takeDmg =
-    //        this->resourceManager->addSound("assets/Sounds/OufSound.ogg");
-    //    SwarmComponent::s_move =
-    //        this->resourceManager->addSound("assets/Sounds/RunningSound.ogg");
-    //    SwarmComponent::s_attack =
-    //        this->resourceManager->addSound("assets/Sounds/SwishSound.ogg");
+    if (!SwarmComponent::s_initialized)       // AUDIO TESTING
+    {
+        SwarmComponent::s_takeDmg =
+            this->resourceManager->addSound("assets/Sounds/OufSound.ogg");
+        SwarmComponent::s_move =
+            this->resourceManager->addSound("assets/Sounds/RunningSound.ogg");
+        SwarmComponent::s_attack =
+            this->resourceManager->addSound("assets/Sounds/SwishSound.ogg");
     
     //audioHandler->playSound(myEntity, soundBufferId)
-    
+    //
     //audioHandler->requestAudioSource(entity, 2)
     //scene->getComponent<AudioSource>(entity).
     
-    //    SwarmComponent::s_initialized = true;
-    //}
+        SwarmComponent::s_initialized = true;
+    }
 
     ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
 
@@ -558,22 +558,22 @@ void SpawnHandler::createLich()
 
 void SpawnHandler::createSwarmGroup()
 {
-    //if (!SwarmComponent::s_initialized)       // AUDIO TESTING
-    //{
-    //    SwarmComponent::s_takeDmg =
-    //        this->resourceManager->addSound("assets/Sounds/OufSound.ogg");
-    //    SwarmComponent::s_move =
-    //        this->resourceManager->addSound("assets/Sounds/RunningSound.ogg");
-    //    SwarmComponent::s_attack =
-    //        this->resourceManager->addSound("assets/Sounds/SwishSound.ogg");
+    if (!SwarmComponent::s_initialized)       // AUDIO TESTING
+    {
+        SwarmComponent::s_takeDmg =
+            this->resourceManager->addSound("assets/Sounds/OufSound.ogg");
+        SwarmComponent::s_move =
+            this->resourceManager->addSound("assets/Sounds/RunningSound.ogg");
+        SwarmComponent::s_attack =
+            this->resourceManager->addSound("assets/Sounds/SwishSound.ogg");
     
     //audioHandler->playSound(myEntity, soundBufferId)
-    
+    //
     //audioHandler->requestAudioSource(entity, 2)
     //scene->getComponent<AudioSource>(entity).
     
-    //    SwarmComponent::s_initialized = true;
-    //}
+        SwarmComponent::s_initialized = true;
+    }
 
     ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
     this->swarmGroups.push_back(new SwarmGroup); //TODO: Does this work as expected? Do we need to clear (delete contents) this on every init? 
