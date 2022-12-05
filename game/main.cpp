@@ -49,5 +49,12 @@ int main(int argc, char* argv[])
         //engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
     }
     reportMemoryLeaks();
+    
+    std::cout << std::endl<< "ALLSHIT: " << std::endl; 
+    for(auto f : *allShit)
+    {
+        std::cout << f << std::endl; 
+    }
+
     return EXIT_SUCCESS;
 }

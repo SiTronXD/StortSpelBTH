@@ -194,21 +194,13 @@ void LobbyScene::update()
         if (this->startButton.isClicking())
         {
             // Start singleplayer
-            // if (this->activePlayers == 1)
-            // {
-            //    this->getNetworkHandler()->disconnectClient();
-            //    this->getNetworkHandler()->deleteServer();
-            //    this->switchScene(
-            //        new(__FILE__, __LINE__) GameScene(), "scripts/gamescene.lua"
-            //    );
-            // }
-            // else
+            if (this->activePlayers == 1)            
             {
                this->getNetworkHandler()->disconnectClient();
                this->getNetworkHandler()->deleteServer();
                this->getNetworkHandler()->setStatus(ServerStatus::WAITING);
                this->switchScene(
-                   new GameScene(), "scripts/gamescene.lua"
+                   new(__FILE__, __LINE__) GameScene(), "scripts/gamescene.lua"
                );
             }
             else
@@ -217,9 +209,7 @@ void LobbyScene::update()
                 this->getNetworkHandler()->sendDataToServerTCP(helpPacket);
             }
         }
-    }
-
-    if (!this->getNetworkHandler()->isConnected())
+    }else if (!this->getNetworkHandler()->isConnected())
     {
         this->getNetworkHandler()->disconnectClient();
         this->getNetworkHandler()->deleteServer();

@@ -563,7 +563,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
         {
 		    if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room            
 		    {
-		    	this->switchScene(new GameScene(), "scripts/gamescene.lua");
+		    	this->switchScene(new(__FILE__, __LINE__) GameScene(), "scripts/gamescene.lua");
 		    }
         }
 	}

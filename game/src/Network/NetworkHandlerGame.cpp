@@ -5,6 +5,9 @@
 #include "vengine/network/ServerEngine/Timer.h"
 
 const float NetworkHandlerGame::UPDATE_RATE = ServerUpdateRate;
+LichAttack NetworkHandlerGame::lich_fire;
+LichAttack NetworkHandlerGame::lich_ice;
+LichAttack NetworkHandlerGame::lich_light;
 
 Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir)
 {
@@ -102,18 +105,18 @@ Entity NetworkHandlerGame::spawnHealArea(glm::vec3 pos)
 }
 
 NetworkHandlerGame::~NetworkHandlerGame() {
-    if (lich_fire != nullptr)
-    {
-		delete lich_fire;    
-	}
-    if (lich_ice != nullptr)
-    {
-        delete lich_ice;
-    }
-    if (lich_light != nullptr)
-    {
-		delete lich_light;    
-	}
+    // if (lich_fire != nullptr)
+    // {
+	// 	delete lich_fire;    
+	// }
+    // if (lich_ice != nullptr)
+    // {
+    //     delete lich_ice;
+    // }
+    // if (lich_light != nullptr)
+    // {
+	// 	delete lich_light;    
+	// }
 }
 
 void NetworkHandlerGame::init()
@@ -132,13 +135,13 @@ void NetworkHandlerGame::init()
     this->alterMesh = this->resourceManger->addMesh("assets/models/alter.obj");
     this->humpMesh = this->resourceManger->addMesh("assets/models/hump.obj");//TODO : ADD THE humpMesh!!!
 
-	lich_fire = new LichAttack();
-    lich_ice = new LichAttack();
-    lich_light = new LichAttack();
+	// lich_fire = new(__FILE__, __LINE__) LichAttack();
+    // lich_ice = new(__FILE__, __LINE__) LichAttack();
+    // lich_light = new(__FILE__, __LINE__) LichAttack();
 
-    this->lich_fire->setStats(ATTACK_STRATEGY::FIRE);
-    this->lich_ice->setStats(ATTACK_STRATEGY::ICE);
-    this->lich_light->setStats(ATTACK_STRATEGY::LIGHT);
+    this->lich_fire.setStats(ATTACK_STRATEGY::FIRE);
+    this->lich_ice.setStats(ATTACK_STRATEGY::ICE);
+    this->lich_light.setStats(ATTACK_STRATEGY::LIGHT);
 }
 
 void NetworkHandlerGame::cleanup()
