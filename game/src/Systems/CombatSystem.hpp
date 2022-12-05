@@ -293,7 +293,7 @@ public:
 		Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(ID);
 		Transform& enemyTrans = this->scene->getComponent<Transform>(ID);
 		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
-		glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+		glm::vec3 newDir = safeNormalize(playerTrans.position - enemyTrans.position);
 		enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * combat.knockbackArr[combat.activeAttack];
 		this->hitEnemies.emplace_back(ID);
 	}
@@ -701,7 +701,7 @@ public:
 		perkTrans.position = glm::vec3(playerTrans.position.x, playerTrans.position.y + 8.f, playerTrans.position.z);
 		perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
 		playerTrans.updateMatrix();
-		glm::vec3 throwDir = glm::normalize(playerTrans.forward());
+		glm::vec3 throwDir = safeNormalize(playerTrans.forward());
 		perkRb.gravityMult = 6.f;
 		perkRb.velocity = glm::vec3(throwDir.x * 20.f, 30.f, throwDir.z * 20.f);
 	}
@@ -720,7 +720,7 @@ public:
 			Transform& t = this->scene->getComponent<Transform>(this->playerID);
 			HealthComp& healthComp = this->scene->getComponent<HealthComp>(this->playerID);
 			t.updateMatrix();
-			this->networkHandler->spawnItemRequest(perk.perkType, perk.multiplier, t.position + glm::vec3(0.0f, 8.0f, 0.0f), glm::normalize(t.forward() + glm::vec3(0.0f, 0.5f, 0.0f)));
+			this->networkHandler->spawnItemRequest(perk.perkType, perk.multiplier, t.position + glm::vec3(0.0f, 8.0f, 0.0f), safeNormalize(t.forward() + glm::vec3(0.0f, 0.5f, 0.0f)));
 			switch (perk.perkType)
 			{
 			case hpUpPerk:
@@ -768,7 +768,7 @@ public:
 		abilityTrans.position = glm::vec3(playerTrans.position.x, playerTrans.position.y + 8.f, playerTrans.position.z);
 		abilityTrans.scale = glm::vec3(3.f);
 		playerTrans.updateMatrix();
-		glm::vec3 throwDir = glm::normalize(playerTrans.forward());
+		glm::vec3 throwDir = safeNormalize(playerTrans.forward());
 		abilityRb.gravityMult = 6.f;
 		abilityRb.velocity = glm::vec3(throwDir.x * 20.f, 30.f, throwDir.z * 20.f);
 	}
@@ -800,7 +800,7 @@ public:
 		{
 			Transform& t = this->scene->getComponent<Transform>(this->playerID);
 			t.updateMatrix();
-			this->networkHandler->spawnItemRequest(ability.abilityType, t.position + glm::vec3(0.0f, 8.0f, 0.0f), glm::normalize(t.forward() + glm::vec3(0.0f, 0.5f, 0.0f)));
+			this->networkHandler->spawnItemRequest(ability.abilityType, t.position + glm::vec3(0.0f, 8.0f, 0.0f), safeNormalize(t.forward() + glm::vec3(0.0f, 0.5f, 0.0f)));
 			combat.ability.abilityType = emptyAbility;
 		}
 	}

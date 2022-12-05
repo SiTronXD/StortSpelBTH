@@ -492,7 +492,7 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
         {
 			sv1 = serverScene->getComponent<Transform>(si0).position;
 			sv2 = serverScene->getComponent<Transform>(serverScene->getPlayer(clientID)).position;
-			sv0 = glm::normalize(sv2 - sv1);
+			sv0 = safeNormalize(sv2 - sv1);
             if(serverScene->hasComponents<Rigidbody>(si0)){
                 serverScene->getComponent<Rigidbody>(si0).velocity = glm::vec3(-sv0.x, 0.f, -sv0.z) * sf0;
             }else {
@@ -616,7 +616,7 @@ void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
             Rigidbody& enemyRB = sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
 			Transform& enemyTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 			Transform& playerTrans = sceneHandler->getScene()->getComponent<Transform>(player);
-			glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+			glm::vec3 newDir = safeNormalize(playerTrans.position - enemyTrans.position);
 			enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * knockBack;
 		}
 	}

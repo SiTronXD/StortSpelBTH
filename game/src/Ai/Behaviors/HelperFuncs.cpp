@@ -60,9 +60,9 @@ void avoidStuff(Entity entityID, SceneHandler* sceneHandler, bool& attackGoRight
 	entityTransform.updateMatrix();
 	glm::vec3 from = entityTransform.position + rayOriginOffset;
 	glm::vec3 to = target;
-	glm::vec3 dirToTarget =  glm::normalize(glm::vec3(to - entityTransform.position));
+	glm::vec3 dirToTarget =  safeNormalize(glm::vec3(to - entityTransform.position));
 	float maxDist = glm::length(from - to);
-	glm::vec3 dir = glm::normalize(from - to);   
+	glm::vec3 dir = safeNormalize(from - to);   
 
 
 	//Rays
@@ -221,7 +221,7 @@ glm::vec3 rotateVec(glm::vec3 rot, float deg, glm::vec3 axis)
 	
 	ret = mat*rot;
 
-	return glm::normalize(ret);
+	return safeNormalize(ret);
 }
 glm::vec3 safeNormalize(glm::vec3& vec)
 {
