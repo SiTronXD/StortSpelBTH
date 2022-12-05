@@ -31,22 +31,8 @@ void SpawnHandler::spawnEnemiesIntoRoom()
 
     // Imgui data...
     this->nrOfTilesInRoom = (int)this->tilePicker.size();
-    if(this->roomHandler->inExitRoom())
-    {
-        switch (rand()%3)
-        {
-        case 0:
-            this->spawnTank(tankIdx, this->tilePicker.getRandomEmptyTile()->getPos());
-            break;
-        case 1:
-            this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2));
-            break;
-        case 2:
-            this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP));
-            break;
-        }
-    }
-    else if(SpawnHandler::USE_DEBUG)
+    
+    if(SpawnHandler::USE_DEBUG)
     {
         // Spawn Tanks
         for(size_t i = 0; i < NR_TANK_DBG; i++){
@@ -65,6 +51,25 @@ void SpawnHandler::spawnEnemiesIntoRoom()
             swarmIdx += this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP));        
         }
 
+    }
+    else if(this->roomHandler->inExitRoom())
+    {
+        this->spawnTank(tankIdx, this->tilePicker.getRandomEmptyTile()->getPos(), true);
+        this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2), true);
+        this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP), true);
+
+       /* switch (rand()%3)
+        {
+        case 0:
+            this->spawnTank(tankIdx, this->tilePicker.getRandomEmptyTile()->getPos(), true);
+            break;
+        case 1:
+            this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2), true);
+            break;
+        case 2:
+            this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP), true);
+            break;
+        }*/
     }
     else 
     {
@@ -103,8 +108,18 @@ void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos, bool elite
     
     //Reset
     TankComponent& tankComp = currScene->getComponent<TankComponent>(this->tankIDs[tankIdx]);
+
+    AiEliteComponent defaultEliteComp;
+    defaultEliteComp.sizeMultiplier = 2.0f;
+
+    if(elite)
+    {
+        tankComp.applyEliteStats(defaultEliteComp, currScene, this->tankIDs[tankIdx]);
+    }
+
     tankComp.life = tankComp.FULL_HEALTH;
-    transform.scale.y = tankComp.origScaleY;
+    transform.scale = tankComp.origScale;
+    tankComp.origScaleY = transform.scale.y;
 
     if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
     {
@@ -132,10 +147,18 @@ uint32_t SpawnHandler::spawnLich(int lichIdx, std::vector<const TileInfo*> tileI
 
         debugRays.push_back({lichPos->getPos(), {1.f,1.f,0.f}});
 
-        //Reset
         LichComponent& lichComp = currScene->getComponent<LichComponent>(this->lichIDs[lichIdx]);
+        //Setas elite
+        AiEliteComponent defaultEliteComp;
+        defaultEliteComp.sizeMultiplier = 2.0f;
+        if(elite)
+        {
+            lichComp.applyEliteStats(defaultEliteComp, currScene, this->lichIDs[lichIdx]);
+        }
+        //Reset
         lichComp.life = lichComp.FULL_HEALTH;
-        transform.scale.y = lichComp.origScaleY;
+        transform.scale = lichComp.origScale;
+        lichComp.origScaleY = transform.scale.y;
 
         // Place Alter 
         Transform& alterTransform = currScene->getComponent<Transform>(alterID);
@@ -194,9 +217,13 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos, bool elite)
 
     //Setas elite
     AiEliteComponent defaultEliteComp;
-    swarmComp.applyEliteStats(defaultEliteComp);
-
-    transform.scale.y = swarmComp.origScaleY;
+    defaultEliteComp.sizeMultiplier = 2.0f;
+    if(elite)
+    {
+        swarmComp.applyEliteStats(defaultEliteComp, currScene, this->swarmIDs[swarmIdx]);
+    }
+    transform.scale = swarmComp.origScale;
+    swarmComp.origScaleY = transform.scale.y;
     swarmComp.life = swarmComp.FULL_HEALTH;
     swarmComp.group->inCombat = false;    
 
@@ -351,6 +378,7 @@ void SpawnHandler::createTank()
     this->aiHandler->createAIEntity(this->tankIDs.back(), "tankFSM");
     TankComponent& tankComp = this->currScene->getComponent<TankComponent>(this->tankIDs.back());
     tankComp.origScaleY = transform.scale.y;
+    tankComp.origScale = transform.scale;
     this->currScene->setInactive(this->tankIDs.back());
     tankComp.life = 0;
 
@@ -409,6 +437,7 @@ void SpawnHandler::createLich()
     this->aiHandler->createAIEntity(this->lichIDs.back(), "lichFSM");
     LichComponent& lichComp = this->currScene->getComponent<LichComponent>(this->lichIDs.back());
     lichComp.origScaleY = transform.scale.y;
+    lichComp.origScale = transform.scale;
     this->currScene->setInactive(this->lichIDs.back());
     lichComp.life = 0;
 
@@ -570,8 +599,11 @@ void SpawnHandler::createSwarmGroup()
         this->swarmGroups.back()->members.push_back(this->swarmIDs.back());
         this->currScene->setInactive(this->swarmIDs.back());
         this->sceneHandler->getScene()->getComponent<SwarmComponent>(this->swarmIDs.back()).group = this->swarmGroups.back();
+        Transform& transform = this->currScene->getComponent<Transform>(this->swarmIDs.back());
         SwarmComponent& swarmComp = this->currScene->getComponent<SwarmComponent>(this->swarmIDs.back());
         swarmComp.life = 0;
+        swarmComp.origScaleY = transform.scale.y;
+        swarmComp.origScale = transform.scale;
 
         if (netScene != nullptr) 
         {

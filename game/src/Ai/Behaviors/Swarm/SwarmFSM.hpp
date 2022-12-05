@@ -56,25 +56,25 @@ struct SwarmComponent
 	float ignoreColTimerOrig	= 1.0f;
 	float ignoreColTimer		= ignoreColTimerOrig;
 
-
-	glm::vec3 friendTouched = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 idleMoveTo = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 lonelyDir = glm::vec3(0.0f, 0.0f, 1.0f);
-	glm::vec3 dir = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 forward = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 right = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 origScale			= glm::vec3(0.0f, 0.0f, 0.0f); 
+	glm::vec3 friendTouched		= glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 idleMoveTo		= glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 lonelyDir			= glm::vec3(0.0f, 0.0f, 1.0f);
+	glm::vec3 dir				= glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 forward			= glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 right				= glm::vec3(0.0f, 0.0f, 0.0f);
 
 	SwarmGroup* group;
 	std::vector<SwarmGroup*> groupsInSight;
-
-
+	AiEliteComponent eliteStats;
 	SwarmComponent() 
 	{
 		attackGoRight = rand()%2;
 	};
 
-	void applyEliteStats(AiEliteComponent& eliteComp)
+	void applyEliteStats(AiEliteComponent& eliteComp, Scene* scene, Entity entityID)
     {
+		this->eliteStats = eliteComp;
 		this->isElite					= true;
 
         this->lightHit		            *= eliteComp.dmgMultiplier;
@@ -84,28 +84,34 @@ struct SwarmComponent
         this->sightRadius               *= eliteComp.radiusMultiplier;
 		this->attackRange				*= eliteComp.radiusMultiplier;
 
-        this->origScaleY                *= eliteComp.sizeMultiplier;
+		scene->getComponent<Collider>(entityID).radius *= eliteComp.sizeMultiplier;
+		Transform& trans = scene->getComponent<Transform>(entityID);
+		trans.scale = this->origScale * eliteComp.sizeMultiplier;
+		this->origScale = trans.scale;
         
 		this->speed						*= eliteComp.speedMultiplier;
 		this->idleRotSpeed				*= eliteComp.speedMultiplier;
         this->speed                     *= eliteComp.speedMultiplier;
     }
-    void removeEliteStats(AiEliteComponent& eliteComp)
+    void removeEliteStats(Scene* scene, Entity entityID)
     {
       	this->isElite					= false;
 
-        this->lightHit		            /= eliteComp.dmgMultiplier;
-        this->LOW_HEALTH                /= eliteComp.healthMultiplier;           
-        this->FULL_HEALTH               /= eliteComp.healthMultiplier;
+        this->lightHit		            /= this->eliteStats.dmgMultiplier;
+        this->LOW_HEALTH                /= this->eliteStats.healthMultiplier;           
+        this->FULL_HEALTH               /= this->eliteStats.healthMultiplier;
+        this->sightRadius               /= this->eliteStats.radiusMultiplier;
+		this->attackRange				/= this->eliteStats.radiusMultiplier;
 										
-        this->sightRadius               /= eliteComp.radiusMultiplier;
-		this->attackRange				/= eliteComp.radiusMultiplier;
-										
-        this->origScaleY                /= eliteComp.sizeMultiplier;
+		scene->getComponent<Collider>(entityID).radius /= this->eliteStats.sizeMultiplier;
+		scene->getComponent<Transform>(entityID).scale /= this->eliteStats.sizeMultiplier;
+		Transform& trans = scene->getComponent<Transform>(entityID);
+		trans.scale = this->origScale / this->eliteStats.sizeMultiplier;
+		this->origScale = trans.scale;
         								
-		this->speed						/= eliteComp.speedMultiplier;
-		this->idleRotSpeed				/= eliteComp.speedMultiplier;
-        this->speed                     /= eliteComp.speedMultiplier;
+		this->speed						/= this->eliteStats.speedMultiplier;
+		this->idleRotSpeed				/= this->eliteStats.speedMultiplier;
+        this->speed                     /= this->eliteStats.speedMultiplier;
     }
 
 	float getGroupHealth(Scene* scene)

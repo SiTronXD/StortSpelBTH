@@ -175,6 +175,8 @@ struct LichComponent
     bool isElite                = false;
     bool carryingBones          = false;
 
+    glm::vec3 origScale         = glm::vec3(0.0f, 0.0f, 0.0f);
+
     // Orbs
     std::array<Entity, LichComponent::NR_FIRE_ORBS>  fireOrbs;
     std::array<Entity, LichComponent::NR_ICE_ORBS>   iceOrbs;
@@ -184,8 +186,11 @@ struct LichComponent
     Entity alterID;
     Entity graveID;
 
-    void applyEliteStats(AiEliteComponent& eliteComp)
+    AiEliteComponent eliteStats;
+
+    void applyEliteStats(AiEliteComponent& eliteComp, Scene* scene, Entity entityID)
     {
+        this->eliteStats = eliteComp;
         this->isElite                   = true;
 
         for(auto a: this->attacks)
@@ -202,7 +207,11 @@ struct LichComponent
         this->attackRadius              *= eliteComp.radiusMultiplier;
         this->nonoRadius                *= eliteComp.radiusMultiplier;
 
-        this->origScaleY                *= eliteComp.sizeMultiplier;
+        scene->getComponent<Collider>(entityID).radius *= eliteComp.sizeMultiplier;
+        scene->getComponent<Collider>(entityID).height *= eliteComp.sizeMultiplier;
+		Transform& trans = scene->getComponent<Transform>(entityID);
+		trans.scale = this->origScale * eliteComp.sizeMultiplier;
+		this->origScale = trans.scale;
         
         this->healthRegenSpeed          *= eliteComp.speedMultiplier;
         this->manaRegenSpeed            *= eliteComp.speedMultiplier;
@@ -211,32 +220,35 @@ struct LichComponent
         this->huntSpeed                 *= eliteComp.speedMultiplier;
         this->speed                     *= eliteComp.speedMultiplier;
     }
-    void removeEliteStats(AiEliteComponent& eliteComp)
+    void removeEliteStats(Scene* scene, Entity entityID)
     {
         this->isElite                   = false;
 
         for(auto a: this->attacks)
         {
-            a.second.damage             /= eliteComp.dmgMultiplier;
+            a.second.damage             /= this->eliteStats.dmgMultiplier;
         }
-        this->LOW_HEALTH                /= eliteComp.radiusMultiplier;           
-        this->FULL_HEALTH               /= eliteComp.radiusMultiplier;
-        this->ESCAPE_HEALTH             /= eliteComp.radiusMultiplier;
-        this->BACK_TO_FIGHT_HEALTH      /= eliteComp.radiusMultiplier;
+        this->LOW_HEALTH                /= this->eliteStats.radiusMultiplier;           
+        this->FULL_HEALTH               /= this->eliteStats.radiusMultiplier;
+        this->ESCAPE_HEALTH             /= this->eliteStats.radiusMultiplier;
+        this->BACK_TO_FIGHT_HEALTH      /= this->eliteStats.radiusMultiplier;
+        this->sightRadius               /= this->eliteStats.radiusMultiplier;
+        this->peronalSpaceRadius        /= this->eliteStats.radiusMultiplier;
+        this->attackRadius              /= this->eliteStats.radiusMultiplier;
+        this->nonoRadius                /= this->eliteStats.radiusMultiplier;
 
-        this->sightRadius               /= eliteComp.radiusMultiplier;
-        this->peronalSpaceRadius        /= eliteComp.radiusMultiplier;
-        this->attackRadius              /= eliteComp.radiusMultiplier;
-        this->nonoRadius                /= eliteComp.radiusMultiplier;
+        scene->getComponent<Collider>(entityID).radius /= this->eliteStats.sizeMultiplier;
+        scene->getComponent<Collider>(entityID).height /= this->eliteStats.sizeMultiplier;
+		Transform& trans = scene->getComponent<Transform>(entityID);
+		trans.scale = this->origScale / this->eliteStats.sizeMultiplier;
+		this->origScale = trans.scale;
 
-        this->origScaleY                /= eliteComp.sizeMultiplier;
-
-        this->healthRegenSpeed          /= eliteComp.speedMultiplier;
-        this->manaRegenSpeed            /= eliteComp.speedMultiplier;
-        this->creepRotSpeed             /= eliteComp.speedMultiplier;
-        this->huntRotSpeed              /= eliteComp.speedMultiplier;
-        this->huntSpeed                 /= eliteComp.speedMultiplier;
-        this->speed                     /= eliteComp.speedMultiplier;
+        this->healthRegenSpeed          /= this->eliteStats.speedMultiplier;
+        this->manaRegenSpeed            /= this->eliteStats.speedMultiplier;
+        this->creepRotSpeed             /= this->eliteStats.speedMultiplier;
+        this->huntRotSpeed              /= this->eliteStats.speedMultiplier;
+        this->huntSpeed                 /= this->eliteStats.speedMultiplier;
+        this->speed                     /= this->eliteStats.speedMultiplier;
     }
 
     bool isDead(){return life<=0;}
@@ -244,9 +256,6 @@ struct LichComponent
     //Combat stuff
     LichAttack* curAttack       = nullptr;
     std::unordered_map<std::string, LichAttack> attacks;
-   /* LichAttack lightning;
-    LichAttack fire;
-    LichAttack ice;*/
 
     std::string lastAttack      = "";
 };

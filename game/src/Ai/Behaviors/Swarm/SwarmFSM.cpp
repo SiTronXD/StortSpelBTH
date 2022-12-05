@@ -197,7 +197,7 @@ bool SwarmFSM::combat_idle(Entity entityID)
 		//Reset Combat timer
 		enemySwarmComp.timer = enemySwarmComp.lightAttackTime;
 		//Reset scale
-		FSM::sceneHandler->getScene()->getComponent<Transform>(entityID).scale.y = 1.0f;
+		FSM::sceneHandler->getScene()->getComponent<Transform>(entityID).scale.y = enemySwarmComp.origScaleY;
 	}
 
 	return ret;
@@ -235,7 +235,7 @@ bool SwarmFSM::combat_escape(Entity entityID)
 		enemySwarmComp.timer = enemySwarmComp.lightAttackTime;
 
 		//Reset scale
-		FSM::sceneHandler->getScene()->getComponent<Transform>(entityID).scale.y = 1.0f;
+		FSM::sceneHandler->getScene()->getComponent<Transform>(entityID).scale.y = enemySwarmComp.origScaleY;
 	}
 
 	return ret;
