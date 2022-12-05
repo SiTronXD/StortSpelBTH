@@ -5,9 +5,6 @@
 #include "vengine/network/ServerEngine/Timer.h"
 
 const float NetworkHandlerGame::UPDATE_RATE = ServerUpdateRate;
-LichAttack* NetworkHandlerGame::lich_fire  = new LichAttack();
-LichAttack* NetworkHandlerGame::lich_ice   = new LichAttack();
-LichAttack* NetworkHandlerGame::lich_light = new LichAttack();
 
 Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir)
 {
@@ -99,6 +96,21 @@ Entity NetworkHandlerGame::spawnHealArea(glm::vec3 pos)
 	return heal;
 }
 
+NetworkHandlerGame::~NetworkHandlerGame() {
+    if (lich_fire != nullptr)
+    {
+		delete lich_fire;    
+	}
+    if (lich_ice != nullptr)
+    {
+        delete lich_ice;
+    }
+    if (lich_light != nullptr)
+    {
+		delete lich_light;    
+	}
+}
+
 void NetworkHandlerGame::init()
 {
 	this->perkMeshes[0] = this->resourceManger->addMesh("assets/models/Perk_Hp.obj");
@@ -115,9 +127,13 @@ void NetworkHandlerGame::init()
     this->alterMesh = this->resourceManger->addMesh("assets/models/alter.obj");
     this->humpMesh = this->resourceManger->addMesh("assets/models/hump.obj");//TODO : ADD THE humpMesh!!!
 
-    NetworkHandlerGame::lich_fire->setStats(ATTACK_STRATEGY::FIRE);
-    NetworkHandlerGame::lich_ice->setStats(ATTACK_STRATEGY::ICE);
-    NetworkHandlerGame::lich_light->setStats(ATTACK_STRATEGY::LIGHT);
+	lich_fire = new LichAttack();
+    lich_ice = new LichAttack();
+    lich_light = new LichAttack();
+
+    this->lich_fire->setStats(ATTACK_STRATEGY::FIRE);
+    this->lich_ice->setStats(ATTACK_STRATEGY::ICE);
+    this->lich_light->setStats(ATTACK_STRATEGY::LIGHT);
 }
 
 void NetworkHandlerGame::cleanup()
@@ -316,6 +332,12 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
             
 		}
 		break;
+    case GameEvent::ROOM_CLEAR:
+        this->newRoomFrame = false;
+        roomHandler->roomCompleted();
+        this->numRoomsCleared++;
+		std::cout << "GameScene: number of rooms cleared:" << this->numRoomsCleared << std::endl;  
+        break;
     case GameEvent::INACTIVATE:
         tcpPacket >> i0;
         if (serverEntities.find(i0) != serverEntities.end())
@@ -485,11 +507,6 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
         }
         
 		break;
-    case GameEvent::ROOM_CLEAR:
-        this->newRoomFrame = false;
-        roomHandler->roomCompleted();
-		this->numRoomsCleared++;
-		break;
 	default:
 		packet << event;
 		server->sendToAllClientsTCP(packet);
@@ -497,11 +514,11 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 	}
 }
 
-void NetworkHandlerGame::setRoomHandler(RoomHandler& roomHandler)
+void NetworkHandlerGame::setRoomHandler(RoomHandler& roomHandler, int& numRoomsCleared)
 {
     this->roomHandler = &roomHandler;
+    this->numRoomsCleared = &numRoomsCleared;
     newRoomFrame = false;
-    this->numRoomsCleared = 0;
 }
 
 void NetworkHandlerGame::handleUDPEventServer(Server* server, int clientID, sf::Packet& udpPacket, int event)

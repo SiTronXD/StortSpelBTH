@@ -106,7 +106,7 @@ void GameScene::start()
         int seed = this->networkHandler->getSeed();
         Log::write("Seed from server: " + std::to_string(seed));
         roomHandler.generate(seed);
-        networkHandler->setRoomHandler(roomHandler);
+        networkHandler->setRoomHandler(roomHandler, this->numRoomsCleared);
     }
     else
     {
@@ -184,8 +184,8 @@ void GameScene::update()
         if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
         {
             this->newRoomFrame = true;
-        this->timeWhenEnteredRoom = Time::getTimeSinceStart();
-        this->safetyCleanDone = false; 
+            this->timeWhenEnteredRoom = Time::getTimeSinceStart();
+            this->safetyCleanDone = false;
 
             this->spawnHandler.spawnEnemiesIntoRoom();
         }
@@ -389,11 +389,13 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 	{
 		Entity other = e1 == player ? e2 : e1;
     
-
-		if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room            
-		{
-			this->switchScene(new GameScene(), "scripts/gamescene.lua");
-		}
+        if (!networkHandler->isConnected())
+        {
+		    if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room            
+		    {
+		    	this->switchScene(new GameScene(), "scripts/gamescene.lua");
+		    }
+        }
 	}
 }
 
