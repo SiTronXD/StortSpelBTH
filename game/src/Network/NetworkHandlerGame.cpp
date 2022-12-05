@@ -562,6 +562,7 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 			
         }
 		packet << (int)GameEvent::PLAY_ENEMY_SOUND << si0 << si3 << si4 << si5;
+		server->sendToAllClientsTCP(packet);
         
 		break;
     case GameEvent::ROOM_CLEAR:
@@ -649,7 +650,6 @@ void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
 		bool isEnemy = false;
 		if (sceneHandler->getScene()->hasComponents<SwarmComponent>(entityID)) {
 			this->sceneHandler->getAudioHandler()->playSound(entityID, SwarmComponent::s_takeDmg, 10.f);
-			printf("oufsound");
 			//AudioSourceID =
 			//audioHandler->setVolume()
 			//audioHandler->set()
