@@ -93,6 +93,11 @@ Entity NetworkHandlerGame::spawnHealArea(glm::vec3 pos)
 	scene->setComponent<HealArea>(heal);
 	scene->getComponent<Transform>(heal).position = pos;
 
+	// Particle system
+	scene->setComponent<ParticleSystem>(heal);
+	ParticleSystem scenePartSys = ((GameScene*)scene)->getHealParticleSystem();
+	scene->getComponent<ParticleSystem>(heal) = scenePartSys;
+
 	return heal;
 }
 

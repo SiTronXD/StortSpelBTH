@@ -1,4 +1,5 @@
 #include "SwarmFSM.hpp"
+#include "../../../Scenes/GameScene.h"
 
 Entity SwarmFSM::getPlayerID(Entity entityID){
     int playerID = -1;
@@ -384,12 +385,23 @@ void SwarmFSM::updateSwarmGrounded(Entity entityID)
 
     if(rp.hit && swarmComp.groundTimer <= 0.0f)
     {
-		Collider& hitCol = FSM::sceneHandler->getScene()->getComponent<Collider>(rp.entity);
+		Scene* scene = FSM::sceneHandler->getScene();
+		Collider& hitCol = scene->getComponent<Collider>(rp.entity);
 		float dist = glm::length(rp.hitPoint - posToUse);
 		if(dist < (collider.radius + 0.5f) && !hitCol.isTrigger)
 		{
 			swarmComp.grounded = true;	
 			swarmComp.groundTimer = swarmComp.groundTimerOrig;
+
+			// Spawn particle system when grounded
+			if (!scene->hasComponents<ParticleSystem>(entityID))
+			{
+				scene->setComponent<ParticleSystem>(entityID);
+				ParticleSystem& partSys =
+					scene->getComponent<ParticleSystem>(entityID);
+				partSys = ((GameScene*) scene)->getSwarmParticleSystem();
+				partSys.spawn = true;
+			}
 		}
     }
 
