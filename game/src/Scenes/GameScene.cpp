@@ -666,7 +666,7 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
           //aiCombat.timer = aiCombat.lightAttackTime;
           HealthComp& playerHealth = this->getComponent<HealthComp>(player);
           playerHealth.health -=
-              (int)aiCombat.lightHit;
+              (int)swarmComp.lightHit;
           playerHealth.srcDmgEntity = other;
             
           Log::write("WAS HIT", BT_FILTER);
