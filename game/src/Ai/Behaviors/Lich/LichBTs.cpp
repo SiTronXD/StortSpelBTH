@@ -51,7 +51,6 @@ int LichBT::getPlayerID(Entity entityID)
 
 void LichBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision)
 {
-    Log::write("Rotating");
 	LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
 	Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
 	//Rotate towards target start
@@ -328,7 +327,6 @@ void LichBT::registerEntityComponents(Entity entityId)
 
 BTStatus LichBT::plunder(Entity entityID)
 {
-    Log::write("Plunder");
     BTStatus ret = BTStatus::Running;
 
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
@@ -345,7 +343,6 @@ BTStatus LichBT::plunder(Entity entityID)
 
 BTStatus LichBT::goToGrave(Entity entityID)
 {
-    Log::write("Going to grave");
     BTStatus ret = BTStatus::Running;
     Transform& lichTrans    = getTheScene()->getComponent<Transform>(entityID);
     Rigidbody& lichRb       = getTheScene()->getComponent<Rigidbody>(entityID);
@@ -370,7 +367,6 @@ BTStatus LichBT::goToGrave(Entity entityID)
 
 BTStatus LichBT::goToAlter(Entity entityID)
 {
-    Log::write("Going to alter");
     BTStatus ret = BTStatus::Running;
     Transform& lichTrans    = getTheScene()->getComponent<Transform>(entityID);
     Rigidbody& lichRb       = getTheScene()->getComponent<Rigidbody>(entityID);
@@ -389,7 +385,6 @@ BTStatus LichBT::goToAlter(Entity entityID)
 
 BTStatus LichBT::dropOffBones(Entity entityID)
 {
-    Log::write("Dropping off bones");
     BTStatus ret = BTStatus::Success;    
     //TODO: Visualise the boes dropping
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
@@ -465,7 +460,6 @@ BTStatus LichBT::creepyLook(Entity entityID)
 
 BTStatus LichBT::huntingPlayer(Entity entityID)
 {
-    Log::write("Hunting player");
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     if (lichComp.currentAnim != 0) // Walk
     {
@@ -523,7 +517,6 @@ BTStatus LichBT::playerInNoNoZone(Entity entityID)
 
 BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
 {
-    Log::write("Moving away from player");
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     if (lichComp.currentAnim != 0) // Walk
     {
@@ -549,7 +542,6 @@ BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
     //avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, playerTrans.position, moveDir, glm::vec3(0.0f, -3.0f, 0.0f)); //TODO: Check if this improves or not
 	moveDir = -safeNormalize(moveDir);
     lichRb.velocity = moveDir * lichComp.huntSpeed;
-    Log::write("MoveDir: " + Log::vecToStr(moveDir));
 
     rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
 
@@ -698,7 +690,6 @@ BTStatus LichBT::pickRandomStrategy(Entity entityID)
 
 BTStatus LichBT::attack(Entity entityID)
 {
-    Log::write("Attacking");
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     if (lichComp.attackAnimTimer <= 0.0f && lichComp.currentAnim != 0) // Switch back to walk
     {
@@ -848,7 +839,6 @@ BTStatus LichBT::playerNotVisible(Entity entityID)
 
 BTStatus LichBT::runAwayFromPlayer(Entity entityID)
 {
-    Log::write("Running away from player");
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     if (lichComp.currentAnim != 0) // Walk
     {

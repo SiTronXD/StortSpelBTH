@@ -49,7 +49,7 @@ public:
 		auto tankHealthBar = [&](Transform& transform, TankComponent& tank)
 		{
 			float percentage = (float)tank.life / tank.FULL_HEALTH;
-			uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 36.0f, 0.0f) + camTransform.right() * 8.5f * (1.0f - percentage), glm::vec2(1950.0f * percentage, 100.0f));
+			uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 36.0f, 0.0f) + camTransform.right() * 9.0f * (1.0f - percentage), glm::vec2(1950.0f * percentage, 100.0f));
 		};
 		tankView.each(tankHealthBar);
 		auto lichHealthBar = [&](Transform& transform, LichComponent& lich)

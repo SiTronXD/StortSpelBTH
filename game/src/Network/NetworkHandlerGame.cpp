@@ -363,8 +363,17 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		tcpPacket >> i0 >> i1 >> f0;
 		if (serverEntities.find(i0) != serverEntities.end())
 		{
+			i2 = serverEntities.find(i0)->second;
 			str = i1 == 0 ? "LowerBody" : i1 == 1 ? "UpperBody" : "";
-			this->sceneHandler->getScene()->setAnimationTimeScale(serverEntities.find(i0)->second, f0, str);
+			if (str == "UpperBody" && f0 == 0.0f) // Shield anim for tank (ugly fix due to latency)
+			{
+				this->sceneHandler->getScene()->getAnimationSlot(i2, str).timer = 0.725f * 24.0f;
+				this->sceneHandler->getScene()->setAnimationTimeScale(i2, f0, str);
+			}
+			else
+			{
+				this->sceneHandler->getScene()->setAnimationTimeScale(i2, f0, str);
+			}
 		}
 		break;
 	default:

@@ -221,7 +221,7 @@ void LobbyScene::update()
         if (this->startButton.isClicking())
         {
             // Start singleplayer
-            /*if (this->activePlayers == 1)
+            if (this->activePlayers == 1)
             {
                this->getNetworkHandler()->disconnectClient();
                this->getNetworkHandler()->deleteServer();
@@ -229,7 +229,7 @@ void LobbyScene::update()
                    new GameScene(), "scripts/gamescene.lua"
                );
             }
-            else*/
+            else
             {
                 this->helpPacket << (int)NetworkEvent::START;
                 this->getNetworkHandler()->sendDataToServerTCP(helpPacket);

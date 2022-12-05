@@ -850,7 +850,7 @@ BTStatus TankBT::HoldShield(Entity entityID)
 		if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
 		{
 			ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
-			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM_TIMESCALE, entityID, 0, 1 }, { 0.0f });
+			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM_TIMESCALE, entityID, 1 }, { 0.0f });
 		}
 		else
 		{
