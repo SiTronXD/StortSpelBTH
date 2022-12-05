@@ -67,6 +67,8 @@ private:
   void initParticleSystems();
   void deleteInitialParticleSystems();
 
+  void testParticleSystem(const Entity& particleSystemEntity);
+
 public:
   GameScene();
   virtual ~GameScene();

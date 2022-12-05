@@ -142,7 +142,6 @@ public:
 			if (this->scene->getAnimationStatus(this->playerID, "").animationName == "run" && !this->scene->getComponent<AudioSource>(this->moveAudioSource).isPlaying())
 			{
 				playerEffectSound(this->moveSounds[0], this->scene->getComponent<Transform>(this->playerID).position, this->moveAudioSource, 10.f);
-				
 			}
 			else if (this->scene->getAnimationStatus(this->playerID, "").animationName != "run")
 			{

@@ -149,6 +149,29 @@ void GameScene::deleteInitialParticleSystems()
     );
 }
 
+void GameScene::testParticleSystem(const Entity& particleSystemEntity)
+{
+    // Used for testing particle systems
+    #ifdef _CONSOLE
+        if (this->entityValid(particleSystemEntity))
+        {
+            ParticleSystem& particleSystem = this->getComponent<ParticleSystem>(particleSystemEntity);
+
+            ImGui::Begin("Particle System");
+            ImGui::SliderFloat3("Cone pos: ", &particleSystem.coneSpawnVolume.localPosition[0], -5.0f, 5.0f);
+            ImGui::SliderFloat3("Cone dir: ", &particleSystem.coneSpawnVolume.localDirection[0], -1.0f, 1.0f);
+            ImGui::SliderFloat("Disk radius: ", &particleSystem.coneSpawnVolume.diskRadius, 0.0f, 10.0f);
+            ImGui::SliderFloat("Cone angle: ", &particleSystem.coneSpawnVolume.coneAngle, 0.0f, 180.0f);
+            ImGui::SliderFloat("Velocity strength: ", &particleSystem.velocityStrength, 0.0f, 50.0f);
+            ImGui::SliderFloat("Spawn rate: ", &particleSystem.spawnRate, 0.0f, 1.0f);
+            ImGui::Checkbox("Spawn: ", &particleSystem.spawn);
+            ImGui::End();
+
+            this->getDebugRenderer()->renderParticleSystemCone(particleSystemEntity);
+        }
+    #endif
+}
+
 GameScene::GameScene() :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
     perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1),
@@ -311,30 +334,6 @@ void GameScene::start()
 void GameScene::update()
 {
     this->deleteInitialParticleSystems();
-
-/*#ifdef _CONSOLE
-    // Used for testing particle systems
-    if (this->entityValid(this->particleSystemEntity))
-    {
-        ParticleSystem& portalPS = this->getComponent<ParticleSystem>(this->particleSystemEntity);
-
-        ImGui::Begin("Particle System");
-        ImGui::SliderFloat3("Cone pos: ", &portalPS.coneSpawnVolume.localPosition[0], -5.0f, 5.0f);
-        ImGui::SliderFloat3("Cone dir: ", &portalPS.coneSpawnVolume.localDirection[0], -1.0f, 1.0f);
-        ImGui::SliderFloat("Disk radius: ", &portalPS.coneSpawnVolume.diskRadius, 0.0f, 10.0f);
-        ImGui::SliderFloat("Cone angle: ", &portalPS.coneSpawnVolume.coneAngle, 0.0f, 180.0f);
-        ImGui::SliderFloat("Velocity strength: ", &portalPS.velocityStrength, 0.0f, 50.0f);
-        ImGui::SliderFloat("Spawn rate: ", &portalPS.spawnRate, 0.0f, 1.0f);
-        ImGui::Checkbox("Spawn: ", &portalPS.spawn);
-        ImGui::End();
-
-        this->getDebugRenderer()->renderParticleSystemCone(this->particleSystemEntity);
-    }
-#endif*/
-
-
-
-
 
     if (!networkHandler->isConnected())
      {   
