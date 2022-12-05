@@ -863,13 +863,11 @@ BTStatus SwarmBT::alerted(Entity entityID)
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 	Transform& swarmTrans = getTheScene()->getComponent<Transform>(entityID);
 	Collider& swarmCol = getTheScene()->getComponent<Collider>(entityID);
-	float toMove = (swarmCol.radius*2) * (1.0f - swarmComp.alertScale);
+	float toMove = (swarmCol.radius*2) * (swarmComp.origScaleY - swarmComp.alertScale);
 	
 	swarmTrans.rotation.y = lookAtY(swarmTrans, playerTransform);
 	swarmTrans.updateMatrix();
 
-    swarmTrans.rotation.y = lookAtY(swarmTrans, playerTransform);
-    swarmTrans.updateMatrix();
 
     if (!swarmComp.alertAtTop)
         {

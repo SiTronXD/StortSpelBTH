@@ -1,7 +1,7 @@
 #pragma once
 #include "vengine.h"
 #include "TankBTs.hpp"
-#include "../../../Components/AICombatTank.hpp"
+#include "../../../Components/AiElite.hpp"
 #include "../Swarm/SwarmFSM.hpp"
 #include "../Lich/LichFSM.hpp"
 
@@ -91,6 +91,7 @@ struct TankComponent
 	bool alertDone					= false;
 	bool canAttack					= false;
 	bool attackGoRight				= false;
+	bool isElite					= false;
 
 	//Timers
 	float alertTimerOrig			= 1.0f;
@@ -119,6 +120,54 @@ struct TankComponent
 
 	std::unordered_map<int, TankFriend> friendsInSight;
 	std::unordered_map<int, TankFriend> allFriends;
+
+
+	void applyEliteStats(AiEliteComponent& eliteComp)
+    {
+		this->isElite					= true;
+
+        this->directHit		            *= eliteComp.dmgMultiplier;
+        this->humpHit		            *= eliteComp.dmgMultiplier;
+       
+        this->FULL_HEALTH               *= eliteComp.healthMultiplier;
+
+		this->idleSpeed					*= eliteComp.speedMultiplier;
+		this->shieldSpeed				*= eliteComp.speedMultiplier;
+		this->cahargeSpeed				*= eliteComp.speedMultiplier;
+		this->combatRotSpeed			*= eliteComp.speedMultiplier;
+		this->idleRotSpeed				*= eliteComp.speedMultiplier;
+		this->shildRotSpeed				*= eliteComp.speedMultiplier;
+
+		this->sightRadius				*= eliteComp.radiusMultiplier; 
+		this->peronalSpaceRadius		*= eliteComp.radiusMultiplier;
+		this->friendVisitRadius			*= eliteComp.radiusMultiplier; 
+
+        this->origScaleY                *= eliteComp.sizeMultiplier;
+        
+
+    }
+    void removeEliteStats(AiEliteComponent& eliteComp)
+    {
+      	this->isElite					= false;
+
+        this->directHit		            /= eliteComp.dmgMultiplier;
+        this->humpHit		            /= eliteComp.dmgMultiplier;
+       									
+        this->FULL_HEALTH               /= eliteComp.healthMultiplier;
+										
+		this->idleSpeed					/= eliteComp.speedMultiplier;
+		this->shieldSpeed				/= eliteComp.speedMultiplier;
+		this->cahargeSpeed				/= eliteComp.speedMultiplier;
+		this->combatRotSpeed			/= eliteComp.speedMultiplier;
+		this->idleRotSpeed				/= eliteComp.speedMultiplier;
+		this->shildRotSpeed				/= eliteComp.speedMultiplier;
+										
+		this->sightRadius				/= eliteComp.radiusMultiplier; 
+		this->peronalSpaceRadius		/= eliteComp.radiusMultiplier;
+		this->friendVisitRadius			/= eliteComp.radiusMultiplier; 
+										
+        this->origScaleY                /= eliteComp.sizeMultiplier;
+    }
 };
 
 

@@ -2,15 +2,12 @@
 #include "vengine.h"
 #include "SwarmBTs.hpp"
 #include "../../../Components/HealthComp.h"
-#include "../../../Components/AiCombatSwarm.h"
-
+#include "../../../Components/AiElite.hpp"
 
 struct SwarmComponent
 {
     inline static const uint32_t colliderRadius = 4;
     inline static const uint32_t GROUP_RAD_MULTIPLER = 4;
-
-	
 
 	//Ints
 	int LOW_HEALTH				= 30;
@@ -26,6 +23,7 @@ struct SwarmComponent
 	float chargeAnimSpeed		= 1.0f;
 	float escapeAnimSpeed		= 2.0f;
 	float alertScale			= 1.5f;
+	float origScaleY			= 1.0f;
 	float alertTempYpos			= 0.0f;
     float sightRadius			= 70.0f;
 	float attackRange			= 40.0f;
@@ -49,6 +47,7 @@ struct SwarmComponent
 	bool idleIgnoreCol			= false;
 	bool attackGoRight			= false;
 	bool rotateLeft				= false;
+	bool isElite				= false;
 	//Timers					
 	float groundTimer			= 0.0f;
 	float groundTimerOrig		= 1.0f;
@@ -74,52 +73,40 @@ struct SwarmComponent
 		attackGoRight = rand()%2;
 	};
 
-	/*void applyEliteStats(AiEliteComponent& eliteComp)
+	void applyEliteStats(AiEliteComponent& eliteComp)
     {
-        this->             *= eliteComp.dmgMultiplier;
+		this->isElite					= true;
+
+        this->lightHit		            *= eliteComp.dmgMultiplier;
         this->LOW_HEALTH                *= eliteComp.healthMultiplier;           
         this->FULL_HEALTH               *= eliteComp.healthMultiplier;
-        this->ESCAPE_HEALTH             *= eliteComp.healthMultiplier;
-        this->BACK_TO_FIGHT_HEALTH      *= eliteComp.healthMultiplier;
 
         this->sightRadius               *= eliteComp.radiusMultiplier;
-        this->peronalSpaceRadius        *= eliteComp.radiusMultiplier;
-        this->attackRadius              *= eliteComp.radiusMultiplier;
-        this->nonoRadius                *= eliteComp.radiusMultiplier;
+		this->attackRange				*= eliteComp.radiusMultiplier;
 
         this->origScaleY                *= eliteComp.sizeMultiplier;
         
-        this->healthRegenSpeed          *= eliteComp.speedMultiplier;
-        this->manaRegenSpeed            *= eliteComp.speedMultiplier;
-        this->creepRotSpeed             *= eliteComp.speedMultiplier;
-        this->huntRotSpeed              *= eliteComp.speedMultiplier;
-        this->huntSpeed                 *= eliteComp.speedMultiplier;
+		this->speed						*= eliteComp.speedMultiplier;
+		this->idleRotSpeed				*= eliteComp.speedMultiplier;
         this->speed                     *= eliteComp.speedMultiplier;
     }
     void removeEliteStats(AiEliteComponent& eliteComp)
     {
-      
-        a.second.damage             /= eliteComp.dmgMultiplier;
-        
-        this->LOW_HEALTH                /= eliteComp.radiusMultiplier;           
-        this->FULL_HEALTH               /= eliteComp.radiusMultiplier;
-        this->ESCAPE_HEALTH             /= eliteComp.radiusMultiplier;
-        this->BACK_TO_FIGHT_HEALTH      /= eliteComp.radiusMultiplier;
+      	this->isElite					= false;
 
+        this->lightHit		            /= eliteComp.dmgMultiplier;
+        this->LOW_HEALTH                /= eliteComp.healthMultiplier;           
+        this->FULL_HEALTH               /= eliteComp.healthMultiplier;
+										
         this->sightRadius               /= eliteComp.radiusMultiplier;
-        this->peronalSpaceRadius        /= eliteComp.radiusMultiplier;
-        this->attackRadius              /= eliteComp.radiusMultiplier;
-        this->nonoRadius                /= eliteComp.radiusMultiplier;
-
+		this->attackRange				/= eliteComp.radiusMultiplier;
+										
         this->origScaleY                /= eliteComp.sizeMultiplier;
-
-        this->healthRegenSpeed          /= eliteComp.speedMultiplier;
-        this->manaRegenSpeed            /= eliteComp.speedMultiplier;
-        this->creepRotSpeed             /= eliteComp.speedMultiplier;
-        this->huntRotSpeed              /= eliteComp.speedMultiplier;
-        this->huntSpeed                 /= eliteComp.speedMultiplier;
+        								
+		this->speed						/= eliteComp.speedMultiplier;
+		this->idleRotSpeed				/= eliteComp.speedMultiplier;
         this->speed                     /= eliteComp.speedMultiplier;
-    }*/
+    }
 
 	float getGroupHealth(Scene* scene)
 	{

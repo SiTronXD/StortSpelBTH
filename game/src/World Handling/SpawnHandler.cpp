@@ -191,7 +191,12 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos, bool elite)
     
     //Temporary enemie reset
     SwarmComponent& swarmComp = currScene->getComponent<SwarmComponent>(this->swarmIDs[swarmIdx]);
-    transform.scale.y = 1.0f;
+
+    //Setas elite
+    AiEliteComponent defaultEliteComp;
+    swarmComp.applyEliteStats(defaultEliteComp);
+
+    transform.scale.y = swarmComp.origScaleY;
     swarmComp.life = swarmComp.FULL_HEALTH;
     swarmComp.group->inCombat = false;    
 
@@ -555,7 +560,6 @@ void SpawnHandler::createSwarmGroup()
             this->swarmIDs.push_back(netScene->spawnEnemy(0));
         }
         this->allEntityIDs.push_back(this->swarmIDs.back());
-        this->currScene->setComponent<AiCombatSwarm>(this->swarmIDs.back());
         this->currScene->setComponent<Collider>(this->swarmIDs.back(), Collider::createSphere(SwarmComponent::colliderRadius));
         this->currScene->setComponent<Rigidbody>(this->swarmIDs.back());
         Rigidbody& rb = this->currScene->getComponent<Rigidbody>(this->swarmIDs.back());

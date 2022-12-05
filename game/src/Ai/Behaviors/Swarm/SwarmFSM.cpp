@@ -93,7 +93,7 @@ bool SwarmFSM::idle_escape(Entity entityID)
 {
 	bool ret = false;
 	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
-	if(enemySwarmComp.life <= 0 || !FSM::sceneHandler->getScene()->isActive(entityID))
+	if(enemySwarmComp.life <= 0 || !FSM::sceneHandler->getScene()->isActive(entityID) || enemySwarmComp.isElite)
 	{
 		return false;
 	}
@@ -207,7 +207,7 @@ bool SwarmFSM::combat_escape(Entity entityID)
 {
 	bool ret = false;
 	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
-	if(enemySwarmComp.life <= 0 || !FSM::sceneHandler->getScene()->isActive(entityID))
+	if(enemySwarmComp.life <= 0 || !FSM::sceneHandler->getScene()->isActive(entityID) || enemySwarmComp.isElite)
 	{
 		return false;
 	}

@@ -172,8 +172,8 @@ struct LichComponent
     bool chargingAttack         = true;
     bool tempAttack             = false;//For testing strategy picker
     bool attackGoRight          = false;
-
-    bool carryingBones = false;
+    bool isElite                = false;
+    bool carryingBones          = false;
 
     // Orbs
     std::array<Entity, LichComponent::NR_FIRE_ORBS>  fireOrbs;
@@ -186,6 +186,8 @@ struct LichComponent
 
     void applyEliteStats(AiEliteComponent& eliteComp)
     {
+        this->isElite                   = true;
+
         for(auto a: this->attacks)
         {
             a.second.damage             *= eliteComp.dmgMultiplier;
@@ -211,6 +213,8 @@ struct LichComponent
     }
     void removeEliteStats(AiEliteComponent& eliteComp)
     {
+        this->isElite                   = false;
+
         for(auto a: this->attacks)
         {
             a.second.damage             /= eliteComp.dmgMultiplier;
