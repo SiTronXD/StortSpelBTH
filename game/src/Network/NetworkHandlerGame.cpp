@@ -496,12 +496,19 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
             if(serverScene->hasComponents<Rigidbody>(si0)){
                 serverScene->getComponent<Rigidbody>(si0).velocity = glm::vec3(-sv0.x, 0.f, -sv0.z) * sf0;
             }else {
-                std::cout << "ERROR; something is fucked up with Rigidbody on Monster Take Damage\n";
+                std::cout << "ERROR; something is fucked up with Rigidbody on Monster Take Damage; entity["<<si0 <<"]\n";
                 std::cout << "ERROR; is Lich " << serverScene->hasComponents<LichComponent>(si0) << "\n";
-                std::cout << "ERROR; is Tank"  << serverScene->hasComponents<TankComponent>(si0)<< "\n";
-                std::cout << "ERROR; is Swarm" << serverScene->hasComponents<SwarmComponent>(si0)<< "\n";
+                std::cout << "ERROR; is Tank "  << serverScene->hasComponents<TankComponent>(si0)<< "\n";
+                std::cout << "ERROR; is Swarm " << serverScene->hasComponents<SwarmComponent>(si0)<< "\n";
+                std::cout << "ERROR; is a Player " << serverScene->isAPlayer(si0)<< "\n";
+                std::cout << "ERROR; is Inactive " << serverScene->hasComponents<Inactive>(si0)<< "\n";
                 
                 assert(false);
+                //TODO: Should not be needed. This is just to Stop program in release...
+                while(true)
+                {
+                    int Hello = 1; 
+                }
             }
 			
         }
