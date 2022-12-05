@@ -70,8 +70,6 @@ void TheServerGame::aiExample()
           this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(
               entityId
           );
-      auto& entityAiCombatComponent =
-          this->getSceneHandler()->getScene()->getComponent<AiCombatSwarm>(entityId);
       auto& entiyFSMAgentComp =
           this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(
               entityId
@@ -86,8 +84,8 @@ void TheServerGame::aiExample()
       float& attackRange = entitySwarmComponent.attackRange;
       float& sightRange = entitySwarmComponent.sightRadius;
       bool& inCombat = entitySwarmComponent.inCombat;
-      float& attackPerSec = entityAiCombatComponent.lightAttackTime;
-      float& lightAttackDmg = entityAiCombatComponent.lightHit;
+      float& attackPerSec = entitySwarmComponent.lightAttackTime;
+      float& lightAttackDmg = entitySwarmComponent.lightHit;
       float& gravity = entityRigidBody.gravityMult;
       std::string& status = entiyFSMAgentComp.currentNode->status;
       ImGui::Text(status.c_str());
@@ -154,8 +152,6 @@ void TheServerGame::aiExample()
         this->getSceneHandler()->getScene()->getComponent<SwarmComponent>(
             entityId
         );
-    auto& entityAiCombatComponent =
-        this->getSceneHandler()->getScene()->getComponent<AiCombatSwarm>(entityId);
     auto& entiyFSMAgentComp =
         this->getSceneHandler()->getScene()->getComponent<FSMAgentComponent>(
             entityId
@@ -219,7 +215,6 @@ void TheServerGame::aiExample()
       for (size_t i = 0; i < group_size; i++)
         {
           this->enemyIDs.push_back(this->createEnemy(1));
-          this->setComponent<AiCombatSwarm>(this->enemyIDs.back());
           this->setComponent<Collider>(
               this->enemyIDs.back(), Collider::createSphere(4.0f)
           );

@@ -828,13 +828,22 @@ BTStatus LichBT::die(Entity entityID)
 	{
         playerHealth.health += 10;
 	}
-
+    ret = BTStatus::Success;
 	getTheScene()->setInactive(entityID);
     ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
     if (serverScene != nullptr) 
     {
         serverScene->addEvent({(int)GameEvent::INACTIVATE, entityID});
     }
+
+    if(ret == BTStatus::Success)
+	{
+		LichComponent& lichComp = sceneHandler->getScene()->getComponent<LichComponent>(entityID);
+		if(lichComp.isElite)
+		{
+			lichComp.removeEliteStats(sceneHandler->getScene(), entityID);
+		}
+	}
 
 	return ret;
 }

@@ -1,4 +1,5 @@
 #include "SwarmFSM.hpp"
+#include "../../../Scenes/GameScene.h"
 
 Entity SwarmFSM::getPlayerID(Entity entityID){
     int playerID = -1;
@@ -93,7 +94,7 @@ bool SwarmFSM::idle_escape(Entity entityID)
 {
 	bool ret = false;
 	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
-	if(enemySwarmComp.life <= 0 || !FSM::sceneHandler->getScene()->isActive(entityID))
+	if(enemySwarmComp.life <= 0 || !FSM::sceneHandler->getScene()->isActive(entityID) || enemySwarmComp.isElite)
 	{
 		return false;
 	}
@@ -186,7 +187,7 @@ bool SwarmFSM::combat_idle(Entity entityID)
 
 		//Set move to
 		enemySwarmComp.idleMoveTo = enemySwarmComp.group->idleMidPos;
-		glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
+		glm::vec3 dir = genRandomDir(glm::vec3{1.f,0.f,1.f});
 		enemySwarmComp.idleMoveTo = enemySwarmComp.idleMoveTo + dir * enemySwarmComp.group->idleRadius;
 		
 
@@ -195,10 +196,9 @@ bool SwarmFSM::combat_idle(Entity entityID)
 		FSM::sceneHandler->getScene()->getComponent<Rigidbody>(entityID).friction = 1.0f;
 
 		//Reset Combat timer
-		AiCombatSwarm& combat = FSM::sceneHandler->getScene()->getComponent<AiCombatSwarm>(entityID);
-		combat.timer = combat.lightAttackTime;
+		enemySwarmComp.timer = enemySwarmComp.lightAttackTime;
 		//Reset scale
-		FSM::sceneHandler->getScene()->getComponent<Transform>(entityID).scale.y = 1.0f;
+		FSM::sceneHandler->getScene()->getComponent<Transform>(entityID).scale.y = enemySwarmComp.origScaleY;
 	}
 
 	return ret;
@@ -208,7 +208,7 @@ bool SwarmFSM::combat_escape(Entity entityID)
 {
 	bool ret = false;
 	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
-	if(enemySwarmComp.life <= 0 || !FSM::sceneHandler->getScene()->isActive(entityID))
+	if(enemySwarmComp.life <= 0 || !FSM::sceneHandler->getScene()->isActive(entityID) || enemySwarmComp.isElite)
 	{
 		return false;
 	}
@@ -233,11 +233,10 @@ bool SwarmFSM::combat_escape(Entity entityID)
 	if(ret == true)
 	{
 		//Reset Combat timer
-		AiCombatSwarm& combat = FSM::sceneHandler->getScene()->getComponent<AiCombatSwarm>(entityID);
-		combat.timer = combat.lightAttackTime;
+		enemySwarmComp.timer = enemySwarmComp.lightAttackTime;
 
 		//Reset scale
-		FSM::sceneHandler->getScene()->getComponent<Transform>(entityID).scale.y = 1.0f;
+		FSM::sceneHandler->getScene()->getComponent<Transform>(entityID).scale.y = enemySwarmComp.origScaleY;
 	}
 
 	return ret;
@@ -286,7 +285,7 @@ bool SwarmFSM::escape_idle(Entity entityID)
 
 		//Set move to
 		enemySwarmComp.idleMoveTo = enemySwarmComp.group->idleMidPos;
-		glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
+		glm::vec3 dir = genRandomDir({1.f,0.f,1.f});
 		enemySwarmComp.idleMoveTo = enemySwarmComp.idleMoveTo + dir * enemySwarmComp.group->idleRadius;
 
 		//Reset friction
@@ -349,8 +348,7 @@ bool SwarmFSM::dead(Entity entityID)
 	{
 		swarmComp.alertDone = false;
 		//Reset Combat timer
-		AiCombatSwarm& combat = FSM::sceneHandler->getScene()->getComponent<AiCombatSwarm>(entityID);
-		combat.timer = combat.lightAttackTime;
+		swarmComp.timer = swarmComp.lightAttackTime;
 	}
 
 	return ret;
@@ -384,12 +382,23 @@ void SwarmFSM::updateSwarmGrounded(Entity entityID)
 
     if(rp.hit && swarmComp.groundTimer <= 0.0f)
     {
-		Collider& hitCol = FSM::sceneHandler->getScene()->getComponent<Collider>(rp.entity);
+		Scene* scene = FSM::sceneHandler->getScene();
+		Collider& hitCol = scene->getComponent<Collider>(rp.entity);
 		float dist = glm::length(rp.hitPoint - posToUse);
 		if(dist < (collider.radius + 0.5f) && !hitCol.isTrigger)
 		{
 			swarmComp.grounded = true;	
 			swarmComp.groundTimer = swarmComp.groundTimerOrig;
+
+			// Spawn particle system when grounded
+			if (!scene->hasComponents<ParticleSystem>(entityID))
+			{
+				scene->setComponent<ParticleSystem>(entityID);
+				ParticleSystem& partSys =
+					scene->getComponent<ParticleSystem>(entityID);
+				partSys = ((GameScene*) scene)->getSwarmParticleSystem();
+				partSys.spawn = true;
+			}
 		}
     }
 

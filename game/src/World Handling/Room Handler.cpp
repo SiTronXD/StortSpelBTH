@@ -573,6 +573,11 @@ int RoomHandler::getNumRooms() const
 	return (int)this->rooms.size();
 }
 
+bool RoomHandler::inExitRoom() const
+{
+	return this->rooms[this->activeIndex].type == RoomData::Type::EXIT_ROOM;
+}
+
 bool TileInfo::checkValidTileInfoVector(const std::vector<TileInfo>& tileInfos, int roomIndex)
 {
     bool tileInfosValid = true; 

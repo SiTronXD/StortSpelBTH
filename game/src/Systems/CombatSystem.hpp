@@ -3,11 +3,11 @@
 #include <vengine.h>
 #include "../Components/Combat.h"
 #include "../Components/HealthComp.h"
-#include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
-#include "../Network/NetworkHandlerGame.h"
-#include "../Ai/Behaviors/Tank/TankFSM.hpp"
-
 #include "../Components/HealArea.h"
+#include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
+#include "../Ai/Behaviors/Tank/TankFSM.hpp"
+#include "../Network/NetworkHandlerGame.h"
+#include "../Scenes/GameScene.h"
 
 enum SoundSourceEnum { takeDmgSource, moveSource, attackSource };
 enum AttackSoundEnum { swing };
@@ -134,15 +134,18 @@ public:
 				removeAbility(combat, combat.ability);
             }
 
+			ParticleSystem& footstepPS = this->scene->getComponent<ParticleSystem>(this->playerID);
+
 			MultipleAudioSources& multiAudio = this->scene->getComponent<MultipleAudioSources>(this->playerID);
-			if (this->scene->getAnimationStatus(this->playerID, "").animationName == "run")
+			bool isPlayingRunAnim = this->scene->getAnimationStatus(this->playerID, "").animationName == "run";
+			if (isPlayingRunAnim)
 			{
 				if (!multiAudio.audioSource[moveSource].isPlaying())
 				{
 					playerEffectSound(moveSource, this->moveSound, true, 10.f);
 				}
 			}
-			else if (this->scene->getAnimationStatus(this->playerID, "").animationName != "run")
+			else
 			{
 				if (multiAudio.audioSource[moveSource].isPlaying())
 				{
@@ -150,11 +153,24 @@ public:
 				}
 			}
 
+			// Try to spawn particles when the sound effect is playing
+			footstepPS.spawn = isPlayingRunAnim;
+
+			// Don't spawn footstep particles if the player has jumped
+			bool onGround = true;
+			this->script->getScriptComponentValue(
+				this->scene->getComponent<Script>(this->playerID), onGround, "onGround");
+			if (!onGround)
+			{
+				footstepPS.spawn = false;
+			}
+
 			HealthComp& healthComp = this->scene->getComponent<HealthComp>(this->playerID);
 			if (this->lostHealth > healthComp.health)
 			{
 				this->lostHealth = healthComp.health;
-				takeDmg();
+				takeDmg(healthComp.srcDmgEntity);
+				healthComp.srcDmgEntity = -1;
 			}
 
 #ifdef _CONSOLE
@@ -173,6 +189,26 @@ public:
 			{
 				combat.animationMultiplier[i] = animMultis[i];
 			}
+
+			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+			float runAnim = 0.f;
+            this->script->getScriptComponentValue(
+                playerScript, runAnim, "runAnimTime"
+            );
+			float sprintAnim = 0.f;
+            this->script->getScriptComponentValue(
+                playerScript, sprintAnim, "sprintAnimTime"
+            );
+			ImGui::Begin("Running Animation");
+            ImGui::SliderFloat("Running Anim", &runAnim, 0.f, 10.f);
+            ImGui::SliderFloat("Running Anim", &sprintAnim, 0.f, 10.f);
+            ImGui::End();
+            this->script->setScriptComponentValue(
+                playerScript, runAnim, "runAnimTime"
+            );
+            this->script->setScriptComponentValue(
+                playerScript, sprintAnim, "sprintAnimTime"
+            );
 #endif
 		};
 		view.each(foo);
@@ -260,12 +296,35 @@ public:
 		}
 	}
 
-	void takeDmg()
+	void takeDmg(Entity srcDmgEntity)
 	{
 		if (!this->scene->getComponent<MultipleAudioSources>(this->playerID).audioSource[takeDmgSource].isPlaying())
 		{
 			playerEffectSound(takeDmgSource, this->takeDmgSound, false, 10.f);
 		}
+
+		// Particle system transform
+		Entity bloodParticleSystemEntity = this->scene->createEntity();
+		Transform& bloodTransform = this->scene->getComponent<Transform>(bloodParticleSystemEntity);
+		bloodTransform = this->scene->getComponent<Transform>(this->playerID);
+		if (srcDmgEntity != -1 && this->scene->entityValid(srcDmgEntity))
+		{
+			// Rotate particle system depending on incoming damage
+			Transform& srcDmgEntityTransform = 
+				this->scene->getComponent<Transform>(srcDmgEntity);
+			glm::vec3 dir = -(srcDmgEntityTransform.position - bloodTransform.position);
+			dir.y = 0.0f;
+			const glm::mat4 customMatrix = 
+				glm::translate(glm::mat4(1.0f), bloodTransform.position) * 
+				SMath::rotateTowards(dir);
+			bloodTransform.setMatrix(customMatrix);
+		}
+
+		// Particle system spawn
+		this->scene->setComponent<ParticleSystem>(bloodParticleSystemEntity);
+		ParticleSystem& bloodPS = this->scene->getComponent<ParticleSystem>(bloodParticleSystemEntity);
+		bloodPS = ((GameScene*) this->scene)->getBloodParticleSystem();
+		bloodPS.spawn = true;
 	}
 
 	void hitEnemy(Combat& combat, int ID)
@@ -273,7 +332,7 @@ public:
 		Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(ID);
 		Transform& enemyTrans = this->scene->getComponent<Transform>(ID);
 		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
-		glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+		glm::vec3 newDir = safeNormalize(playerTrans.position - enemyTrans.position);
 		enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * combat.knockbackArr[combat.activeAttack];
 		this->hitEnemies.emplace_back(ID);
 	}
@@ -537,8 +596,8 @@ public:
 			{
 				combat.movementMultiplier = 2.f;
 				moveTimers[0] = 2.f;
-				moveTimers[1] = 1.4f;
-				moveTimers[2] = 2.4f;
+                moveTimers[1] = 2.8f;  //1.4f;
+				moveTimers[2] = 5.6f; // 2.4f;
 				this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
@@ -654,8 +713,8 @@ public:
 		this->script->setScriptComponentValue(playerScript, 100, "dodgeSpeed");
 
 		this->script->setScriptComponentValue(playerScript, 1.f, "idleAnimTime");
-		this->script->setScriptComponentValue(playerScript, 0.7f, "runAnimTime");
-		this->script->setScriptComponentValue(playerScript, 1.2f, "sprintAnimTime");
+		this->script->setScriptComponentValue(playerScript, 1.8f, "runAnimTime"); // 0.7f
+		this->script->setScriptComponentValue(playerScript, 2.8f, "sprintAnimTime"); // 1.2f
 		this->script->setScriptComponentValue(playerScript, 3.f, "dodgeAnimTime");
 	}
 
@@ -681,7 +740,7 @@ public:
 		perkTrans.position = glm::vec3(playerTrans.position.x, playerTrans.position.y + 8.f, playerTrans.position.z);
 		perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
 		playerTrans.updateMatrix();
-		glm::vec3 throwDir = glm::normalize(playerTrans.forward());
+		glm::vec3 throwDir = safeNormalize(playerTrans.forward());
 		perkRb.gravityMult = 6.f;
 		perkRb.velocity = glm::vec3(throwDir.x * 20.f, 30.f, throwDir.z * 20.f);
 	}
@@ -700,7 +759,7 @@ public:
 			Transform& t = this->scene->getComponent<Transform>(this->playerID);
 			HealthComp& healthComp = this->scene->getComponent<HealthComp>(this->playerID);
 			t.updateMatrix();
-			this->networkHandler->spawnItemRequest(perk.perkType, perk.multiplier, t.position + glm::vec3(0.0f, 8.0f, 0.0f), glm::normalize(t.forward() + glm::vec3(0.0f, 0.5f, 0.0f)));
+			this->networkHandler->spawnItemRequest(perk.perkType, perk.multiplier, t.position + glm::vec3(0.0f, 8.0f, 0.0f), safeNormalize(t.forward() + glm::vec3(0.0f, 0.5f, 0.0f)));
 			switch (perk.perkType)
 			{
 			case hpUpPerk:
@@ -748,7 +807,7 @@ public:
 		abilityTrans.position = glm::vec3(playerTrans.position.x, playerTrans.position.y + 8.f, playerTrans.position.z);
 		abilityTrans.scale = glm::vec3(3.f);
 		playerTrans.updateMatrix();
-		glm::vec3 throwDir = glm::normalize(playerTrans.forward());
+		glm::vec3 throwDir = safeNormalize(playerTrans.forward());
 		abilityRb.gravityMult = 6.f;
 		abilityRb.velocity = glm::vec3(throwDir.x * 20.f, 30.f, throwDir.z * 20.f);
 	}
@@ -780,7 +839,7 @@ public:
 		{
 			Transform& t = this->scene->getComponent<Transform>(this->playerID);
 			t.updateMatrix();
-			this->networkHandler->spawnItemRequest(ability.abilityType, t.position + glm::vec3(0.0f, 8.0f, 0.0f), glm::normalize(t.forward() + glm::vec3(0.0f, 0.5f, 0.0f)));
+			this->networkHandler->spawnItemRequest(ability.abilityType, t.position + glm::vec3(0.0f, 8.0f, 0.0f), safeNormalize(t.forward() + glm::vec3(0.0f, 0.5f, 0.0f)));
 			combat.ability.abilityType = emptyAbility;
 		}
 	}

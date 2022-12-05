@@ -5,6 +5,7 @@
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
+#include "../Components/AiElite.hpp"
 
 #include <list>
 #include <random>
@@ -82,7 +83,6 @@ private:
     ResourceManager* resourceManager  = nullptr;
     UIRenderer*      uiRenderer       = nullptr;
 
-
     float nrOfEnemiesPerRoom = 0; // Set based on nr of Tile per room
 
     // Data for imgui
@@ -110,11 +110,11 @@ private:
 
     TilePicker tilePicker;
 
-    void spawnTank( const int tankIdx,  const glm::vec3& pos);
-    uint32_t spawnLich( const int lichIdx, std::vector<const TileInfo*> tileInfos);
-    uint32_t spawnSwarmGroup(const int swarmStartIdx, std::vector<const TileInfo*> tileInfo); //TODO: Do we need to have a vector of pos; say 2 to let a swarm spawn over two tiles?
-    void spawnSwarm(const int swarmIdx, const glm::vec3& pos);
-    void initTanks();
+    void        spawnTank        (const int tankIdx         , const glm::vec3& pos                  , bool elite = false);
+    uint32_t    spawnLich        (const int lichIdx         , std::vector<const TileInfo*> tileInfos, bool elite = false);
+    uint32_t    spawnSwarmGroup  (const int swarmStartIdx   , std::vector<const TileInfo*> tileInfo , bool elite = false); //TODO: Do we need to have a vector of pos; say 2 to let a swarm spawn over two tiles?
+    void        spawnSwarm       (const int swarmIdx        , const glm::vec3& pos                  , bool elite = false);
+    void        initTanks        ();
 
     void createTank();
     void createLich();

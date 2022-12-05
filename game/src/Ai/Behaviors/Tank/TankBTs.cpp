@@ -175,10 +175,10 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 	//drawRaySimple(rayToPlayer_left, maxDist);
 	if(rp.hit || rp1.hit || rp2.hit)
 	{
-		
-		if((sceneHandler->getScene()->hasComponents<Collider>(rp.entity) && !getTheScene()->getComponent<Collider>(rp.entity).isTrigger && rp.entity != entityID) || 
-			(sceneHandler->getScene()->hasComponents<Collider>(rp1.entity) && !getTheScene()->getComponent<Collider>(rp1.entity).isTrigger && rp1.entity != entityID) ||
-			(sceneHandler->getScene()->hasComponents<Collider>(rp2.entity) && !getTheScene()->getComponent<Collider>(rp2.entity).isTrigger && rp2.entity != entityID))
+		bool one = (rp.entity != -1 && sceneHandler->getScene()->hasComponents<Collider>(rp.entity) && !getTheScene()->getComponent<Collider>(rp.entity).isTrigger && rp.entity != entityID);
+		bool two = (rp1.entity != -1 && sceneHandler->getScene()->hasComponents<Collider>(rp1.entity) && !getTheScene()->getComponent<Collider>(rp1.entity).isTrigger && rp1.entity != entityID);
+		bool three= (rp2.entity != -1 && sceneHandler->getScene()->hasComponents<Collider>(rp2.entity) && !getTheScene()->getComponent<Collider>(rp2.entity).isTrigger && rp2.entity != entityID);
+		if(one || two || three)
 		{
 			ret = false;
 			somethingInTheWay = true;
@@ -851,13 +851,22 @@ BTStatus TankBT::die(Entity entityID)
 	{
 		playerHealth.health += 10;
 	}
-
+	ret = BTStatus::Success;
 	getTheScene()->setInactive(entityID);
 	ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
     if (serverScene != nullptr) 
     {
         serverScene->addEvent({(int)GameEvent::INACTIVATE, entityID});   
     }
+
+	if(ret == BTStatus::Success)
+	{
+		TankComponent& tankComp = sceneHandler->getScene()->getComponent<TankComponent>(entityID);
+		if(tankComp.isElite)
+		{
+			tankComp.removeEliteStats(sceneHandler->getScene(), entityID);
+		}
+	}
 	return ret;
 }
 
