@@ -82,7 +82,7 @@ void GameScene::initParticleSystems()
     this->setComponent<ParticleSystem>(this->playerID);
     ParticleSystem& footstepPS = this->getComponent<ParticleSystem>(this->playerID);
     footstepPS.maxlifeTime = 0.8f;
-    footstepPS.numParticles = 16;
+    footstepPS.numParticles = 12;
     footstepPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/grassDustParticle.png");
     footstepPS.startSize = glm::vec2(0.0f);
     footstepPS.endSize = glm::vec2(1.7f);

@@ -137,15 +137,29 @@ public:
 				removeAbility(combat, combat.ability);
             }
 
+			ParticleSystem& footstepPS = this->scene->getComponent<ParticleSystem>(this->playerID);
+
 			if (this->scene->getAnimationStatus(this->playerID, "").animationName == "run" && !this->scene->getComponent<AudioSource>(this->moveAudioSource).isPlaying())
 			{
 				playerEffectSound(this->moveSounds[0], this->scene->getComponent<Transform>(this->playerID).position, this->moveAudioSource, 10.f);
-				this->scene->getComponent<ParticleSystem>(this->playerID).spawn = true;
+				
 			}
 			else if (this->scene->getAnimationStatus(this->playerID, "").animationName != "run")
 			{
 				this->scene->getComponent<AudioSource>(this->moveAudioSource).stop();
-				this->scene->getComponent<ParticleSystem>(this->playerID).spawn = false;
+			}
+
+			// Try to spawn particles when the sound effect is playing
+			footstepPS.spawn = 
+				this->scene->getComponent<AudioSource>(this->moveAudioSource).isPlaying();
+
+			// Don't spawn footstep particles if the player has jumped
+			bool onGround = true;
+			this->script->getScriptComponentValue(
+				this->scene->getComponent<Script>(this->playerID), onGround, "onGround");
+			if (!onGround)
+			{
+				footstepPS.spawn = false;
 			}
 
 			HealthComp& healthComp = this->scene->getComponent<HealthComp>(this->playerID);
