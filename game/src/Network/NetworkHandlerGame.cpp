@@ -685,10 +685,6 @@ void NetworkHandlerGame::interpolatePositions()
 	this->timer += Time::getDT();
 
 	float percent = this->timer / UPDATE_RATE;
-    //if (percent > 1.5)//we have gone to far without and update
-    //{
-	//	return;    
-	//}
 	for (int i = 0; i < this->playerEntities.size(); i++)
 	{
 		Transform& t = scene->getComponent<Transform>(this->playerEntities[i]);
