@@ -136,8 +136,16 @@ void NetworkHandlerGame::init()
     this->lich_light->setStats(ATTACK_STRATEGY::LIGHT);
 }
 
-void NetworkHandlerGame::cleanup()
+void NetworkHandlerGame::cleanUp()
 {
+    playerEntities.clear();
+    swords.clear();
+    playerPosLast.clear();
+    playerPosCurrent.clear();
+    serverEntities.clear();
+    itemIDs.clear();
+    entityToPosScale.clear();
+    entityLastPosScale.clear();
 }
 
 int NetworkHandlerGame::getSeed()
@@ -338,6 +346,9 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
         this->numRoomsCleared++;
 		std::cout << "GameScene: number of rooms cleared:" << this->numRoomsCleared << std::endl;  
         break;
+    case GameEvent::NEXT_LEVEL:
+        this->sceneHandler->setScene(new GameScene(), "scripts/gamescene.lua");
+		break;
     case GameEvent::INACTIVATE:
         tcpPacket >> i0;
         if (serverEntities.find(i0) != serverEntities.end())

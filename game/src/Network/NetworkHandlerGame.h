@@ -122,7 +122,7 @@ private:
 public:
     ~NetworkHandlerGame();
 	void init();
-	void cleanup();
+	void cleanUp() override;
 
 	void setCombatSystem(CombatSystem* system);
 	int getSeed();
