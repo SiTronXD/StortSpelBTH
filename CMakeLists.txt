@@ -19,6 +19,11 @@ endif()
 set(USE_COMPILE_COMMANDS ON)
 
 
+# SET(CMAKE_LINKER clang)
+#ASAN_OPTIONS=halt_on_error=0:detect_leaks=1 ./../build/debug_unix_lldb/3D_VEngine_GameDemo
+# add_compile_options(-g -fsanitize=address,leak -fno-omit-frame-pointer -fsanitize-recover=address )
+# add_link_options(   -g -fsanitize=address,leak -fno-omit-frame-pointer -fsanitize-memory-track-origins=2)
+
 # all the source files
 FILE(GLOB_RECURSE GAME_SOURCES CONFIGURE_DEPENDS
     game/*.cpp 
@@ -89,8 +94,6 @@ endif()
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug" )
 target_compile_definitions(3D_VEngine_GameDemo PRIVATE "_DEBUG" )
 endif()
-
-set(VENGINE_USE_PROFILING true)
 
 add_subdirectory(deps/vengine/src)
 

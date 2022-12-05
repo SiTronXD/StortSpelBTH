@@ -63,6 +63,9 @@ end
 
 function script:update(dt)
     if (paused) then
+        local rb = scene.getComponent(self.ID, CompType.Rigidbody)
+        rb.velocity = vector()
+        scene.setComponent(self.ID, CompType.Rigidbody, rb)
         return
     end
     if (self.currentAnimation == self.activeAnimation.dead) then

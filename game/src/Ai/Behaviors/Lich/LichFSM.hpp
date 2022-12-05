@@ -220,7 +220,7 @@ private:
 	EntityEvent idle_to_creep{   "idle to creep",      idleToCreep};
 	EntityEvent creep_to_alerted{"creep to alerted",   creepToAlerted};
 	EntityEvent creep_to_idle{   "creep to idle",      creepToIdle};
-    EntityEvent alert_to_hunt{   "alert to hunt",      alertToHunt};    
+    EntityEvent alert_to_hunt{   "alert to hunt",      alertToHunt};  
     EntityEvent hunt_to_idle{    "hunt to idle",       huntToIdle};
     EntityEvent hunt_to_combat{  "hunt to combat",     huntToCombat};
     EntityEvent combat_to_idle{  "combat to dead",     combatToIdle};
