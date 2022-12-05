@@ -59,7 +59,18 @@ void ServerGameMode::update(float dt)
     {
         std::cout << "Server: player in new room" << std::endl;
         this->newRoomFrame = true;
+        this->timeWhenEnteredRoom = Time::getTimeSinceStart();
+        this->safetyCleanDone = false; 
         spawnHandler.spawnEnemiesIntoRoom();
+    }
+    if(!this->safetyCleanDone)
+    {
+        
+        if(this->timeWhenEnteredRoom + delayToSafetyDelete < Time::getTimeSinceStart())
+        {
+            this->spawnHandler.killAllEnemiesOutsideRoom();
+            this->safetyCleanDone = true;
+        }
     }
 
     if (this->spawnHandler.allDead() && this->newRoomFrame)

@@ -184,8 +184,8 @@ void GameScene::update()
         if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
         {
             this->newRoomFrame = true;
-        this->timeWhenEnteredRoom = Time::getTimeSinceStart();
-        this->safetyCleanDone = false; 
+            this->timeWhenEnteredRoom = Time::getTimeSinceStart();
+            this->safetyCleanDone = false;
 
             this->spawnHandler.spawnEnemiesIntoRoom();
         }
