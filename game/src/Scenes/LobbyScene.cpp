@@ -196,6 +196,7 @@ void LobbyScene::update()
             {
                this->getNetworkHandler()->disconnectClient();
                this->getNetworkHandler()->deleteServer();
+               this->getNetworkHandler()->setStatus(ServerStatus::WAITING);
                this->switchScene(
                    new GameScene(), "scripts/gamescene.lua"
                );
