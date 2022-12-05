@@ -82,14 +82,14 @@ void GameScene::initParticleSystems()
     // Fotstep particle system
     this->setComponent<ParticleSystem>(this->playerID);
     ParticleSystem& footstepPS = this->getComponent<ParticleSystem>(this->playerID);
-    footstepPS.maxlifeTime = 0.8f;
+    footstepPS.maxlifeTime = 1.2f;
     footstepPS.numParticles = 12;
     footstepPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/grassDustParticle.png");
     footstepPS.startSize = glm::vec2(0.0f);
     footstepPS.endSize = glm::vec2(1.7f);
     footstepPS.startColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     footstepPS.endColor = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
-    footstepPS.velocityStrength = 1.0f;
+    footstepPS.velocityStrength = 2.0f;
     footstepPS.acceleration = glm::vec3(0.0f, -0.5f, 0.0f);
     footstepPS.coneSpawnVolume.diskRadius = 3.0f;
     footstepPS.coneSpawnVolume.coneAngle = 0.0f;

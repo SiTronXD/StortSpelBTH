@@ -137,14 +137,15 @@ public:
 			ParticleSystem& footstepPS = this->scene->getComponent<ParticleSystem>(this->playerID);
 
 			MultipleAudioSources& multiAudio = this->scene->getComponent<MultipleAudioSources>(this->playerID);
-			if (this->scene->getAnimationStatus(this->playerID, "").animationName == "run")
+			bool isPlayingRunAnim = this->scene->getAnimationStatus(this->playerID, "").animationName == "run";
+			if (isPlayingRunAnim)
 			{
 				if (!multiAudio.audioSource[moveSource].isPlaying())
 				{
 					playerEffectSound(moveSource, this->moveSound, true, 10.f);
 				}
 			}
-			else if (this->scene->getAnimationStatus(this->playerID, "").animationName != "run")
+			else
 			{
 				if (multiAudio.audioSource[moveSource].isPlaying())
 				{
@@ -153,8 +154,7 @@ public:
 			}
 
 			// Try to spawn particles when the sound effect is playing
-			footstepPS.spawn = 
-				multiAudio.audioSource[moveSource].isPlaying();
+			footstepPS.spawn = isPlayingRunAnim;
 
 			// Don't spawn footstep particles if the player has jumped
 			bool onGround = true;
