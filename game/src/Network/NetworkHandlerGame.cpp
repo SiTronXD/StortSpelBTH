@@ -660,15 +660,15 @@ void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
 		else if (sceneHandler->getScene()->hasComponents<TankComponent>(entityID)) {
 			this->sceneHandler->getAudioHandler()->playSound(entityID, TankComponent::s_takeDmg, 10.f);
 			TankComponent& enemy = sceneHandler->getScene()->getComponent<TankComponent>(entityID);
-                  enemy.life -= damage;
-                  isEnemy = true;
+			enemy.life -= damage;
+            isEnemy = true;
 		}
         else if (sceneHandler->getScene()->hasComponents<LichComponent>(entityID)) {
 			this->sceneHandler->getAudioHandler()->playSound(entityID, LichComponent::s_takeDmg, 10.f);
 			LichComponent& enemy = sceneHandler->getScene()->getComponent<LichComponent>(entityID);
-                  enemy.life -= damage;
-                  isEnemy = true;
-                  std::cout << "LichWas HIT\n";
+            enemy.life -= damage;
+            isEnemy = true;
+            std::cout << "LichWas HIT\n";
 		}
 		//if (sceneHandler->getScene()->hasComponents<LichComponent>(entityID)) {
 		//

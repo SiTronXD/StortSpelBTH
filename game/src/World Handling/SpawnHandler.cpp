@@ -304,21 +304,21 @@ Log::write("Killing all enemies outside room...");
 
 void SpawnHandler::createTank()
 {
-    if (!SwarmComponent::s_initialized)       // AUDIO TESTING
+    if (!TankComponent::s_initialized)       // AUDIO TESTING
     {
-        SwarmComponent::s_takeDmg =
+        TankComponent::s_takeDmg =
             this->resourceManager->addSound("assets/Sounds/OufSound.ogg");
-        SwarmComponent::s_move =
-            this->resourceManager->addSound("assets/Sounds/RunningSound.ogg");
-        SwarmComponent::s_attack =
-            this->resourceManager->addSound("assets/Sounds/SwishSound.ogg");
+        //TankComponent::s_move =
+        //    this->resourceManager->addSound("assets/Sounds/RunningSound.ogg");
+        //TankComponent::s_attack =
+        //    this->resourceManager->addSound("assets/Sounds/SwishSound.ogg");
     
     //audioHandler->playSound(myEntity, soundBufferId)
     //
     //audioHandler->requestAudioSource(entity, 2)
     //scene->getComponent<AudioSource>(entity).
     
-        SwarmComponent::s_initialized = true;
+        TankComponent::s_initialized = true;
     }
 
     ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
@@ -379,21 +379,21 @@ void SpawnHandler::createTank()
 
 void SpawnHandler::createLich()
 {
-    if (!SwarmComponent::s_initialized)       // AUDIO TESTING
+    if (!LichComponent::s_initialized)       // AUDIO TESTING
     {
-        SwarmComponent::s_takeDmg =
+        LichComponent::s_takeDmg =
             this->resourceManager->addSound("assets/Sounds/OufSound.ogg");
-        SwarmComponent::s_move =
-            this->resourceManager->addSound("assets/Sounds/RunningSound.ogg");
-        SwarmComponent::s_attack =
-            this->resourceManager->addSound("assets/Sounds/SwishSound.ogg");
+        //LichComponent::s_move =
+        //    this->resourceManager->addSound("assets/Sounds/RunningSound.ogg");
+        //LichComponent::s_attack =
+        //    this->resourceManager->addSound("assets/Sounds/SwishSound.ogg");
     
-    //audioHandler->playSound(myEntity, soundBufferId)
-    //
-    //audioHandler->requestAudioSource(entity, 2)
-    //scene->getComponent<AudioSource>(entity).
+        //audioHandler->playSound(myEntity, soundBufferId)
+        //
+        //audioHandler->requestAudioSource(entity, 2)
+        //scene->getComponent<AudioSource>(entity).
     
-        SwarmComponent::s_initialized = true;
+        LichComponent::s_initialized = true;
     }
 
     ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);

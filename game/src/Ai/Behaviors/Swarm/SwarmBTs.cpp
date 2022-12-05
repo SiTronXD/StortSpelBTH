@@ -711,6 +711,10 @@ BTStatus SwarmBT::attack(Entity entityID)
 		{
 			netScene->addEvent({ (int)GameEvent::PLAY_ENEMY_SOUND, entityID, 0, 1, 0 });
 		}
+		else
+		{
+			sceneHandler->getAudioHandler()->playSound(entityID, SwarmComponent::s_attack, 10.f);
+		}
 	
 		Log::write("ATTACK!!!!", BT_FILTER);
 		ret = BTStatus::Success;

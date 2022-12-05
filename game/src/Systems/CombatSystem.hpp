@@ -15,11 +15,13 @@ enum AttackSoundEnum { swing };
 class CombatSystem : public System
 {
 private:
+	SceneHandler* sceneHandler;
 	Scene* scene;
 	ResourceManager* resourceMng;
 	PhysicsEngine* physics;
 	UIRenderer* uiRenderer;
 	ScriptHandler* script;
+	AudioHandler* audio;
 	NetworkHandlerGame* networkHandler;
 	Entity playerID;
 	Entity swordID;
@@ -30,6 +32,9 @@ private:
 	uint32_t moveSound;
 	uint32_t takeDmgSound;
 
+	float walkTimer = -1.f;
+	float walkTime = 0.5f;
+
 	int swordMesh;
 	int perkMeshes[5];
 	int abilityMeshes[2];
@@ -39,11 +44,17 @@ private:
 
 public:
 
-	CombatSystem(Scene* scene, ResourceManager* resourceMng, Entity playerID, const bool* paused,
-		PhysicsEngine* physics, UIRenderer* uiRenderer, ScriptHandler* script, NetworkHandlerGame* networkHandler)
-		: scene(scene), resourceMng(resourceMng), playerID(playerID), paused(paused),
-		swordID(-1), physics(physics), uiRenderer(uiRenderer), script(script), networkHandler(networkHandler)
+	CombatSystem(SceneHandler* sceneHandler, Entity playerID, 
+		const bool* paused, NetworkHandlerGame* networkHandler)
+		: sceneHandler(sceneHandler), playerID(playerID), paused(paused), 
+		swordID(-1), networkHandler(networkHandler)
 	{
+		this->resourceMng = this->sceneHandler->getResourceManager();
+		this->physics = this->sceneHandler->getPhysicsEngine();
+		this->uiRenderer = this->sceneHandler->getUIRenderer();
+		this->script = this->sceneHandler->getScriptHandler();
+		this->audio = this->sceneHandler->getAudioHandler();
+		this->scene = this->sceneHandler->getScene();
 		this->networkHandler->setCombatSystem(this);
 		if (scene->hasComponents<Combat>(playerID))
 		{
@@ -55,12 +66,6 @@ public:
 			this->takeDmgSound = this->resourceMng->addSound("assets/Sounds/OufSound.ogg");
 			this->moveSound = this->resourceMng->addSound("assets/Sounds/RunningSound.ogg");
 			this->attackSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/SwishSound.ogg"));
-
-			this->scene->setComponent<MultipleAudioSources>(this->playerID);
-			MultipleAudioSources& multiAudio = this->scene->getComponent<MultipleAudioSources>(this->playerID);
-			multiAudio.audioSource[takeDmgSource].setBuffer(this->takeDmgSound);
-			multiAudio.audioSource[moveSource].setBuffer(this->moveSound);
-			multiAudio.audioSource[attackSource].setBuffer(this->attackSounds[swing]);
 
 			this->swordID = this->scene->createEntity();
 			this->swordMesh = this->resourceMng->addMesh("assets/models/MainSword.fbx", "assets/textures");
@@ -134,19 +139,12 @@ public:
 				removeAbility(combat, combat.ability);
             }
 
-			MultipleAudioSources& multiAudio = this->scene->getComponent<MultipleAudioSources>(this->playerID);
 			if (this->scene->getAnimationStatus(this->playerID, "").animationName == "run")
 			{
-				if (!multiAudio.audioSource[moveSource].isPlaying())
+				if (this->walkTimer < 0.f)
 				{
-					playerEffectSound(moveSource, this->moveSound, true, 10.f);
-				}
-			}
-			else if (this->scene->getAnimationStatus(this->playerID, "").animationName != "run")
-			{
-				if (multiAudio.audioSource[moveSource].isPlaying())
-				{
-					multiAudio.audioSource[moveSource].stop();
+					this->walkTimer = this->walkTime;
+					playerEffectSound(this->moveSound, 10.f);
 				}
 			}
 
@@ -282,10 +280,7 @@ public:
 
 	void takeDmg()
 	{
-		if (!this->scene->getComponent<MultipleAudioSources>(this->playerID).audioSource[takeDmgSource].isPlaying())
-		{
-			playerEffectSound(takeDmgSource, this->takeDmgSound, false, 10.f);
-		}
+		playerEffectSound(this->takeDmgSound, 10.f);
 	}
 
 	void hitEnemy(Combat& combat, int ID)
@@ -305,10 +300,7 @@ public:
 		this->script->getScriptComponentValue(playerScript, cannotAttack, "isDodging");
 		if (!cannotAttack)
 		{
-			if (!this->scene->getComponent<MultipleAudioSources>(this->playerID).audioSource[attackSource].isPlaying())
-			{
-				playerEffectSound(attackSource, this->attackSounds[swing], false, 10.f);
-			}
+			playerEffectSound(this->attackSounds[swing], 10.f);
 
 			int currentAnimation = 0;
 			this->script->getScriptComponentValue(playerScript, currentAnimation, "currentAnimation");
@@ -923,16 +915,9 @@ public:
 		}
 	}
 
-	void playerEffectSound(int sourceIdx, int soundIdx, bool loop, float volume)
+	void playerEffectSound(int soundIdx, float volume)
 	{
-		MultipleAudioSources& multiAudio = this->scene->getComponent<MultipleAudioSources>(this->playerID);
-		if (multiAudio.audioSource[sourceIdx].getBuffer() != soundIdx)
-		{
-			multiAudio.audioSource[sourceIdx].setBuffer(soundIdx);
-		}
-		multiAudio.audioSource[sourceIdx].setVolume(volume);
-		multiAudio.audioSource[sourceIdx].setLooping(loop);
-		multiAudio.audioSource[sourceIdx].play();
+		this->audio->playSound(this->playerID, soundIdx, volume);
 	}
 	
 	void pickUpAbility(Entity entity)
@@ -973,6 +958,10 @@ public:
 		{
 			combat.comboOrder.clear();
 			combat.comboClearTimer = 0.f;
+		}
+		if (this->walkTimer > 0.f)
+		{
+			this->walkTimer -= deltaTime;
 		}
 	}
 };
