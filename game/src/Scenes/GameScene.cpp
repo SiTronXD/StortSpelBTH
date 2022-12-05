@@ -10,6 +10,7 @@
 #include "../Systems/ParticleRemoveEntity.hpp"
 #include "../Systems/ParticleRemoveComponent.hpp"
 #include "../Network/NetworkHandlerGame.h"
+#include "vengine/application/Time.hpp"
 #include "GameOverScene.h"
 #include "MainMenu.h"
 
@@ -174,8 +175,8 @@ void GameScene::testParticleSystem(const Entity& particleSystemEntity)
 
 GameScene::GameScene() :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
-    perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1),
-    deletedParticleSystems(false)
+    perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1), 
+    deathTimer(2.f), isDead(false), deletedParticleSystems(false)
 {
     Input::setHideCursor(true);
 }
@@ -219,7 +220,7 @@ void GameScene::init()
     this->perkMeshes[4] = resourceMng->addMesh("assets/models/Perk_Stamina.obj");
 
     this->abilityTextures[0] = resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
-    this->abilityTextures[1] = resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
+    this->abilityTextures[1] = resourceMng->addTexture("assets/textures/UI/HealingAbility.png");
     this->abilityTextures[2] = resourceMng->addTexture("assets/textures/UI/empty.png");
     this->perkTextures[0] = resourceMng->addTexture("assets/textures/UI/hpUp.png");
     this->perkTextures[1] = resourceMng->addTexture("assets/textures/UI/dmgUp.png");
@@ -229,7 +230,6 @@ void GameScene::init()
     this->perkTextures[5] = resourceMng->addTexture("assets/textures/UI/empty.png");
     this->hpBarBackgroundTextureID = resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
     this->hpBarTextureID = resourceMng->addTexture("assets/textures/UI/hpBar.png");
-    this->blackTextureIndex = resourceMng->addTexture("assets/textures/blackTex.png");
 
     // Temporary light
     this->dirLightEntity = this->createEntity();
@@ -261,6 +261,7 @@ void GameScene::start()
         int seed = this->networkHandler->getSeed();
         Log::write("Seed from server: " + std::to_string(seed));
         roomHandler.generate(seed);
+        networkHandler->setRoomHandler(roomHandler, this->numRoomsCleared);
     }
     else
     {
@@ -296,19 +297,19 @@ void GameScene::start()
 
     if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {
-        this->networkHandler->spawnItemRequest(healAbility, glm::vec3(50.0f, 10.0f, 0.0f));
-        this->networkHandler->spawnItemRequest(hpUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 20.0f));
-        this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f));
-        this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 0.0f));
-        this->networkHandler->spawnItemRequest(movementUpPerk, 1.0f, glm::vec3(30.0f, 5.0f, -40.0f));
-        this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f));
+        this->networkHandler->spawnItemRequest(healAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(hpUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(movementUpPerk, 1.0f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
     }
 
     // Pause menu
     this->resumeButton.position = glm::vec2(0.0f, 100.0f);
     this->exitButton.position = glm::vec2(0.0f, -100.0f);
-    this->resumeButton.dimension = glm::vec2(500.0f, 150.0f);
-    this->exitButton.dimension = glm::vec2(500.0f, 150.0f);
+    this->resumeButton.dimension = glm::vec2(500.0f, 100.0f);
+    this->exitButton.dimension = glm::vec2(500.0f, 100.0f);
 
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
@@ -322,11 +323,13 @@ void GameScene::start()
         this->aiHandler = this->getAIHandler();
         this->aiHandler->init(this->getSceneHandler());
     
-        spawnHandler.init(&this->roomHandler, this, 
+        spawnHandler.init(&this->roomHandler, this,
         this->getSceneHandler(),this->aiHandler,
         this->getResourceManager(),this->getUIRenderer());
     }
-
+	
+    this->createSystem<OrbSystem>(this->getSceneHandler());
+	
     // Create particle systems for this scene
     this->initParticleSystems();
 }
@@ -335,23 +338,30 @@ void GameScene::update()
 {
     this->deleteInitialParticleSystems();
 
-    if (!networkHandler->isConnected())
-     {   
+    if (!networkHandler->isConnected() && networkHandler->getStatus() == ServerStatus::WAITING)
+    {   
         this->aiHandler->update(Time::getDT());
 
-        // TODO: Move to SpawnHandler ---- 
         if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
         {
             this->newRoomFrame = true;
+            this->timeWhenEnteredRoom = Time::getTimeSinceStart();
+            this->safetyCleanDone = false;
 
             this->spawnHandler.spawnEnemiesIntoRoom();
         }
-        // ---- TODO: Move to SpawnHandler ^^^^
-
+        if(!this->safetyCleanDone)
+        {
+            
+            if(this->timeWhenEnteredRoom + delayToSafetyDelete < Time::getTimeSinceStart())
+            {
+                this->spawnHandler.killAllEnemiesOutsideRoom();
+                this->safetyCleanDone = true;
+            }
+        }
         if (this->spawnHandler.allDead() && this->newRoomFrame)
         {
             this->newRoomFrame = false;
-
             // Call when a room is cleared
             this->roomHandler.roomCompleted();
             this->numRoomsCleared++;
@@ -370,15 +380,36 @@ void GameScene::update()
                 this->getComponent<ParticleSystem>(side1Entity) = this->portalParticleSystemSide1.getParticleSystem();
             }
         }
-
         // Switch scene if the player is dead
         if (this->hasComponents<Combat>(this->playerID))
         {
-            if (this->getComponent<HealthComp>(this->playerID).health <= 0.0f)
+            Script& playerScript = this->getComponent<Script>(this->playerID);
+            int tempHealth = this->getComponent<HealthComp>(this->playerID).health;
+            if (tempHealth <= 0.0f && !this->isDead)
             {
-                this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+                this->isDead = true;
+                this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
+            }
+            else if (this->isDead)
+            {
+                if (this->deathTimer >= 0.f)
+                {
+                    this->deathTimer -= Time::getDT();
+                    int currentAnim = -1;
+                    this->getScriptHandler()->getScriptComponentValue(playerScript, currentAnim, "currentAnimation");
+                    if (currentAnim != 7)
+                    {
+                        this->getScriptHandler()->setScriptComponentValue(playerScript, tempHealth, "currentHealth");
+                    }
+                }
+                else
+                {
+                    this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+                }
             }
         }
+        this->spawnHandler.updateImgui();
+        this->imguiUpdate();
     }
     else
     {
@@ -403,6 +434,10 @@ void GameScene::update()
                 this->networkHandler->disconnectClient(); // TEMP: probably will be in game over scene later
                 this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
             }
+        }
+        if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+        {
+            this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
         }
 
         // Network
@@ -461,13 +496,6 @@ void GameScene::update()
     }
     if (this->paused)
     {
-        this->getUIRenderer()->setTexture(this->blackTextureIndex);
-        this->getUIRenderer()->renderTexture(glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f), glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
-        this->getUIRenderer()->renderTexture(this->resumeButton.position, this->resumeButton.dimension);
-        this->getUIRenderer()->renderTexture(this->exitButton.position, this->exitButton.dimension);
-        this->getUIRenderer()->renderString("resume", this->resumeButton.position, glm::vec2(50.0f));
-        this->getUIRenderer()->renderString("exit", this->exitButton.position, glm::vec2(50.0f));
-
         if (this->resumeButton.isClicking())
         {
             this->paused = false;
@@ -523,7 +551,6 @@ void GameScene::update()
 
 }
 
-
 void GameScene::onTriggerStay(Entity e1, Entity e2)
 {
 	Entity player = e1 == this->playerID ? e1 : e2 == this->playerID ? e2 : -1;
@@ -532,11 +559,13 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 	{
 		Entity other = e1 == player ? e2 : e1;
     
-
-		if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
-		{
-			this->switchScene(new GameScene(), "scripts/gamescene.lua");
-		}
+        if (!networkHandler->isConnected())
+        {
+		    if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room            
+		    {
+		    	this->switchScene(new GameScene(), "scripts/gamescene.lua");
+		    }
+        }
 	}
 }
 
@@ -649,18 +678,37 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
       auto& tankComp = this->getComponent<TankComponent>(other);
       if (tankComp.canAttack)
       {
-        auto& aiCombat = this->getComponent<AiCombatTank>(other);
         tankComp.canAttack = false;
         HealthComp& playerHealth = this->getComponent<HealthComp>(player);
         playerHealth.health -=
-            (int)aiCombat.directHit;
+            (int)tankComp.directHit;
         playerHealth.srcDmgEntity = other;
             
         Log::write("WAS HIT", BT_FILTER);
       }
     }
+    else if (this->hasComponents<Orb>(other)) 
+    {
+        auto& orb = this->getComponent<Orb>(other);
+        this->getComponent<HealthComp>(player).health -=
+            orb.orbPower->damage;
+        orb.onCollision(other, this->getSceneHandler());
+    }
+  }
+  else 
+  { // Collision between two things that isnt player
+    
+    if(this->hasComponents<Orb>(e1) || this->hasComponents<Orb>(e2))
+    {
+        Entity collidingOrb = this->hasComponents<Orb>(e1) ? e1 : e2; 
+        
+        auto& orb = this->getComponent<Orb>(collidingOrb);        
+        orb.onCollision(collidingOrb, this->getSceneHandler());
+        
+    }
   }
 
+    //Swarm collides with swarm
   if (this->hasComponents<SwarmComponent>(e1) &&
       this->hasComponents<SwarmComponent>(e2))
   {
@@ -679,6 +727,23 @@ void GameScene::onCollisionExit(Entity e1, Entity e2)
     this->getComponent<SwarmComponent>(e2).touchedFriend = false;
   }
 
+}
+
+void GameScene::imguiUpdate()
+{
+    ImGui::Begin("Game Scene");
+    std::string playerString = "playerID";
+    int playerID;
+    getScriptHandler()->getGlobal(playerID, playerString);
+    auto& playerHealthComp = getComponent<HealthComp>(playerID);
+    if(ImGui::Button("INVINCIBLE Player")){
+        playerHealthComp.health = INT_MAX;
+    }
+    if(ImGui::Button("Kill Player")){
+        playerHealthComp.health = 0; 
+    }
+
+    ImGui::End();
 }
 
 void GameScene::createPortal()

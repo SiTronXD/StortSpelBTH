@@ -16,6 +16,8 @@ void logInScene::start()
     this->backgroundId =
         this->getResourceManager()->addTexture("assets/textures/blackTex.png"
         );
+    this->buttonId =
+        this->getResourceManager()->addTexture("assets/textures/UI/button.png");
 
     this->fontTextureId = Scene::getResourceManager()->addTexture(
         "assets/textures/UI/font.png", {samplerSettings, true}
@@ -105,12 +107,13 @@ void logInScene::update()
         this->getSceneHandler()->setScene(new MainMenu(), "scripts/MainMenu.lua");
     }
 
-    // Button backtgrounds
+    // Input fields
     this->getUIRenderer()->setTexture(this->backgroundId);
     this->getUIRenderer()->renderTexture(
         this->nameButton.position, this->nameButton.dimension,
         glm::uvec4(0, 0, 1, 1), 
         glm::vec4(1.0f, 1.0f, 1.0f, 0.1f + (this->nameButton.isHovering() || (this->selected == &this->name)) * 0.15f));
+
     if (!this->getNetworkHandler()->hasServer())
     {
         this->getUIRenderer()->renderTexture(
@@ -118,12 +121,21 @@ void logInScene::update()
             glm::uvec4(0, 0, 1, 1), 
             glm::vec4(1.0f, 1.0f, 1.0f, 0.1f + (this->ipButton.isHovering() || (this->selected == &this->ipAddress)) * 0.15f));
     }
+
+    // Button backgrounds
+    this->getUIRenderer()->setTexture(this->buttonId);
     this->getUIRenderer()->renderTexture(
         this->backButton.position, this->backButton.dimension,
-        glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.1f + this->backButton.isHovering() * 0.15f));
+        glm::uvec4(0, 0, 1, 1),
+        glm::vec4(1.0f, 1.0f, 1.0f, 0.85f + this->backButton.isHovering() * 0.15f
+        )
+    );
     this->getUIRenderer()->renderTexture(
         this->startButton.position, this->startButton.dimension,
-        glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.1f + this->startButton.isHovering() * 0.15f));
+        glm::uvec4(0, 0, 1, 1),
+        glm::vec4(1.0f, 1.0f, 1.0f, 0.85f + this->startButton.isHovering() * 0.15f
+        )
+    );
 
     if (this->selected)
     {
@@ -180,17 +192,6 @@ void logInScene::update()
         );
     }
 
-    //if (this->selected)
-    //{
-    //    // Text cursor
-    //    this->getUIRenderer()->setTexture(this->backgroundId);
-    //    float opacity = (sin(7.5f * Time::getTimeSinceStart()) + 1.0f) * 0.5f;
-    //    this->getUIRenderer()->renderTexture(
-    //        this->nameButton.position - 
-    //        glm::vec2(275.0f - 50.0f * this->selected->length(), 100.0f * (this->selected == &this->ipAddress)), 
-    //        glm::vec2(7.5f, 50.0f), glm::uvec4(0, 0, 1, 1),
-    //        glm::vec4(1.0f, 1.0f, 1.0f, 0.2f * std::max(std::min(opacity, 0.75f), 0.25f)));
-    //}
 }
 
 void logInScene::write()

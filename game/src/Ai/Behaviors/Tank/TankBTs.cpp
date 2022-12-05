@@ -10,12 +10,13 @@ Scene* TankBT::getTheScene()
 void TankBT::updateCanBeHit(Entity entityID)
 {
     int playerID = getPlayerID(entityID);
+	if(playerID == -1){return;}
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	glm::vec3 tank_player_vec = playerTrans.position - tankTrans.position;
 	float tank_player_len = glm::length(tank_player_vec);
-	tank_player_vec = glm::normalize(tank_player_vec);
+	tank_player_vec = safeNormalize(tank_player_vec);
 	float hitDeg = (360.0f - tankComp.shieldAngle)/2.0f;
 	hitDeg = 180 - hitDeg;
 	if(tank_player_len < tankComp.peronalSpaceRadius)
@@ -31,97 +32,262 @@ void TankBT::updateCanBeHit(Entity entityID)
 	}
 }
 
-void TankBT::groundHumpShortcut(Entity entityID, float maxRad)
+int	TankBT::numActiveHumps(Entity entityID)
 {
+	int ret = 0;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	for(auto e: tankComp.humpEnteties)
+	{
+		if(getTheScene()->isActive(e))
+		{
+			ret++;
+		}
+	}
+	return ret;
+}
+
+uint32_t TankBT::activateHump(Entity entityID)
+{
+	uint32_t ret = -1;
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	for(auto e: tankComp.humpEnteties)
+	{
+		if(!getTheScene()->isActive(e))
+		{
+			getTheScene()->setActive(e);
+			ret = e;
+			//std::cout<<"New hump!\nNum Humps active: "<<numActiveHumps(entityID)<<"Num actual humps: "<<tankComp.humps.size()<<std::endl;
+			break;
+		}
+	}
+	return ret;
+}
+
+bool TankBT::canActivateNewHump(Entity entityID)
+{
+	bool ret = false;
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	for(auto e: tankComp.humpEnteties)
+	{
+		if(!getTheScene()->isActive(e))
+		{
+			ret = true;
+			break;
+		}
+	}
+	return ret;
+}
+
+void TankBT::groundHumpShortcut(Entity entityID)
+{
+	Collider& tankCol = getTheScene()->getComponent<Collider>(entityID);
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	Rigidbody& tankRb = getTheScene()->getComponent<Rigidbody>(entityID);
+	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	tankComp.chargeTimer = tankComp.chargeTimerOrig;
 	tankComp.hasRunTarget = false;
-
-	if(tankComp.groundHumpTimer <= 0)
+	if(glm::length(tankRb.velocity) <= 0.1f && (tankTrans.position.y - tankCol.radius) <= 1.0f)
 	{
-        Log::write("Stomp!", BT_FILTER);
-		tankComp.humps.push_back(0.0f);
-		tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
-	}
-	else
-	{
-		tankComp.groundHumpTimer -= get_dt();
-	}
-
-	int playerID = getPlayerID(entityID);
-	
-	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
-	Collider& playerCol = getTheScene()->getComponent<Collider>(playerID);
-	Rigidbody& playerRB = getTheScene()->getComponent<Rigidbody>(playerID);
-	Script& playerScript = getTheScene()->getComponent<Script>(playerID);
-	bool playerGrounded = false;
-	BehaviorTree::sceneHandler->getScriptHandler()->getScriptComponentValue(playerScript, playerGrounded, "onGround");
-	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
-	std::vector<int> toRemove;
-
-
-	rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
-
-	for(int i = 0; i < tankComp.humps.size(); i++)
-	{
-		tankComp.humps[i] += tankComp.humpShockwaveSpeed * get_dt();
-		float dist = glm::length(playerTrans.position - tankTrans.position);
-		float minHitDist = dist - playerCol.radius;
-		float maxHitDist = dist + playerCol.radius;
-
-		if(tankComp.humps[i] >= maxRad)
+		if(tankComp.groundHumpTimer <= 0)
 		{
-			toRemove.push_back(i);
-		}
-		else if(tankComp.humps[i] >= minHitDist && tankComp.humps[i] <= maxHitDist && playerGrounded)
-		{
-			//PlayerHit!
-			glm::vec3 to = playerTrans.position;
-			glm::normalize(to);
-			AiCombatTank& aiCombat = getTheScene()->getComponent<AiCombatTank>(entityID);
-			getTheScene()->getComponent<HealthComp>(playerID).health -= (int)aiCombat.humpHit;
-
-			//single player
-			if (dynamic_cast<NetworkSceneHandler*>(BehaviorTree::sceneHandler) == nullptr) 
+			if(canActivateNewHump(entityID))
 			{
-				Script& playerScript = getTheScene()->getComponent<Script>(playerID);
-				BehaviorTree::sceneHandler->getScriptHandler()->setScriptComponentValue(playerScript , 1.0f, "pushTimer");
-
-                glm::vec3 dir = glm::normalize(to - tankTrans.position);
-                playerRB.velocity = dir * tankComp.humpForce;
-                playerRB.velocity.y += tankComp.humpYForce;
-                
+		        Log::write("Stomp!", BT_FILTER);
+		        uint32_t newHump = activateHump(entityID);
+		        Transform& hTrans = getTheScene()->getComponent<Transform>(newHump);
+		        hTrans.position = getTheScene()->getComponent<Transform>(entityID).position;
+		        hTrans.position.y -= tankCol.radius - 0.5f;
+		        tankComp.humps.insert({newHump, 1.0f});
+		        tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
+				
+		        ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+				if(netScene)
+		        {
+		            netScene->addEvent({(int)GameEvent::DO_HUMP, (int)newHump}, {hTrans.position.x, hTrans.position.y, hTrans.position.z});
+		        }            
 			}
-            else
-            {
-				//send pushPlayer
-                glm::vec3 dir = glm::normalize(to - tankTrans.position);
-                dir *= tankComp.humpForce;
-                dir.y += tankComp.humpYForce;
-				//trust that push timer never changes
-                ((NetworkSceneHandler*)BehaviorTree::sceneHandler)
-                    ->getScene()
-                    ->addEvent({(int)GameEvent::PUSH_PLAYER, playerID}, 
-						{
-						dir.x,
-						dir.y,
-						dir.z
-						});
+			else
+			{
+				Log::write("No avaliable humps! (TELL AI PEOPLE THIS MESSAGE WAS SHOWN!)");
 			}
-            toRemove.push_back(i);
+		   
 		}
 		else
 		{
-			int test = 0;
+			tankComp.groundHumpTimer -= get_dt();
 		}
 	}
-	for(auto r: toRemove)
+	
+
+	int playerID = getPlayerID(entityID);
+	if(playerID == -1){return;}
+	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+
+
+
+	rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
+	updateCanBeHit(entityID);
+}
+
+void TankBT::drawRaySimple(Ray& ray, float dist, glm::vec3 color)
+{
+	//Draw ray
+	BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
+	ray.pos,
+	ray.pos + ray.dir * dist,
+	glm::vec3(1.0f, 0.0f, 0.0f));
+}
+
+bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
+{
+	bool ret = true;
+	bool somethingInTheWay = false;
+	bool canGoForward=true;	
+	bool canGoRight=true;
+	bool canGoLeft=true;
+
+	int player_id = getPlayerID(entityID);
+	if(player_id == -1){return ret;}
+	Collider& entityCollider = getTheScene()->getComponent<Collider>(entityID);
+	Collider& playerCollider = getTheScene()->getComponent<Collider>(player_id);
+	Transform& entityTransform = getTheScene()->getComponent<Transform>(entityID);
+	Transform& playerTransform = getTheScene()->getComponent<Transform>(player_id);
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+    
+	entityTransform.updateMatrix();
+	glm::vec3 from = playerTransform.position;
+	from = from + playerTransform.up() * 3.0f;
+	glm::vec3 to = entityTransform.position;
+	float maxDist = glm::length(to - from);
+	glm::vec3 dir = safeNormalize(from - to);
+	glm::vec3 offset = entityTransform.right() * (entityCollider.radius +1.0f);
+	Ray rayToPlayer{from, -dir};  
+	Ray rayToPlayer_right{from + offset, -dir};    
+	Ray rayToPlayer_left{from - offset, -dir};    
+	Ray rayRight{to, entityTransform.right()};    
+	Ray rayLeft{to, -entityTransform.right()};    
+	float left_right_maxDist = entityCollider.radius + 3.0f;
+    RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, maxDist);
+    RayPayload rp1 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_right, maxDist);
+    RayPayload rp2 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_left, maxDist);
+	//drawRaySimple(rayToPlayer, maxDist);
+	//drawRaySimple(rayToPlayer_right, maxDist);
+	//drawRaySimple(rayToPlayer_left, maxDist);
+	if(rp.hit || rp1.hit || rp2.hit)
 	{
-		 tankComp.humps.erase(tankComp.humps.begin() + r);
+		
+		if((sceneHandler->getScene()->hasComponents<Collider>(rp.entity) && !getTheScene()->getComponent<Collider>(rp.entity).isTrigger && rp.entity != entityID) || 
+			(sceneHandler->getScene()->hasComponents<Collider>(rp1.entity) && !getTheScene()->getComponent<Collider>(rp1.entity).isTrigger && rp1.entity != entityID) ||
+			(sceneHandler->getScene()->hasComponents<Collider>(rp2.entity) && !getTheScene()->getComponent<Collider>(rp2.entity).isTrigger && rp2.entity != entityID))
+		{
+			ret = false;
+			somethingInTheWay = true;
+			entityTransform.updateMatrix();
+
+			RayPayload r_right= BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayRight, left_right_maxDist);
+			RayPayload r_left = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayLeft, left_right_maxDist);
+			RayPayload r_forward = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, left_right_maxDist);
+			//drawRaySimple(rayToPlayer, left_right_maxDist);
+			//drawRaySimple(rayRight, left_right_maxDist);
+			//drawRaySimple(rayLeft, left_right_maxDist);
+
+			if(r_forward.hit && !getTheScene()->getComponent<Collider>(r_forward.entity).isTrigger)
+			{
+				canGoForward = false;
+			}
+			if(r_right.hit && !getTheScene()->getComponent<Collider>(r_right.entity).isTrigger)
+			{
+				canGoRight = false;
+				tankComp.attackGoRight = false;
+			}
+			if(r_left.hit && !getTheScene()->getComponent<Collider>(r_left.entity).isTrigger)
+			{
+				canGoLeft = false;
+				tankComp.attackGoRight = true;
+			}
+
+		}
 	}
 
+	if(somethingInTheWay)
+	{
+		ret = false;
+		dir = glm::vec3(0.0f, 0.0f, 0.0f);
+		entityTransform.updateMatrix();
 
-	updateCanBeHit(entityID);
+		if(canGoForward)
+		{
+			dir += -entityTransform.forward();
+		}
+
+		if(canGoRight && tankComp.attackGoRight)
+		{
+			dir += entityTransform.right();
+		}
+		else if(canGoLeft && !tankComp.attackGoRight)
+		{
+			dir -= entityTransform.right();
+		}
+	}
+
+	if(dir == glm::vec3(0.0f, 0.0f, 0.0f))
+	{
+		dir = -entityTransform.forward();
+	}
+	rotateTowards(entityID, playerTransform.position, tankComp.idleRotSpeed, 5.0f);
+	safeNormalize(dir);
+	dir.y = 0;
+	moveDir = dir;
+
+
+	return ret;
+}
+
+void TankBT::giveFriendsHealth(Entity entityID)
+{
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	if(tankComp.friendHealTimer <= 0)
+	{
+		tankComp.friendHealTimer = tankComp.friendHealTimerOrig;
+		for(auto& f: tankComp.friendsInSight)
+		{
+		    if(f.second.type == "Swarm")
+		    {
+				SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(f.first);
+				swarmComp.shieldedByTank = true;
+				int toAdd = tankComp.friendHealthRegen;
+				if((swarmComp.life + toAdd) > swarmComp.FULL_HEALTH)
+				{
+					swarmComp.life = swarmComp.FULL_HEALTH;
+				}
+				else
+				{
+					swarmComp.life += toAdd;
+				}
+		        
+		    }
+		    else if(f.second.type == "Lich")
+		    {
+				LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(f.first);
+		        lichComp.shieldedByTank = true;
+				int toAdd = tankComp.friendHealthRegen;
+				if((lichComp.life + toAdd) > lichComp.FULL_HEALTH)
+				{
+					lichComp.life = lichComp.FULL_HEALTH;
+				}
+				else
+				{
+					lichComp.life += toAdd;
+				}
+
+		    }
+		}
+
+	}
+	else
+	{
+		tankComp.friendHealTimer -= get_dt();
+	}
 }
 
 float TankBT::get_dt()
@@ -131,17 +297,33 @@ float TankBT::get_dt()
 
 int TankBT::getPlayerID(int entityID)
 {
-	// if network exist take player from there
+	int playerID = -1;
+    // if network exist take player from there
     NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
-    if (s != nullptr && entityID != -1)
+    if (s != nullptr)
+    {   
+        float nearset = 99999999.0f;
+        Transform& trans = s->getComponent<Transform>(entityID);
+        for(auto p: *s->getPlayers())
         {
-            return s->getNearestPlayer(entityID);
+            Transform& pTrans = s->getComponent<Transform>(p);
+            HealthComp& pHealth = s->getComponent<HealthComp>(p);
+            float dist = glm::length(trans.position - pTrans.position);
+            if(dist < nearset && pHealth.health > 0.0f)
+            {
+                nearset = dist;
+                playerID = p;
+            }
         }
-
+        //return s->getNearestPlayer(entityID);
+    }
     // else find player from script
-    int playerID = -1;
-    std::string playerString = "playerID";
-    sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
+    else
+    {
+        std::string playerString = "playerID";
+        BehaviorTree::sceneHandler->getScriptHandler()->getGlobal(playerID, playerString);
+    }
+  
     return playerID;
 }
 
@@ -157,8 +339,8 @@ void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 	tankTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(tankComp.firendTarget.pos.x, tankComp.firendTarget.pos.z);
 	glm::vec2 tankPos			= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	glm::vec2 curRot			= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
-	glm::vec2 tank_to_friend	= glm::normalize(targetPos - tankPos);
+	glm::vec2 curRot			= -safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	glm::vec2 tank_to_friend	= safeNormalize(targetPos - tankPos);
 
 	float angle_between			= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
 	tankComp.tempRotAngle = angle_between;
@@ -176,8 +358,8 @@ void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 	tankTrans.updateMatrix();
 	targetPos			= glm::vec2(tankComp.firendTarget.pos.x, tankComp.firendTarget.pos.z);
 	tankPos				= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	curRot				= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
-	tank_to_friend		= glm::normalize(targetPos - tankPos);
+	curRot				= -safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	tank_to_friend		= safeNormalize(targetPos - tankPos);
 	angle_between		= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
 	//If angle got bigger, then change direction
 	if(tankComp.tempRotAngle < angle_between)
@@ -201,8 +383,8 @@ void TankBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 	tankTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
 	glm::vec2 tankPos			= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	glm::vec2 curRot			= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
-	glm::vec2 tank_to_friend	= glm::normalize(targetPos - tankPos);
+	glm::vec2 curRot			= -safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	glm::vec2 tank_to_friend	= safeNormalize(targetPos - tankPos);
 
 	float angle_between			= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
 	tankComp.tempRotAngle = angle_between;
@@ -220,8 +402,8 @@ void TankBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 	tankTrans.updateMatrix();
 	targetPos			= glm::vec2(target.x, target.z);
 	tankPos				= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	curRot				= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
-	tank_to_friend		= glm::normalize(targetPos - tankPos);
+	curRot				= -safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	tank_to_friend		= safeNormalize(targetPos - tankPos);
 	angle_between		= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
 	//If angle got bigger, then change direction
 	if(tankComp.tempRotAngle < angle_between)
@@ -244,8 +426,8 @@ bool TankBT::rotationDone(Entity entityID, glm::vec3 target, float rotSpeed, flo
 	tankTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
 	glm::vec2 tankPos			= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	glm::vec2 curRot			= -glm::normalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
-	glm::vec2 tank_to_friend	= glm::normalize(targetPos - tankPos);
+	glm::vec2 curRot			= -safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	glm::vec2 tank_to_friend	= safeNormalize(targetPos - tankPos);
 
 	float angle_between			= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
 
@@ -357,7 +539,7 @@ BTStatus TankBT::MoveAround(Entity entityID)
 	}
 	Transform& tankTrans	= getTheScene()->getComponent<Transform>(entityID);
 	glm::vec3 moveDir		= pathFindingManager.getDirTo(tankTrans.position, tankComp.firendTarget.pos);
-	moveDir = glm::normalize(moveDir);
+	moveDir = safeNormalize(moveDir);
 
 	Rigidbody& tankRb		= getTheScene()->getComponent<Rigidbody>(entityID);
 	Collider& tankCol		= getTheScene()->getComponent<Collider>(entityID);
@@ -386,6 +568,7 @@ BTStatus TankBT::MoveAround(Entity entityID)
 	}
 	else
 	{
+		avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, tankComp.firendTarget.pos, moveDir, glm::vec3(0.0f, -3.0f, 0.0f));
 		tankRb.velocity = moveDir * tankComp.idleSpeed;
 	}
 
@@ -398,6 +581,7 @@ BTStatus TankBT::playerInPersonalSpace(Entity entityID)
 
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     int playerID = getPlayerID(entityID);
+	if(playerID == -1){return ret;}
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
     float tank_player_dist	= glm::length(playerTrans.position - tankTrans.position);
@@ -414,7 +598,7 @@ BTStatus TankBT::GroundHump(Entity entityID)
 	BTStatus ret = BTStatus::Running;
 
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
-	groundHumpShortcut(entityID, tankComp.humpShockwaveAttackRadius);
+	groundHumpShortcut(entityID);
 
 	return ret;
 }
@@ -424,6 +608,7 @@ BTStatus TankBT::playerOutsidePersonalSpace(Entity entityID)
 	BTStatus ret = BTStatus::Failure;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     int playerID = getPlayerID(entityID);
+	if(playerID == -1){return ret;}
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
     float tank_player_dist	= glm::length(playerTrans.position - tankTrans.position);
@@ -439,71 +624,19 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	BTStatus ret = BTStatus::Running;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	int playerID			= getPlayerID(entityID);
+	if(playerID == -1){return ret;}
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
 	Collider& tankCol = getTheScene()->getComponent<Collider>(entityID);
 	Rigidbody& rb = getTheScene()->getComponent<Rigidbody>(entityID);
 
-	tankComp.humps.clear();
-	tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
 
-	//Ray test to avoid detect obstcles
-	//Not really working
-	/*glm::vec3 dirEntityTargetPosToPlayer = glm::normalize(playerTrans.position - tankTrans.position);
-	float distEntityTargetPosToPlayer = glm::length(playerTrans.position - tankTrans.position);
-	Ray rayToPlayerMid{tankTrans.position, dirEntityTargetPosToPlayer};    
-	Ray rayToPlayerLeft{tankTrans.position - (tankTrans.right() * tankCol.radius), dirEntityTargetPosToPlayer};    
-	Ray rayToPlayerRight{tankTrans.position + (tankTrans.right() * tankCol.radius) , dirEntityTargetPosToPlayer};    
-    RayPayload rp1 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayerMid, distEntityTargetPosToPlayer+10.f);
-    RayPayload rp2 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayerLeft, distEntityTargetPosToPlayer+10.f);
-    RayPayload rp3 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayerRight, distEntityTargetPosToPlayer+10.f);
-
-	BehaviorTree::sceneHandler->getPhysicsEngine()->renderDebugShapes(true);
-	BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
-	    rayToPlayerMid.pos,
-	    rayToPlayerMid.pos + rayToPlayerMid.dir * distEntityTargetPosToPlayer,
-	    glm::vec3(1.0f, 0.0f, 0.0f)
-	);
-	BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
-	    rayToPlayerLeft.pos,
-	    rayToPlayerMid.pos + rayToPlayerLeft.dir * distEntityTargetPosToPlayer,
-	    glm::vec3(1.0f, 0.0f, 0.0f)
-	);
-	BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
-	    rayToPlayerRight.pos,
-	    rayToPlayerMid.pos + rayToPlayerRight.dir * distEntityTargetPosToPlayer,
-	    glm::vec3(1.0f, 0.0f, 0.0f)
-	);
-
-	if(rp1.hit || rp2.hit || rp3.hit)
+	glm::vec3 dir;
+	if(!rayChecking(entityID, dir))
 	{
-		bool r1Hit = false;
-		bool r2Hit = false;
-		bool r3Hit = false;
-		if(rp1.entity == playerID || rp1.entity == entityID || rp1.hit == -1)
-		{
-			r1Hit = true;
-		}
-		if(rp2.entity == playerID || rp2.entity == entityID || rp2.hit == -1)
-		{
-			r2Hit = true;
-		}
-		if(rp3.entity == playerID || rp3.entity == entityID || rp3.hit == -1)
-		{
-			r3Hit = true;
-		}
-
-		if(r1Hit && r2Hit && r3Hit)
-		{
-			int test = 0;
-		}
-		else
-		{
-			rb.velocity = pathFindingManager.getDirTo(tankTrans.position, playerTrans.position) * tankComp.idleSpeed;
-			return ret;
-		}
-		
-	}*/
+		rb.velocity = dir * tankComp.idleSpeed;
+		return ret;
+	}
 
 
 	if(!tankComp.hasRunTarget && (tankComp.chargeTimer > 0.0f || !rotationDone(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f)))
@@ -517,7 +650,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.runTarget = playerTrans.position;
 		tankComp.runOrigin = tankTrans.position;
 		tankComp.runDist = glm::length(playerTrans.position - tankTrans.position);
-		tankComp.runDir = glm::normalize(playerTrans.position - tankTrans.position);
+		tankComp.runDir = safeNormalize(playerTrans.position - tankTrans.position);
 		tankComp.hasRunTarget = true;
 		tankComp.canAttack = true;
 	}
@@ -554,14 +687,12 @@ BTStatus TankBT::getNearestGroupToPlayer(Entity entityID)
 		if(f.second.type == "Swarm")
 		{
 			SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(f.first);
-			for(auto g: swarmComp.group->members)
+			if(swarmComp.inCombat)
 			{
-				if(getTheScene()->getComponent<SwarmComponent>(g).group->inCombat)
-				{
-					average += getTheScene()->getComponent<Transform>(g).position;
-					num++;
-				}
+				average += getTheScene()->getComponent<Transform>(f.first).position;
+				num++;
 			}
+			
 		}
 		else if(f.second.type == "Lich")
 		{
@@ -608,7 +739,8 @@ BTStatus TankBT::moveTowardsGroup(Entity entityID)
 	Transform& tankTrans	= getTheScene()->getComponent<Transform>(entityID);
 	Rigidbody& tankRb		= getTheScene()->getComponent<Rigidbody>(entityID);
 	glm::vec3 moveDir		= pathFindingManager.getDirTo(tankTrans.position, tankComp.shieldTargetPos);
-	moveDir					= glm::normalize(moveDir);
+	moveDir					= safeNormalize(moveDir);
+	avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, tankComp.firendTarget.pos, moveDir, glm::vec3(0.0f, -3.0f, 0.0f));
 	tankRb.velocity			= moveDir * tankComp.shieldSpeed;
 	return ret;
 }
@@ -618,56 +750,15 @@ BTStatus TankBT::HoldShield(Entity entityID)
 	BTStatus ret = BTStatus::Failure;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 
-	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
-	if(tankComp.friendHealTimer <= 0)
-	{
-		tankComp.friendHealTimer = tankComp.friendHealTimerOrig;
-		for(auto& f: tankComp.friendsInSight)
-		{
-		    if(f.second.type == "Swarm")
-		    {
-				SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(f.first);
-		        swarmComp.shieldedByTank = true;
-				
-				int toAdd = tankComp.friendHealthRegen;
-				if((swarmComp.life + toAdd) > swarmComp.FULL_HEALTH)
-				{
-					swarmComp.life = swarmComp.FULL_HEALTH;
-				}
-				else
-				{
-					swarmComp.life += (int)toAdd;
-				}
-		    }
-		    else if(f.second.type == "Lich")
-		    {
-				LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(f.first);
-		        lichComp.shieldedByTank = true;
-				float toAdd = tankComp.friendHealthRegen;
-				if((lichComp.life + toAdd) > lichComp.FULL_HEALTH)
-				{
-					lichComp.life = lichComp.FULL_HEALTH;
-				}
-				else
-				{
-					lichComp.life += toAdd;
-				}
-
-		    }
-		}
-
-	}
-	else
-	{
-		tankComp.friendHealTimer -= get_dt();
-	}
+	giveFriendsHealth(entityID);
 	
 
 	int playerID = getPlayerID(entityID);
+	if(playerID == -1){return ret;}
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	rotateTowards(entityID, playerTrans.position, tankComp.shildRotSpeed, 5.0f);
 
-	groundHumpShortcut(entityID, tankComp.humpShockwaveShieldRadius);
+	groundHumpShortcut(entityID);
 
 	updateCanBeHit(entityID);
 
@@ -680,6 +771,7 @@ BTStatus TankBT::playAlertAnim(Entity entityID)
 
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     int playerID = getPlayerID(entityID);
+	if(playerID == -1){return ret;}
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 	Transform& tankTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Collider& tankCol = sceneHandler->getScene()->getComponent<Collider>(entityID);
@@ -753,6 +845,7 @@ BTStatus TankBT::die(Entity entityID)
 	BTStatus ret = BTStatus::Failure;
 
 	int playerID = getPlayerID(entityID);
+	if(playerID == -1){return ret;}
 	HealthComp& playerHealth = sceneHandler->getScene()->getComponent<HealthComp>(playerID);
 	if (playerHealth.health <= (playerHealth.maxHealth - 10))
 	{
@@ -763,7 +856,7 @@ BTStatus TankBT::die(Entity entityID)
 	ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
     if (serverScene != nullptr) 
     {
-        serverScene->addEvent({(int)GameEvent::INACTIVATE, entityID});
+        serverScene->addEvent({(int)GameEvent::INACTIVATE, entityID});   
     }
 	return ret;
 }

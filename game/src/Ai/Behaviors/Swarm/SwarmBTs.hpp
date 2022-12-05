@@ -7,8 +7,6 @@
 #include "vengine.h"
 
 #include "../HelperFuncs.hpp"
-//#include "ai/PathFinding.h"
-Entity getPlayerID(SceneHandler* sceneHandler, Entity entityID);
 
 struct SwarmGroup
 {
@@ -22,7 +20,7 @@ struct SwarmGroup
 	float huntTimer;
 	float huntTimerOrig = 2.0f;
 	glm::vec3 idleMidPos = glm::vec3(0.0f, 0.0f, 0.0f);
-	float idleRadius = 0.0f;
+	float idleRadius = 70.0f;
 	glm::vec3 lastKnownPlayerPos = glm::vec3(0.0f, 0.0f, 0.0f);
 	std::vector<uint32_t> members;
 	std::stack<uint32_t> aliveMembers;
@@ -60,6 +58,16 @@ class SwarmBT : public BehaviorTree
 	static BTStatus die(Entity entityID);
 
     static BTStatus alerted(Entity entityID);
+
+
+	//Helper functions
+	static int		getPlayerID(Entity entityID);
+	static float	get_dt();
+	static Scene*	getTheScene();
+	static void		rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision);
+	//Idel ray special cases
+	static bool		outsideRadius(Entity entityID);
+	static bool		stuckInCorner(RayPayload& rp_left, RayPayload& rp_right, RayPayload& rp_forward);
 
 };
 
