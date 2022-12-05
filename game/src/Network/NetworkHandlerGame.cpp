@@ -271,6 +271,75 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 			);
 		}
         break;
+	case GameEvent::PLAY_ENEMY_SOUND:
+		tcpPacket >> i0 >> i1 >> i2 >> i3;
+		if (i1 == 0)
+		{
+			if (i2 == 0)
+			{
+				//this->sceneHandler->getAudioHandler().playSound(i0, this->sceneHandler->getScene()->getComponent<SwarmComponent>(i0).s_takeDmg);
+			}
+			else if (i2 == 1)
+			{
+				// DEAL DAMAGE SOUND
+				//this->sceneHandler->getAudioHandler().playSound(i0, this->sceneHandler->getScene()->getComponent<SwarmComponent>(i0).s_attack);
+			}
+			else if (i2 == 3)
+			{
+				// Move sound?
+			}
+		}		
+		else if (i1 == 1)
+		{
+			if (i2 == 0)
+			{
+				//this->sceneHandler->getAudioHandler().playSound(i0, this->sceneHandler->getScene()->getComponent<TankComponent>(i0).s_takeDmg);
+			}
+			else if (i2 == 1)
+			{
+				// DEAL DAMAGE SOUND
+				if (i3 == 0)
+				{
+
+				}
+				else if (i3 == 1)
+				{
+
+				}
+			}
+			else if (i2 == 3)
+			{
+				// Move sound?
+			}
+		}
+		else if (i1 == 2)
+		{
+			if (i2 == 0)
+			{
+				//this->sceneHandler->getAudioHandler().playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(i0).s_takeDmg);
+			}
+			else if (i2 == 1)
+			{
+				// DEAL DAMAGE SOUND
+				if (i3 == 0)
+				{
+
+				}
+				else if (i3 == 1)
+				{
+
+				}
+				else if (i3 == 2)
+				{
+
+				}
+			}
+			else if (i2 == 3)
+			{
+				// Move sound?
+			}
+		}
+		break;
     case GameEvent::PLAYER_SETHP:
         tcpPacket >> i0 >> i1;
         if (i0 == ID)
@@ -457,14 +526,23 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
         if (serverScene->hasComponents<SwarmComponent>(si0))
         {
 			si2 = (serverScene->getComponent<SwarmComponent>(si0).life -= si1);
+			si3 = 0;
+			si4 = 0;
+			si5 = 0;
 		}
         else if (serverScene->hasComponents<TankComponent>(si0))
         {
 			si2 = (serverScene->getComponent<TankComponent>(si0).life -= si1);  
+			si3 = 1;
+			si4 = 0;
+			si5 = 0;
 		}
         else if (serverScene->hasComponents<LichComponent>(si0))
         {
 			si2 = (serverScene->getComponent<LichComponent>(si0).life -= si1);
+			si3 = 2;
+			si4 = 0;
+			si5 = 0;
 		}
         if (serverScene->hasComponents<Transform>(si0))
         {
@@ -483,6 +561,7 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
             }
 			
         }
+		packet << (int)GameEvent::PLAY_ENEMY_SOUND << si0 << si3 << si4 << si5;
         
 		break;
     case GameEvent::ROOM_CLEAR:
@@ -569,16 +648,21 @@ void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
     {
 		bool isEnemy = false;
 		if (sceneHandler->getScene()->hasComponents<SwarmComponent>(entityID)) {
+			//AudioSourceID = this->sceneHandler->getAudioHandler()->playSound(entityID, SwarmComponent::s_takeDmg, volume = 1.f, pitch = 1.f);
+			//audioHandler->setVolume()
+			//audioHandler->set()
 			SwarmComponent& enemy = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
                   enemy.life -= damage;
                   isEnemy = true;
 		}
 		else if (sceneHandler->getScene()->hasComponents<TankComponent>(entityID)) {
+			//this->sceneHandler->getAudioHandler()->playSound(entityID, TankComponent::s_takeDmg);
 			TankComponent& enemy = sceneHandler->getScene()->getComponent<TankComponent>(entityID);
                   enemy.life -= damage;
                   isEnemy = true;
 		}
         else if (sceneHandler->getScene()->hasComponents<LichComponent>(entityID)) {
+			//this->sceneHandler->getAudioHandler()->playSound(entityID, LichComponent::s_takeDmg);
 			LichComponent& enemy = sceneHandler->getScene()->getComponent<LichComponent>(entityID);
                   enemy.life -= damage;
                   isEnemy = true;

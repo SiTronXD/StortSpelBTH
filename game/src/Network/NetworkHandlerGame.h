@@ -33,6 +33,7 @@ enum class GameEvent
 	MONSTER_TAKE_DAMAGE,
 	INACTIVATE, //what entity
 	ACTIVATE, //what entity
+	PLAY_ENEMY_SOUND, // What entity, What component type
 
 	ROOM_CLEAR,
 	SPAWN_PORTAL,
@@ -82,12 +83,12 @@ private:
     std::map<int, std::pair<glm::vec3, glm::vec3>> entityLastPosScale;
 
 	// Client helpers
-	int i0, i1, i2;
+	int i0, i1, i2, i3;
 	float f0, f1, f2;
 	glm::vec3 v0, v1, v2;
 
 	// Server helpers
-	int si0, si1, si2;
+	int si0, si1, si2, si3, si4, si5;
 	float sf0, sf1, sf2;
 	glm::vec3 sv0, sv1, sv2;
 

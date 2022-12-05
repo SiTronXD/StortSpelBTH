@@ -6,6 +6,9 @@
 
 struct LichAttack
 {
+    inline static bool s_initialized = false; // IN PROGRESS
+    inline static int s_takeDmg = -1;
+
     ATTACK_STRATEGY type;
     float manaCost;
     int damage;
