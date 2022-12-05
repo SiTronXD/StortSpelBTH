@@ -5,7 +5,6 @@
 #include "../../../Components/Perks.h"
 #include "SwarmFSM.hpp"
 #include "../../../Network/ServerGameMode.h"
-#include "../../../Scenes/GameScene.h"
 #include <limits>
 
 int SwarmBT::getPlayerID(Entity entityID)
@@ -690,16 +689,6 @@ BTStatus SwarmBT::attack(Entity entityID)
     static float initialFriction = rigidbody.friction;
 
     static Ray downRay{thisTransform.position, glm::vec3(0.0f, -1.0f, 0.0f)};
-
-	// Spawn particle system when grounded
-	/*if (!getTheScene()->hasComponents<ParticleSystem>(entityID))
-	{
-		!getTheScene()->setComponent<ParticleSystem>(entityID);
-		ParticleSystem& partSys = 
-			!getTheScene()->getComponent<ParticleSystem>(entityID);
-		partSys = ((GameScene*) !getTheScene())->getSwarmParticleSystem();
-		partSys.spawn = true;
-	}*/
 
 	if(swarmComp.grounded && combat.timer > 0.0f)
 	{
