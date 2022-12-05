@@ -305,41 +305,6 @@ Log::write("Killing all enemies outside room...");
 void SpawnHandler::createTank()
 {
     ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
-    /*int e;
-    if (netScene == nullptr)
-    {
-        e = this->currScene->createEntity();
-    }
-    else
-    {
-        e = netScene->spawnEnemy(0);
-    }
-    this->tankIDs.push_back(e);
-    this->allEntityIDs.push_back(this->tankIDs.back());
-
-    static int tank = -1;
-    if (tank == -1)
-    {
-        tank = this->resourceManager->addAnimations({
-                "assets/models/Tank/TankWalk.fbx",
-                "assets/models/Tank/TankCharge.fbx",
-                "assets/models/Tank/TankGroundHump.fbx",
-                "assets/models/Tank/TankRaiseShield.fbx"
-            },
-            "assets/textures/"
-        );
-        this->resourceManager->mapAnimations(tank, {
-            "Walk",
-            "Charge",
-            "GroundHump",
-            "RaiseShield",
-            });
-        this->resourceManager->createAnimationSlot(tank, "LowerBody", "Character1_Hips");
-        this->resourceManager->createAnimationSlot(tank, "UpperBody", "Character1_Spine");
-    }
-    this->currScene->setComponent<MeshComponent>(this->tankIDs.back(), tank);
-    this->currScene->setComponent<AnimationComponent>(this->tankIDs.back());*/
-
     if (netScene == nullptr)
     {
         this->tankIDs.push_back(this->currScene->createEntity());
