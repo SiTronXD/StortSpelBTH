@@ -5,9 +5,6 @@
 #include "vengine/network/ServerEngine/Timer.h"
 
 const float NetworkHandlerGame::UPDATE_RATE = ServerUpdateRate;
-LichAttack* NetworkHandlerGame::lich_fire  = new LichAttack();
-LichAttack* NetworkHandlerGame::lich_ice   = new LichAttack();
-LichAttack* NetworkHandlerGame::lich_light = new LichAttack();
 
 Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir)
 {
@@ -96,7 +93,27 @@ Entity NetworkHandlerGame::spawnHealArea(glm::vec3 pos)
 	scene->setComponent<HealArea>(heal);
 	scene->getComponent<Transform>(heal).position = pos;
 
+	// Particle system
+	scene->setComponent<ParticleSystem>(heal);
+	ParticleSystem scenePartSys = ((GameScene*)scene)->getHealParticleSystem();
+	scene->getComponent<ParticleSystem>(heal) = scenePartSys;
+
 	return heal;
+}
+
+NetworkHandlerGame::~NetworkHandlerGame() {
+    if (lich_fire != nullptr)
+    {
+		delete lich_fire;    
+	}
+    if (lich_ice != nullptr)
+    {
+        delete lich_ice;
+    }
+    if (lich_light != nullptr)
+    {
+		delete lich_light;    
+	}
 }
 
 void NetworkHandlerGame::init()
@@ -115,9 +132,13 @@ void NetworkHandlerGame::init()
     this->alterMesh = this->resourceManger->addMesh("assets/models/alter.obj");
     this->humpMesh = this->resourceManger->addMesh("assets/models/hump.obj");//TODO : ADD THE humpMesh!!!
 
-    NetworkHandlerGame::lich_fire->setStats(ATTACK_STRATEGY::FIRE);
-    NetworkHandlerGame::lich_ice->setStats(ATTACK_STRATEGY::ICE);
-    NetworkHandlerGame::lich_light->setStats(ATTACK_STRATEGY::LIGHT);
+	lich_fire = new LichAttack();
+    lich_ice = new LichAttack();
+    lich_light = new LichAttack();
+
+    this->lich_fire->setStats(ATTACK_STRATEGY::FIRE);
+    this->lich_ice->setStats(ATTACK_STRATEGY::ICE);
+    this->lich_light->setStats(ATTACK_STRATEGY::LIGHT);
 }
 
 void NetworkHandlerGame::cleanup()
@@ -316,6 +337,12 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
             
 		}
 		break;
+    case GameEvent::ROOM_CLEAR:
+        this->newRoomFrame = false;
+        roomHandler->roomCompleted();
+        this->numRoomsCleared++;
+		std::cout << "GameScene: number of rooms cleared:" << this->numRoomsCleared << std::endl;  
+        break;
     case GameEvent::INACTIVATE:
         tcpPacket >> i0;
         if (serverEntities.find(i0) != serverEntities.end())
@@ -470,25 +497,27 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
         {
 			sv1 = serverScene->getComponent<Transform>(si0).position;
 			sv2 = serverScene->getComponent<Transform>(serverScene->getPlayer(clientID)).position;
-			sv0 = glm::normalize(sv2 - sv1);
+			sv0 = safeNormalize(sv2 - sv1);
             if(serverScene->hasComponents<Rigidbody>(si0)){
                 serverScene->getComponent<Rigidbody>(si0).velocity = glm::vec3(-sv0.x, 0.f, -sv0.z) * sf0;
             }else {
-                std::cout << "ERROR; something is fucked up with Rigidbody on Monster Take Damage\n";
+                std::cout << "ERROR; something is fucked up with Rigidbody on Monster Take Damage; entity["<<si0 <<"]\n";
                 std::cout << "ERROR; is Lich " << serverScene->hasComponents<LichComponent>(si0) << "\n";
-                std::cout << "ERROR; is Tank"  << serverScene->hasComponents<TankComponent>(si0)<< "\n";
-                std::cout << "ERROR; is Swarm" << serverScene->hasComponents<SwarmComponent>(si0)<< "\n";
+                std::cout << "ERROR; is Tank "  << serverScene->hasComponents<TankComponent>(si0)<< "\n";
+                std::cout << "ERROR; is Swarm " << serverScene->hasComponents<SwarmComponent>(si0)<< "\n";
+                std::cout << "ERROR; is a Player " << serverScene->isAPlayer(si0)<< "\n";
+                std::cout << "ERROR; is Inactive " << serverScene->hasComponents<Inactive>(si0)<< "\n";
                 
                 assert(false);
+                //TODO: Should not be needed. This is just to Stop program in release...
+                while(true)
+                {
+                    int Hello = 1; 
+                }
             }
 			
         }
         
-		break;
-    case GameEvent::ROOM_CLEAR:
-        this->newRoomFrame = false;
-        roomHandler->roomCompleted();
-		this->numRoomsCleared++;
 		break;
 	default:
 		packet << event;
@@ -497,11 +526,11 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 	}
 }
 
-void NetworkHandlerGame::setRoomHandler(RoomHandler& roomHandler)
+void NetworkHandlerGame::setRoomHandler(RoomHandler& roomHandler, int& numRoomsCleared)
 {
     this->roomHandler = &roomHandler;
+    this->numRoomsCleared = &numRoomsCleared;
     newRoomFrame = false;
-    this->numRoomsCleared = 0;
 }
 
 void NetworkHandlerGame::handleUDPEventServer(Server* server, int clientID, sf::Packet& udpPacket, int event)
@@ -592,7 +621,7 @@ void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
             Rigidbody& enemyRB = sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
 			Transform& enemyTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 			Transform& playerTrans = sceneHandler->getScene()->getComponent<Transform>(player);
-			glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+			glm::vec3 newDir = safeNormalize(playerTrans.position - enemyTrans.position);
 			enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * knockBack;
 		}
 	}

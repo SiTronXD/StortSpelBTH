@@ -83,7 +83,6 @@ private:
     ResourceManager* resourceManager  = nullptr;
     UIRenderer*      uiRenderer       = nullptr;
 
-
     float nrOfEnemiesPerRoom = 0; // Set based on nr of Tile per room
 
     // Data for imgui

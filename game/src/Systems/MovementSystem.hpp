@@ -2,6 +2,7 @@
 
 #include <vengine.h>
 #include "../Components/Movement.h"
+#include "../Ai/Behaviors/HelperFuncs.hpp"
 
 class MovementSystem: public System 
 {
@@ -151,7 +152,7 @@ public:
 
         if (movement.moveDir.x && movement.moveDir.y)
         {
-            movement.currentSpeed = glm::normalize(movement.currentSpeed) * movement.maxSpeed;
+            movement.currentSpeed = safeNormalize(movement.currentSpeed) * movement.maxSpeed;
         }
 
         camTransform.updateMatrix();
@@ -162,8 +163,8 @@ public:
 
         // += forward + side
         transform.position +=
-            glm::normalize(moveFwd) * (movement.currentSpeed.y * deltaTime) +
-                              glm::normalize(glm::cross(camTransform.up(), camFwd)) *
+            safeNormalize(moveFwd) * (movement.currentSpeed.y * deltaTime) +
+                              safeNormalize(glm::cross(camTransform.up(), camFwd)) *
                                   (movement.currentSpeed.x * deltaTime); 
     }
 
