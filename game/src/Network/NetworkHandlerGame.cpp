@@ -277,12 +277,13 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		{
 			if (i2 == 0)
 			{
-				this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<SwarmComponent>(i0).s_takeDmg, 10.f);
+				
+				this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<SwarmComponent>(serverEntities[i0]).s_takeDmg, 30.f);
 			}
 			else if (i2 == 1)
 			{
 				// DEAL DAMAGE SOUND
-				this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<SwarmComponent>(i0).s_attack, 10.f);
+				this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<SwarmComponent>(serverEntities[i0]).s_attack, 30.f);
 			}
 			else if (i2 == 3)
 			{
@@ -293,7 +294,7 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		{
 			if (i2 == 0)
 			{
-				this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<TankComponent>(i0).s_takeDmg, 10.f);
+				this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<TankComponent>(serverEntities[i0]).s_takeDmg, 30.f);
 			}
 			else if (i2 == 1)
 			{
@@ -316,7 +317,7 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		{
 			if (i2 == 0)
 			{
-				this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(i0).s_takeDmg, 10.f);
+				this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(i0).s_takeDmg, 30.f);
 			}
 			else if (i2 == 1)
 			{
