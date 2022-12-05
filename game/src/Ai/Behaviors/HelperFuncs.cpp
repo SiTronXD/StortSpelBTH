@@ -22,13 +22,12 @@ float lookAtY(const glm::vec3& from, const glm::vec3& to)
 
 const glm::vec3 genRandomDir(const glm::vec3& manipulator)
 {
-    glm::vec3 temp = glm::vec3(
-        1/(float)(rand()%100)   * (rand()%2 == 0 ? 1.f : -1.f) * manipulator.x , 
-        1/(float)(rand()%100)   * (rand()%2 == 0 ? 1.f : -1.f) * manipulator.y , 
-        (1/(float)(rand()%100)) * (rand()%2 == 0 ? 1.f : -1.f) * manipulator.z );
-
     // Safety check, illegal to normalize a nullptr
-    return glm::normalize(glm::length(temp) == 0 ? glm::vec3(1.f,1.f,1.f) : temp);
+    return safeNormalize(glm::vec3(
+        1/(float)(rand()%100 + 1)   * (rand()%2 == 0 ? 1.f : -1.f) * manipulator.x , 
+        1/(float)(rand()%100 + 1)   * (rand()%2 == 0 ? 1.f : -1.f) * manipulator.y , 
+        1/(float)(rand()%100 + 1)   * (rand()%2 == 0 ? 1.f : -1.f) * manipulator.z 
+    ));
 }
 
 float getAngleBetween(const glm::vec3 one, const glm::vec3 two)
