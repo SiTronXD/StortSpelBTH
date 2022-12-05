@@ -87,8 +87,8 @@ public:
 
 struct LichComponent
 {
-    inline static const uint32_t colliderRadius = 4;
-    inline static const uint32_t colliderHeight = 12;
+    inline static const uint32_t colliderRadius = 3;
+    inline static const uint32_t colliderHeight = 18;
 
     inline static const uint32_t graveHeight = 8;
     inline static const uint32_t graveWidth = 6;

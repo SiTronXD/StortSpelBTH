@@ -437,8 +437,8 @@ void SpawnHandler::createLich()
     rb.friction = 3.0f;
     rb.mass = 10.0f;
     Transform& transform = this->currScene->getComponent<Transform>(this->lichIDs.back());
-    //transform.scale = glm::vec3(1.0f, 3.0f, 1.0f); //TODO: Remove this line when we have real model 
-    this->currScene->setComponent<Collider>(this->lichIDs.back(), Collider::createCapsule(LichComponent::colliderRadius, LichComponent::colliderHeight));
+    this->currScene->setComponent<Collider>(this->lichIDs.back(), 
+        Collider::createCapsule(LichComponent::colliderRadius, LichComponent::colliderHeight, glm::vec3(0.0f, 7.0f, 0.0f)));
     this->aiHandler->createAIEntity(this->lichIDs.back(), "lichFSM");
     LichComponent& lichComp = this->currScene->getComponent<LichComponent>(this->lichIDs.back());
     lichComp.origScaleY = transform.scale.y;
@@ -463,9 +463,6 @@ void SpawnHandler::createLich()
     this->currScene->getComponent<LichComponent>(this->lichIDs.back()).alterID = alterID;
     this->currScene->setInactive(alterID);
 
-    
-    
-
     if(netScene == nullptr)
     {
         static int grave = this->resourceManager->addMesh("assets/models/grave.obj");
@@ -474,17 +471,21 @@ void SpawnHandler::createLich()
         static int lightOrb_mesh = this->resourceManager->addMesh("assets/models/light_orb.obj");
         static int iceOrb_mesh = this->resourceManager->addMesh("assets/models/ice_orb.obj");
 
-        static int lich = this->resourceManager->addAnimations({
-                "assets/models/Lich/StarLich_Walk.fbx",
-                "assets/models/Lich/StarLich_Attack.fbx",
-            },
-            "assets/textures/Lich/"
-            );
-        this->resourceManager->mapAnimations(lich,
-            {
-                "Walk",
-                "Attack"
-            });
+        static int lich = -1;
+        if (lich == -1)
+        {
+            lich = this->resourceManager->addAnimations({
+                "assets/models/Lich/Lich_Walk.fbx",
+                "assets/models/Lich/Lich_Attack.fbx",
+                },
+                "assets/textures/Lich/"
+                );
+            this->resourceManager->mapAnimations(lich,
+                {
+                    "Walk",
+                    "Attack"
+                });
+        }
         this->currScene->setComponent<MeshComponent>(this->lichIDs.back(), lich);
         this->currScene->setComponent<AnimationComponent>(this->lichIDs.back());
 

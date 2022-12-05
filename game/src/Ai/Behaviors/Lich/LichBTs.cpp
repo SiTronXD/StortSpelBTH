@@ -51,6 +51,7 @@ int LichBT::getPlayerID(Entity entityID)
 
 void LichBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, float precision)
 {
+    Log::write("Rotating");
 	LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
 	Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
 	//Rotate towards target start
@@ -122,8 +123,8 @@ bool LichBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 	from = from + playerTransform.up() * 3.0f;
 	glm::vec3 to = entityTransform.position;
 	float maxDist = glm::length(to - from);
-	glm::vec3 dir = safeNormalize(from - to);
-	Ray rayToPlayer{from, -dir};    
+    glm::vec3 dir = safeNormalize(from - to);
+    Ray rayToPlayer{ from, -dir };
 	Ray rayRight{to, entityTransform.right()};    
 	Ray rayLeft{to, -entityTransform.right()};    
 	float left_right_maxDist = entityCollider.radius + 3.0f;
@@ -200,7 +201,7 @@ bool LichBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 }
 
 //Giving points for attack strategy
-void LichBT::givePointsForPlayerHealth	(Entity entityID, float& l_points, float& i_points, float& f_points)
+void LichBT::givePointsForPlayerHealth(Entity entityID, float& l_points, float& i_points, float& f_points)
 {
     int playerID = getPlayerID(entityID);
     if(playerID == -1){return;}
@@ -216,7 +217,7 @@ void LichBT::givePointsForPlayerHealth	(Entity entityID, float& l_points, float&
     else if(playerHealth > lichComp.attacks["lightning"].damage && playerHealth <= lichComp.attacks["ice"].damage){i_points+=pointsForPlayerHealth;}//Player medium health
     else if(playerHealth > lichComp.attacks["ice"].damage){f_points+=pointsForPlayerHealth;}//Player high health
 }
-void LichBT::givePointsForOwnHealth		(Entity entityID, float& l_points, float& i_points, float& f_points)
+void LichBT::givePointsForOwnHealth(Entity entityID, float& l_points, float& i_points, float& f_points)
 {
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
 
@@ -227,7 +228,7 @@ void LichBT::givePointsForOwnHealth		(Entity entityID, float& l_points, float& i
     else if(lichComp.life > 50 && lichComp.life <= 150) {i_points+=pointsForLichHealth;}//Lich medium health
     else if(lichComp.life > 150){f_points+=pointsForLichHealth;}//Lich high health
 }
-void LichBT::givePointsForDistance	    (Entity entityID, float& l_points, float& i_points, float& f_points)
+void LichBT::givePointsForDistance(Entity entityID, float& l_points, float& i_points, float& f_points)
 {
     int playerID = getPlayerID(entityID);
     if(playerID == -1){return;}
@@ -242,7 +243,7 @@ void LichBT::givePointsForDistance	    (Entity entityID, float& l_points, float&
     else if(dist > lichComp.nonoRadius && dist <= lichComp.peronalSpaceRadius) {i_points+=pointsForDistance;}//Medium distance to player
     else if(dist > lichComp.peronalSpaceRadius){f_points+=pointsForDistance;}//Far away from player
 }
-void LichBT::setStrategyBasedOnPoints	(Entity entityID, float& l_points, float& i_points, float& f_points)
+void LichBT::setStrategyBasedOnPoints(Entity entityID, float& l_points, float& i_points, float& f_points)
 {
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     if(l_points > i_points && l_points > f_points && lichComp.attacks["lightning"].manaCost <= lichComp.mana)
@@ -327,6 +328,7 @@ void LichBT::registerEntityComponents(Entity entityId)
 
 BTStatus LichBT::plunder(Entity entityID)
 {
+    Log::write("Plunder");
     BTStatus ret = BTStatus::Running;
 
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
@@ -343,7 +345,7 @@ BTStatus LichBT::plunder(Entity entityID)
 
 BTStatus LichBT::goToGrave(Entity entityID)
 {
-
+    Log::write("Going to grave");
     BTStatus ret = BTStatus::Running;
     Transform& lichTrans    = getTheScene()->getComponent<Transform>(entityID);
     Rigidbody& lichRb       = getTheScene()->getComponent<Rigidbody>(entityID);
@@ -368,6 +370,7 @@ BTStatus LichBT::goToGrave(Entity entityID)
 
 BTStatus LichBT::goToAlter(Entity entityID)
 {
+    Log::write("Going to alter");
     BTStatus ret = BTStatus::Running;
     Transform& lichTrans    = getTheScene()->getComponent<Transform>(entityID);
     Rigidbody& lichRb       = getTheScene()->getComponent<Rigidbody>(entityID);
@@ -386,6 +389,7 @@ BTStatus LichBT::goToAlter(Entity entityID)
 
 BTStatus LichBT::dropOffBones(Entity entityID)
 {
+    Log::write("Dropping off bones");
     BTStatus ret = BTStatus::Success;    
     //TODO: Visualise the boes dropping
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
@@ -461,6 +465,7 @@ BTStatus LichBT::creepyLook(Entity entityID)
 
 BTStatus LichBT::huntingPlayer(Entity entityID)
 {
+    Log::write("Hunting player");
     BTStatus ret = BTStatus::Running;
     
     int playerID = getPlayerID(entityID);
@@ -505,6 +510,7 @@ BTStatus LichBT::playerInNoNoZone(Entity entityID)
 
 BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
 {
+    Log::write("Moving away from player");
     BTStatus ret = BTStatus::Running;
     int playerID = getPlayerID(entityID);
     if(playerID == -1){return ret;}
@@ -516,9 +522,13 @@ BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
     //avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, playerTrans.position, moveDir, glm::vec3(0.0f, -3.0f, 0.0f)); //TODO: Check if this improves or not
 	moveDir = -safeNormalize(moveDir);
     lichRb.velocity = moveDir * lichComp.huntSpeed;
+    Log::write("MoveDir: " + Log::vecToStr(moveDir));
 
     rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
 
+    /*glm::vec3 player_to_lich = safeNormalize(lichTrans.position - playerTrans.position);
+    glm::vec3 lookAtPos = lichTrans.position + player_to_lich * 2.0f;
+    rotateTowards(entityID, lookAtPos, lichComp.huntRotSpeed);*/
 
     return ret;
 }
@@ -661,6 +671,7 @@ BTStatus LichBT::pickRandomStrategy(Entity entityID)
 
 BTStatus LichBT::attack(Entity entityID)
 {
+    Log::write("Attacking");
     BTStatus ret = BTStatus::Failure;
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     int playerID = getPlayerID(entityID);
@@ -777,6 +788,7 @@ BTStatus LichBT::playerNotVisible(Entity entityID)
 
 BTStatus LichBT::runAwayFromPlayer(Entity entityID)
 {
+    Log::write("Running away from player");
     BTStatus ret = BTStatus::Running;
     int playerID = getPlayerID(entityID);
     if(playerID == -1){return ret;}
@@ -841,9 +853,12 @@ BTStatus LichBT::die(Entity entityID)
 
 BTStatus LichBT::alerted(Entity entityID)
 {
+	LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    lichComp.alertDone = true;
+    return BTStatus::Success; // No scale 
+
     BTStatus ret = BTStatus::Running;
 
-	LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
 	int playerID = getPlayerID(entityID);
     if(playerID == -1){return ret;}
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
