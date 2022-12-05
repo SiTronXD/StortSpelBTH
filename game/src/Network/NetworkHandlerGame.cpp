@@ -72,7 +72,7 @@ Entity NetworkHandlerGame::spawnEnemy(const int& type, const glm::vec3& pos) {
 		break;
 	case 1:
 		// Load lich
-		this->sceneHandler->getScene()->setScriptComponent(e, "scripts/loadBlob.lua");
+		this->sceneHandler->getScene()->setScriptComponent(e, "scripts/loadLich.lua");
 		this->sceneHandler->getScene()->setComponent<LichComponent>(e);
 		break;
 	case 2:
@@ -348,7 +348,14 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 			}
 			else // Lich
 			{
-
+				if (i2 == 1) // Attack
+				{
+					this->sceneHandler->getScene()->blendToAnimation(serverEntities.find(i0)->second, "Attack", "", 0.18f, 2.0f);
+				}
+				else
+				{
+					this->sceneHandler->getScene()->blendToAnimation(serverEntities.find(i0)->second, "Walk");
+				}
 			}
 		}
 		break;

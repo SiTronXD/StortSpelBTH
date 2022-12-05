@@ -54,6 +54,18 @@ void LobbyScene::init()
         });
     this->getResourceManager()->createAnimationSlot(tank, "LowerBody", "Character1_Hips");
     this->getResourceManager()->createAnimationSlot(tank, "UpperBody", "Character1_Spine");
+
+    int lich = this->getResourceManager()->addAnimations({
+                "assets/models/Lich/Lich_Walk.fbx",
+                "assets/models/Lich/Lich_Attack.fbx",
+        },
+        "assets/textures/Lich/"
+        );
+    this->getResourceManager()->mapAnimations(lich,
+        {
+            "Walk",
+            "Attack"
+        });
    
   TextureSamplerSettings samplerSettings{};
   samplerSettings.filterMode = vk::Filter::eNearest;
@@ -209,7 +221,7 @@ void LobbyScene::update()
         if (this->startButton.isClicking())
         {
             // Start singleplayer
-            if (this->activePlayers == 1)
+            /*if (this->activePlayers == 1)
             {
                this->getNetworkHandler()->disconnectClient();
                this->getNetworkHandler()->deleteServer();
@@ -217,7 +229,7 @@ void LobbyScene::update()
                    new GameScene(), "scripts/gamescene.lua"
                );
             }
-            else
+            else*/
             {
                 this->helpPacket << (int)NetworkEvent::START;
                 this->getNetworkHandler()->sendDataToServerTCP(helpPacket);
