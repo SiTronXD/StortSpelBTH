@@ -150,8 +150,9 @@ private:
 
 	// Room Updating
 	int activeIndex = 0;
+	int nextIndex = -1; // For used by server
 	void togglePaths(int roomIndex, bool show);
-	void closeDoors(int index);
+	void toggleDoors(int index, bool open);
 	void activateRoom(int index);
 	void deactivateRoom(int index);
 	void placeDoorLamps();
@@ -183,16 +184,20 @@ public:
 	~RoomHandler();
 
 	void init(Scene* scene, ResourceManager* resourceMan, PhysicsEngine* physicsEngine, bool useMeshes);
-	void generate(uint32_t seed);
+	void generate(uint32_t seed, Entity dir = -1);
 
 #ifdef _CONSOLE
 	void imgui(DebugRenderer* dr);
 #endif //  _CONSOLE
 
+	int serverGetNextRoomIndex() const;
+	void multiplayerToggleCurrentDoors(int nextRoom);
 	void roomCompleted();
 	bool playerNewRoom(Entity player);
 	bool playersInPathway(Entity player1, Entity player2);
 	//TODO: Place Pathway::box in if (useMeshes)
+	//TODO: Fix rooms in DEBUG
+	//TODO: Make path box slightly bigger 
 
 	const std::vector<glm::vec3>& getFreeTiles();
 	const std::vector<TileInfo>& getFreeTileInfos();

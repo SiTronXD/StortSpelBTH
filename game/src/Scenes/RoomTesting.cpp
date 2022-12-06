@@ -76,11 +76,11 @@ void RoomTesting::update()
 	{
 		printf("New room Player 1\n");
 	}
-	else if (roomHandler.playerNewRoom(player2))
+	if (roomHandler.playerNewRoom(player2))
 	{
 		printf("New room Player 2\n");
 	}
-	else if (roomHandler.playersInPathway(player1, player2))
+	if (roomHandler.playersInPathway(player1, player2))
 	{
 		printf("Both players in pathway\n");
 	}

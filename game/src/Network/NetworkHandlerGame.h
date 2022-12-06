@@ -39,6 +39,7 @@ enum class GameEvent
 	ROOM_CLEAR,
 	SPAWN_PORTAL,
 	NEXT_LEVEL,//CurrentLevel difficulty, 
+	HEST,// Index of next room
 
 };
 

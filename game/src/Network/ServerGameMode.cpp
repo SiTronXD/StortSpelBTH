@@ -52,10 +52,16 @@ void ServerGameMode::init()
 
 void ServerGameMode::update(float dt)
 {
+    if (roomHandler.playersInPathway(this->players[0], this->players[1]) && !playersInPath)
+    {
+        addEvent({(int)GameEvent::HEST}, {roomHandler.serverGetNextRoomIndex()});
+        playersInPath = true;
+    }
+
     aiHandler.update(dt);
 
     // For now we only look at player 0
-    if (this->roomHandler.playerNewRoom(this->getPlayer(0)))
+    if (this->roomHandler.playerNewRoom(this->getPlayer(0)) && playersInPath)
     {
         std::cout << "Server: player in new room" << std::endl;
         this->newRoomFrame = true;
@@ -81,7 +87,7 @@ void ServerGameMode::update(float dt)
         // Call when a room is cleared
         roomHandler.roomCompleted();
         this->numRoomsCleared++;
-        
+        playersInPath = false;
         if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
         {
             std::cout << "Server: Spawn portal" << std::endl;

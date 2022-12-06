@@ -403,6 +403,10 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 			}
 		}
 		break;
+	case GameEvent::HEST:
+		tcpPacket >> i0;
+		roomHandler->multiplayerToggleCurrentDoors(i0);
+		break;
 	default:
 		break;
 	}

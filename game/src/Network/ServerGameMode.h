@@ -40,6 +40,7 @@ private:
     uint32_t timeWhenEnteredRoom = 0;
     const uint32_t delayToSafetyDelete = 2;
 
+    bool playersInPath = false;
 	void makeDataSendToClient();
     void createPortal();
   public:
