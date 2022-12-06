@@ -14,7 +14,7 @@ function script:init()
     
 	self.moveDir = vector()
 	self.currentSpeed = vector()
-	self.maxSpeed = 30.0
+	self.maxSpeed = 30
     self.sprintSpeed = 60
     self.isSprinting = false
 	self.speedIncrease = 200
@@ -56,8 +56,8 @@ function script:init()
         dodge = 4, attack = 5, moveAttack = 6, dead = 7 }
     self.currentAnimation = 1
     self.idleAnimTime = 1.0
-    self.runAnimTime = 0.7
-    self.sprintAnimTime = 1.2
+    self.runAnimTime = 1.8 --0.7
+    self.sprintAnimTime = 2.8 --1.2
     self.dodgeAnimTime = 3.0
 end
 

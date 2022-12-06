@@ -1,6 +1,7 @@
 #include "Room Generator.h"
 #include "glm/gtx/rotate_vector.hpp"
 #include "vengine/dev/Random.hpp"
+#include "../Ai/Behaviors/HelperFuncs.hpp"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -53,7 +54,7 @@ void RoomGenerator::generate(bool* doors)
 	{
 		fBranch.x = float(this->random.rand() % 2001) * 0.001f - 1.f;
 		fBranch.y = float(this->random.rand() % 2001) * 0.001f - 1.f;
-		fBranch = glm::normalize(fBranch);
+		fBranch = safeNormalize(fBranch);
 		iBranch = fBranch * (float)BRANCH_DIST;
 		iBranch += gridMid;
 

@@ -38,6 +38,7 @@ enum class GameEvent
 
 	ROOM_CLEAR,
 	SPAWN_PORTAL,
+	NEXT_LEVEL,//CurrentLevel difficulty, 
 
 };
 
@@ -111,12 +112,12 @@ private:
     int humpMesh;
 
     bool newRoomFrame;
-    int numRoomsCleared;
+    int* numRoomsCleared;
     RoomHandler* roomHandler;
 
-    static LichAttack* lich_fire   ;
-    static LichAttack* lich_ice    ;
-    static LichAttack* lich_light  ;
+    LichAttack* lich_fire;
+    LichAttack* lich_ice;
+    LichAttack* lich_light;
 
     Entity spawnOrbs(int orbType);
     Entity spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
@@ -130,12 +131,13 @@ private:
 
 	Entity spawnEnemy(const int& type, const glm::vec3& pos);
 public:
+    ~NetworkHandlerGame();
 	void init();
 	void cleanup();
 
 	void setCombatSystem(CombatSystem* system);
 	int getSeed();
-    void setRoomHandler(RoomHandler& roomHandler);
+    void setRoomHandler(RoomHandler& roomHandler, int& numRoomsCleared);
 
 	virtual void handleTCPEventClient(sf::Packet& tcpPacket, int event) override;
 	virtual void handleUDPEventClient(sf::Packet& udpPacket, int event) override;

@@ -669,6 +669,7 @@ BTStatus SwarmBT::closeEnoughToPlayer(Entity entityID)
 BTStatus SwarmBT::attack(Entity entityID)
 {
     BTStatus ret = BTStatus::Running;
+
 	int playerID = getPlayerID(entityID);
 	if(playerID == -1){return ret;}
 	Transform& thisTransform = getTheScene()->getComponent<Transform>(entityID);

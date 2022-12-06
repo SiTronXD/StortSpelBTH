@@ -10,7 +10,7 @@ void LobbyScene::init()
   this->playerModel = this->getResourceManager()->addAnimations(
         std::vector<std::string>(
             {"assets/models/Character/CharIdle.fbx",
-             "assets/models/Character/CharRun.fbx",
+             "assets/models/Character/CharRun2.fbx",
              "assets/models/Character/CharDodge.fbx",
              "assets/models/Character/CharOutwardAttack.fbx",
              "assets/models/Character/CharHeavyAttack.fbx",
@@ -147,6 +147,8 @@ void LobbyScene::start()
     this->setComponent<PointLight>(light);
     this->getComponent<PointLight>(light).color = glm::vec3(10, 10, 10);
     this->getComponent<Transform>(light).position = glm::vec3(0, 0, 0);
+    this->getComponent<DirectionalLight>(light).shadowMapMinBias = 0.002f;
+    this->getComponent<DirectionalLight>(light).shadowMapAngleBias = 0.007f;
 }
 
 void LobbyScene::update()
@@ -225,6 +227,7 @@ void LobbyScene::update()
             {
                this->getNetworkHandler()->disconnectClient();
                this->getNetworkHandler()->deleteServer();
+               this->getNetworkHandler()->setStatus(ServerStatus::WAITING);
                this->switchScene(
                    new GameScene(), "scripts/gamescene.lua"
                );
