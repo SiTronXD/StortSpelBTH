@@ -178,9 +178,9 @@ void GameOverScene::init()
 		glm::vec3(0.1f)
 		);
 	DirectionalLight& dirLight = this->getComponent<DirectionalLight>(this->dirLight);
-	dirLight.cascadeSizes[0] = 0.044f;
-	dirLight.cascadeSizes[1] = 0.149f;
-	dirLight.cascadeSizes[2] = 1.0f;
+	dirLight.cascadeSizes[0] = 47.0f;
+	dirLight.cascadeSizes[1] = 144.0f;
+	dirLight.cascadeSizes[2] = 500.0f;
 	dirLight.cascadeDepthScale = 36.952f;
 	dirLight.shadowMapMinBias = 0.00001f;
 	dirLight.shadowMapAngleBias = 0.0004f;

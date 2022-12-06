@@ -3,10 +3,14 @@
 #include "../Systems/AiCombatSystem.hpp"
 #include "../Systems/AiMovementSystem.hpp"
 #include "../Systems/CameraMovementSystem.hpp"
+#include "../Systems/CombatSystem.hpp"
 #include "../Systems/HealthBarSystem.hpp"
 #include "../Systems/HealSystem.hpp"
 #include "../Systems/MovementSystem.hpp"
+#include "../Systems/ParticleRemoveEntity.hpp"
+#include "../Systems/ParticleRemoveComponent.hpp"
 #include "../Network/NetworkHandlerGame.h"
+#include "vengine/application/Time.hpp"
 #include "GameOverScene.h"
 #include "MainMenu.h"
 
@@ -16,9 +20,163 @@ void decreaseFps();
 double heavyFunction(double value);
 #endif
 
+void GameScene::initParticleSystems()
+{
+    // Heal particle system
+    ParticleSystem healPS{};
+    healPS.maxlifeTime = 3.0f;
+    healPS.numParticles = 32;
+    healPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/UI/HealingAbilityParticle.png");
+    healPS.startSize = glm::vec2(1.7f);
+    healPS.endSize = glm::vec2(0.3f);
+    healPS.startColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    healPS.endColor = glm::vec4(0.2f, 0.2f, 0.2f, 0.0f);
+    healPS.velocityStrength = 10.0f;
+    healPS.acceleration = glm::vec3(0.0f, -3.0f, 0.0f);
+    healPS.coneSpawnVolume.diskRadius = 25.0f;
+    healPS.coneSpawnVolume.coneAngle = 0.0f;
+    healPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
+    healPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, -0.5f, 0.0f);
+    this->healParticleSystem.create(this, healPS, 1);
+
+    // Blood particle system
+    ParticleSystem bloodPS{};
+    std::strcpy(bloodPS.name, "BloodPS");
+    bloodPS.maxlifeTime = 0.7f;
+    bloodPS.numParticles = 64;
+    bloodPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/bloodParticle.png");
+    bloodPS.startSize = glm::vec2(0.4f);
+    bloodPS.endSize = glm::vec2(0.0f);
+    bloodPS.startColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    bloodPS.endColor = glm::vec4(0.2f, 0.0f, 0.0f, 0.0f);
+    bloodPS.velocityStrength = 30.0f;
+    bloodPS.acceleration = glm::vec3(0.0f, -30.0f, 0.0f);
+    bloodPS.spawnRate = 0.01f;
+    bloodPS.respawnSetting = RespawnSetting::EXPLOSION;
+    bloodPS.coneSpawnVolume.diskRadius = 1.5f;
+    bloodPS.coneSpawnVolume.coneAngle = 70.0f;
+    bloodPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 0.0f, 1.0f);
+    bloodPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, 10.0f, 0.0f);
+    this->bloodParticleSystems.create(this, bloodPS, 3);
+
+    // Swarm particle system
+    ParticleSystem swarmPS{};
+    std::strcpy(swarmPS.name, "SwarmPS");
+    swarmPS.maxlifeTime = 2.0f;
+    swarmPS.numParticles = 8;
+    swarmPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/slimeParticle.png");
+    swarmPS.startSize = glm::vec2(0.4f);
+    swarmPS.endSize = glm::vec2(0.0f);
+    swarmPS.startColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    swarmPS.endColor = glm::vec4(0.2f, 0.2f, 0.2f, 0.0f);
+    swarmPS.velocityStrength = 5.0f;
+    swarmPS.acceleration = glm::vec3(0.0f, -7.0f, 0.0f);
+    swarmPS.spawnRate = 0.01f;
+    swarmPS.respawnSetting = RespawnSetting::EXPLOSION;
+    swarmPS.coneSpawnVolume.diskRadius = 1.5f;
+    swarmPS.coneSpawnVolume.coneAngle = 160.0f;
+    swarmPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
+    swarmPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+    this->swarmParticleSystems.create(this, swarmPS, 5);
+
+    // Fotstep particle system
+    this->setComponent<ParticleSystem>(this->playerID);
+    ParticleSystem& footstepPS = this->getComponent<ParticleSystem>(this->playerID);
+    footstepPS.maxlifeTime = 1.2f;
+    footstepPS.numParticles = 12;
+    footstepPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/grassDustParticle.png");
+    footstepPS.startSize = glm::vec2(0.0f);
+    footstepPS.endSize = glm::vec2(1.7f);
+    footstepPS.startColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    footstepPS.endColor = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
+    footstepPS.velocityStrength = 2.0f;
+    footstepPS.acceleration = glm::vec3(0.0f, -0.5f, 0.0f);
+    footstepPS.coneSpawnVolume.diskRadius = 3.0f;
+    footstepPS.coneSpawnVolume.coneAngle = 0.0f;
+    footstepPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
+    footstepPS.coneSpawnVolume.localPosition = glm::vec3(0.0f);
+    footstepPS.spawn = false;
+
+    // Portal particle system
+    ParticleSystem portalPS0{};
+    portalPS0.maxlifeTime = 3.0f;
+    portalPS0.numParticles = 32;
+    portalPS0.textureIndex = this->getResourceManager()->addTexture("assets/textures/portalParticle.png");
+    portalPS0.startSize = glm::vec2(0.0f);
+    portalPS0.endSize = glm::vec2(1.2f);
+    portalPS0.startColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    portalPS0.endColor = glm::vec4(0.2f, 0.2f, 0.2f, 0.0f);
+    portalPS0.velocityStrength = 10.0f;
+    portalPS0.acceleration = glm::vec3(0.0f, 2.0f, 0.0f);
+    portalPS0.coneSpawnVolume.diskRadius = 15.0f;
+    portalPS0.coneSpawnVolume.coneAngle = 0.0f;
+    portalPS0.coneSpawnVolume.localDirection = glm::vec3(0.0f, 0.0f, 1.0f);
+    portalPS0.coneSpawnVolume.localPosition = glm::vec3(0.0f, 5.0f, -30.0f);
+    ParticleSystem portalPS1{};
+    portalPS1 = portalPS0;
+    portalPS1.coneSpawnVolume.localDirection.z *= -1.0f;
+    portalPS1.coneSpawnVolume.localPosition.z *= -1.0f;
+    this->portalParticleSystemSide0.create(this, portalPS0, 1);
+    this->portalParticleSystemSide1.create(this, portalPS1, 1);
+}
+
+void GameScene::deleteInitialParticleSystems()
+{
+    // Only delete particle systems once
+    if (this->deletedParticleSystems)
+    {
+        return;
+    }
+    this->deletedParticleSystems = true;
+
+    this->healParticleSystem.removeEntities(this);
+    this->bloodParticleSystems.removeEntities(this);
+    this->swarmParticleSystems.removeEntities(this);
+    this->portalParticleSystemSide0.removeEntities(this);
+    this->portalParticleSystemSide1.removeEntities(this);
+
+    // Find all particle entities
+    std::vector<Entity> particleEntities;
+    particleEntities.reserve(32);
+    auto pView =
+        this->getSceneReg().view<Transform, ParticleSystem>();
+    pView.each(
+        [&](const auto entity,
+            const Transform& transform,
+            const ParticleSystem& particleSystem)
+        {
+            particleEntities.push_back((Entity) entity);
+        }
+    );
+}
+
+void GameScene::testParticleSystem(const Entity& particleSystemEntity)
+{
+    // Used for testing particle systems
+    #ifdef _CONSOLE
+        if (this->entityValid(particleSystemEntity))
+        {
+            ParticleSystem& particleSystem = this->getComponent<ParticleSystem>(particleSystemEntity);
+
+            ImGui::Begin("Particle System");
+            ImGui::SliderFloat3("Cone pos: ", &particleSystem.coneSpawnVolume.localPosition[0], -5.0f, 5.0f);
+            ImGui::SliderFloat3("Cone dir: ", &particleSystem.coneSpawnVolume.localDirection[0], -1.0f, 1.0f);
+            ImGui::SliderFloat("Disk radius: ", &particleSystem.coneSpawnVolume.diskRadius, 0.0f, 10.0f);
+            ImGui::SliderFloat("Cone angle: ", &particleSystem.coneSpawnVolume.coneAngle, 0.0f, 180.0f);
+            ImGui::SliderFloat("Velocity strength: ", &particleSystem.velocityStrength, 0.0f, 50.0f);
+            ImGui::SliderFloat("Spawn rate: ", &particleSystem.spawnRate, 0.0f, 1.0f);
+            ImGui::Checkbox("Spawn: ", &particleSystem.spawn);
+            ImGui::End();
+
+            this->getDebugRenderer()->renderParticleSystemCone(particleSystemEntity);
+        }
+    #endif
+}
+
 GameScene::GameScene() :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
-    perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1)
+    perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1), 
+    deathTimer(2.f), isDead(false), deletedParticleSystems(false)
 {
     Input::setHideCursor(true);
 }
@@ -72,7 +230,6 @@ void GameScene::init()
     this->perkTextures[5] = resourceMng->addTexture("assets/textures/UI/empty.png");
     this->hpBarBackgroundTextureID = resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
     this->hpBarTextureID = resourceMng->addTexture("assets/textures/UI/hpBar.png");
-    this->blackTextureIndex = resourceMng->addTexture("assets/textures/blackTex.png");
     this->ghostOverlayIndex = resourceMng->addTexture("assets/textures/UI/GhostUI.png");
 
     // Temporary light
@@ -89,7 +246,7 @@ void GameScene::init()
     dirLight.cascadeDepthScale = 36.952f;
     dirLight.shadowMapMinBias = 0.00001f;
     dirLight.shadowMapAngleBias = 0.0004f;
-
+	
     // Non active Entity with ghostMat
     Entity ghost = this->createEntity();
     this->setInactive(ghost);
@@ -119,6 +276,7 @@ void GameScene::start()
         int seed = this->networkHandler->getSeed();
         Log::write("Seed from server: " + std::to_string(seed));
         roomHandler.generate(seed);
+        networkHandler->setRoomHandler(roomHandler, this->numRoomsCleared);
     }
     else
     {
@@ -150,6 +308,8 @@ void GameScene::start()
         this,
         this->getUIRenderer()
         );
+    this->createSystem<ParticleRemoveEntity>(this);
+    this->createSystem<ParticleRemoveComponent>(this);
 
     if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {
@@ -164,8 +324,8 @@ void GameScene::start()
     // Pause menu
     this->resumeButton.position = glm::vec2(0.0f, 100.0f);
     this->exitButton.position = glm::vec2(0.0f, -100.0f);
-    this->resumeButton.dimension = glm::vec2(500.0f, 150.0f);
-    this->exitButton.dimension = glm::vec2(500.0f, 150.0f);
+    this->resumeButton.dimension = glm::vec2(500.0f, 100.0f);
+    this->exitButton.dimension = glm::vec2(500.0f, 100.0f);
 
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
@@ -179,10 +339,15 @@ void GameScene::start()
         this->aiHandler = this->getAIHandler();
         this->aiHandler->init(this->getSceneHandler());
     
-        spawnHandler.init(&this->roomHandler, this, 
+        spawnHandler.init(&this->roomHandler, this,
         this->getSceneHandler(),this->aiHandler,
         this->getResourceManager(),this->getUIRenderer());
     }
+	
+    this->createSystem<OrbSystem>(this->getSceneHandler());
+	
+    // Create particle systems for this scene
+    this->initParticleSystems();
 }
 
 void GameScene::update()
@@ -194,23 +359,32 @@ void GameScene::update()
             glm::vec4(1.0f, 1.0f, 1.0f, 0.4f + sin(this->timer * 2.0f) * 0.15f));
     }
 
-    if (!networkHandler->isConnected())
+    this->deleteInitialParticleSystems();
+
+    if (!networkHandler->isConnected() && networkHandler->getStatus() == ServerStatus::WAITING)
     {   
         this->aiHandler->update(Time::getDT());
 
-        // TODO: Move to SpawnHandler ---- 
         if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
         {
             this->newRoomFrame = true;
+            this->timeWhenEnteredRoom = Time::getTimeSinceStart();
+            this->safetyCleanDone = false;
 
             this->spawnHandler.spawnEnemiesIntoRoom();
         }
-        // ---- TODO: Move to SpawnHandler ^^^^
-
+        if(!this->safetyCleanDone)
+        {
+            
+            if(this->timeWhenEnteredRoom + delayToSafetyDelete < Time::getTimeSinceStart())
+            {
+                this->spawnHandler.killAllEnemiesOutsideRoom();
+                this->safetyCleanDone = true;
+            }
+        }
         if (this->spawnHandler.allDead() && this->newRoomFrame)
         {
             this->newRoomFrame = false;
-
             // Call when a room is cleared
             this->roomHandler.roomCompleted();
             this->numRoomsCleared++;
@@ -218,12 +392,46 @@ void GameScene::update()
             if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
             {
                 this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
+
+                // Particle effects
+                this->setComponent<ParticleSystem>(this->portal);
+                this->getComponent<ParticleSystem>(this->portal) = this->portalParticleSystemSide0.getParticleSystem();
+
+                Entity side1Entity = this->createEntity();
+                this->getComponent<Transform>(side1Entity) = this->getComponent<Transform>(this->portal);
+                this->setComponent<ParticleSystem>(side1Entity);
+                this->getComponent<ParticleSystem>(side1Entity) = this->portalParticleSystemSide1.getParticleSystem();
             }
         }
-
         // Switch scene if the player is dead
         if (this->hasComponents<HealthComp>(this->playerID))
         {
+			// Look at this 
+			Script& playerScript = this->getComponent<Script>(this->playerID);
+            int tempHealth = this->getComponent<HealthComp>(this->playerID).health;
+            if (tempHealth <= 0.0f && !this->isDead)
+            {
+                this->isDead = true;
+                this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
+            }
+            else if (this->isDead)
+            {
+                if (this->deathTimer >= 0.f)
+                {
+                    this->deathTimer -= Time::getDT();
+                    int currentAnim = -1;
+                    this->getScriptHandler()->getScriptComponentValue(playerScript, currentAnim, "currentAnimation");
+                    if (currentAnim != 7)
+                    {
+                        this->getScriptHandler()->setScriptComponentValue(playerScript, tempHealth, "currentHealth");
+                    }
+                }
+                else
+                {
+                    this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+                }
+			}
+
             HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
             if (healthComp.health <= 0.0f)
             {
@@ -274,6 +482,8 @@ void GameScene::update()
                     glm::vec4(1.0f, 1.0f, 1.0f, sin(this->ghostTransitionTimer * 2.0f - glm::half_pi<float>() + 1.25f) * 0.5f + 0.5f));
             }
         }
+        this->spawnHandler.updateImgui();
+        this->imguiUpdate();
     }
     else
     {
@@ -326,6 +536,10 @@ void GameScene::update()
                 this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
                     glm::vec4(1.0f, 1.0f, 1.0f, sin(this->ghostTransitionTimer * 2.0f - glm::half_pi<float>() + 1.25f) * 0.5f + 0.5f));
             }
+        }
+        if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+        {
+            this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
         }
 
         // Network
@@ -384,12 +598,13 @@ void GameScene::update()
     }
     if (this->paused)
     {
-        this->getUIRenderer()->setTexture(this->blackTextureIndex);
+		// Could be wrong
+        /*this->getUIRenderer()->setTexture(this->blackTextureIndex);
         this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
         this->getUIRenderer()->renderTexture(this->resumeButton.position, this->resumeButton.dimension);
         this->getUIRenderer()->renderTexture(this->exitButton.position, this->exitButton.dimension);
         this->getUIRenderer()->renderString("resume", this->resumeButton.position, glm::vec2(50.0f));
-        this->getUIRenderer()->renderString("exit", this->exitButton.position, glm::vec2(50.0f));
+        this->getUIRenderer()->renderString("exit", this->exitButton.position, glm::vec2(50.0f));*/
 
         if (this->resumeButton.isClicking())
         {
@@ -450,7 +665,6 @@ void GameScene::update()
 
 }
 
-
 void GameScene::onTriggerStay(Entity e1, Entity e2)
 {
 	Entity player = e1 == this->playerID ? e1 : e2 == this->playerID ? e2 : -1;
@@ -459,11 +673,13 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 	{
 		Entity other = e1 == player ? e2 : e1;
     
-
-		if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
-		{
-			this->switchScene(new GameScene(), "scripts/gamescene.lua");
-		}
+        if (!networkHandler->isConnected())
+        {
+		    if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room            
+		    {
+		    	this->switchScene(new GameScene(), "scripts/gamescene.lua");
+		    }
+        }
 	}
 }
 
@@ -563,8 +779,10 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
           swarmComp.inAttack = false;
           swarmComp.touchedPlayer = true;
           //aiCombat.timer = aiCombat.lightAttackTime;
-          this->getComponent<HealthComp>(player).health -=
+          HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+          playerHealth.health -=
               (int)aiCombat.lightHit;
+          playerHealth.srcDmgEntity = other;
             
           Log::write("WAS HIT", BT_FILTER);
         }
@@ -574,16 +792,39 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
       auto& tankComp = this->getComponent<TankComponent>(other);
       if (tankComp.canAttack)
       {
-        auto& aiCombat = this->getComponent<AiCombatTank>(other);
         tankComp.canAttack = false;
-        this->getComponent<HealthComp>(player).health -=
-            (int)aiCombat.directHit;
+        HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+        playerHealth.health -=
+            (int)tankComp.directHit;
+        playerHealth.srcDmgEntity = other;
             
         Log::write("WAS HIT", BT_FILTER);
       }
     }
+    else if (this->hasComponents<Orb>(other)) 
+    {
+        auto& orb = this->getComponent<Orb>(other);
+        HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+        playerHealth.health -=
+            orb.orbPower->damage;
+        playerHealth.srcDmgEntity = other;
+        orb.onCollision(other, this->getSceneHandler());
+    }
+  }
+  else 
+  { // Collision between two things that isnt player
+    
+    if(this->hasComponents<Orb>(e1) || this->hasComponents<Orb>(e2))
+    {
+        Entity collidingOrb = this->hasComponents<Orb>(e1) ? e1 : e2; 
+        
+        auto& orb = this->getComponent<Orb>(collidingOrb);        
+        orb.onCollision(collidingOrb, this->getSceneHandler());
+        
+    }
   }
 
+    //Swarm collides with swarm
   if (this->hasComponents<SwarmComponent>(e1) &&
       this->hasComponents<SwarmComponent>(e2))
   {
@@ -612,6 +853,23 @@ void GameScene::revivePlayer()
     this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = this->origMat;
     // Get back half hp
     this->getComponent<HealthComp>(this->playerID).health = this->getComponent<HealthComp>(this->playerID).maxHealth / 2;
+}
+
+void GameScene::imguiUpdate()
+{
+    ImGui::Begin("Game Scene");
+    std::string playerString = "playerID";
+    int playerID;
+    getScriptHandler()->getGlobal(playerID, playerString);
+    auto& playerHealthComp = getComponent<HealthComp>(playerID);
+    if(ImGui::Button("INVINCIBLE Player")){
+        playerHealthComp.health = INT_MAX;
+    }
+    if(ImGui::Button("Kill Player")){
+        playerHealthComp.health = 0; 
+    }
+
+    ImGui::End();
 }
 
 void GameScene::createPortal()

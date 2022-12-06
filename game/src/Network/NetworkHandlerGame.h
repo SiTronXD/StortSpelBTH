@@ -3,6 +3,9 @@
 #include <vengine.h>
 #include "../Components/Perks.h"
 #include "../Components/Abilities.h"
+#include "../Ai/Behaviors/Lich/LichBTs.hpp"
+#include "../Ai/Behaviors/Lich/LichFSM.hpp"
+#include "../World Handling/Room Handler.h"
 
 class CombatSystem;
 enum class GameEvent
@@ -16,8 +19,16 @@ enum class GameEvent
 	PICKUP_ITEM, // Client -> Server: Want to pick up item. Server -> Client: Pick up the item
 	USE_HEAL, // Client -> Server: Want to use heal. Server -> Client: Spawn heal entity
 	SPAWN_ENEMY,// Type, ServerID, Position,
+    SPAWN_ORB, // id, Type, Position
+    SPAWN_OBJECT, // id, type, position, rotation, scale 
+    SPAWN_GROUND_HUMP, // nrOf, id
+    DO_HUMP, // id, position 
+    UPDATE_HUMP, // id, position 
+    SET_POS_OBJECT, // id, position
+    THROW_ORB, // Id, initialPosition, Direction
 	PLAYER_TAKE_DAMAGE, // What player, how much damage
 	PLAYER_SETHP, // What player, how much hp
+	ENTITY_SET_HP, //What entity, how much hp
 	PUSH_PLAYER, // What player, direction
 	MONSTER_TAKE_DAMAGE,
 	INACTIVATE, // What entity
@@ -25,6 +36,7 @@ enum class GameEvent
 
 	ROOM_CLEAR,
 	SPAWN_PORTAL,
+	NEXT_LEVEL,//CurrentLevel difficulty, 
 
 };
 
@@ -32,6 +44,12 @@ enum class ItemType
 {
 	PERK,
 	ABILITY,
+};
+
+enum class ObjectTypes
+{
+    LICH_GRAVE,
+    LICH_ALTER
 };
 
 class NetworkHandlerGame : public NetworkHandler
@@ -63,6 +81,8 @@ private:
 	// Interpolation of other transforms
 	std::vector<glm::vec3> playerPosLast;
 	std::vector<glm::vec3> playerPosCurrent;
+    std::map<int, std::pair<glm::vec3, glm::vec3>> entityToPosScale;
+    std::map<int, std::pair<glm::vec3, glm::vec3>> entityLastPosScale;
 
 	// Client helpers
 	int i0, i1, i2;
@@ -78,19 +98,38 @@ private:
 	int abilityMeshes[AbilityType::emptyAbility];
 	int healAreaMesh;
 	int swordMesh;
+    int graveMesh;
+    int alterMesh;
+    int humpMesh;
 
-	Entity spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
+    bool newRoomFrame;
+    int* numRoomsCleared;
+    RoomHandler* roomHandler;
+
+    LichAttack* lich_fire;
+    LichAttack* lich_ice;
+    LichAttack* lich_light;
+
+    Entity spawnOrbs(int orbType);
+    Entity spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	Entity spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
-	Entity spawnHealArea(glm::vec3 pos);
+    Entity spawnObject(
+        const ObjectTypes& type, const glm::vec3& pos, const glm::vec3& rot,
+        const glm::vec3& scale
+    );
+    Entity spawnHealArea(glm::vec3 pos);
+    Entity createHump();
 
 	Entity spawnEnemy(const int& type, const glm::vec3& pos);
 public:
+    ~NetworkHandlerGame();
 	void init();
 	void cleanup();
 
 	void setCombatSystem(CombatSystem* system);
 	void setGhostMat(Material* ghostMat);
 	int getSeed();
+    void setRoomHandler(RoomHandler& roomHandler, int& numRoomsCleared);
 
 	virtual void handleTCPEventClient(sf::Packet& tcpPacket, int event) override;
 	virtual void handleUDPEventClient(sf::Packet& udpPacket, int event) override;

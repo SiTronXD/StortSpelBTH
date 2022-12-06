@@ -24,6 +24,7 @@
     <ClCompile Include="src\Ai\Behaviors\Lich\LichFSM.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Tank\TankFSM.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Tank\TankBTs.cpp" />
+    <ClCompile Include="src\World Handling\SpawnHandler.cpp" />
     <ClCompile Include="src\ServerGameModes\NetworkLobbyScene.cpp" />
     <ClCompile Include="src\ServerGameModes\NetworkGameScene.cpp" />
     <ClCompile Include="src\World Handling\SpawnHandler.cpp" />
@@ -70,12 +71,17 @@
     <ClInclude Include="src\Components\AiCombatSwarm.h" />
     <ClInclude Include="src\Components\AICombatTank.hpp" />
     <ClInclude Include="src\Ai\Behaviors\Tank\TankBTs.hpp" />
+    <ClInclude Include="src\Network\NetworkDataFetcher.hpp" />
+    <ClInclude Include="src\World Handling\SpawnHandler.hpp" />
     <ClInclude Include="src\ServerGameModes\NetworkLobbyScene.h" />
     <ClInclude Include="src\ServerGameModes\NetworkGameScene.h" />
     <ClInclude Include="src\World Handling\SpawnHandler.hpp" />
     <ClInclude Include="src\Components\HealthComp.h" />
     <ClInclude Include="src\Components\HealArea.h" />
     <ClInclude Include="src\Systems\HealSystem.hpp" />
+    <ClInclude Include="src\Systems\ParticleRemoveEntity.hpp" />
+    <ClInclude Include="src\Systems\ParticleRemoveComponent.hpp" />
+    <ClInclude Include="src\World Handling\ParticleSystemGenerator.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

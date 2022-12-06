@@ -1,9 +1,10 @@
-local playerMesh = resources.addAnimations({ "assets/models/Character/CharIdle.fbx", "assets/models/Character/CharRun.fbx", 
+local playerMesh = resources.addAnimations({ "assets/models/Character/CharIdle.fbx", "assets/models/Character/CharRun2.fbx", 
 "assets/models/Character/CharDodge.fbx", "assets/models/Character/CharOutwardAttack.fbx", "assets/models/Character/CharHeavyAttack.fbx", 
 "assets/models/Character/CharSpinAttack.fbx", "assets/models/Character/CharKnockbackAttack.fbx", 
-"assets/models/Character/CharInwardAttack.fbx", "assets/models/Character/CharSlashAttack.fbx" }, "assets/textures/playerMesh")
+"assets/models/Character/CharInwardAttack.fbx", "assets/models/Character/CharSlashAttack.fbx", 
+"assets/models/Character/DeathAnim.fbx" }, "assets/textures/playerMesh")
 resources.mapAnimations(playerMesh, {"idle", "run", "dodge", "lightAttack", "heavyAttack", 
-"spinAttack", "knockback", "mixAttack", "slashAttack"})
+"spinAttack", "knockback", "mixAttack", "slashAttack", "dead" })
 resources.createAnimationSlot(playerMesh, "LowerBody", "mixamorig:Hips")
 resources.createAnimationSlot(playerMesh, "UpperBody", "mixamorig:Spine1")
 
@@ -52,6 +53,10 @@ scene.getComponent(uiID, CompType.Script).uiStamSideTexID =
 	resources.addTexture("assets/textures/UI/UIBarSide.png")
 scene.getComponent(uiID, CompType.Script).uiBorderTexID = 
 	resources.addTexture("assets/textures/UI/UIBorder.png")
+scene.getComponent(uiID, CompType.Script).pauseBackgroundTexID = 
+	resources.addTexture("assets/textures/UI/frame.png")
+scene.getComponent(uiID, CompType.Script).buttonTexID = 
+	resources.addTexture("assets/textures/UI/button.png")
 
 --[[local p = scene.createPrefab("scripts/prefabs/prefab.lua")
 

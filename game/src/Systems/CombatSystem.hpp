@@ -3,13 +3,14 @@
 #include <vengine.h>
 #include "../Components/Combat.h"
 #include "../Components/HealthComp.h"
-#include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
-#include "../Network/NetworkHandlerGame.h"
-#include "../Ai/Behaviors/Tank/TankFSM.hpp"
-
 #include "../Components/HealArea.h"
+#include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
+#include "../Ai/Behaviors/Tank/TankFSM.hpp"
+#include "../Network/NetworkHandlerGame.h"
+#include "../Scenes/GameScene.h"
 
-enum SoundEnum { takeDmg, swingSword };
+enum SoundSourceEnum { takeDmgSource, moveSource, attackSource };
+enum AttackSoundEnum { swing };
 
 class CombatSystem : public System
 {
@@ -26,13 +27,9 @@ private:
 	const bool* disabled;
 
 	int lostHealth;
-
-	Entity takeDmgAudioSource;
-	Entity attackAudioSource;
-	Entity moveAudioSource;
 	std::vector<uint32_t> attackSounds;
-	std::vector<uint32_t> moveSounds;
-	std::vector<uint32_t> takeDmgSounds;
+	uint32_t moveSound;
+	uint32_t takeDmgSound;
 
 	int swordMesh;
 	int perkMeshes[5];
@@ -56,15 +53,15 @@ public:
 			combat.combos.emplace_back("Light Heavy Light ");
 			combat.combos.emplace_back("Heavy Light Heavy ");
 
-			this->takeDmgSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/OufSound.ogg"));
+			this->takeDmgSound = this->resourceMng->addSound("assets/Sounds/OufSound.ogg");
+			this->moveSound = this->resourceMng->addSound("assets/Sounds/RunningSound.ogg");
 			this->attackSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/SwishSound.ogg"));
-			this->moveSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/RunningSound.ogg"));
-			this->attackAudioSource = this->scene->createEntity();
-			this->takeDmgAudioSource = this->scene->createEntity();
-			this->moveAudioSource = this->scene->createEntity();
-			this->scene->setComponent<AudioSource>(this->attackAudioSource, this->attackSounds[0]);
-			this->scene->setComponent<AudioSource>(this->takeDmgAudioSource, this->takeDmgSounds[0]);
-			this->scene->setComponent<AudioSource>(this->moveAudioSource, this->moveSounds[0]);
+
+			this->scene->setComponent<MultipleAudioSources>(this->playerID);
+			MultipleAudioSources& multiAudio = this->scene->getComponent<MultipleAudioSources>(this->playerID);
+			multiAudio.audioSource[takeDmgSource].setBuffer(this->takeDmgSound);
+			multiAudio.audioSource[moveSource].setBuffer(this->moveSound);
+			multiAudio.audioSource[attackSource].setBuffer(this->attackSounds[swing]);
 
 			this->swordID = this->scene->createEntity();
 			this->swordMesh = this->resourceMng->addMesh("assets/models/MainSword.fbx", "assets/textures");
@@ -152,20 +149,43 @@ public:
 				removeAbility(combat, combat.ability);
             }
 
-			if (this->scene->getAnimationStatus(this->playerID, "").animationName == "run" && !this->scene->getComponent<AudioSource>(this->moveAudioSource).isPlaying())
+			ParticleSystem& footstepPS = this->scene->getComponent<ParticleSystem>(this->playerID);
+
+			MultipleAudioSources& multiAudio = this->scene->getComponent<MultipleAudioSources>(this->playerID);
+			bool isPlayingRunAnim = this->scene->getAnimationStatus(this->playerID, "").animationName == "run";
+			if (isPlayingRunAnim)
 			{
-				playerEffectSound(this->moveSounds[0], this->scene->getComponent<Transform>(this->playerID).position, this->moveAudioSource, 10.f);
+				if (!multiAudio.audioSource[moveSource].isPlaying())
+				{
+					playerEffectSound(moveSource, this->moveSound, true, 10.f);
+				}
 			}
-			else if (this->scene->getAnimationStatus(this->playerID, "").animationName != "run")
+			else
 			{
-				this->scene->getComponent<AudioSource>(this->moveAudioSource).stop();
+				if (multiAudio.audioSource[moveSource].isPlaying())
+				{
+					multiAudio.audioSource[moveSource].stop();
+				}
+			}
+
+			// Try to spawn particles when the sound effect is playing
+			footstepPS.spawn = isPlayingRunAnim;
+
+			// Don't spawn footstep particles if the player has jumped
+			bool onGround = true;
+			this->script->getScriptComponentValue(
+				this->scene->getComponent<Script>(this->playerID), onGround, "onGround");
+			if (!onGround)
+			{
+				footstepPS.spawn = false;
 			}
 
 			HealthComp& healthComp = this->scene->getComponent<HealthComp>(this->playerID);
 			if (this->lostHealth > healthComp.health)
 			{
 				this->lostHealth = healthComp.health;
-				takeDmg();
+				takeDmg(healthComp.srcDmgEntity);
+				healthComp.srcDmgEntity = -1;
 			}
 
 #ifdef _CONSOLE
@@ -184,6 +204,26 @@ public:
 			{
 				combat.animationMultiplier[i] = animMultis[i];
 			}
+
+			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+			float runAnim = 0.f;
+            this->script->getScriptComponentValue(
+                playerScript, runAnim, "runAnimTime"
+            );
+			float sprintAnim = 0.f;
+            this->script->getScriptComponentValue(
+                playerScript, sprintAnim, "sprintAnimTime"
+            );
+			ImGui::Begin("Running Animation");
+            ImGui::SliderFloat("Running Anim", &runAnim, 0.f, 10.f);
+            ImGui::SliderFloat("Running Anim", &sprintAnim, 0.f, 10.f);
+            ImGui::End();
+            this->script->setScriptComponentValue(
+                playerScript, runAnim, "runAnimTime"
+            );
+            this->script->setScriptComponentValue(
+                playerScript, sprintAnim, "sprintAnimTime"
+            );
 #endif
 		};
 		view.each(foo);
@@ -264,10 +304,6 @@ public:
 				}
 				if (this->canHit)
 				{
-					//if (!this->scene->getComponent<AudioSource>(this->otherSound).isPlaying())
-					//{
-					//	playerEffectSound(this->otherSounds[0], this->scene->getComponent<Transform>(hitID[i]).position, this->otherSound, 12.f);
-					//}
 					this->networkHandler->sendHitOn(hitID[i], (int)combat.dmgArr[combat.activeAttack], combat.knockbackArr[combat.activeAttack]);
 					this->hitEnemies.emplace_back(hitID[i]);
 				}
@@ -275,13 +311,35 @@ public:
 		}
 	}
 
-	void takeDmg()
+	void takeDmg(Entity srcDmgEntity)
 	{
-		if (!this->scene->getComponent<AudioSource>(this->takeDmgAudioSource).isPlaying())
+		if (!this->scene->getComponent<MultipleAudioSources>(this->playerID).audioSource[takeDmgSource].isPlaying())
 		{
-			playerEffectSound(this->takeDmgSounds[0], this->scene->getComponent<Transform>(this->playerID).position,
-				this->takeDmgAudioSource, 10.f);
+			playerEffectSound(takeDmgSource, this->takeDmgSound, false, 10.f);
 		}
+
+		// Particle system transform
+		Entity bloodParticleSystemEntity = this->scene->createEntity();
+		Transform& bloodTransform = this->scene->getComponent<Transform>(bloodParticleSystemEntity);
+		bloodTransform = this->scene->getComponent<Transform>(this->playerID);
+		if (srcDmgEntity != -1 && this->scene->entityValid(srcDmgEntity))
+		{
+			// Rotate particle system depending on incoming damage
+			Transform& srcDmgEntityTransform = 
+				this->scene->getComponent<Transform>(srcDmgEntity);
+			glm::vec3 dir = -(srcDmgEntityTransform.position - bloodTransform.position);
+			dir.y = 0.0f;
+			const glm::mat4 customMatrix = 
+				glm::translate(glm::mat4(1.0f), bloodTransform.position) * 
+				SMath::rotateTowards(dir);
+			bloodTransform.setMatrix(customMatrix);
+		}
+
+		// Particle system spawn
+		this->scene->setComponent<ParticleSystem>(bloodParticleSystemEntity);
+		ParticleSystem& bloodPS = this->scene->getComponent<ParticleSystem>(bloodParticleSystemEntity);
+		bloodPS = ((GameScene*) this->scene)->getBloodParticleSystem();
+		bloodPS.spawn = true;
 	}
 
 	void hitEnemy(Combat& combat, int ID)
@@ -289,7 +347,7 @@ public:
 		Rigidbody& enemyRB = this->scene->getComponent<Rigidbody>(ID);
 		Transform& enemyTrans = this->scene->getComponent<Transform>(ID);
 		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
-		glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+		glm::vec3 newDir = safeNormalize(playerTrans.position - enemyTrans.position);
 		enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * combat.knockbackArr[combat.activeAttack];
 		this->hitEnemies.emplace_back(ID);
 	}
@@ -297,25 +355,36 @@ public:
 	void setupAttack(std::string animName, int animIdx, float cdValue, float animMultiplier)
 	{
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		int currentAnimation = 0;
-		this->script->getScriptComponentValue(playerScript, currentAnimation, "currentAnimation");
+		bool cannotAttack = false;
+		this->script->getScriptComponentValue(playerScript, cannotAttack, "isDodging");
+		if (!cannotAttack)
+		{
+			if (!this->scene->getComponent<MultipleAudioSources>(this->playerID).audioSource[attackSource].isPlaying())
+			{
+				playerEffectSound(attackSource, this->attackSounds[swing], false, 10.f);
+			}
 
-		if (animIdx == 6)
-		{
-			this->script->setScriptComponentValue(playerScript, true, "wholeBody");
-			this->script->setScriptComponentValue(playerScript, false, "canMove");
-			this->scene->blendToAnimation(this->playerID, animName, "", 0.18f, animMultiplier);
+			int currentAnimation = 0;
+			this->script->getScriptComponentValue(playerScript, currentAnimation, "currentAnimation");
+
+			if (animIdx == 6)
+			{
+				this->script->setScriptComponentValue(playerScript, true, "wholeBody");
+				this->script->setScriptComponentValue(playerScript, false, "canMove");
+				this->scene->blendToAnimation(this->playerID, animName, "", 0.18f, animMultiplier);
+			}
+			else
+			{
+				this->script->setScriptComponentValue(playerScript, false, "wholeBody");
+				this->scene->blendToAnimation(this->playerID, animName, "UpperBody", 0.18f, animMultiplier);
+			}
+			this->script->setScriptComponentValue(playerScript, true, "isAttacking");
+			this->script->setScriptComponentValue(playerScript, animIdx, "currentAnimation");
+			this->script->setScriptComponentValue(playerScript, cdValue, "animTimer");
+			Transform& swordTrans = this->scene->getComponent<Transform>(this->swordID);
+			swordTrans.updateMatrix();
+			this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 12.f, (swordTrans.right() * swordTrans.forward()), true));
 		}
-		else
-		{
-			this->script->setScriptComponentValue(playerScript, false, "wholeBody");
-			this->scene->blendToAnimation(this->playerID, animName, "UpperBody", 0.18f, animMultiplier);
-		}
-		this->script->setScriptComponentValue(playerScript, animIdx, "currentAnimation");
-		this->script->setScriptComponentValue(playerScript, cdValue, "animTimer");
-		Transform& swordTrans = this->scene->getComponent<Transform>(this->swordID);
-		swordTrans.updateMatrix();
-		this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 12.f, (swordTrans.right() * swordTrans.forward()), true));
 	}
 
 	bool lightAttack(Combat& combat)
@@ -340,8 +409,6 @@ public:
 			}
 			else
 			{
-				playerEffectSound(this->attackSounds[0], 
-					this->scene->getComponent<Transform>(this->playerID).position, this->attackAudioSource, 7.f);
 				setupAttack("lightAttack", 5, combat.lightAttackCd, combat.animationMultiplier[lightActive]);
 				return true;
 			}
@@ -532,7 +599,10 @@ public:
 	void updateMovementSpeed(Combat& combat, Perks& perk, bool doUpgrade = true)
 	{
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		float moveTimers[4] = { 0.f, 0.f, 0.f, 0.f };
+		int currentAnimation = 0;
+		this->script->getScriptComponentValue(playerScript, currentAnimation, "currentAnimation");
+		float moveTimers[3] = { 0.f, 0.f, 0.f };
+
 		if (doUpgrade)
 		{
 			setDefaultMovementSpeed(combat);
@@ -541,8 +611,8 @@ public:
 			{
 				combat.movementMultiplier = 2.f;
 				moveTimers[0] = 2.f;
-				moveTimers[1] = 1.4f;
-				moveTimers[2] = 2.4f;
+                moveTimers[1] = 2.8f;  //1.4f;
+				moveTimers[2] = 5.6f; // 2.4f;
 				this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
@@ -576,6 +646,15 @@ public:
 		this->script->setScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
 		this->script->setScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
 		this->script->setScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
+
+		if (currentAnimation == 2)
+		{
+			this->script->setScriptComponentValue(playerScript, 3, "currentAnimation");
+		}
+		else if (currentAnimation == 3)
+		{
+			this->script->setScriptComponentValue(playerScript, 2, "currentAnimation");
+		}
 	}
 
 	void updateStamina(Combat& combat, Perks& perk, bool doUpgrade = true)
@@ -649,8 +728,8 @@ public:
 		this->script->setScriptComponentValue(playerScript, 100, "dodgeSpeed");
 
 		this->script->setScriptComponentValue(playerScript, 1.f, "idleAnimTime");
-		this->script->setScriptComponentValue(playerScript, 0.7f, "runAnimTime");
-		this->script->setScriptComponentValue(playerScript, 1.2f, "sprintAnimTime");
+		this->script->setScriptComponentValue(playerScript, 1.8f, "runAnimTime"); // 0.7f
+		this->script->setScriptComponentValue(playerScript, 2.8f, "sprintAnimTime"); // 1.2f
 		this->script->setScriptComponentValue(playerScript, 3.f, "dodgeAnimTime");
 	}
 
@@ -676,7 +755,7 @@ public:
 		perkTrans.position = glm::vec3(playerTrans.position.x, playerTrans.position.y + 8.f, playerTrans.position.z);
 		perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
 		playerTrans.updateMatrix();
-		glm::vec3 throwDir = glm::normalize(playerTrans.forward());
+		glm::vec3 throwDir = safeNormalize(playerTrans.forward());
 		perkRb.gravityMult = 6.f;
 		perkRb.velocity = glm::vec3(throwDir.x * 20.f, 30.f, throwDir.z * 20.f);
 	}
@@ -695,7 +774,7 @@ public:
 			Transform& t = this->scene->getComponent<Transform>(this->playerID);
 			HealthComp& healthComp = this->scene->getComponent<HealthComp>(this->playerID);
 			t.updateMatrix();
-			this->networkHandler->spawnItemRequest(perk.perkType, perk.multiplier, t.position + glm::vec3(0.0f, 8.0f, 0.0f), glm::normalize(t.forward() + glm::vec3(0.0f, 0.5f, 0.0f)));
+			this->networkHandler->spawnItemRequest(perk.perkType, perk.multiplier, t.position + glm::vec3(0.0f, 8.0f, 0.0f), safeNormalize(t.forward() + glm::vec3(0.0f, 0.5f, 0.0f)));
 			switch (perk.perkType)
 			{
 			case hpUpPerk:
@@ -743,7 +822,7 @@ public:
 		abilityTrans.position = glm::vec3(playerTrans.position.x, playerTrans.position.y + 8.f, playerTrans.position.z);
 		abilityTrans.scale = glm::vec3(3.f);
 		playerTrans.updateMatrix();
-		glm::vec3 throwDir = glm::normalize(playerTrans.forward());
+		glm::vec3 throwDir = safeNormalize(playerTrans.forward());
 		abilityRb.gravityMult = 6.f;
 		abilityRb.velocity = glm::vec3(throwDir.x * 20.f, 30.f, throwDir.z * 20.f);
 	}
@@ -775,7 +854,7 @@ public:
 		{
 			Transform& t = this->scene->getComponent<Transform>(this->playerID);
 			t.updateMatrix();
-			this->networkHandler->spawnItemRequest(ability.abilityType, t.position + glm::vec3(0.0f, 8.0f, 0.0f), glm::normalize(t.forward() + glm::vec3(0.0f, 0.5f, 0.0f)));
+			this->networkHandler->spawnItemRequest(ability.abilityType, t.position + glm::vec3(0.0f, 8.0f, 0.0f), safeNormalize(t.forward() + glm::vec3(0.0f, 0.5f, 0.0f)));
 			combat.ability.abilityType = emptyAbility;
 		}
 	}
@@ -898,14 +977,16 @@ public:
 		}
 	}
 
-	void playerEffectSound(uint32_t effect, glm::vec3 pos, Entity& soundSource, float volume)
+	void playerEffectSound(int sourceIdx, int soundIdx, bool loop, float volume)
 	{
-		Transform& soundTrans = this->scene->getComponent<Transform>(soundSource);
-		soundTrans.position = pos;
-		AudioSource& sound = this->scene->getComponent<AudioSource>(soundSource);
-		//sound.setBuffer(effect);
-		sound.setVolume(volume);
-		sound.play();
+		MultipleAudioSources& multiAudio = this->scene->getComponent<MultipleAudioSources>(this->playerID);
+		if (multiAudio.audioSource[sourceIdx].getBuffer() != soundIdx)
+		{
+			multiAudio.audioSource[sourceIdx].setBuffer(soundIdx);
+		}
+		multiAudio.audioSource[sourceIdx].setVolume(volume);
+		multiAudio.audioSource[sourceIdx].setLooping(loop);
+		multiAudio.audioSource[sourceIdx].play();
 	}
 	
 	void pickUpAbility(Entity entity)
@@ -929,6 +1010,7 @@ public:
 		{
 			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 			this->script->setScriptComponentValue(playerScript, true, "canMove");
+			this->script->setScriptComponentValue(playerScript, false, "isAttacking");
 			this->script->setScriptComponentValue(playerScript, 4, "currentAnimation");
 			this->scene->syncedBlendToAnimation(this->playerID, "LowerBody", "UpperBody", 0.3f);
 			combat.attackTimer = 0.f;

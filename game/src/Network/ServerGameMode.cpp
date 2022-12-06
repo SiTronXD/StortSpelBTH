@@ -6,6 +6,7 @@
 ServerGameMode::~ServerGameMode()
 {
     aiHandler.clean();
+    this->sceneType = SceneType::GameModeScene;
 }
 
 void ServerGameMode::init()
@@ -22,6 +23,7 @@ void ServerGameMode::init()
     this->getSceneHandler()->setAIHandler(&aiHandler);
     roomHandler.init(this, this->getResourceManager(), false);
     roomHandler.generate(this->roomSeed);
+    createPortal();
     spawnHandler.init(
         &this->roomHandler,
         this,
@@ -36,6 +38,16 @@ void ServerGameMode::init()
     {
         this->setComponent<HealthComp>(getPlayer(i));
     }
+
+    this->createSystem<OrbSystem>(this->getSceneHandler());
+
+    auto* tankFSM = this->aiHandler.FSMs["tankFSM"];
+    auto* lichFSM = this->aiHandler.FSMs["lichFSM"];
+    auto* swarmFSM = this->aiHandler.FSMs["swarmFSM"];
+
+    lastSwarmHp.resize(this->aiHandler.FSMsEntities[swarmFSM].size());
+    lastLichHp.resize(this->aiHandler.FSMsEntities[lichFSM].size());
+    lastTankHp.resize(this->aiHandler.FSMsEntities[tankFSM].size());
 }
 
 void ServerGameMode::update(float dt)
@@ -47,13 +59,24 @@ void ServerGameMode::update(float dt)
     {
         std::cout << "Server: player in new room" << std::endl;
         this->newRoomFrame = true;
+        this->timeWhenEnteredRoom = Time::getTimeSinceStart();
+        this->safetyCleanDone = false; 
         spawnHandler.spawnEnemiesIntoRoom();
+    }
+    if(!this->safetyCleanDone)
+    {
+        
+        if(this->timeWhenEnteredRoom + delayToSafetyDelete < Time::getTimeSinceStart())
+        {
+            this->spawnHandler.killAllEnemiesOutsideRoom();
+            this->safetyCleanDone = true;
+        }
     }
 
     if (this->spawnHandler.allDead() && this->newRoomFrame)
     {
         this->newRoomFrame = false;
-        std::cout << "all dead" << std::endl;
+        std::cout << "Server" << ": all dead" << std::endl;
         this->addEvent({(int)GameEvent::ROOM_CLEAR});
         // Call when a room is cleared
         roomHandler.roomCompleted();
@@ -61,7 +84,58 @@ void ServerGameMode::update(float dt)
         
         if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
         {
+            std::cout << "Server: Spawn portal" << std::endl;
             this->addEvent({(int)GameEvent::SPAWN_PORTAL});
+        }
+    }
+    //check if all players are at portal
+    if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+    {
+            
+        std::vector<int> colWithPortal = this->getPhysicsEngine()->testContact(
+            this->getComponent<Collider>(portal),
+            this->getComponent<Transform>(portal).position
+        );
+        if (colWithPortal.size() > 0)
+        {
+            int rights = 0;
+            for (int i = 0; i < colWithPortal.size(); i++) 
+            {
+                for (int p = 0; p < getPlayerSize(); p++){
+                    if(colWithPortal[i] == getPlayer(p))
+                    {
+                        rights++;
+                    }
+                }
+            }
+            if (rights == getPlayerSize())
+            {
+                std::cout << "r:" << rights << std::endl;
+                std::cout << "To a new World" << std::endl;
+                addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {
+                    this->getComponent<Transform>(portal).position.x,
+                    this->getComponent<Transform>(portal).position.y,
+                    this->getComponent<Transform>(portal).position.z,
+                    this->getComponent<Transform>(portal).rotation.x,
+                    this->getComponent<Transform>(portal).rotation.y,
+                    this->getComponent<Transform>(portal).rotation.z,
+                    this->getComponent<Collider>(portal).extents.x,
+                    this->getComponent<Collider>(portal).extents.y,
+                    this->getComponent<Collider>(portal).extents.z,
+                    }
+                );
+                addEvent({(int)NetworkEvent::DEBUG_DRAW_CYLINDER}, {
+                    (float)this->getComponent<Transform>(getPlayer(0)).position.x,
+                    (float)this->getComponent<Transform>(getPlayer(0)).position.y,
+                    (float)this->getComponent<Transform>(getPlayer(0)).position.z,
+                    (float)this->getComponent<Transform>(getPlayer(0)).rotation.x,
+                    (float)this->getComponent<Transform>(getPlayer(0)).rotation.y,
+                    (float)this->getComponent<Transform>(getPlayer(0)).rotation.z,
+                    (float)this->getComponent<Collider>(getPlayer( 0)).height,
+                    (float)this->getComponent<Collider>(getPlayer( 0)).radius,
+                    }
+                );
+            }
         }
     }
 	// Send data to player
@@ -121,8 +195,49 @@ void ServerGameMode::makeDataSendToClient()
                 t.position.z,
                 t.rotation.x,
                 t.rotation.y,
-                t.rotation.z
+                t.rotation.z,
+                t.scale.x,
+                t.scale.y,
+                t.scale.z
                 });
+            //update hp if needed
+            if (this->hasComponents<SwarmComponent>(it.second[i]))
+            {
+                if (lastSwarmHp[i].health != this->getComponent<SwarmComponent>(it.second[i]).life)
+                {
+                    this->addEvent(
+                        {(int)GameEvent::ENTITY_SET_HP,
+                        (int)it.second[i],
+                         this->getComponent<SwarmComponent>(it.second[i]).life}
+                     );
+                    lastSwarmHp[i].health = this->getComponent<SwarmComponent>(it.second[i]).life;
+                }
+            }
+            else if (this->hasComponents<LichComponent>(it.second[i]))
+            {
+                if (lastLichHp[i].health != this->getComponent<LichComponent>(it.second[i]).life)
+                {
+                    this->addEvent(
+                        {(int)GameEvent::ENTITY_SET_HP,
+                        (int)it.second[i],
+                        this->getComponent<LichComponent>(it.second[i]).life}
+                     );
+                    lastLichHp[i].health = this->getComponent<LichComponent>(it.second[i]).life;
+                }
+            }
+            else if (this->hasComponents<TankComponent>(it.second[i]))
+            {
+                if (lastTankHp[i].health != this->getComponent<TankComponent>(it.second[i]).life)
+                {
+                    this->addEvent(
+                        {(int)GameEvent::ENTITY_SET_HP,
+                        (int)it.second[i],
+                         this->getComponent<TankComponent>(it.second[i]).life}
+                     );
+                    lastTankHp[i].health = this->getComponent<TankComponent>(it.second[i]).life;
+                }
+            }
+            
         }
     }
     //Check for updates in player hp and change it it should
@@ -160,6 +275,33 @@ void ServerGameMode::makeDataSendToClient()
     //            });
     //    }
     //}
+}
+
+void ServerGameMode::createPortal() 
+{
+    glm::vec3 portalTriggerDims(6.f, 18.f, 1.f);
+    glm::vec3 portalBlockDims(3.f, 18.f, 3.f);
+
+    portal = this->createEntity();
+    this->getComponent<Transform>(portal).position =
+        this->roomHandler.getExitRoom().position;
+    this->setComponent<Collider>(
+        portal, Collider::createBox(portalTriggerDims, glm::vec3(0, 0, 0), true)
+        );
+
+    Entity collider1 = this->createEntity();
+    this->getComponent<Transform>(collider1).position =
+        this->getComponent<Transform>(portal).position;
+    this->getComponent<Transform>(collider1).position.x += 9.f;
+    this->getComponent<Transform>(collider1).position.y += 9.f;
+    this->setComponent<Collider>(collider1, Collider::createBox(portalBlockDims));
+
+    Entity collider2 = this->createEntity();
+    this->getComponent<Transform>(collider2).position =
+        this->getComponent<Transform>(portal).position;
+    this->getComponent<Transform>(collider2).position.x -= 9.f;
+    this->getComponent<Transform>(collider2).position.y += 9.f;
+    this->setComponent<Collider>(collider2, Collider::createBox(portalBlockDims));
 }
 
 void ServerGameMode::onDisconnect(int index)
@@ -254,9 +396,10 @@ void ServerGameMode::onCollisionStay(Entity e1, Entity e2) {
           swarmComp.inAttack = false;
           swarmComp.touchedPlayer = true;
           //aiCombat.timer = aiCombat.lightAttackTime;
-          this->getComponent<HealthComp>(player).health -=
+          HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+          playerHealth.health -=
               (int)aiCombat.lightHit;
-          //this->addEvent({GameEvent::});
+          playerHealth.srcDmgEntity = other;
             
           Log::write("WAS HIT", BT_FILTER);
         }
@@ -265,11 +408,12 @@ void ServerGameMode::onCollisionStay(Entity e1, Entity e2) {
     {
       auto& tankComp = this->getComponent<TankComponent>(other);
       if (tankComp.canAttack)
-      {
-        auto& aiCombat = this->getComponent<AiCombatTank>(other);
+      {       
         tankComp.canAttack = false;
-        this->getComponent<HealthComp>(player).health -=
-            (int)aiCombat.directHit;
+        HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+        playerHealth.health -=
+            (int)tankComp.directHit;
+        playerHealth.srcDmgEntity = other;
             
         Log::write("WAS HIT", BT_FILTER);
       }

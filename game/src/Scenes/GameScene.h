@@ -5,7 +5,6 @@
 
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../World Handling/Room Handler.h"
-#include "../Systems/CombatSystem.hpp"
 #include "../World Handling/SpawnHandler.hpp"
 #include "vengine.h"
 #include "../World Handling/Room Handler.h"
@@ -13,6 +12,7 @@
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
 #include "../Components/AICombatTank.hpp"
+#include "../World Handling/ParticleSystemGenerator.hpp"
 
 class NetworkHandlerGame;
 
@@ -37,6 +37,13 @@ private:
   Material* ghostMat;
   Material origMat;
 
+  float deathTimer;
+  bool isDead;
+  
+  bool safetyCleanDone = false;
+  uint32_t timeWhenEnteredRoom = 0;
+  const uint32_t delayToSafetyDelete = 2;
+
   Entity playerID;
   Entity portal;
   Entity perk;
@@ -58,13 +65,25 @@ private:
   uint32_t abilityTextures[3];
   uint32_t perkTextures[6];
   uint32_t fontTextureIndex;
-  uint32_t blackTextureIndex;
   uint32_t ghostOverlayIndex;
 
   uint32_t hpBarBackgroundTextureID;
   uint32_t hpBarTextureID;
   uint32_t portalOffMesh;
   uint32_t portalOnMesh;
+
+  ParticleSystemInstance healParticleSystem;
+  ParticleSystemInstance bloodParticleSystems;
+  ParticleSystemInstance swarmParticleSystems;
+  ParticleSystemInstance portalParticleSystemSide0;
+  ParticleSystemInstance portalParticleSystemSide1;
+
+  bool deletedParticleSystems;
+
+  void initParticleSystems();
+  void deleteInitialParticleSystems();
+
+  void testParticleSystem(const Entity& particleSystemEntity);
 
 public:
   GameScene();
@@ -83,8 +102,13 @@ public:
   // Multiplayer: revive self
   void revivePlayer();
 
+  inline const ParticleSystem& getHealParticleSystem() { return this->healParticleSystem.getParticleSystem(); }
+  inline const ParticleSystem& getBloodParticleSystem() { return this->bloodParticleSystems.getParticleSystem(); }
+  inline const ParticleSystem& getSwarmParticleSystem() { return this->swarmParticleSystems.getParticleSystem(); }
+
 private:
 
+    void imguiUpdate();
   void createPortal();
 
   int colliderTest;
