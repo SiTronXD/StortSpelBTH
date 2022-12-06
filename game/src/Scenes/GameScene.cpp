@@ -43,12 +43,35 @@ void GameScene::testParticleSystem(const Entity& particleSystemEntity)
     #endif
 }
 
-GameScene::GameScene() :
+void GameScene::setCurrentLevel(const GameSceneLevel& lvl) {
+    this->getComponent<HealthComp>(playerID).health = lvl.hp;
+    this->getComponent<Combat>(playerID).ability = lvl.ability;
+    ((NetworkHandlerGame*)this->getNetworkHandler())->setPerks(lvl.perks);
+}
+
+GameSceneLevel GameScene::setNewLevel() {
+    GameSceneLevel theReturn;
+
+    theReturn.level = currentLevel.level++;
+    theReturn.hp = this->getComponent<HealthComp>(playerID).health;
+    Combat &c = this->getComponent<Combat>(playerID);
+    for (int i = 0; i < 4; i++)
+    {
+        theReturn.perks[i] = this->getComponent<Combat>(playerID).perks[i];
+
+    }
+    theReturn.ability = this->getComponent<Combat>(playerID).ability;
+    
+    return theReturn;
+}
+
+GameScene::GameScene(GameSceneLevel gameSceneLevel) :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
     perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1), 
     deathTimer(2.f), isDead(false)
 {
     Input::setHideCursor(true);
+    currentLevel = gameSceneLevel;
 }
 
 GameScene::~GameScene()
@@ -143,13 +166,9 @@ void GameScene::start()
     this->setComponent<HealthComp>(playerID);
     this->setComponent<Combat>(playerID);
     this->createSystem<CombatSystem>(
-        this,
-        this->getResourceManager(),
+        this->getSceneHandler(),
         this->playerID,
         &this->paused,
-        this->getPhysicsEngine(),
-        this->getUIRenderer(),
-        this->getScriptHandler(),
         this->networkHandler
     );
     this->createSystem<HealSystem>(
@@ -202,6 +221,8 @@ void GameScene::start()
 	
     // Create particle systems for this scene
     ((NetworkHandlerGame*)this->getNetworkHandler())->initParticleSystems();
+
+    this->setCurrentLevel(currentLevel);
 }
 
 void GameScene::update()
@@ -434,7 +455,8 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
         {
 		    if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room            
 		    {
-		    	this->switchScene(new GameScene(), "scripts/gamescene.lua");
+                networkHandler->cleanUp();
+		    	this->switchScene(new GameScene(this->setNewLevel()), "scripts/gamescene.lua");
 		    }
         }
 	}
