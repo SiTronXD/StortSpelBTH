@@ -69,12 +69,12 @@ Entity NetworkHandlerGame::spawnEnemy(const int& type, const glm::vec3& pos) {
 		break;
 	case 1:
 		// Load lich
-		this->sceneHandler->getScene()->setScriptComponent(e, "scripts/loadBlob.lua");
+		this->sceneHandler->getScene()->setScriptComponent(e, "scripts/loadLich.lua");
 		this->sceneHandler->getScene()->setComponent<LichComponent>(e);
 		break;
 	case 2:
 		// Load tank
-		this->sceneHandler->getScene()->setScriptComponent(e, "scripts/loadBlob.lua");
+		this->sceneHandler->getScene()->setScriptComponent(e, "scripts/loadTank.lua");
 		this->sceneHandler->getScene()->setComponent<TankComponent>(e);
 		break;
 	default:
@@ -357,6 +357,52 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
             this->sceneHandler->getScene()->setActive(serverEntities.find(i0)->second);
 		}
 		break;
+	case GameEvent::UPDATE_ANIM:
+		tcpPacket >> i0 >> i1 >> i2 >> i3;
+		if (serverEntities.find(i0) != serverEntities.end())
+		{
+			if (i1 == 0) // Tank
+			{
+				str = i3 == 0 ? "LowerBody" : i3 == 1 ? "UpperBody" : "";
+				if (i2 == 2) // GroundHump
+				{
+					this->sceneHandler->getScene()->blendToAnimation(serverEntities.find(i0)->second, this->tankAnims[i2], str, 0.18f, 1.09f);
+				}
+				else
+				{
+					this->sceneHandler->getScene()->blendToAnimation(serverEntities.find(i0)->second, this->tankAnims[i2], str);
+				}
+			}
+			else // Lich
+			{
+				if (i2 == 1) // Attack
+				{
+					this->sceneHandler->getScene()->blendToAnimation(serverEntities.find(i0)->second, "Attack", "", 0.18f, 2.0f);
+				}
+				else
+				{
+					this->sceneHandler->getScene()->blendToAnimation(serverEntities.find(i0)->second, "Walk");
+				}
+			}
+		}
+		break;
+	case GameEvent::UPDATE_ANIM_TIMESCALE:
+		tcpPacket >> i0 >> i1 >> f0;
+		if (serverEntities.find(i0) != serverEntities.end())
+		{
+			i2 = serverEntities.find(i0)->second;
+			str = i1 == 0 ? "LowerBody" : i1 == 1 ? "UpperBody" : "";
+			if (str == "UpperBody" && f0 == 0.0f) // Shield anim for tank (ugly fix due to latency)
+			{
+				this->sceneHandler->getScene()->blendToAnimation(i2, "RaiseShield", str, 0.18f, 0.0f);
+				this->sceneHandler->getScene()->getAnimationSlot(i2, str).nTimer = 0.725f * 24.0f;
+			}
+			else
+			{
+				this->sceneHandler->getScene()->setAnimationTimeScale(i2, f0, str);
+			}
+		}
+		break;
 	default:
 		break;
 	}
@@ -515,7 +561,6 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
                     int Hello = 1; 
                 }
             }
-			
         }
         
 		break;
