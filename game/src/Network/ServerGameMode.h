@@ -27,6 +27,7 @@ private:
     std::vector<HealthComp> lastSwarmHp;
     std::vector<HealthComp> lastLichHp;
     std::vector<HealthComp> lastTankHp;
+    int level;
 
 	AIHandler aiHandler;
     SpawnHandler spawnHandler;
@@ -43,6 +44,7 @@ private:
 	void makeDataSendToClient();
     void createPortal();
   public:
+    ServerGameMode(int level = 0);
     virtual ~ServerGameMode();
 	virtual void init() override;
 	void update(float dt) override;
