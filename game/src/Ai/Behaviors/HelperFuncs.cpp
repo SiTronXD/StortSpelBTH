@@ -67,12 +67,12 @@ void avoidStuff(Entity entityID, SceneHandler* sceneHandler, bool& attackGoRight
 
 	//Rays
 	Ray ray0			{from, entityTransform.right()};    
-	Ray ray30			{from, rotateVec(entityTransform.right(), AI_DEG_TO_RAD(-30), glm::vec3(0.0f, 1.0f, 0.0f))};    
-	Ray ray60			{from, rotateVec(entityTransform.right(), AI_DEG_TO_RAD(-60), glm::vec3(0.0f, 1.0f, 0.0f))};    
-	Ray ray90			{from, -entityTransform.forward()};    
-	Ray ray120			{from, rotateVec(entityTransform.right(), AI_DEG_TO_RAD(-120), glm::vec3(0.0f, 1.0f, 0.0f))};    
-	Ray ray150			{from, rotateVec(entityTransform.right(), AI_DEG_TO_RAD(-150), glm::vec3(0.0f, 1.0f, 0.0f))};    
-	Ray ray180			{from, -entityTransform.right()};    
+	Ray ray30			{from, rotateVec(entityTransform.right(), AI_DEG_TO_RAD(30), glm::vec3(0.0f, 1.0f, 0.0f))};    
+	Ray ray60			{from, rotateVec(entityTransform.right(), AI_DEG_TO_RAD(60), glm::vec3(0.0f, 1.0f, 0.0f))};    
+	Ray ray90			{from, entityTransform.forward()};    
+	Ray ray120			{from, rotateVec(entityTransform.right(), AI_DEG_TO_RAD(120), glm::vec3(0.0f, 1.0f, 0.0f))};    
+	Ray ray150			{from, rotateVec(entityTransform.right(), AI_DEG_TO_RAD(150), glm::vec3(0.0f, 1.0f, 0.0f))};    
+	Ray ray180			{from, entityTransform.right()};    
 
 	float left_right_maxDist = entityCollider.radius + 4.0f;
 

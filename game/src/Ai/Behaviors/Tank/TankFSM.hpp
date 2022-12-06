@@ -59,8 +59,8 @@ struct TankComponent
 	float idleSpeed					= 10.0f;
 	float shieldSpeed				= 5.0f;
 	float cahargeSpeed				= 200.0f;
-    float sightRadius				= 200.0f; // I'll can attack you
-    float peronalSpaceRadius		= 75.0f; // This is my personal space, get away!
+    float sightRadius				= 0.0f;//200.0f; // I'll can attack you
+    float peronalSpaceRadius		= 0.0f;//75.0f; // This is my personal space, get away!
 	float friendVisitRadius			= 15.0f; //When go this close to friends
 	float combatRotSpeed			= 50.0f;
 	float idleRotSpeed				= 40.0f;
@@ -92,7 +92,7 @@ struct TankComponent
 	bool canAttack					= false;
 	bool attackGoRight				= false;
 	bool isElite					= false;
-	bool hasDoneFirstHump			= false;
+	//bool hasDoneFirstHump			= false;
 
 	//Timers
 	float alertTimerOrig			= 1.0f;
@@ -150,8 +150,9 @@ struct TankComponent
 		this->sightRadius				*= eliteComp.radiusMultiplier; 
 		this->peronalSpaceRadius		*= eliteComp.radiusMultiplier;
 		this->friendVisitRadius			*= eliteComp.radiusMultiplier; 
-
-		scene->getComponent<Collider>(entityID).radius *= eliteComp.sizeMultiplier;
+		Collider& col = scene->getComponent<Collider>(entityID);
+		col.radius *= eliteComp.sizeMultiplier;
+		col.offset += glm::vec3(0.0f, 5.0f, 0.0f);
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale * eliteComp.sizeMultiplier;
 		this->origScale = trans.scale;
@@ -175,7 +176,9 @@ struct TankComponent
 		this->peronalSpaceRadius		/= this->eliteStats.radiusMultiplier;
 		this->friendVisitRadius			/= this->eliteStats.radiusMultiplier; 
 										
-        scene->getComponent<Collider>(entityID).radius /= this->eliteStats.sizeMultiplier;
+		Collider& col = scene->getComponent<Collider>(entityID);
+		col.radius /= this->eliteStats.sizeMultiplier;
+		col.offset -= glm::vec3(0.0f, 5.0f, 0.0f);
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale / this->eliteStats.sizeMultiplier;
 		this->origScale = trans.scale;

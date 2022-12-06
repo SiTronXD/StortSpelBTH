@@ -168,9 +168,9 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
     RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, maxDist);
     RayPayload rp1 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_right, maxDist);
     RayPayload rp2 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_left, maxDist);
-	//drawRaySimple(rayToPlayer, maxDist);
-	//drawRaySimple(rayToPlayer_right, maxDist);
-	//drawRaySimple(rayToPlayer_left, maxDist);
+	drawRaySimple(rayToPlayer, maxDist);
+	drawRaySimple(rayToPlayer_right, maxDist);
+	drawRaySimple(rayToPlayer_left, maxDist);
 	if(rp.hit || rp1.hit || rp2.hit)
 	{
 		bool one = (rp.entity != -1 && sceneHandler->getScene()->hasComponents<Collider>(rp.entity) && !getTheScene()->getComponent<Collider>(rp.entity).isTrigger && rp.entity != entityID);
@@ -185,9 +185,9 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 			RayPayload r_right= BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayRight, left_right_maxDist);
 			RayPayload r_left = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayLeft, left_right_maxDist);
 			RayPayload r_forward = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, left_right_maxDist);
-			//drawRaySimple(rayToPlayer, left_right_maxDist);
-			//drawRaySimple(rayRight, left_right_maxDist);
-			//drawRaySimple(rayLeft, left_right_maxDist);
+			drawRaySimple(rayToPlayer, left_right_maxDist);
+			drawRaySimple(rayRight, left_right_maxDist);
+			drawRaySimple(rayLeft, left_right_maxDist);
 
 			if(r_forward.hit && !getTheScene()->getComponent<Collider>(r_forward.entity).isTrigger)
 			{
@@ -602,7 +602,7 @@ BTStatus TankBT::playerInPersonalSpace(Entity entityID)
     }
 	else
 	{
-		tankComp.hasDoneFirstHump = false;
+		//ankComp.hasDoneFirstHump = false;
 	}
 
 	return ret;
@@ -629,9 +629,9 @@ BTStatus TankBT::GroundHump(Entity entityID)
 
 	BTStatus ret = BTStatus::Running;
 
-	if (tankComp.groundHumpTimer <= 0.0f || tankComp.hasDoneFirstHump)
+	if (tankComp.groundHumpTimer <= 0.0f/* || tankComp.hasDoneFirstHump*/)
 	{
-		tankComp.hasDoneFirstHump = true;
+		//tankComp.hasDoneFirstHump = true;
 		groundHumpShortcut(entityID);
 	}
 	else
@@ -651,10 +651,12 @@ BTStatus TankBT::playerOutsidePersonalSpace(Entity entityID)
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
     float tank_player_dist	= glm::length(playerTrans.position - tankTrans.position);
-    if(tank_player_dist > tankComp.peronalSpaceRadius)
+    if(tank_player_dist > tankComp.peronalSpaceRadius || tankComp.hasRunTarget)
     {
         ret = BTStatus::Success;
     }
+
+	tankComp.runTimer -= get_dt();
 	return ret;
 }
 
@@ -709,12 +711,14 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		return ret;
 	}
 
-	if(!tankComp.hasRunTarget && (tankComp.chargeTimer > 0.0f || !rotationDone(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f)))
+	//Tick down charge
+	if(/*!tankComp.hasRunTarget && */(tankComp.chargeTimer > 0.0f || !rotationDone(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f)))
 	{
 		rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
 		tankComp.chargeTimer -= get_dt();
 		return ret;
 	}
+	//Set target
 	if(!tankComp.hasRunTarget)
 	{
 		tankComp.runTarget = playerTrans.position;
@@ -725,10 +729,10 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.canAttack = true;
 	}
 
+
 	if(glm::length(tankComp.runOrigin - tankTrans.position) < tankComp.runDist &&
 		tankComp.runTimer > 0.0f)
 	{
-		tankComp.runTimer -= get_dt();
 		rb.velocity = tankComp.runDir * tankComp.cahargeSpeed;
 	}
 	else
@@ -886,9 +890,9 @@ BTStatus TankBT::HoldShield(Entity entityID)
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	rotateTowards(entityID, playerTrans.position, tankComp.shildRotSpeed, 5.0f);
 
-	if (tankComp.groundHumpTimer <= 0.0f || tankComp.hasDoneFirstHump)
+	if (tankComp.groundHumpTimer <= 0.0f/* || tankComp.hasDoneFirstHump*/)
 	{
-		tankComp.hasDoneFirstHump = true;
+		//tankComp.hasDoneFirstHump = true;
 		groundHumpShortcut(entityID);
 	}
 	else

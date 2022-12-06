@@ -57,19 +57,6 @@ void SpawnHandler::spawnEnemiesIntoRoom()
         this->spawnTank(tankIdx, this->tilePicker.getRandomEmptyTile()->getPos(), true);
         this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2), true);
         this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP), true);
-
-       /* switch (rand()%3)
-        {
-        case 0:
-            this->spawnTank(tankIdx, this->tilePicker.getRandomEmptyTile()->getPos(), true);
-            break;
-        case 1:
-            this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2), true);
-            break;
-        case 2:
-            this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP), true);
-            break;
-        }*/
     }
     else 
     {
@@ -110,7 +97,7 @@ void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos, bool elite
     TankComponent& tankComp = currScene->getComponent<TankComponent>(this->tankIDs[tankIdx]);
 
     AiEliteComponent defaultEliteComp;
-    defaultEliteComp.sizeMultiplier = 2.0f;
+    defaultEliteComp.sizeMultiplier = 1.25f;
 
     if(elite)
     {
