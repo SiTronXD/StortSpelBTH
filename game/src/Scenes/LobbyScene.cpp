@@ -93,9 +93,9 @@ void LobbyScene::init()
     );
 
     int camEntity = this->createEntity();
-    this->setComponent<Camera>(camEntity);
+    this->setComponent<Camera>(camEntity, 55.f);
     this->setMainCamera(camEntity);
-    this->getComponent<Transform>(camEntity).position = glm::vec3(0, 0, 0);
+    this->getComponent<Transform>(camEntity).position = glm::vec3(0, 0, -20);
     this->getComponent<Transform>(camEntity).rotation = glm::vec3(0, 0, 0);
 
     scene = this->createEntity();
@@ -103,6 +103,17 @@ void LobbyScene::init()
     Transform& t = this->getComponent<Transform>(scene);
     t.position = glm::vec3(0.f, 0.5f, 40.f);
     t.rotation = glm::vec3(0.f, 180.f, 0.f);
+
+    addCandle(glm::vec3(8, 0, -24));
+    addCandle(glm::vec3(-8, 0, -24));
+    addCandle(glm::vec3(22, 0, -14.5));
+    addCandle(glm::vec3(-22, 0, -14.5));
+    addCandle(glm::vec3(26.5, 0, 0));
+    addCandle(glm::vec3(-26, 0, 0));
+    addCandle(glm::vec3(22, 0, 14.5));
+    addCandle(glm::vec3(-22, 0, 14.5));
+    addCandle(glm::vec3(8, 0, 26));
+    addCandle(glm::vec3(-8, 0, 26));
 
     this->players.resize(MAX_PLAYER_COUNT);
     this->playersNames.resize(MAX_PLAYER_COUNT);
@@ -125,10 +136,10 @@ void LobbyScene::init()
     }
     this->setActive(this->players[0]);
 
-    startButton.position = glm::vec2(0.0f, -400.f);
+    startButton.position = glm::vec2(0.0f, -450.f);
     startButton.dimension = glm::vec2(275.0f, 100.0f);
 
-    disconnectButton.position = glm::vec2(-700.f, -400.f);
+    disconnectButton.position = glm::vec2(-800.f, -450.f);
     disconnectButton.dimension = glm::vec2(225.0f, 75.0f);
 }
 
@@ -151,9 +162,16 @@ void LobbyScene::start()
     this->getComponent<DirectionalLight>(light).shadowMapAngleBias = 0.007f;
 }
 
+void LobbyScene::addCandle(glm::vec3 position) 
+{
+    Entity candle = this->createEntity();
+    this->setComponent<MeshComponent>(candle, (int)this->getResourceManager()->addMesh("assets/models/Menu/candle.obj"));
+    this->setComponent<PointLight>(candle, glm::vec3(0.5, -7, 26), glm::vec3(40, 10, 5));
+    this->getComponent<Transform>(candle).position = position;
+}
+
 void LobbyScene::update()
 {
-    
     // Set model position and player names
     auto netPlayers = this->networkHandler->getPlayers();
     if (netPlayers.size() != this->activePlayers - 1)
@@ -192,14 +210,15 @@ void LobbyScene::update()
     this->getUIRenderer()->renderString(
         this->getNetworkHandler()->getClientName(),
         this->POSITIONS[0] + glm::vec3(0.0f, 20.0f, 0.0f),
-        glm::vec2(100.0f)
+        glm::vec2(200.0f)
     );
+
     for (int i = 0; i < this->playersNames.size(); i++)
     {
         this->getUIRenderer()->renderString(
             playersNames[i],
             this->POSITIONS[i + 1] + glm::vec3(0.0f, 20.0f, 0.0f),
-            glm::vec2(100.0f)
+            glm::vec2(200.0f)
         );
     }
     this->getUIRenderer()->renderString(
@@ -223,7 +242,7 @@ void LobbyScene::update()
         if (this->startButton.isClicking())
         {
             // Start singleplayer
-            if (this->activePlayers == 1)
+            if (this->activePlayers == 1 && !Input::isKeyDown(Keys::M))
             {
                this->getNetworkHandler()->disconnectClient();
                this->getNetworkHandler()->deleteServer();

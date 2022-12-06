@@ -338,7 +338,7 @@ public:
 		// Particle system spawn
 		this->scene->setComponent<ParticleSystem>(bloodParticleSystemEntity);
 		ParticleSystem& bloodPS = this->scene->getComponent<ParticleSystem>(bloodParticleSystemEntity);
-		bloodPS = ((GameScene*) this->scene)->getBloodParticleSystem();
+		bloodPS = networkHandler->getBloodParticleSystem();
 		bloodPS.spawn = true;
 	}
 

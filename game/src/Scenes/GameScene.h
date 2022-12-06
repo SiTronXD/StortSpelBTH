@@ -12,7 +12,6 @@
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
 #include "../Components/AICombatTank.hpp"
-#include "../World Handling/ParticleSystemGenerator.hpp"
 
 class NetworkHandlerGame;
 
@@ -71,17 +70,6 @@ private:
   uint32_t hpBarTextureID;
   uint32_t portalOffMesh;
   uint32_t portalOnMesh;
-
-  ParticleSystemInstance healParticleSystem;
-  ParticleSystemInstance bloodParticleSystems;
-  ParticleSystemInstance swarmParticleSystems;
-  ParticleSystemInstance portalParticleSystemSide0;
-  ParticleSystemInstance portalParticleSystemSide1;
-
-  bool deletedParticleSystems;
-
-  void initParticleSystems();
-  void deleteInitialParticleSystems();
 
   void testParticleSystem(const Entity& particleSystemEntity);
 
