@@ -124,8 +124,6 @@ int RoomHandler::serverGetNextRoomIndex() const
 
 void RoomHandler::multiplayerToggleCurrentDoors(int nextRoom)
 {
-	printf("--\n%d, %d, %d\n--",oldIndex, activeIndex,nextRoom);
-
 	this->toggleDoors(this->activeIndex, false);
 	
 	this->oldIndex = this->activeIndex;
@@ -144,10 +142,6 @@ void RoomHandler::mutliplayerCloseDoors()
 
 void RoomHandler::roomCompleted()
 {	
-	printf(__FUNCTION__"\n");
-
-	this->oldIndex = -1;
-	this->nextIndex = -1;
 	Room& curRoom = this->rooms[this->activeIndex];
 	curRoom.finished = true;
 	if (curRoom.type != RoomData::EXIT_ROOM)
@@ -157,6 +151,10 @@ void RoomHandler::roomCompleted()
 	}
 
 	this->toggleDoors(this->activeIndex, true);
+	if (this->oldIndex != -1)
+	{
+		this->toggleDoors(oldIndex, true);
+	}
 
 #ifndef _DEBUG
 	for (int i = 0; i < 4; i++)
@@ -164,10 +162,12 @@ void RoomHandler::roomCompleted()
 		if (curRoom.connectingIndex[i] != -1)
 		{
 			this->activateRoom(curRoom.connectingIndex[i]);
-			printf("%d\n", i);
 		}
 	}
 #endif
+	
+	this->oldIndex = -1;
+	this->nextIndex = -1;
 }
 
 bool RoomHandler::playerNewRoom(Entity player)
@@ -190,7 +190,6 @@ bool RoomHandler::playerNewRoom(Entity player)
 	{
 		return false;
 	}
-	//printf(__FUNCTION__"\n");
 
 	Collider& playerCol = this->scene->getComponent<Collider>(player);
 	const Transform& playerTra = this->scene->getComponent<Transform>(player);
@@ -231,7 +230,6 @@ bool RoomHandler::playerNewRoom(Entity player)
 					this->toggleDoors(this->activeIndex, false);
 					this->togglePaths(oldIndex, false);
 					this->togglePaths(this->activeIndex, true);
-					printf("Hello?");
 					return true;
 				}
 
@@ -255,7 +253,6 @@ bool RoomHandler::playerNewRoom(Entity player)
 					
 				this->togglePaths(oldIndex, false);
 				this->togglePaths(this->activeIndex, true);
-				printf("Baii\n");
 
 				return false;
 			}
@@ -267,8 +264,6 @@ bool RoomHandler::playerNewRoom(Entity player)
 
 bool RoomHandler::playersInPathway(const std::vector<Entity>& players)
 {
-	printf(__FUNCTION__"\n");
-
 	Room& curRoom = this->rooms[this->activeIndex];
 
 	// Find player 1
@@ -575,8 +570,6 @@ void RoomHandler::generate(uint32_t seed, Entity dir)
 	{
 		if (network->isConnected())
 		{
-			printf("Network - connected\n");
-
 			for (int j = 0; j < 4; j++)
 			{
 				if (startRoom.doors[j] != -1)
@@ -600,7 +593,6 @@ void RoomHandler::generate(uint32_t seed, Entity dir)
 		}
 		else
 		{
-			printf("Network - not connected\n");
 			for (size_t i = 0; i < this->rooms.size(); i++)
 			{
 				for (int j = 0; j < 4; j++)
@@ -619,11 +611,6 @@ void RoomHandler::generate(uint32_t seed, Entity dir)
 			}
 		}
 	}
-	else
-	{
-		printf("Network was nullptr\n");
-	}
-	
 }
 
 void RoomHandler::moveRoom(int roomIndex, const glm::vec3& offset)
@@ -1344,7 +1331,6 @@ void RoomHandler::toggleDoors(int index, bool open)
 		return;
 	}
 #endif
-	printf(__FUNCTION__" idx: %d, Open: %d\n", index, (int)open);
 
 	Room& room = this->rooms[index];
 
@@ -1436,8 +1422,6 @@ void RoomHandler::deactivateRoom(int index)
 
 void RoomHandler::placeDoorLamps()
 {
-	printf(__FUNCTION__" %d\n",activeIndex);
-
 	Room& curRoom = this->rooms[this->activeIndex];
 	for (int i = 0; i < 4; i++)
 	{

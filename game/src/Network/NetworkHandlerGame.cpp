@@ -480,7 +480,7 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
         this->newRoomFrame = false;
         roomHandler->roomCompleted();
         this->numRoomsCleared++; // ++ on ptr ?
-		std::cout << "GameScene: number of rooms cleared:" << *this->numRoomsCleared << std::endl;  
+		std::cout << "GameScene: number of rooms cleared:" << this->numRoomsCleared << std::endl;  
         break;
     case GameEvent::NEXT_LEVEL:
         this->sceneHandler->setScene(new GameScene(), "scripts/gamescene.lua");
