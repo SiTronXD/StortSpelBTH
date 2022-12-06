@@ -16,7 +16,6 @@ using ImguiLambda = std::function<void(FSM* fsm, uint32_t entityId)>;
 class TilePicker
 {
 private:
-
     std::mt19937 randomDev;
 
     std::vector<const TileInfo*> usedTiles;
@@ -36,7 +35,7 @@ private:
     void updateFreeTiles();
 
 public:
-    TilePicker() : randomDev(69){}//TODO: Use same seed as game...
+    TilePicker() : randomDev(69){} //TODO: Use same seed as game...
         
     void   init(const std::vector<TileInfo>& freeTileInfos);
     size_t size() const;
@@ -70,8 +69,8 @@ public:
     inline static const int MAX_NR_SWARMGROUPS  = (int)((MAX_NR_OF_ENEMIES * PERCENTAGE_SWARMS)/NR_BLOBS_IN_GROUP);
 
     inline static const bool USE_DEBUG = false;
-    inline static const int NR_TANK_DBG         = 0;
-    inline static const int NR_LICH_DBG         = 1;
+    inline static const int NR_TANK_DBG         = 1;
+    inline static const int NR_LICH_DBG         = 0;
     inline static const int NR_SWARM_GROUPS_DBG = 0;
 
 private:
