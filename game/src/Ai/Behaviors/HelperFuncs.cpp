@@ -229,7 +229,7 @@ glm::vec3 safeNormalize(glm::vec3& vec)
     {
         return glm::normalize(vec);
     }
-    Log::error("Tried to normalize zero vector; glm::vec3");
+    Log::warning("Tried to normalize zero vector; glm::vec3");
     return glm::vec3(1.f, 1.f, 1.f);
 }
 
@@ -239,7 +239,7 @@ glm::vec2 safeNormalize(glm::vec2& vec)
     {
         return glm::normalize(vec);
     }
-    Log::error("Tried to normalize zero vector; glm::vec2");
+    Log::warning("Tried to normalize zero vector; glm::vec2");
     return glm::vec2(1.f, 1.f);
 }
 glm::vec3 safeNormalize(glm::vec3&& vec)
@@ -248,7 +248,7 @@ glm::vec3 safeNormalize(glm::vec3&& vec)
     {
         return glm::normalize(vec);
     }
-    Log::error("Tried to normalize zero vector; glm::vec3");
+    Log::warning("Tried to normalize zero vector; glm::vec3");
     return glm::vec3(1.f, 1.f, 1.f);
 }
 
@@ -258,6 +258,6 @@ glm::vec2 safeNormalize(glm::vec2&& vec)
     {
         return glm::normalize(vec);
     }
-    Log::error("Tried to normalize zero vector; glm::vec2");
+    Log::warning("Tried to normalize zero vector; glm::vec2");
     return glm::vec2(1.f, 1.f);
 }
