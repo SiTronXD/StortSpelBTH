@@ -93,8 +93,8 @@ struct LichComponent
     inline static int s_ice = -1;
     inline static int s_fire = -1;
 
-    inline static const uint32_t colliderRadius = 4;
-    inline static const uint32_t colliderHeight = 12;
+    inline static const uint32_t colliderRadius = 6;
+    inline static const uint32_t colliderHeight = 22;
 
     inline static const uint32_t graveHeight = 8;
     inline static const uint32_t graveWidth = 6;
@@ -179,6 +179,10 @@ struct LichComponent
     bool attackGoRight          = false;
 
     bool carryingBones = false;
+
+    // Anim
+    int currentAnim;
+    float attackAnimTimer;
 
     // Orbs
     std::array<Entity, LichComponent::NR_FIRE_ORBS>  fireOrbs;

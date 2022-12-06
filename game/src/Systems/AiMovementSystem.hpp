@@ -2,7 +2,7 @@
 
 #include <vengine.h>
 #include "../Components/AiMovement.h"
-
+#include "../Ai/Behaviors/HelperFuncs.hpp"
 #include <chrono>
 
 class AiMovementSystem : public System {
@@ -64,7 +64,7 @@ public:
                             movement.currentSpeed.y = -movement.maxSpeed;
                         }
                     }
-                    movement.moveDir = glm::normalize(playerTrans.position - transform.position);
+                    movement.moveDir = safeNormalize(playerTrans.position - transform.position);
                     transform.position += (movement.moveDir * movement.currentSpeed.y) * dt;
                 }
             }

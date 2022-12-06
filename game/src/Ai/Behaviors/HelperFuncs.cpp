@@ -22,13 +22,12 @@ float lookAtY(const glm::vec3& from, const glm::vec3& to)
 
 const glm::vec3 genRandomDir(const glm::vec3& manipulator)
 {
-    glm::vec3 temp = glm::vec3(
-        1/(float)(rand()%100)   * (rand()%2 == 0 ? 1.f : -1.f) * manipulator.x , 
-        1/(float)(rand()%100)   * (rand()%2 == 0 ? 1.f : -1.f) * manipulator.y , 
-        (1/(float)(rand()%100)) * (rand()%2 == 0 ? 1.f : -1.f) * manipulator.z );
-
     // Safety check, illegal to normalize a nullptr
-    return glm::normalize(glm::length(temp) == 0 ? glm::vec3(1.f,1.f,1.f) : temp);
+    return safeNormalize(glm::vec3(
+        1/(float)(rand()%100 + 1)   * (rand()%2 == 0 ? 1.f : -1.f) * manipulator.x , 
+        1/(float)(rand()%100 + 1)   * (rand()%2 == 0 ? 1.f : -1.f) * manipulator.y , 
+        1/(float)(rand()%100 + 1)   * (rand()%2 == 0 ? 1.f : -1.f) * manipulator.z 
+    ));
 }
 
 float getAngleBetween(const glm::vec3 one, const glm::vec3 two)
@@ -61,9 +60,9 @@ void avoidStuff(Entity entityID, SceneHandler* sceneHandler, bool& attackGoRight
 	entityTransform.updateMatrix();
 	glm::vec3 from = entityTransform.position + rayOriginOffset;
 	glm::vec3 to = target;
-	glm::vec3 dirToTarget =  glm::normalize(glm::vec3(to - entityTransform.position));
+	glm::vec3 dirToTarget =  safeNormalize(glm::vec3(to - entityTransform.position));
 	float maxDist = glm::length(from - to);
-	glm::vec3 dir = glm::normalize(from - to);   
+	glm::vec3 dir = safeNormalize(from - to);   
 
 
 	//Rays
@@ -222,7 +221,7 @@ glm::vec3 rotateVec(glm::vec3 rot, float deg, glm::vec3 axis)
 	
 	ret = mat*rot;
 
-	return glm::normalize(ret);
+	return safeNormalize(ret);
 }
 glm::vec3 safeNormalize(glm::vec3& vec)
 {

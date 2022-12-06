@@ -17,7 +17,7 @@ class TankBT : public BehaviorTree
     void registerEntityComponents(Entity entityId) override;
 
   public:
-
+	  virtual ~TankBT() {};
    protected:
 
 	//Idle

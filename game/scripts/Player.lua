@@ -26,8 +26,8 @@ function script:init()
 
     self.maxHealth = 100
     self.currentHealth = 100
-    self.maxStamina = 100000
-    self.currentStamina = 100000
+    self.maxStamina = 100
+    self.currentStamina = 100
     self.sprintStamDrain = 20.0
     self.staminaRegen = 20.0
     self.staminaRegenCd = 2.0
@@ -75,11 +75,11 @@ function script:update(dt)
     end
 
     -- Check if grounded
-    local payload = physics.raycast(self.transform.position, vector(0, -1, 0))
+    local payload = physics.raycast(self.transform.position + vector(0, 1, 0), vector(0, -1, 0))
     if (payload) then
         if (scene.getComponent(payload.entity, CompType.Collider).isTrigger == false and
             payload.entity ~= self.playerID) then
-            self.onGround = (self.transform.position - payload.hitPoint):length() < 7.5
+            self.onGround = (self.transform.position - payload.hitPoint):length() < 2
         end
     end
 

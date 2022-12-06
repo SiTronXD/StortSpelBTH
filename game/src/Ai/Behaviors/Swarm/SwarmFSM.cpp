@@ -1,4 +1,6 @@
 #include "SwarmFSM.hpp"
+#include "../../../Scenes/GameScene.h"
+#include "../../../Network/NetworkHandlerGame.h"
 
 Entity SwarmFSM::getPlayerID(Entity entityID){
     int playerID = -1;
@@ -186,7 +188,7 @@ bool SwarmFSM::combat_idle(Entity entityID)
 
 		//Set move to
 		enemySwarmComp.idleMoveTo = enemySwarmComp.group->idleMidPos;
-		glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
+		glm::vec3 dir = genRandomDir(glm::vec3{1.f,0.f,1.f});
 		enemySwarmComp.idleMoveTo = enemySwarmComp.idleMoveTo + dir * enemySwarmComp.group->idleRadius;
 		
 
@@ -286,7 +288,7 @@ bool SwarmFSM::escape_idle(Entity entityID)
 
 		//Set move to
 		enemySwarmComp.idleMoveTo = enemySwarmComp.group->idleMidPos;
-		glm::vec3 dir = glm::normalize(glm::vec3(rand() * (rand() % 2 == 0 ? - 1 : 1), 0.0f, rand() * (rand() % 2 == 0 ? - 1 : 1)));
+		glm::vec3 dir = genRandomDir({1.f,0.f,1.f});
 		enemySwarmComp.idleMoveTo = enemySwarmComp.idleMoveTo + dir * enemySwarmComp.group->idleRadius;
 
 		//Reset friction
@@ -384,12 +386,31 @@ void SwarmFSM::updateSwarmGrounded(Entity entityID)
 
     if(rp.hit && swarmComp.groundTimer <= 0.0f)
     {
-		Collider& hitCol = FSM::sceneHandler->getScene()->getComponent<Collider>(rp.entity);
+		Scene* scene = FSM::sceneHandler->getScene();
+		Collider& hitCol = scene->getComponent<Collider>(rp.entity);
 		float dist = glm::length(rp.hitPoint - posToUse);
 		if(dist < (collider.radius + 0.5f) && !hitCol.isTrigger)
 		{
 			swarmComp.grounded = true;	
 			swarmComp.groundTimer = swarmComp.groundTimerOrig;
+
+			NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+            if (s == nullptr)
+            {
+                // Spawn particle system when grounded
+				if (!scene->hasComponents<ParticleSystem>(entityID))
+				{
+					scene->setComponent<ParticleSystem>(entityID);
+					ParticleSystem& partSys = scene->getComponent<ParticleSystem>(entityID);
+					partSys = ((NetworkHandlerGame*)scene->getNetworkHandler())->getSwarmParticleSystem();
+					partSys.spawn = true;
+				}
+			}
+            else
+            {
+                s->addEvent({(int)GameEvent::PLAY_PARTICLE, (int)ParticleTypes::SWARM, (int)entityID});
+			}
+			
 		}
     }
 

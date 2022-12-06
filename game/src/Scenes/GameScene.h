@@ -5,7 +5,6 @@
 
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../World Handling/Room Handler.h"
-#include "../Systems/CombatSystem.hpp"
 #include "../World Handling/SpawnHandler.hpp"
 #include "vengine.h"
 #include "../World Handling/Room Handler.h"
@@ -61,6 +60,8 @@ private:
   uint32_t hpBarTextureID;
   uint32_t portalOffMesh;
   uint32_t portalOnMesh;
+
+  void testParticleSystem(const Entity& particleSystemEntity);
 
 public:
   GameScene();

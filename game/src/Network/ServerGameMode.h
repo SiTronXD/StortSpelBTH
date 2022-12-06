@@ -27,16 +27,24 @@ private:
     std::vector<HealthComp> lastSwarmHp;
     std::vector<HealthComp> lastLichHp;
     std::vector<HealthComp> lastTankHp;
+    int level;
 
 	AIHandler aiHandler;
     SpawnHandler spawnHandler;
     RoomHandler roomHandler;
+    int portal;
     int roomSeed;
     uint8_t numRoomsCleared;
     bool newRoomFrame;
 
+    bool safetyCleanDone = false;
+    uint32_t timeWhenEnteredRoom = 0;
+    const uint32_t delayToSafetyDelete = 2;
+
 	void makeDataSendToClient();
+    void createPortal();
   public:
+    ServerGameMode(int level = 0);
     virtual ~ServerGameMode();
 	virtual void init() override;
 	void update(float dt) override;

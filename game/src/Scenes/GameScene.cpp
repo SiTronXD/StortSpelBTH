@@ -3,9 +3,12 @@
 #include "../Systems/AiCombatSystem.hpp"
 #include "../Systems/AiMovementSystem.hpp"
 #include "../Systems/CameraMovementSystem.hpp"
+#include "../Systems/CombatSystem.hpp"
 #include "../Systems/HealthBarSystem.hpp"
 #include "../Systems/HealSystem.hpp"
 #include "../Systems/MovementSystem.hpp"
+#include "../Systems/ParticleRemoveEntity.hpp"
+#include "../Systems/ParticleRemoveComponent.hpp"
 #include "../Network/NetworkHandlerGame.h"
 #include "vengine/application/Time.hpp"
 #include "GameOverScene.h"
@@ -16,6 +19,29 @@
 void decreaseFps();
 double heavyFunction(double value);
 #endif
+
+void GameScene::testParticleSystem(const Entity& particleSystemEntity)
+{
+    // Used for testing particle systems
+    #ifdef _CONSOLE
+        if (this->entityValid(particleSystemEntity))
+        {
+            ParticleSystem& particleSystem = this->getComponent<ParticleSystem>(particleSystemEntity);
+
+            ImGui::Begin("Particle System");
+            ImGui::SliderFloat3("Cone pos: ", &particleSystem.coneSpawnVolume.localPosition[0], -5.0f, 5.0f);
+            ImGui::SliderFloat3("Cone dir: ", &particleSystem.coneSpawnVolume.localDirection[0], -1.0f, 1.0f);
+            ImGui::SliderFloat("Disk radius: ", &particleSystem.coneSpawnVolume.diskRadius, 0.0f, 10.0f);
+            ImGui::SliderFloat("Cone angle: ", &particleSystem.coneSpawnVolume.coneAngle, 0.0f, 180.0f);
+            ImGui::SliderFloat("Velocity strength: ", &particleSystem.velocityStrength, 0.0f, 50.0f);
+            ImGui::SliderFloat("Spawn rate: ", &particleSystem.spawnRate, 0.0f, 1.0f);
+            ImGui::Checkbox("Spawn: ", &particleSystem.spawn);
+            ImGui::End();
+
+            this->getDebugRenderer()->renderParticleSystemCone(particleSystemEntity);
+        }
+    #endif
+}
 
 GameScene::GameScene() :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
@@ -89,7 +115,6 @@ void GameScene::init()
     dirLight.cascadeDepthScale = 36.952f;
     dirLight.shadowMapMinBias = 0.00001f;
     dirLight.shadowMapAngleBias = 0.0004f;
-
 }
 
 void GameScene::start()
@@ -106,7 +131,7 @@ void GameScene::start()
         int seed = this->networkHandler->getSeed();
         Log::write("Seed from server: " + std::to_string(seed));
         roomHandler.generate(seed);
-        networkHandler->setRoomHandler(roomHandler);
+        networkHandler->setRoomHandler(roomHandler, this->numRoomsCleared);
     }
     else
     {
@@ -133,6 +158,8 @@ void GameScene::start()
         this,
         this->getUIRenderer()
         );
+    this->createSystem<ParticleRemoveEntity>(this);
+    this->createSystem<ParticleRemoveComponent>(this);
 
     if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {
@@ -166,22 +193,26 @@ void GameScene::start()
         this->getSceneHandler(),this->aiHandler,
         this->getResourceManager(),this->getUIRenderer());
     }
-        
+	
     this->createSystem<OrbSystem>(this->getSceneHandler());
+	
+    // Create particle systems for this scene
+    ((NetworkHandlerGame*)this->getNetworkHandler())->initParticleSystems();
 }
 
 void GameScene::update()
 {
-    
-    if (!networkHandler->isConnected())
+    ((NetworkHandlerGame*)this->getNetworkHandler())->deleteInitialParticleSystems();
+
+    if (!networkHandler->isConnected() && networkHandler->getStatus() == ServerStatus::WAITING)
     {   
         this->aiHandler->update(Time::getDT());
 
         if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
         {
             this->newRoomFrame = true;
-        this->timeWhenEnteredRoom = Time::getTimeSinceStart();
-        this->safetyCleanDone = false; 
+            this->timeWhenEnteredRoom = Time::getTimeSinceStart();
+            this->safetyCleanDone = false;
 
             this->spawnHandler.spawnEnemiesIntoRoom();
         }
@@ -204,6 +235,16 @@ void GameScene::update()
             if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
             {
                 this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
+
+                // Particle effects
+                this->setComponent<ParticleSystem>(this->portal);
+                //this->getComponent<ParticleSystem>(this->portal) = this->portalParticleSystemSide0.getParticleSystem();
+                this->getComponent<ParticleSystem>(this->portal) = ((NetworkHandlerGame*)this->getNetworkHandler())->getPortalParticleSystem0();
+
+                Entity side1Entity = this->createEntity();
+                this->getComponent<Transform>(side1Entity) = this->getComponent<Transform>(this->portal);
+                this->setComponent<ParticleSystem>(side1Entity);
+                this->getComponent<ParticleSystem>(side1Entity) = ((NetworkHandlerGame*)this->getNetworkHandler())->getPortalParticleSystem1();
             }
         }
         // Switch scene if the player is dead
@@ -385,26 +426,28 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 	{
 		Entity other = e1 == player ? e2 : e1;
     
-
-		if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room            
-		{
-			this->switchScene(new GameScene(), "scripts/gamescene.lua");
-		}
+        if (!networkHandler->isConnected())
+        {
+		    if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room            
+		    {
+		    	this->switchScene(new GameScene(), "scripts/gamescene.lua");
+		    }
+        }
 	}
 }
 
 void GameScene::onTriggerEnter(Entity e1, Entity e2)
 {
-  Entity ground = e1 == this->roomHandler.getFloor()   ? e1
-                  : e2 == this->roomHandler.getFloor() ? e2
-                                                       : -1;
-  Entity perk = this->hasComponents<Perks>(e1)   ? e1
-                : this->hasComponents<Perks>(e2) ? e2
-                                                 : -1;
-  Entity ability = this->hasComponents<Abilities>(e1)   ? e1
-                   : this->hasComponents<Abilities>(e2) ? e2
+    Entity ground = e1 == this->roomHandler.getFloor()   ? e1
+                    : e2 == this->roomHandler.getFloor() ? e2
                                                         : -1;
-   
+    Entity perk = this->hasComponents<Perks>(e1)   ? e1
+                : this->hasComponents<Perks>(e2) ? e2
+                                                    : -1;
+    Entity ability = this->hasComponents<Abilities>(e1)   ? e1
+                    : this->hasComponents<Abilities>(e2) ? e2
+                                                       : -1;
+
 	if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<SwarmComponent>(e2))
 	{
 		SwarmComponent& s1 = this->getComponent<SwarmComponent>(e1);
@@ -489,8 +532,10 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
           swarmComp.inAttack = false;
           swarmComp.touchedPlayer = true;
           //aiCombat.timer = aiCombat.lightAttackTime;
-          this->getComponent<HealthComp>(player).health -=
+          HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+          playerHealth.health -=
               (int)aiCombat.lightHit;
+          playerHealth.srcDmgEntity = other;
             
           Log::write("WAS HIT", BT_FILTER);
         }
@@ -501,8 +546,10 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
       if (tankComp.canAttack)
       {
         tankComp.canAttack = false;
-        this->getComponent<HealthComp>(player).health -=
+        HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+        playerHealth.health -=
             (int)tankComp.directHit;
+        playerHealth.srcDmgEntity = other;
             
         Log::write("WAS HIT", BT_FILTER);
       }
@@ -510,8 +557,10 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
     else if (this->hasComponents<Orb>(other)) 
     {
         auto& orb = this->getComponent<Orb>(other);
-        this->getComponent<HealthComp>(player).health -=
+        HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+        playerHealth.health -=
             orb.orbPower->damage;
+        playerHealth.srcDmgEntity = other;
         orb.onCollision(other, this->getSceneHandler());
     }
   }
