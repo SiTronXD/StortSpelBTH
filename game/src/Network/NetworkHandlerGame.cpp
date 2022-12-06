@@ -263,10 +263,6 @@ void NetworkHandlerGame::init()
     this->alterMesh = this->resourceManger->addMesh("assets/models/alter.obj");
     this->humpMesh = this->resourceManger->addMesh("assets/models/hump.obj");//TODO : ADD THE humpMesh!!!
 
-    NetworkHandlerGame::lich_fire->setStats(ATTACK_STRATEGY::FIRE);
-    NetworkHandlerGame::lich_ice->setStats(ATTACK_STRATEGY::ICE);
-    NetworkHandlerGame::lich_light->setStats(ATTACK_STRATEGY::LIGHT);
-
 	if (!TankComponent::s_initialized)
 	{
 		TankComponent::s_takeDmg =
