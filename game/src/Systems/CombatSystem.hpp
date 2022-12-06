@@ -239,39 +239,53 @@ public:
 		case lightActive:
 			if (combat.attackTimer <= 0.f)
 			{
-				// combat.activeAttack = combat.nextAttack;
-				// combat.nextAttack = noActive;
-				combat.activeAttack = noActive;
+				combat.activeAttack = combat.nextAttack;
+				combat.nextAttack = noActive;
+				if (combat.activeAttack != noActive)
+				{
+					combat.activeAttack = noActive;
+					lightAttack(combat);
+				}
 			}
 			return combat.activeAttack;
 		case heavyActive:
 			if (combat.attackTimer <= 0.f)
 			{
-				combat.activeAttack = noActive;
+				combat.activeAttack = combat.nextAttack;
+				combat.nextAttack = noActive;
+				if (combat.activeAttack != noActive)
+				{
+					combat.activeAttack = noActive;
+					heavyAttack(combat);
+				}
 			}
 			return combat.activeAttack;
 		case comboActive1:
 			if (combat.attackTimer <= 0.f)
 			{
-				combat.activeAttack = noActive;
+				combat.activeAttack = combat.nextAttack;
+				combat.nextAttack = noActive;
 			}
 			return combat.activeAttack;
 		case comboActive2:
 			if (combat.attackTimer <= 0.f)
 			{
-				combat.activeAttack = noActive;
+				combat.activeAttack = combat.nextAttack;
+				combat.nextAttack = noActive;
 			}
 			return combat.activeAttack;
 		case comboActive3:
 			if (combat.attackTimer <= 0.f)
 			{
-				combat.activeAttack = noActive;
+				combat.activeAttack = combat.nextAttack;
+				combat.nextAttack = noActive;
 			}
 			return combat.activeAttack;
 		case knockbackActive:
 			if (combat.knockbackTimer < 0.f)
 			{
-				combat.activeAttack = noActive;
+				combat.activeAttack = combat.nextAttack;
+				combat.nextAttack = noActive;
 			}
 			return combat.activeAttack;
 		}
@@ -412,8 +426,6 @@ public:
 
 	bool lightAttack(Combat& combat)
 	{
-		// if(0.5f sec left)
-		// nextAttack = lightAttack
 		if (checkActiveAttack(combat) == noActive)
 		{
 			combat.attackTimer = combat.lightAttackCd;
@@ -438,6 +450,11 @@ public:
 				return true;
 			}
 		}
+		else if (combat.attackTimer < 0.5f)
+		{
+			combat.nextAttack = lightActive;
+		}
+
 		return false;
 	};
 
