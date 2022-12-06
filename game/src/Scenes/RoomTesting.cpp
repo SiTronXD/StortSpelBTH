@@ -80,10 +80,10 @@ void RoomTesting::update()
 	{
 		printf("New room Player 2\n");
 	}
-	if (roomHandler.playersInPathway(player1, player2))
-	{
-		printf("Both players in pathway\n");
-	}
+	//if (roomHandler.playersInPathway(player1, player2))
+	//{
+	//	printf("Both players in pathway\n");
+	//}
 	
 	if (ImGui::Begin("aa"))
 	{

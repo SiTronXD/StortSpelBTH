@@ -150,7 +150,8 @@ private:
 
 	// Room Updating
 	int activeIndex = 0;
-	int nextIndex = -1; // For used by server
+	int nextIndex = -1; // Used by server
+	int oldIndex = -1; // Used by server
 	void togglePaths(int roomIndex, bool show);
 	void toggleDoors(int index, bool open);
 	void activateRoom(int index);
@@ -178,6 +179,7 @@ private:
 	bool useMeshes; // Required by server
 	float flickerTimer = 0.f;
 
+	bool playersOnCollider(Collider& col, const glm::vec3& pos, const std::vector<Entity>& players);
 
 public:
 	RoomHandler();
@@ -190,14 +192,38 @@ public:
 	void imgui(DebugRenderer* dr);
 #endif //  _CONSOLE
 
-	int serverGetNextRoomIndex() const;
-	void multiplayerToggleCurrentDoors(int nextRoom);
 	void roomCompleted();
+
+	// Multiplayer
+	int serverGetNextRoomIndex() const;
+	bool playersInPathway(const std::vector<Entity>& players);
+	bool playersInsideNewRoom(const std::vector<Entity>& players);
+	void multiplayerToggleCurrentDoors(int nextRoom);
+	void mutliplayerCloseDoors();
+
 	bool playerNewRoom(Entity player);
-	bool playersInPathway(Entity player1, Entity player2);
-	//TODO: Place Pathway::box in if (useMeshes)
+
 	//TODO: Fix rooms in DEBUG
 	//TODO: Make path box slightly bigger 
+
+	// TODO: TRY COMPLETING ROOMS THAT AREN'T NEXT TO SPAWN (BUGGED ONCE NOT ANOTHER TIME?)
+	// TODO: TRY COMPLETING ROOMS THAT AREN'T NEXT TO SPAWN (BUGGED ONCE NOT ANOTHER TIME?)
+	// TODO: TRY COMPLETING ROOMS THAT AREN'T NEXT TO SPAWN (BUGGED ONCE NOT ANOTHER TIME?)
+	// TODO: TRY COMPLETING ROOMS THAT AREN'T NEXT TO SPAWN (BUGGED ONCE NOT ANOTHER TIME?)
+	// TODO: TRY COMPLETING ROOMS THAT AREN'T NEXT TO SPAWN (BUGGED ONCE NOT ANOTHER TIME?)
+	// TODO: TRY COMPLETING ROOMS THAT AREN'T NEXT TO SPAWN (BUGGED ONCE NOT ANOTHER TIME?)
+	// TODO: TRY COMPLETING ROOMS THAT AREN'T NEXT TO SPAWN (BUGGED ONCE NOT ANOTHER TIME?)
+	// TODO: TRY COMPLETING ROOMS THAT AREN'T NEXT TO SPAWN (BUGGED ONCE NOT ANOTHER TIME?)
+	// TODO: TRY COMPLETING ROOMS THAT AREN'T NEXT TO SPAWN (BUGGED ONCE NOT ANOTHER TIME?)
+	// TODO: TRY COMPLETING ROOMS THAT AREN'T NEXT TO SPAWN (BUGGED ONCE NOT ANOTHER TIME?)
+
+	// TODO: ASK ABOUT OVERRIDE NetworkHandlerGame::cleanUp() ?????
+	// TODO: ASK ABOUT OVERRIDE NetworkHandlerGame::cleanUp() ?????
+	// TODO: ASK ABOUT OVERRIDE NetworkHandlerGame::cleanUp() ?????
+	// TODO: ASK ABOUT OVERRIDE NetworkHandlerGame::cleanUp() ?????
+	// TODO: ASK ABOUT OVERRIDE NetworkHandlerGame::cleanUp() ?????
+
+	// numRoomsCleared++; IN NetworkHandler - event ROOM_CLEAR
 
 	const std::vector<glm::vec3>& getFreeTiles();
 	const std::vector<TileInfo>& getFreeTileInfos();

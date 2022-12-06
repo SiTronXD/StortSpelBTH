@@ -479,8 +479,8 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
     case GameEvent::ROOM_CLEAR:
         this->newRoomFrame = false;
         roomHandler->roomCompleted();
-        this->numRoomsCleared++;
-		std::cout << "GameScene: number of rooms cleared:" << this->numRoomsCleared << std::endl;  
+        this->numRoomsCleared++; // ++ on ptr ?
+		std::cout << "GameScene: number of rooms cleared:" << *this->numRoomsCleared << std::endl;  
         break;
     case GameEvent::NEXT_LEVEL:
         this->sceneHandler->setScene(new GameScene(), "scripts/gamescene.lua");
@@ -557,9 +557,12 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 			}
 		}
 		break;
-	case GameEvent::HEST:
+	case GameEvent::CLOSE_OLD_DOORS:
 		tcpPacket >> i0;
 		roomHandler->multiplayerToggleCurrentDoors(i0);
+		break;
+	case GameEvent::CLOSE_NEW_DOORS:
+		roomHandler->mutliplayerCloseDoors();
 		break;
 	default:
 		break;

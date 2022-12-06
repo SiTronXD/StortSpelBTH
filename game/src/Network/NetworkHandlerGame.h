@@ -41,7 +41,8 @@ enum class GameEvent
 	ROOM_CLEAR,
 	SPAWN_PORTAL,
 	NEXT_LEVEL,//CurrentLevel difficulty, 
-	HEST,// Index of next room
+	CLOSE_OLD_DOORS,// Index of next room
+	CLOSE_NEW_DOORS,// :)
 
 };
 
@@ -155,7 +156,7 @@ private:
   public:
     ~NetworkHandlerGame();
 	void init();
-	void cleanUp() override;
+	void cleanUp();
     void initParticleSystems();
     void deleteInitialParticleSystems();
 

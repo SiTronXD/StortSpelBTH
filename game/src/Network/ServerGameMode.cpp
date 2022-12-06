@@ -56,26 +56,29 @@ void ServerGameMode::init()
 
 void ServerGameMode::update(float dt)
 {
-    if (roomHandler.playersInPathway(this->players[0], this->players[1]) && !playersInPath)
+    if (!this->newRoomFrame && roomHandler.playersInPathway(this->players))
     {
-        addEvent({(int)GameEvent::HEST}, {roomHandler.serverGetNextRoomIndex()});
-        playersInPath = true;
-    }
+        addEvent({(int)GameEvent::CLOSE_OLD_DOORS}, {roomHandler.serverGetNextRoomIndex()});
+        this->spawnHandler.spawnEnemiesIntoRoom();
 
-    aiHandler.update(dt);
-
-    // For now we only look at player 0
-    if (this->roomHandler.playerNewRoom(this->getPlayer(0)) && playersInPath)
-    {
         std::cout << "Server: player in new room" << std::endl;
         this->newRoomFrame = true;
         this->timeWhenEnteredRoom = Time::getTimeSinceStart();
         this->safetyCleanDone = false; 
-        spawnHandler.spawnEnemiesIntoRoom();
     }
+    else if (this->newRoomFrame)
+    {
+        if (!this->doorsClosed && roomHandler.playersInsideNewRoom(this->players))
+        {
+            addEvent({(int)GameEvent::CLOSE_NEW_DOORS});
+            this->doorsClosed = true;
+        }
+    }
+
+    aiHandler.update(dt);
+
     if(!this->safetyCleanDone)
     {
-        
         if(this->timeWhenEnteredRoom + delayToSafetyDelete < Time::getTimeSinceStart())
         {
             this->spawnHandler.killAllEnemiesOutsideRoom();
@@ -86,12 +89,12 @@ void ServerGameMode::update(float dt)
     if (this->spawnHandler.allDead() && this->newRoomFrame)
     {
         this->newRoomFrame = false;
+        doorsClosed = false;
         std::cout << "Server" << ": all dead" << std::endl;
         this->addEvent({(int)GameEvent::ROOM_CLEAR});
         // Call when a room is cleared
         roomHandler.roomCompleted();
         this->numRoomsCleared++;
-        playersInPath = false;
         if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
         {
             std::cout << "Server: Spawn portal" << std::endl;
