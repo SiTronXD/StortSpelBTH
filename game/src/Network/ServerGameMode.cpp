@@ -57,7 +57,7 @@ void ServerGameMode::update(float dt)
     // For now we only look at player 0
     if (this->roomHandler.playerNewRoom(this->getPlayer(0), this->getPhysicsEngine()))
     {
-        std::cout << "Server: player in new room" << std::endl;
+        std::cout << "Server: player in new_ room" << std::endl;
         this->newRoomFrame = true;
         this->timeWhenEnteredRoom = Time::getTimeSinceStart();
         this->safetyCleanDone = false; 
@@ -111,7 +111,7 @@ void ServerGameMode::update(float dt)
             if (rights == getPlayerSize())
             {
                 std::cout << "r:" << rights << std::endl;
-                std::cout << "To a new World" << std::endl;
+                std::cout << "To a new_ World" << std::endl;
                 addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {
                     this->getComponent<Transform>(portal).position.x,
                     this->getComponent<Transform>(portal).position.y,
@@ -245,7 +245,7 @@ void ServerGameMode::makeDataSendToClient()
     {
         if (this->getComponent<HealthComp>(getPlayer(i)).health != lastPlayerHps[i].health)
         {
-            //send that player new hp
+            //send that player new_ hp
             this->addEvent(
                 {(int)GameEvent::PLAYER_SETHP,
                  getPlayer(i),
@@ -318,7 +318,7 @@ void ServerGameMode::onTriggerStay(Entity e1, Entity e2) {
     
 		//if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
 		//{
-		//	this->switchScene(new GameScene(), "scripts/gamescene.lua");
+		//	this->switchScene(new_ GameScene(), "scripts/gamescene.lua");
 		//}
 	}}
 

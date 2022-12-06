@@ -10,10 +10,10 @@
 RoomGenerator::RoomGenerator(VRandom& random)
 	:tiles2D{}, random(random), minMaxPos{}, exitTilesPos{}, middle(0), size(0)
 {
-	this->tiles2D = new Tile::Type * [WIDTH_HEIGHT];
+	this->tiles2D = new_ Tile::Type * [WIDTH_HEIGHT];
 	for (uint32_t i = 0; i < WIDTH_HEIGHT; i++)
 	{
-		this->tiles2D[i] = new Tile::Type[WIDTH_HEIGHT];
+		this->tiles2D[i] = new_ Tile::Type[WIDTH_HEIGHT];
 	}
 
 	this->clear();

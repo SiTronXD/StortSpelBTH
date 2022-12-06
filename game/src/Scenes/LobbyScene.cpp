@@ -183,7 +183,7 @@ void LobbyScene::update()
     if (this->getNetworkHandler()->getStatus() == ServerStatus::RUNNING)
     {
         this->switchScene(
-            new GameScene(), "scripts/gamescene.lua"
+            new_ GameScene(), "scripts/gamescene.lua"
         );
     }
     else if (this->getNetworkHandler()->hasServer())
@@ -200,7 +200,7 @@ void LobbyScene::update()
                this->getNetworkHandler()->deleteServer();
                this->getNetworkHandler()->setStatus(ServerStatus::WAITING);
                this->switchScene(
-                   new GameScene(), "scripts/gamescene.lua"
+                   new_ GameScene(), "scripts/gamescene.lua"
                );
             }
             else
@@ -211,11 +211,11 @@ void LobbyScene::update()
         }
     }
 
-    if (!this->getNetworkHandler()->isConnected())
+    else if (!this->getNetworkHandler()->isConnected())
     {
         this->getNetworkHandler()->disconnectClient();
         this->getNetworkHandler()->deleteServer();
-        this->switchScene(new MainMenu, "scripts/MainMenu.lua");
+        this->switchScene(new_ MainMenu, "scripts/MainMenu.lua");
     }
 
     this->getUIRenderer()->renderString(
@@ -224,7 +224,7 @@ void LobbyScene::update()
     if (this->disconnectButton.isClicking()) {
         this->getNetworkHandler()->disconnectClient();
         this->getNetworkHandler()->deleteServer();
-        this->getSceneHandler()->setScene(new MainMenu, "scripts/MainMenu.lua");
+        this->getSceneHandler()->setScene(new_ MainMenu, "scripts/MainMenu.lua");
     }
 
     this->helpPacket.clear();

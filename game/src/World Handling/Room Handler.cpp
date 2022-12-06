@@ -208,7 +208,7 @@ void RoomHandler::generate(uint32_t seed)
 		glm::vec3(0.f, 0.f, -TILE_WIDTH)
 	};
 
-	this->random = new VRandom;
+	this->random = new_ VRandom;
 	this->random->srand(seed);
 
 	RoomLayout roomLayout(*this->random);

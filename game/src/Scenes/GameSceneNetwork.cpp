@@ -209,7 +209,7 @@ void GameSceneNetwork::update()
     {
         if (this->getComponent<HealthComp>(this->playerID).health <= 0.0f)
         {
-            this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+            this->switchScene(new_ GameOverScene(), "scripts/GameOverScene.lua");
         }
     }
     Combat& playerCombat = this->getComponent<Combat>(this->playerID);
@@ -324,7 +324,7 @@ Entity player = e1 == this->playerID ? e1 : e2 == this->playerID ? e2 : -1;
 	
 		if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room
 		{
-			this->switchScene(new GameSceneNetwork(), "scripts/gamescene.lua");
+			this->switchScene(new_ GameSceneNetwork(), "scripts/gamescene.lua");
 		}
 	}
 }

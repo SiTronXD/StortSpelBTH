@@ -13,6 +13,6 @@ void NetworkLobbyScene::init() {
 void NetworkLobbyScene::update(float dt)
 {
 	std::cout << "got start in network lobby" << std::endl;
-	((NetworkSceneHandler*)this->getSceneHandler())->setScene(new ServerGameMode());
+	((NetworkSceneHandler*)this->getSceneHandler())->setScene(new_ ServerGameMode());
 	this->addEvent({(int)NetworkEvent::START});
 }

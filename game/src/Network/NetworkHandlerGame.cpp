@@ -132,9 +132,9 @@ void NetworkHandlerGame::init()
     this->alterMesh = this->resourceManger->addMesh("assets/models/alter.obj");
     this->humpMesh = this->resourceManger->addMesh("assets/models/hump.obj");//TODO : ADD THE humpMesh!!!
 
-	lich_fire = new LichAttack();
-    lich_ice = new LichAttack();
-    lich_light = new LichAttack();
+	lich_fire = new_ LichAttack();
+    lich_ice = new_ LichAttack();
+    lich_light = new_ LichAttack();
 
     this->lich_fire->setStats(ATTACK_STRATEGY::FIRE);
     this->lich_ice->setStats(ATTACK_STRATEGY::ICE);

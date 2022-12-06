@@ -176,11 +176,11 @@ protected:
 	{
 
 		addBTs({
-			{"idle", new Swarm_idle},
-			{"alerted", new Swarm_alerted},
-		    {"combat", new Swarm_combat},
-		    {"escape", new Swarm_escape},
-			{"dead", new Swarm_dead}
+			{"idle", new_ Swarm_idle},
+			{"alerted", new_ Swarm_alerted},
+		    {"combat", new_ Swarm_combat},
+		    {"escape", new_ Swarm_escape},
+			{"dead", new_ Swarm_dead}
         });
 
 		//TODO: Cehck transitions (Only one should be possible).

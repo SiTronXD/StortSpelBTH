@@ -864,31 +864,31 @@ BTStatus TankBT::die(Entity entityID)
 
 void Tank_idle::start()
 {
-	// new row
+	// new_ row
     Sequence*	root					= c.c.sequence();
-    // new row
+    // new_ row
 	Selector*   selectMovePos			= c.c.selector();
 	Task*		move					= c.l.task("Moving", TankBT::MoveAround);
-	// new row
+	// new_ row
 	Selector*   havePosOrGetNew			= c.c.selector();
 	Task*		pickRandomPosition		= c.l.task("Pick random position", TankBT::PickNewRandomTarget);
-	// new row
+	// new_ row
 	Condition*	hasFriendTarget			= c.l.condition("Has friend target", TankBT::HasFreindsTarget);
 	Sequence*	getNewTargetIfFriends	= c.c.sequence();
-	// new row
+	// new_ row
 	Condition*	anyFriendsAlive			= c.l.condition("Any firends alive?", TankBT::AreFriendsAlive);
 	Task*		pickUnvisitedFriend		= c.l.task("Pick unvisited friend", TankBT::PickNewFreinds);
 
     // Relations 
 	root->addCompositor				(selectMovePos);
 	root->addLeaf					(move);
-	// new row
+	// new_ row
 	selectMovePos->addCompositor	(havePosOrGetNew);
 	selectMovePos->addLeaf			(pickRandomPosition);
-	// new row
+	// new_ row
 	havePosOrGetNew->addLeaf		(hasFriendTarget);
 	havePosOrGetNew->addCompositor	(getNewTargetIfFriends);
-	// new row
+	// new_ row
 	getNewTargetIfFriends->addLeafs	({anyFriendsAlive, pickUnvisitedFriend});
 
 	//Set root

@@ -252,13 +252,13 @@ protected:
 	{
 
 		addBTs({
-			{"idle", new Lich_idle},
-			{"creep", new Lich_creep},
-			{"alerted", new Lich_alerted},
-			{"hunt", new Lich_hunt},
-			{"combat", new Lich_combat},
-			{"escape", new Lich_escape},
-			{"dead", new Lich_dead}
+			{"idle", new_ Lich_idle},
+			{"creep", new_ Lich_creep},
+			{"alerted", new_ Lich_alerted},
+			{"hunt", new_ Lich_hunt},
+			{"combat", new_ Lich_combat},
+			{"escape", new_ Lich_escape},
+			{"dead", new_ Lich_dead}
         });
 
 		addEntityTransition("idle",     LichFSM::idle_to_creep,        "creep");

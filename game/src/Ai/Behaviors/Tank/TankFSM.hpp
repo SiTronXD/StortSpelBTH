@@ -185,11 +185,11 @@ protected:
 	{
 
 		addBTs({
-			{"idle",	new Tank_idle},
-			{"alerted", new Tank_alert},
-			{"combat",	new Tank_combat},
-			{"shield",	new Tank_shield},
-			{"dead",	new Tank_dead}
+			{"idle",	new_ Tank_idle},
+			{"alerted", new_ Tank_alert},
+			{"combat",	new_ Tank_combat},
+			{"shield",	new_ Tank_shield},
+			{"dead",	new_ Tank_dead}
         });
 
 		addEntityTransition("idle",		TankFSM::idle_to_alert,			"alerted");

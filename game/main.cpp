@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 {
     // Set flags for tracking CPU memory leaks
 #if defined(_WIN32) && defined(_DEBUG)
-    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+    //_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif // _WIN32 && _DEBUG
 
     uint32_t seed = (unsigned int)time(0);
@@ -41,12 +41,12 @@ int main(int argc, char* argv[])
     srand(seed);
     {
         Engine engine;
-        engine.setCustomNetworkHandler(new NetworkHandlerGame());
-        engine.run("Presumed Dead", "", new LobbyScene());
-        //engine.run("Presumed Dead", "", new RoomTesting());
-        //engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
-        //engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
+        engine.setCustomNetworkHandler(new_ NetworkHandlerGame());
+        engine.run("Presumed Dead", "", new_ LobbyScene());
+        //engine.run("Presumed Dead", "", new_ RoomTesting());
+        //engine.run("Presumed Dead", "scripts/MainMenu.lua", new_ MainMenu());
+        //engine.run("Presumed Dead", "scripts/gamescene.lua", new_ GameScene());
     }
-
+    reportMemoryLeaks();
     return EXIT_SUCCESS;
 }
