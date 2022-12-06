@@ -188,5 +188,6 @@ private:
 	void spawnItemRequest(AbilityType type, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	void pickUpItemRequest(Entity itemEntity, ItemType type);
 	void useHealAbilityRequest(glm::vec3 position);
+    void setPerks(const Perks perk[]);
 };
 
