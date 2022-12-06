@@ -25,6 +25,7 @@ private:
 	NetworkHandlerGame* networkHandler;
 	Entity playerID;
 	Entity swordID;
+	Entity knockbackID;
 	const bool* paused;
 
 	int lostHealth;
@@ -47,7 +48,7 @@ public:
 	CombatSystem(SceneHandler* sceneHandler, Entity playerID, 
 		const bool* paused, NetworkHandlerGame* networkHandler)
 		: sceneHandler(sceneHandler), playerID(playerID), paused(paused), 
-		swordID(-1), networkHandler(networkHandler)
+		swordID(-1), knockbackID(-1), networkHandler(networkHandler)
 	{
 		this->resourceMng = this->sceneHandler->getResourceManager();
 		this->physics = this->sceneHandler->getPhysicsEngine();
@@ -67,6 +68,7 @@ public:
 			this->moveSound = this->resourceMng->addSound("assets/Sounds/RunningSound.ogg");
 			this->attackSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/SwishSound.ogg"));
 
+			this->knockbackID = this->scene->createEntity();
 			this->swordID = this->scene->createEntity();
 			this->swordMesh = this->resourceMng->addMesh("assets/models/MainSword.fbx", "assets/textures");
 			this->scene->setComponent<MeshComponent>(this->swordID, this->swordMesh);
@@ -209,6 +211,12 @@ public:
 				this->hitEnemies.clear();
 				this->canHit = true;
 			}
+			else if (this->scene->hasComponents<Collider>(this->knockbackID))
+			{
+				this->scene->removeComponent<Collider>(this->knockbackID);
+				this->hitEnemies.clear();
+				this->canHit = true;
+			}
 			return combat.activeAttack;
 		case lightActive:
 			if (combat.attackTimer <= 0.f)
@@ -254,6 +262,7 @@ public:
 	{
 		if (this->scene->hasComponents<Collider>(this->swordID))
 		{
+			printf("wtf");
 			Transform& swordTrans = scene->getComponent<Transform>(this->swordID);
 			swordTrans.updateMatrix();
 			std::vector<int> hitID = physics->testContact(this->scene->getComponent<Collider>(this->swordID),
@@ -267,6 +276,31 @@ public:
 					{
 					    this->canHit = false;
 			            break;
+					}
+				}
+				if (this->canHit)
+				{
+					this->networkHandler->sendHitOn(hitID[i], (int)combat.dmgArr[combat.activeAttack], combat.knockbackArr[combat.activeAttack]);
+					this->hitEnemies.emplace_back(hitID[i]);
+				}
+			}
+		}
+		else if (this->scene->hasComponents<Collider>(this->knockbackID))
+		{
+			printf("KNOCKING");
+			Transform& knockTrans = scene->getComponent<Transform>(this->knockbackID);
+			knockTrans.updateMatrix();
+			std::vector<int> hitID = physics->testContact(this->scene->getComponent<Collider>(this->knockbackID),
+				knockTrans.position);
+			for (size_t i = 0; i < hitID.size(); i++)
+			{
+				this->canHit = true;
+				for (size_t j = 0; j < this->hitEnemies.size(); j++)
+				{
+					if (this->hitEnemies[j] == hitID[i])
+					{
+						this->canHit = false;
+						break;
 					}
 				}
 				if (this->canHit)
@@ -319,9 +353,19 @@ public:
 			this->script->setScriptComponentValue(playerScript, true, "isAttacking");
 			this->script->setScriptComponentValue(playerScript, animIdx, "currentAnimation");
 			this->script->setScriptComponentValue(playerScript, cdValue, "animTimer");
-			Transform& swordTrans = this->scene->getComponent<Transform>(this->swordID);
-			swordTrans.updateMatrix();
-			this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 12.f, (swordTrans.right() * swordTrans.forward()), true));
+
+			if (animName == "knockback")
+			{
+				Transform& knockTrans = this->scene->getComponent<Transform>(this->knockbackID);
+				knockTrans.updateMatrix();
+				this->scene->setComponent<Collider>(this->knockbackID, Collider::createSphere(20.f, glm::vec3(0), true));
+			}
+			else
+			{
+				Transform& swordTrans = this->scene->getComponent<Transform>(this->swordID);
+				swordTrans.updateMatrix();
+				this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 12.f, (swordTrans.right() * swordTrans.forward()), true));
+			}
 		}
 	}
 
@@ -408,7 +452,7 @@ public:
 				if (checkCombo(combat)) { return true; }
 				else
 				{
-					setupAttack("knockback", 5, combat.knockbackCd, combat.animationMultiplier[knockbackActive]);
+					setupAttack("knockback", 6, combat.knockbackCd, combat.animationMultiplier[knockbackActive]);
 					return true;
 				}
 			}
@@ -807,6 +851,8 @@ public:
 				this->scene->getComponent<AnimationComponent>(this->playerID),
 				"mixamorig:RightHand") * glm::translate(glm::mat4(1.f), glm::vec3(0.f, 1.f, 0.f)) *
 			glm::rotate(glm::mat4(1.f), glm::radians(-90.f), glm::vec3(0.f, 0.f, 1.f)));
+
+		this->scene->getComponent<Transform>(this->knockbackID).position = this->scene->getComponent<Transform>(this->playerID).position;
 	}
 
 	void checkPerkCollision(Combat& combat)
@@ -949,6 +995,15 @@ public:
 		if (combat.knockbackTimer > 0.f)
 		{
 			combat.knockbackTimer -= deltaTime;
+		}
+		else if (combat.knockbackTimer < 0.f)
+		{
+			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+			this->script->setScriptComponentValue(playerScript, true, "canMove");
+			this->script->setScriptComponentValue(playerScript, false, "isAttacking");
+			this->script->setScriptComponentValue(playerScript, 4, "currentAnimation");
+			this->scene->syncedBlendToAnimation(this->playerID, "LowerBody", "UpperBody", 0.3f);
+			combat.knockbackTimer = 0.f;
 		}
 		if (combat.comboClearTimer > 0.f)
 		{

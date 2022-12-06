@@ -324,11 +324,11 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 				// DEAL DAMAGE SOUND
 				if (i3 == 0)
 				{
-
+					this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<TankComponent>(serverEntities[i0]).s_shockwave, 30.f);
 				}
 				else if (i3 == 1)
 				{
-
+					this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<TankComponent>(serverEntities[i0]).s_charge, 30.f);
 				}
 			}
 			else if (i2 == 3)
@@ -347,15 +347,15 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 				// DEAL DAMAGE SOUND
 				if (i3 == 0)
 				{
-
+					this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(i0).s_fire, 30.f);
 				}
 				else if (i3 == 1)
 				{
-
+					this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(i0).s_lightning, 30.f);
 				}
 				else if (i3 == 2)
 				{
-
+					this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(i0).s_ice, 30.f);
 				}
 			}
 			else if (i2 == 3)

@@ -89,6 +89,9 @@ struct LichComponent
 {
     inline static bool s_initialized = false; // IN PROGRESS
     inline static int s_takeDmg = -1;
+    inline static int s_lightning = -1;
+    inline static int s_ice = -1;
+    inline static int s_fire = -1;
 
     inline static const uint32_t colliderRadius = 4;
     inline static const uint32_t colliderHeight = 12;
