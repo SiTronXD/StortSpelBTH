@@ -93,6 +93,11 @@ Entity NetworkHandlerGame::spawnHealArea(glm::vec3 pos)
 	scene->setComponent<HealArea>(heal);
 	scene->getComponent<Transform>(heal).position = pos;
 
+	// Particle system
+	scene->setComponent<ParticleSystem>(heal);
+	ParticleSystem scenePartSys = ((GameScene*)scene)->getHealParticleSystem();
+	scene->getComponent<ParticleSystem>(heal) = scenePartSys;
+
 	return heal;
 }
 
@@ -503,16 +508,23 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
         {
 			sv1 = serverScene->getComponent<Transform>(si0).position;
 			sv2 = serverScene->getComponent<Transform>(serverScene->getPlayer(clientID)).position;
-			sv0 = glm::normalize(sv2 - sv1);
+			sv0 = safeNormalize(sv2 - sv1);
             if(serverScene->hasComponents<Rigidbody>(si0)){
                 serverScene->getComponent<Rigidbody>(si0).velocity = glm::vec3(-sv0.x, 0.f, -sv0.z) * sf0;
             }else {
-                std::cout << "ERROR; something is fucked up with Rigidbody on Monster Take Damage\n";
+                std::cout << "ERROR; something is fucked up with Rigidbody on Monster Take Damage; entity["<<si0 <<"]\n";
                 std::cout << "ERROR; is Lich " << serverScene->hasComponents<LichComponent>(si0) << "\n";
-                std::cout << "ERROR; is Tank"  << serverScene->hasComponents<TankComponent>(si0)<< "\n";
-                std::cout << "ERROR; is Swarm" << serverScene->hasComponents<SwarmComponent>(si0)<< "\n";
+                std::cout << "ERROR; is Tank "  << serverScene->hasComponents<TankComponent>(si0)<< "\n";
+                std::cout << "ERROR; is Swarm " << serverScene->hasComponents<SwarmComponent>(si0)<< "\n";
+                std::cout << "ERROR; is a Player " << serverScene->isAPlayer(si0)<< "\n";
+                std::cout << "ERROR; is Inactive " << serverScene->hasComponents<Inactive>(si0)<< "\n";
                 
                 assert(false);
+                //TODO: Should not be needed. This is just to Stop program in release...
+                while(true)
+                {
+                    int Hello = 1; 
+                }
             }
 			
         }
@@ -620,7 +632,7 @@ void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
             Rigidbody& enemyRB = sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
 			Transform& enemyTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 			Transform& playerTrans = sceneHandler->getScene()->getComponent<Transform>(player);
-			glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+			glm::vec3 newDir = safeNormalize(playerTrans.position - enemyTrans.position);
 			enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * knockBack;
 		}
 	}

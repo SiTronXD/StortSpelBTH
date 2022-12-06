@@ -257,7 +257,7 @@ Log::write("Killing all enemies outside room...");
             glm::vec3 tempPos = transform.position;
             tempPos.y += RoomHandler::TILE_WIDTH * 3;
 
-            Ray rayToMiddle{tempPos, glm::normalize(this->roomHandler->getRoomPos() - tempPos)};
+            Ray rayToMiddle{tempPos, safeNormalize(this->roomHandler->getRoomPos() - tempPos)};
 
             RayPayload rp = this->sceneHandler->getPhysicsEngine()->raycast(rayToMiddle,glm::length(this->roomHandler->getRoomPos() - tempPos));
 
