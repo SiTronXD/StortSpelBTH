@@ -112,8 +112,8 @@ void LobbyScene::init()
     addCandle(glm::vec3(-26, 0, 0));
     addCandle(glm::vec3(22, 0, 14.5));
     addCandle(glm::vec3(-22, 0, 14.5));
-    addCandle(glm::vec3(8, 0, 24));
-    addCandle(glm::vec3(-8, 0, 24));
+    addCandle(glm::vec3(8, 0, 26));
+    addCandle(glm::vec3(-8, 0, 26));
 
     this->players.resize(MAX_PLAYER_COUNT);
     this->playersNames.resize(MAX_PLAYER_COUNT);
