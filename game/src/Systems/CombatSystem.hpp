@@ -25,7 +25,8 @@ private:
 	NetworkHandlerGame* networkHandler;
 	Entity playerID;
 	Entity swordID;
-	Entity knockbackID;
+	Entity swordCollID;
+	Entity knockbackCollID;
 	const bool* paused;
 
 	int lostHealth;
@@ -48,7 +49,7 @@ public:
 	CombatSystem(SceneHandler* sceneHandler, Entity playerID, 
 		const bool* paused, NetworkHandlerGame* networkHandler)
 		: sceneHandler(sceneHandler), playerID(playerID), paused(paused), 
-		swordID(-1), knockbackID(-1), networkHandler(networkHandler)
+		swordID(-1), swordCollID(-1), knockbackCollID(-1), networkHandler(networkHandler)
 	{
 		this->resourceMng = this->sceneHandler->getResourceManager();
 		this->physics = this->sceneHandler->getPhysicsEngine();
@@ -68,7 +69,8 @@ public:
 			this->moveSound = this->resourceMng->addSound("assets/Sounds/RunningSound.ogg");
 			this->attackSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/SwishSound.ogg"));
 
-			this->knockbackID = this->scene->createEntity();
+			this->swordCollID = this->scene->createEntity();
+			this->knockbackCollID = this->scene->createEntity();
 			this->swordID = this->scene->createEntity();
 			this->swordMesh = this->resourceMng->addMesh("assets/models/MainSword.fbx", "assets/textures");
 			this->scene->setComponent<MeshComponent>(this->swordID, this->swordMesh);
@@ -205,15 +207,15 @@ public:
 		switch (combat.activeAttack)
 		{
 		case noActive:
-			if (this->scene->hasComponents<Collider>(this->swordID))
+			if (this->scene->hasComponents<Collider>(this->swordCollID))
 			{
-				this->scene->removeComponent<Collider>(this->swordID);
+				this->scene->removeComponent<Collider>(this->swordCollID);
 				this->hitEnemies.clear();
 				this->canHit = true;
 			}
-			else if (this->scene->hasComponents<Collider>(this->knockbackID))
+			else if (this->scene->hasComponents<Collider>(this->knockbackCollID))
 			{
-				this->scene->removeComponent<Collider>(this->knockbackID);
+				this->scene->removeComponent<Collider>(this->knockbackCollID);
 				this->hitEnemies.clear();
 				this->canHit = true;
 			}
@@ -221,6 +223,8 @@ public:
 		case lightActive:
 			if (combat.attackTimer <= 0.f)
 			{
+				// combat.activeAttack = combat.nextAttack;
+				// combat.nextAttack = noActive;
 				combat.activeAttack = noActive;
 			}
 			return combat.activeAttack;
@@ -260,12 +264,11 @@ public:
 
 	void dealDamage(Combat& combat)
 	{
-		if (this->scene->hasComponents<Collider>(this->swordID))
+		if (this->scene->hasComponents<Collider>(this->swordCollID))
 		{
-			printf("wtf");
-			Transform& swordTrans = scene->getComponent<Transform>(this->swordID);
+			Transform& swordTrans = scene->getComponent<Transform>(this->swordCollID);
 			swordTrans.updateMatrix();
-			std::vector<int> hitID = physics->testContact(this->scene->getComponent<Collider>(this->swordID),
+			std::vector<int> hitID = physics->testContact(this->scene->getComponent<Collider>(this->swordCollID),
 				swordTrans.position);
 			for (size_t i = 0; i < hitID.size(); i++) 
 			{
@@ -285,12 +288,12 @@ public:
 				}
 			}
 		}
-		else if (this->scene->hasComponents<Collider>(this->knockbackID))
+		else if (this->scene->hasComponents<Collider>(this->knockbackCollID))
 		{
 			printf("KNOCKING");
-			Transform& knockTrans = scene->getComponent<Transform>(this->knockbackID);
+			Transform& knockTrans = scene->getComponent<Transform>(this->knockbackCollID);
 			knockTrans.updateMatrix();
-			std::vector<int> hitID = physics->testContact(this->scene->getComponent<Collider>(this->knockbackID),
+			std::vector<int> hitID = physics->testContact(this->scene->getComponent<Collider>(this->knockbackCollID),
 				knockTrans.position);
 			for (size_t i = 0; i < hitID.size(); i++)
 			{
@@ -356,21 +359,23 @@ public:
 
 			if (animName == "knockback")
 			{
-				Transform& knockTrans = this->scene->getComponent<Transform>(this->knockbackID);
+				Transform& knockTrans = this->scene->getComponent<Transform>(this->knockbackCollID);
 				knockTrans.updateMatrix();
-				this->scene->setComponent<Collider>(this->knockbackID, Collider::createSphere(20.f, glm::vec3(0), true));
+				this->scene->setComponent<Collider>(this->knockbackCollID, Collider::createSphere(40.f, glm::vec3(0), true));
 			}
 			else
 			{
-				Transform& swordTrans = this->scene->getComponent<Transform>(this->swordID);
+				Transform& swordTrans = this->scene->getComponent<Transform>(this->swordCollID);
 				swordTrans.updateMatrix();
-				this->scene->setComponent<Collider>(this->swordID, Collider::createCapsule(3.f, 12.f, (swordTrans.right() * swordTrans.forward()), true));
+				this->scene->setComponent<Collider>(this->swordCollID, Collider::createCapsule(3.f, 18.f, glm::vec3(0), true));
 			}
 		}
 	}
 
 	bool lightAttack(Combat& combat)
 	{
+		// if(0.5f sec left)
+		// nextAttack = lightAttack
 		if (checkActiveAttack(combat) == noActive)
 		{
 			combat.attackTimer = combat.lightAttackCd;
@@ -852,7 +857,10 @@ public:
 				"mixamorig:RightHand") * glm::translate(glm::mat4(1.f), glm::vec3(0.f, 1.f, 0.f)) *
 			glm::rotate(glm::mat4(1.f), glm::radians(-90.f), glm::vec3(0.f, 0.f, 1.f)));
 
-		this->scene->getComponent<Transform>(this->knockbackID).position = this->scene->getComponent<Transform>(this->playerID).position;
+		Transform& swordTrans = this->scene->getComponent<Transform>(this->swordID);
+		this->scene->getComponent<Transform>(this->swordCollID).position = swordTrans.position + (swordTrans.up() * 7.f);
+		this->scene->getComponent<Transform>(this->swordCollID).rotation = swordTrans.rotation;
+		this->scene->getComponent<Transform>(this->knockbackCollID).position = this->scene->getComponent<Transform>(this->playerID).position;
 	}
 
 	void checkPerkCollision(Combat& combat)
