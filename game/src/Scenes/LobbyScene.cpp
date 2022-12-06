@@ -194,7 +194,7 @@ void LobbyScene::update()
         if (this->startButton.isClicking())
         {
             // Start singleplayer
-            if (this->activePlayers == 1)
+            if (this->activePlayers == 1 && !Input::isKeyDown(Keys::M))
             {
                this->getNetworkHandler()->disconnectClient();
                this->getNetworkHandler()->deleteServer();
