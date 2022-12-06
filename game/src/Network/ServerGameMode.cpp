@@ -3,6 +3,10 @@
 
 //#define ROOMDEBUG false
 
+ServerGameMode::ServerGameMode(int level) {
+    this->level = level;
+}
+
 ServerGameMode::~ServerGameMode()
 {
     aiHandler.clean();
@@ -21,6 +25,7 @@ void ServerGameMode::init()
 
     aiHandler.init(this->getSceneHandler());
     this->getSceneHandler()->setAIHandler(&aiHandler);
+
     roomHandler.init(this, this->getResourceManager(), false);
     roomHandler.generate(this->roomSeed);
     createPortal();
@@ -112,29 +117,32 @@ void ServerGameMode::update(float dt)
             {
                 std::cout << "r:" << rights << std::endl;
                 std::cout << "To a new World" << std::endl;
-                addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {
-                    this->getComponent<Transform>(portal).position.x,
-                    this->getComponent<Transform>(portal).position.y,
-                    this->getComponent<Transform>(portal).position.z,
-                    this->getComponent<Transform>(portal).rotation.x,
-                    this->getComponent<Transform>(portal).rotation.y,
-                    this->getComponent<Transform>(portal).rotation.z,
-                    this->getComponent<Collider>(portal).extents.x,
-                    this->getComponent<Collider>(portal).extents.y,
-                    this->getComponent<Collider>(portal).extents.z,
-                    }
-                );
-                addEvent({(int)NetworkEvent::DEBUG_DRAW_CYLINDER}, {
-                    (float)this->getComponent<Transform>(getPlayer(0)).position.x,
-                    (float)this->getComponent<Transform>(getPlayer(0)).position.y,
-                    (float)this->getComponent<Transform>(getPlayer(0)).position.z,
-                    (float)this->getComponent<Transform>(getPlayer(0)).rotation.x,
-                    (float)this->getComponent<Transform>(getPlayer(0)).rotation.y,
-                    (float)this->getComponent<Transform>(getPlayer(0)).rotation.z,
-                    (float)this->getComponent<Collider>(getPlayer( 0)).height,
-                    (float)this->getComponent<Collider>(getPlayer( 0)).radius,
-                    }
-                );
+                addEvent({(int)GameEvent::NEXT_LEVEL});
+                ((NetworkSceneHandler*)this->getSceneHandler())->sendPacketNow();
+                ((NetworkSceneHandler*)this->getSceneHandler())->setScene(new ServerGameMode(++this->level));
+                //addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {
+                //    this->getComponent<Transform>(portal).position.x,
+                //    this->getComponent<Transform>(portal).position.y,
+                //    this->getComponent<Transform>(portal).position.z,
+                //    this->getComponent<Transform>(portal).rotation.x,
+                //    this->getComponent<Transform>(portal).rotation.y,
+                //    this->getComponent<Transform>(portal).rotation.z,
+                //    this->getComponent<Collider>(portal).extents.x,
+                //    this->getComponent<Collider>(portal).extents.y,
+                //    this->getComponent<Collider>(portal).extents.z,
+                //    }
+                //);
+                //addEvent({(int)NetworkEvent::DEBUG_DRAW_CYLINDER}, {
+                //    (float)this->getComponent<Transform>(getPlayer(0)).position.x,
+                //    (float)this->getComponent<Transform>(getPlayer(0)).position.y,
+                //    (float)this->getComponent<Transform>(getPlayer(0)).position.z,
+                //    (float)this->getComponent<Transform>(getPlayer(0)).rotation.x,
+                //    (float)this->getComponent<Transform>(getPlayer(0)).rotation.y,
+                //    (float)this->getComponent<Transform>(getPlayer(0)).rotation.z,
+                //    (float)this->getComponent<Collider>(getPlayer( 0)).height,
+                //    (float)this->getComponent<Collider>(getPlayer( 0)).radius,
+                //    }
+                //);
             }
         }
     }
@@ -323,16 +331,16 @@ void ServerGameMode::onTriggerStay(Entity e1, Entity e2) {
 	}}
 
 void ServerGameMode::onTriggerEnter(Entity e1, Entity e2) {
-  Entity ground = e1 == this->roomHandler.getFloor()   ? e1
-                  : e2 == this->roomHandler.getFloor() ? e2
-                                                       : -1;
-  Entity perk = this->hasComponents<Perks>(e1)   ? e1
-                : this->hasComponents<Perks>(e2) ? e2
-                                                 : -1;
-  Entity ability = this->hasComponents<Abilities>(e1)   ? e1
-                   : this->hasComponents<Abilities>(e2) ? e2
+    Entity ground = e1 == this->roomHandler.getFloor()   ? e1
+                    : e2 == this->roomHandler.getFloor() ? e2
                                                         : -1;
-   
+    Entity perk = this->hasComponents<Perks>(e1)   ? e1
+                : this->hasComponents<Perks>(e2) ? e2
+                                                    : -1;
+    Entity ability = this->hasComponents<Abilities>(e1)   ? e1
+                    : this->hasComponents<Abilities>(e2) ? e2
+                                                        : -1;
+
 	if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<SwarmComponent>(e2))
 	{
 		SwarmComponent& s1 = this->getComponent<SwarmComponent>(e1);

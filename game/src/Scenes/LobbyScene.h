@@ -18,7 +18,6 @@ private:
 	std::vector<Entity> players;
 	std::vector<std::string> playersNames;
     int playerModel;
-	int light;
 
 	static const int MAX_PLAYER_COUNT = 4;
 	inline static const std::vector<glm::vec3> POSITIONS = { 
@@ -35,6 +34,8 @@ private:
 
 	sf::Packet helpPacket;
 	NetworkHandlerGame* networkHandler;
+
+	void addCandle(glm::vec3 position);
 
 public:
 	LobbyScene(const std::string& serverIP = "");

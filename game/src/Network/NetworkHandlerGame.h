@@ -6,6 +6,7 @@
 #include "../Ai/Behaviors/Lich/LichBTs.hpp"
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
 #include "../World Handling/Room Handler.h"
+#include "../World Handling/ParticleSystemGenerator.hpp"
 
 class CombatSystem;
 enum class GameEvent
@@ -14,6 +15,7 @@ enum class GameEvent
 	SEED, // Client -> Server: Request seed, Server -> Client: Seed to use
 	UPDATE_PLAYER, // Positions and animations
 	UPDATE_MONSTER, // How many enemies, What enemy, Position, rotation and animation udp
+	PLAY_PARTICLE, //What type, entity
 	SPAWN_ITEM, // Client -> Server: Want to spawn item. Server -> Client: Spawn item in scene
 	DELETE_ITEM, // Server -> Client: Remove item from scene
 	PICKUP_ITEM, // Client -> Server: Want to pick up item. Server -> Client: Pick up the item
@@ -25,14 +27,16 @@ enum class GameEvent
     DO_HUMP, // id, position 
     UPDATE_HUMP, // id, position 
     SET_POS_OBJECT, // id, position
-    THROW_ORB, // Id, initialPosition, Direction
+    THROW_ORB, // id, initialPosition, Direction
 	PLAYER_TAKE_DAMAGE, // What player, how much damage
 	PLAYER_SETHP, // What player, how much hp
-	ENTITY_SET_HP, //What entity, how much hp
+	ENTITY_SET_HP, // What entity, how much hp
 	PUSH_PLAYER, // What player, direction
 	MONSTER_TAKE_DAMAGE,
-	INACTIVATE, //what entity
-	ACTIVATE, //what entity
+	INACTIVATE, // What entity
+	ACTIVATE, // What entity
+	UPDATE_ANIM, // What entity, type (tank/lich), animIndex, slot
+	UPDATE_ANIM_TIMESCALE, // What entity, slot, timeScale
 
 	ROOM_CLEAR,
 	SPAWN_PORTAL,
@@ -52,6 +56,13 @@ enum class ObjectTypes
     LICH_ALTER
 };
 
+enum class ParticleTypes
+{
+	HEAL,
+	BLOOD,
+	SWARM
+};
+
 class NetworkHandlerGame : public NetworkHandler
 {
 public:
@@ -61,6 +72,14 @@ public:
 		glm::vec4(0.0f, 0.0f, 1.0f, 0.25f),
 		glm::vec4(0.0f, 1.0f, 0.0f, 0.25f),
 		glm::vec4(1.0f, 1.0f, 0.0f, 0.25f),
+	};
+
+	inline static const std::string tankAnims[]
+	{
+		"Walk",
+		"Charge",
+		"GroundHump",
+		"RaiseShield",
 	};
 private:
 	static const float UPDATE_RATE;
@@ -83,7 +102,8 @@ private:
     std::map<int, std::pair<glm::vec3, glm::vec3>> entityLastPosScale;
 
 	// Client helpers
-	int i0, i1, i2;
+	std::string str;
+	int i0, i1, i2, i3;
 	float f0, f1, f2;
 	glm::vec3 v0, v1, v2;
 
@@ -91,7 +111,8 @@ private:
 	int si0, si1, si2;
 	float sf0, sf1, sf2;
 	glm::vec3 sv0, sv1, sv2;
-
+    
+	//Meshes
 	int perkMeshes[PerkType::emptyPerk];
 	int abilityMeshes[AbilityType::emptyAbility];
 	int healAreaMesh;
@@ -100,6 +121,16 @@ private:
     int alterMesh;
     int humpMesh;
 
+	//Particles
+    bool deletedParticleSystems;
+    ParticleSystemInstance healParticleSystem;
+    ParticleSystemInstance bloodParticleSystems;
+    ParticleSystemInstance swarmParticleSystems;
+    ParticleSystemInstance portalParticleSystemSide0;
+    ParticleSystemInstance portalParticleSystemSide1;
+
+
+	//RoomHandler
     bool newRoomFrame;
     int* numRoomsCleared;
     RoomHandler* roomHandler;
@@ -119,10 +150,13 @@ private:
     Entity createHump();
 
 	Entity spawnEnemy(const int& type, const glm::vec3& pos);
-public:
+
+  public:
     ~NetworkHandlerGame();
 	void init();
-	void cleanup();
+	void cleanUp() override;
+    void initParticleSystems();
+    void deleteInitialParticleSystems();
 
 	void setCombatSystem(CombatSystem* system);
 	int getSeed();
@@ -138,8 +172,16 @@ public:
 
 	void setPlayerEntity(Entity player);
 	void createOtherPlayers(int playerMesh);
+
+	//THESE TWO PRIVATE?
 	void updatePlayer();
 	void interpolatePositions();
+
+	inline const ParticleSystem& getHealParticleSystem() { return this->healParticleSystem.getParticleSystem(); }
+	inline const ParticleSystem& getBloodParticleSystem() { return this->bloodParticleSystems.getParticleSystem(); }
+	inline const ParticleSystem& getSwarmParticleSystem() { return this->swarmParticleSystems.getParticleSystem(); }
+	inline const ParticleSystem& getPortalParticleSystem0() { return this->portalParticleSystemSide0.getParticleSystem(); }
+	inline const ParticleSystem& getPortalParticleSystem1() { return this->portalParticleSystemSide1.getParticleSystem(); }
 
 	void spawnItemRequest(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	void spawnItemRequest(AbilityType type, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
