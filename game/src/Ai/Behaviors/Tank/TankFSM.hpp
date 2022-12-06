@@ -19,7 +19,7 @@ struct TankFriendTarget
 
 struct TankComponent
 {
-    inline static const uint32_t colliderRadius = 12;
+    inline static const uint32_t colliderRadius = 20;
 
 	TankComponent() 
 	{
@@ -75,7 +75,7 @@ struct TankComponent
 	float humpShockwaveAttackRadius	= sightRadius;
 	float deathAnimSpeed			= 3.0f;
 	float origScaleY				= 1.0f;
-	float alertScale				= 1.5f;
+	float alertScale				= 1.0f;
 	float alertAnimSpeed			= 3.0f;
 	float alertTempYpos				= 0.0f;
 	float directHit					= 40.0f;
@@ -91,6 +91,7 @@ struct TankComponent
 	bool alertDone					= false;
 	bool canAttack					= false;
 	bool attackGoRight				= false;
+	bool hasDoneFirstHump			= false;
 
 	//Timers
 	float alertTimerOrig			= 1.0f;
@@ -114,6 +115,12 @@ struct TankComponent
 	glm::vec3 runOrigin				= glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 runDir				= glm::vec3(0.0f, 0.0f, 0.0f);
 
+	//Current animation
+	int lowerCurrentAnim = 0;
+	int upperCurrentAnim = 0;
+	float shieldAnimTimer = 0.0f;
+	float chargeAnimTimer = 0.0f;
+	bool shieldAnimDone = false;
 
 	TankFriendTarget firendTarget;
 

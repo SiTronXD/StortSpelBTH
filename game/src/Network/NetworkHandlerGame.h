@@ -25,14 +25,16 @@ enum class GameEvent
     DO_HUMP, // id, position 
     UPDATE_HUMP, // id, position 
     SET_POS_OBJECT, // id, position
-    THROW_ORB, // Id, initialPosition, Direction
+    THROW_ORB, // id, initialPosition, Direction
 	PLAYER_TAKE_DAMAGE, // What player, how much damage
 	PLAYER_SETHP, // What player, how much hp
-	ENTITY_SET_HP, //What entity, how much hp
+	ENTITY_SET_HP, // What entity, how much hp
 	PUSH_PLAYER, // What player, direction
 	MONSTER_TAKE_DAMAGE,
-	INACTIVATE, //what entity
-	ACTIVATE, //what entity
+	INACTIVATE, // What entity
+	ACTIVATE, // What entity
+	UPDATE_ANIM, // What entity, type (tank/lich), animIndex, slot
+	UPDATE_ANIM_TIMESCALE, // What entity, slot, timeScale
 
 	ROOM_CLEAR,
 	SPAWN_PORTAL,
@@ -62,6 +64,14 @@ public:
 		glm::vec4(0.0f, 1.0f, 0.0f, 0.25f),
 		glm::vec4(1.0f, 1.0f, 0.0f, 0.25f),
 	};
+
+	inline static const std::string tankAnims[]
+	{
+		"Walk",
+		"Charge",
+		"GroundHump",
+		"RaiseShield",
+	};
 private:
 	static const float UPDATE_RATE;
 	float timer = 0.0f;
@@ -83,7 +93,8 @@ private:
     std::map<int, std::pair<glm::vec3, glm::vec3>> entityLastPosScale;
 
 	// Client helpers
-	int i0, i1, i2;
+	std::string str;
+	int i0, i1, i2, i3;
 	float f0, f1, f2;
 	glm::vec3 v0, v1, v2;
 
