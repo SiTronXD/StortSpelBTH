@@ -10,7 +10,8 @@ class RoomTesting : public Scene
 private:
 
     RoomHandler roomHandler;
-    Entity player;
+    Entity player1;
+    Entity player2;
 
 public:
     RoomTesting();

@@ -32,10 +32,11 @@ RoomHandler::~RoomHandler()
 {
 }
 
-void RoomHandler::init(Scene* scene, ResourceManager* resourceMan, bool useMeshes)
+void RoomHandler::init(Scene* scene, ResourceManager* resourceMan,PhysicsEngine* physicsEngine, bool useMeshes)
 {
 	this->scene = scene;
 	this->resourceMan = resourceMan;
+	this->physicsEngine = physicsEngine;
 	this->useMeshes = useMeshes;
 
 	if (this->useMeshes)
@@ -115,10 +116,10 @@ void RoomHandler::roomCompleted()
 		}
 	}
 
-	this->showPaths(true);
+	this->togglePaths(this->activeIndex, true);
 }
 
-bool RoomHandler::playerNewRoom(Entity player, PhysicsEngine* physicsEngine)
+bool RoomHandler::playerNewRoom(Entity player)
 {
 	// Light flicker
 	flickerTimer += Time::getDT();
@@ -139,6 +140,7 @@ bool RoomHandler::playerNewRoom(Entity player, PhysicsEngine* physicsEngine)
 		return false;
 	}
 
+	// TODO: Move to RoomHandler.h
 	std::vector<Entity> entities;
 	entities.reserve(10ull);
 	for (int i = 0; i < 4; i++)
@@ -160,14 +162,21 @@ bool RoomHandler::playerNewRoom(Entity player, PhysicsEngine* physicsEngine)
 						this->closeDoors(this->activeIndex);
 						for (int j = 0; j < 4; j++)
 						{
-							if (newRoom.connectingIndex[j] != -1)
+							if (curRoom.connectingIndex[j] != -1 && curRoom.connectingIndex[j] != this->activeIndex)
 							{
-								this->deactivateRoom(newRoom.connectingIndex[j]);
+								this->deactivateRoom(curRoom.connectingIndex[j]);
+							}
+							if (newRoom.connectingIndex[j] != -1 && newRoom.connectingIndex[j] != oldIndex)
+							{
+								this->activateRoom(newRoom.connectingIndex[j]);
 							}
 						}
+
+						this->togglePaths(oldIndex, false);
+						this->togglePaths(this->activeIndex, true);
 #ifdef _DEBUG
-						this->activateRoom(this->activeIndex);
-						this->showPaths(false);
+						//this->activateRoom(this->activeIndex);
+						//this->showPaths(false);
 #endif // _DEBUG
 						return true;
 					}
@@ -189,12 +198,63 @@ bool RoomHandler::playerNewRoom(Entity player, PhysicsEngine* physicsEngine)
 						this->deactivateRoom(oldIndex);
 #endif // !_DEBUG
 					}
+					
+					this->togglePaths(oldIndex, false);
+					this->togglePaths(this->activeIndex, true);
+
 					return false;
 				}
 			}
 		}
 	}
 	
+	return false;
+}
+
+bool RoomHandler::playersInPathway(Entity player1, Entity player2)
+{
+	Room& curRoom = this->rooms[this->activeIndex];
+	if (!curRoom.finished)
+	{
+		return false;
+	}
+
+	std::vector<Entity> hitEntities;
+	hitEntities.reserve(16ull);
+	
+	bool p1Hit = false;
+	bool p2Hit = false;
+	for (int i = 0; i < 4; i++)
+	{
+		if (curRoom.connPathIndex[i] != -1)
+		{
+			Pathway& curPath = this->paths[curRoom.connPathIndex[i]];
+			hitEntities = this->physicsEngine->testContact(curPath.box, curPath.colliderPos);
+			const size_t numHit = hitEntities.size();
+			for (size_t j = 0; j < numHit; j++)
+			{
+				if (hitEntities[j] == player1)
+				{
+					p1Hit = true;
+					
+					if (p2Hit)
+					{
+						return true;
+					}
+				}
+				else if (hitEntities[j] == player2)
+				{
+					p2Hit = true;
+
+					if (p1Hit)
+					{
+						return true;
+					}
+				}				
+			}
+		}
+	}
+
 	return false;
 }
 
@@ -402,9 +462,12 @@ void RoomHandler::generate(uint32_t seed)
 	delete this->random;
 
 	// Offset everything so origo is in the middle of spawn tile
-	for (Entity entity : this->pathEntities)
+	for (Pathway& path : this->paths)
 	{
-		this->scene->getComponent<Transform>(entity).position += glm::vec3(TILE_WIDTH * -0.5f, 0.f, TILE_WIDTH * -0.5f);
+		for (Entity entity : path.entities)
+		{
+			this->scene->getComponent<Transform>(entity).position += glm::vec3(TILE_WIDTH * -0.5f, 0.f, TILE_WIDTH * -0.5f);
+		}
 	}
 	for (int i = 0; i < numTotRooms; i++)
 	{
@@ -432,15 +495,18 @@ void RoomHandler::generate(uint32_t seed)
 		light.color = DOOR_LAMP_COLOUR * DOOR_LAMP_INTENSITY;
 		light.positionOffset = DOOR_LAMP_OFFSET;
 	}
-	this->activeIndex = 0;
-	this->placeDoorLamps();
-	Room& startRoom = this->rooms[this->activeIndex];
-	startRoom.finished = true;
 
 	for (int i = 1; i < numTotRooms; i++)
 	{
 		this->deactivateRoom(i);	
+		this->togglePaths(i, false);
 	}
+
+	this->activeIndex = 0;
+	this->placeDoorLamps();
+	this->togglePaths(this->activeIndex, true);
+	Room& startRoom = this->rooms[this->activeIndex];
+	startRoom.finished = true;
 
 	for (size_t i = 0; i < this->rooms.size(); i++)
 	{
@@ -739,6 +805,7 @@ void RoomHandler::createDoors(int roomIndex, const glm::ivec2* doorTilePos)
 
 void RoomHandler::setConnections(int numMainRooms, const std::vector<glm::ivec2>& connections)
 {
+	this->paths.resize(connections.size());
 	this->exitPairs.resize(connections.size());
 	this->verticalConnection.resize(connections.size());
 
@@ -752,16 +819,58 @@ void RoomHandler::setConnections(int numMainRooms, const std::vector<glm::ivec2>
 			// Vertical Connection
 			this->verticalConnection[i] = true;
 
-			pair.first = this->roomExitPoints[curCon.y].positions[2];
-			pair.second = this->roomExitPoints[curCon.x].positions[3];
+			pair.first = this->roomExitPoints[curCon.y].positions[UPPER_P];
+			pair.second = this->roomExitPoints[curCon.x].positions[LOWER_P];	
+			
+			this->rooms[curCon.y].connPathIndex[UPPER_P] = i;
+			this->rooms[curCon.x].connPathIndex[LOWER_P] = i;
 		}
 		else
 		{
 			// Horizontal connection
 			this->verticalConnection[i] = false;
 
-			pair.first = this->roomExitPoints[curCon.y].positions[0];
-			pair.second = this->roomExitPoints[curCon.x].positions[1];
+			pair.first = this->roomExitPoints[curCon.y].positions[LEFT_P];
+			pair.second = this->roomExitPoints[curCon.x].positions[RIGHT_P];
+
+			this->rooms[curCon.y].connPathIndex[LEFT_P] = i;
+			this->rooms[curCon.x].connPathIndex[RIGHT_P] = i;
+		}
+
+		glm::vec3 delta = glm::abs(pair.first - pair.second);
+		if (delta.x < 1.f) { delta.x += TILE_WIDTH;}
+		if (delta.z < 1.f) { delta.z += TILE_WIDTH;}
+
+		paths[i].box = Collider::createBox(delta);
+		paths[i].box.extents.y = TILE_WIDTH;
+
+		paths[i].colliderPos = (pair.first + pair.second) * 0.5f;
+		paths[i].colliderPos.y = TILE_WIDTH;
+		
+		paths[i].colliderPos.x -= TILE_WIDTH * 0.5f;
+		paths[i].colliderPos.z -= TILE_WIDTH * 0.5f;
+		if (this->verticalConnection[i])
+		{ 
+			paths[i].box.extents.z -= TILE_WIDTH;
+		}
+		else
+		{ 
+			paths[i].box.extents.x -= TILE_WIDTH;
+		}
+
+		printf("Conn: %zd | pos: (%.2f, %.2f, %.2f)\n", i, paths[i].colliderPos.x, paths[i].colliderPos.y, paths[i].colliderPos.z);
+	}
+
+	printf("---------\n");
+	for (size_t i = 0; i < rooms.size(); i++)
+	{
+		printf("Room: %zd\n", i);
+		for (int j = 0; j < 4; j++)
+		{
+			if (rooms[i].connPathIndex[j] != -1)
+			{
+				printf("Con: %d | pathIdx: %d\n", j, rooms[i].connPathIndex[j]);
+			}
 		}
 	}
 }
@@ -828,27 +937,25 @@ void RoomHandler::generatePathways()
 		}
 
 		// Go through the path and generate a border around it
-		const size_t startIdx = this->pathEntities.size();
 		for (int l = 1; l <= 3; l++) // Thiccness off border around paths
 		{
-			this->surroundPaths(startIdx, pathPositions, p0, p1, (float)l, this->verticalConnection[i], l == 1);
+			this->surroundPaths(i, pathPositions, p0, p1, (float)l, this->verticalConnection[i], l == 1);
 		}
 
 		for (const glm::vec3& pos : pathPositions)
 		{
 			if (this->random->rand() % 100 < DECO_ENTITY_CHANCE)
 			{
-				this->pathEntities.emplace_back(createFloorDecoEntity(glm::vec2(pos.x, pos.z), false));
+				this->paths[i].entities.emplace_back(createFloorDecoEntity(glm::vec2(pos.x, pos.z), false));
 			}
 		}
 
 		pathPositions.clear();
+		this->paths[i].entities.shrink_to_fit();
 	}
-
-	this->pathEntities.shrink_to_fit();
 }
 
-void RoomHandler::surroundPaths(size_t startIdx, const std::vector<glm::vec3>& pathPos, glm::vec3 p0, glm::vec3 p1, float distFactor, bool vertical, bool colliders)
+void RoomHandler::surroundPaths(size_t pathIndex, const std::vector<glm::vec3>& pathPos, glm::vec3 p0, glm::vec3 p1, float distFactor, bool vertical, bool colliders)
 {
 	const glm::vec3 OFFSETS[] =
 	{
@@ -899,10 +1006,11 @@ void RoomHandler::surroundPaths(size_t startIdx, const std::vector<glm::vec3>& p
 				}
 			}
 
+			
 			// Search through the borders so no duplicates are made
-			for (size_t j = startIdx; j < this->pathEntities.size() && canPlace; j++)
+			for (size_t j = 0; j < this->paths[pathIndex].entities.size() && canPlace; j++)
 			{
-				glm::vec3 mPosToOffset = offsetPos - this->scene->getComponent<Transform>(this->pathEntities[j]).position;
+				glm::vec3 mPosToOffset = offsetPos - this->scene->getComponent<Transform>(this->paths[pathIndex].entities[j]).position;
 				mPosToOffset.y = 0.f;
 
 				if (glm::dot(mPosToOffset, mPosToOffset) < (TILE_WIDTH * TILE_WIDTH))
@@ -914,7 +1022,7 @@ void RoomHandler::surroundPaths(size_t startIdx, const std::vector<glm::vec3>& p
 			if (canPlace)
 			{
 				Entity entity = createBorderEntity({ offsetPos.x, offsetPos.z }, false);
-				this->pathEntities.emplace_back(entity);
+				this->paths[pathIndex].entities.emplace_back(entity);
 
 				if (colliders) // switch mesh and create collider for inner-layer borders
 				{
@@ -1050,20 +1158,37 @@ void RoomHandler::createObjectEntities(const Tile& tile, Room& room)
 	}
 }
 
-void RoomHandler::showPaths(bool show)
+void RoomHandler::togglePaths(int roomIndex, bool show)
 {
-	if (show)
+#ifdef _CONSOLE
+	if (roomIndex < 0 || roomIndex >= (int)this->rooms.size())
 	{
-		for (Entity tile : this->pathEntities)
-		{
-			this->scene->setActive(tile);
-		}
+		Log::error("RoomHandler::showPaths | Invalid roomIndex: " + std::to_string(roomIndex)
+			+ ". Num rooms: " + std::to_string(this->rooms.size()));
+
+		return;
 	}
-	else
+#endif
+	Room& curRoom = this->rooms[roomIndex];
+	for (int i = 0; i < 4; i++)
 	{
-		for (Entity tile : this->pathEntities)
+		const int pathIdx = curRoom.connPathIndex[i];
+		if (pathIdx != -1)
 		{
-			this->scene->setInactive(tile);
+			if (show)
+			{
+				for (Entity entity : this->paths[pathIdx].entities)
+				{
+					this->scene->setActive(entity);
+				}
+			}
+			else
+			{
+				for (Entity entity : this->paths[pathIdx].entities)
+				{
+					this->scene->setInactive(entity);
+				}
+			}
 		}
 	}
 }
@@ -1100,11 +1225,15 @@ void RoomHandler::reset()
 	}
 	this->rooms.clear();
 
-	for (const Entity& entity : this->pathEntities)
+	for (Pathway& path : this->paths)
 	{
-		this->scene->removeEntity(entity);
+		for (const Entity& entity : path.entities)
+		{
+			this->scene->removeEntity(entity);
+		}
+		path.entities.clear();
 	}
-	this->pathEntities.clear();
+	this->paths.clear();
 
 	this->scene->removeEntity(this->floor);
 	this->floor = -1;
@@ -1230,6 +1359,7 @@ void RoomHandler::placeDoorLamps()
 }
 
 #ifdef _CONSOLE
+#include "../Scenes/RoomTesting.h"
 void RoomHandler::imgui(DebugRenderer* dr)
 {
 	if (ImGui::Begin("Rooms"))
@@ -1239,10 +1369,22 @@ void RoomHandler::imgui(DebugRenderer* dr)
 			this->generate(rand());
 		}
 
+		// roomCompleted() won't kill AI so button is only used in RoomTesting
+		if (dynamic_cast<RoomTesting*>(this->scene))
+		{
+			if (ImGui::Button("Complete room"))
+			{
+				this->roomCompleted();
+			}
+		}
+
 		static bool drawExtents = false;
 		static bool drawRooms = false;
+		static bool drawPathBox = false;
+		ImGui::Text("Active: %d", activeIndex);
 		ImGui::Checkbox("extents", &drawExtents);
 		ImGui::Checkbox("room box", &drawRooms);
+		ImGui::Checkbox("path box", &drawPathBox);
 
 		if (drawExtents)
 		{
@@ -1267,6 +1409,13 @@ void RoomHandler::imgui(DebugRenderer* dr)
 			for (Room& room : rooms  )
 			{
 				dr->renderBox(room.colliderPos, glm::vec3(0.f), room.box.extents * 2.f, glm::vec3(1.f, 0.f, 0.f));
+			}
+		}
+		if (drawPathBox)
+		{
+			for (Pathway& path : paths)
+			{
+				dr->renderBox(path.colliderPos, glm::vec3(0.f), path.box.extents * 2.f, glm::vec3(0.6f, 0.f, 0.4f));
 			}
 		}
 	}

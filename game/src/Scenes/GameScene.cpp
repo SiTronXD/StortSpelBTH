@@ -208,7 +208,7 @@ void GameScene::init()
 
     roomHandler.init(
         this,
-        this->getResourceManager(), true);
+        this->getResourceManager(), this->getPhysicsEngine(), true);
     
     ResourceManager* resourceMng = this->getResourceManager();
     this->abilityMeshes[0] = resourceMng->addMesh("assets/models/KnockbackAbility.obj");
@@ -342,7 +342,7 @@ void GameScene::update()
     {   
         this->aiHandler->update(Time::getDT());
 
-        if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
+        if (this->roomHandler.playerNewRoom(this->playerID))
         {
             this->newRoomFrame = true;
             this->timeWhenEnteredRoom = Time::getTimeSinceStart();
@@ -413,7 +413,7 @@ void GameScene::update()
     }
     else
     {
-        if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
+        if (this->roomHandler.playerNewRoom(this->playerID))
         {
             this->newRoomFrame = true;
         }

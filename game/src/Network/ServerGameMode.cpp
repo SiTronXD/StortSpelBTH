@@ -21,7 +21,7 @@ void ServerGameMode::init()
 
     aiHandler.init(this->getSceneHandler());
     this->getSceneHandler()->setAIHandler(&aiHandler);
-    roomHandler.init(this, this->getResourceManager(), false);
+    roomHandler.init(this, this->getResourceManager(), this->getPhysicsEngine(), false);
     roomHandler.generate(this->roomSeed);
     createPortal();
     spawnHandler.init(
@@ -55,7 +55,7 @@ void ServerGameMode::update(float dt)
     aiHandler.update(dt);
 
     // For now we only look at player 0
-    if (this->roomHandler.playerNewRoom(this->getPlayer(0), this->getPhysicsEngine()))
+    if (this->roomHandler.playerNewRoom(this->getPlayer(0)))
     {
         std::cout << "Server: player in new room" << std::endl;
         this->newRoomFrame = true;
