@@ -46,7 +46,7 @@ void GameScene::testParticleSystem(const Entity& particleSystemEntity)
 GameScene::GameScene() :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
     perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1), 
-    deathTimer(2.f), isDead(false)
+    deathTimer(0.0f), isDead(false)
 {
     Input::setHideCursor(true);
 }
@@ -100,6 +100,7 @@ void GameScene::init()
     this->perkTextures[5] = resourceMng->addTexture("assets/textures/UI/empty.png");
     this->hpBarBackgroundTextureID = resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
     this->hpBarTextureID = resourceMng->addTexture("assets/textures/UI/hpBar.png");
+    this->blackTextureIndex = resourceMng->addTexture("vengine_assets/textures/Black.png");
     this->ghostOverlayIndex = resourceMng->addTexture("assets/textures/UI/GhostUI.png");
 
     // Temporary light
@@ -229,7 +230,6 @@ void GameScene::update()
             glm::vec4(1.0f, 1.0f, 1.0f, 0.4f + sin(this->timer * 2.0f) * 0.15f));
     }
 
-    this->deleteInitialParticleSystems();
     ((NetworkHandlerGame*)this->getNetworkHandler())->deleteInitialParticleSystems();
 
     if (!networkHandler->isConnected() && networkHandler->getStatus() == ServerStatus::WAITING)
@@ -278,12 +278,12 @@ void GameScene::update()
         // Switch scene if the player is dead
         if (this->hasComponents<HealthComp>(this->playerID))
         {
-			// Look at this 
 			Script& playerScript = this->getComponent<Script>(this->playerID);
             int tempHealth = this->getComponent<HealthComp>(this->playerID).health;
             if (tempHealth <= 0.0f && !this->isDead)
             {
                 this->isDead = true;
+                this->deathTimer = 2.0f;
                 this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
             }
             else if (this->isDead)
@@ -298,26 +298,17 @@ void GameScene::update()
                         this->getScriptHandler()->setScriptComponentValue(playerScript, tempHealth, "currentHealth");
                     }
                 }
-                else
-                {
-                    this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
-                }
-			}
-
-            HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
-            if (healthComp.health <= 0.0f)
-            {
-                if (this->isGhost && this->hasRespawned)
-                {
-                    this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
-                }
                 else if (!this->isGhost)
                 {
                     this->isGhost = true;
                     this->hasRespawned = false;
                     this->ghostTransitionTimer = 0.0f;
                 }
-            }
+                else if (this->isGhost && this->hasRespawned)
+                {
+                    this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+                }
+			}
         }
 
         if (this->isGhost && this->ghostTransitionTimer < 5.0f)
@@ -328,13 +319,21 @@ void GameScene::update()
             if (this->ghostTransitionTimer > 1.0f && !this->hasRespawned)
             {
                 this->hasRespawned = true;
+                this->isDead = false;
+
                 HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
                 healthComp.health = healthComp.maxHealth;
+                
+                Script& playerScript = this->getComponent<Script>(this->playerID);
+                this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
+                this->getScriptHandler()->setScriptComponentValue(playerScript, healthComp.health, "currentHealth");
+
                 this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = *this->ghostMat;
-                this->getComponent<Transform>(this->playerID).position = this->roomHandler.getRespawnPos(true);
+                this->getComponent<Transform>(this->playerID).position = this->roomHandler.getRespawnPos();
                 this->getComponent<Transform>(this->playerID).rotation = this->roomHandler.getRespawnRot();
                 this->getComponent<Rigidbody>(this->playerID).assigned = false; // For some reason this is needed, otherwise the position isn't changed
                 this->getComponent<Transform>(this->getMainCameraID()).rotation = this->roomHandler.getRespawnRot();
+
                 this->roomHandler.startOver();
                 this->spawnHandler.resetEnemies();
                 this->newRoomFrame = false;

@@ -65,6 +65,7 @@ private:
   uint32_t perkTextures[6];
   uint32_t fontTextureIndex;
   uint32_t ghostOverlayIndex;
+  uint32_t blackTextureIndex;
 
   uint32_t hpBarBackgroundTextureID;
   uint32_t hpBarTextureID;
@@ -89,11 +90,6 @@ public:
 
   // Multiplayer: revive self
   void revivePlayer();
-
-  inline const ParticleSystem& getHealParticleSystem() { return this->healParticleSystem.getParticleSystem(); }
-  inline const ParticleSystem& getBloodParticleSystem() { return this->bloodParticleSystems.getParticleSystem(); }
-  inline const ParticleSystem& getSwarmParticleSystem() { return this->swarmParticleSystems.getParticleSystem(); }
-
 private:
 
     void imguiUpdate();

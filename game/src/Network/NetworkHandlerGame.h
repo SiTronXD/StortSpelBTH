@@ -13,9 +13,9 @@ enum class GameEvent
 {
 	EMPTY = (int)NetworkEvent::END + 1,
 	SEED, // Client -> Server: Request seed, Server -> Client: Seed to use
-	UPDATE_PLAYER, // Positions and animations
+	UPDATE_PLAYER, // Positions and animations (and health to server)
 	UPDATE_MONSTER, // How many enemies, What enemy, Position, rotation and animation udp
-	PLAY_PARTICLE, //What type, entity
+	PLAY_PARTICLE, // What type, entity
 	SPAWN_ITEM, // Client -> Server: Want to spawn item. Server -> Client: Spawn item in scene
 	DELETE_ITEM, // Server -> Client: Remove item from scene
 	PICKUP_ITEM, // Client -> Server: Want to pick up item. Server -> Client: Pick up the item
@@ -130,7 +130,6 @@ private:
     ParticleSystemInstance swarmParticleSystems;
     ParticleSystemInstance portalParticleSystemSide0;
     ParticleSystemInstance portalParticleSystemSide1;
-
 
 	//RoomHandler
     bool newRoomFrame;

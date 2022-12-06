@@ -183,7 +183,7 @@ public:
 	void roomCompleted();
 	bool playerNewRoom(Entity player, PhysicsEngine* physicsEngine);
 	void startOver();
-	glm::vec3 getRespawnPos(bool singlePlayer) const;
+	glm::vec3 getRespawnPos() const;
 	glm::vec3 getRespawnRot() const;
 
 	const std::vector<glm::vec3>& getFreeTiles();

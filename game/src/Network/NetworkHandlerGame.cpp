@@ -661,11 +661,6 @@ void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 			entityToPosScale[i1].second = v2;
             
             sceneHandler->getScene()->getComponent<Transform>(serverEntities.find(i1)->second).rotation = v1;
-
-			// Get and set animation // don't know how this should be made
-			//anim = &this->sceneHandler->getScene()->getComponent<AnimationComponent>(serverEnteties.find(i1)->second);
-			//udpPacket >> i2 >> anim->timer >> anim->timeScale;
-			//anim->animationIndex = (uint32_t)i2;
 		}
 		break;
 	default:
@@ -751,16 +746,15 @@ void NetworkHandlerGame::handleUDPEventServer(Server* server, int clientID, sf::
 {
 	sf::Packet packet;
 	ServerGameMode* serverScene;
-	NetworkScene* scene;
 	switch ((GameEvent)event)
 	{
 	case GameEvent::UPDATE_PLAYER:
-        scene = server->getScene<NetworkScene>();
+		serverScene = server->getScene<ServerGameMode>();
 		packet << (int)GameEvent::UPDATE_PLAYER << clientID;
 		sv0 = this->getVec(udpPacket);
 		this->sendVec(packet, sv0);
         
-        scene->getComponent<Transform>(scene->getPlayer(clientID)).position = sv0;
+		serverScene->getComponent<Transform>(serverScene->getPlayer(clientID)).position = sv0;
 		sv0 = this->getVec(udpPacket);
 		this->sendVec(packet, sv0);
 
@@ -768,6 +762,9 @@ void NetworkHandlerGame::handleUDPEventServer(Server* server, int clientID, sf::
 		packet << si0 << sf0 << sf1;
 		udpPacket >> si0 >> sf0 >> sf1;
 		packet << si0 << sf0 << sf1;
+
+		udpPacket >> si0;
+		serverScene->updatePlayerHp(clientID, si0);
 
 		server->sendToAllOtherClientsUDP(packet, clientID);
 		break;
@@ -897,12 +894,14 @@ void NetworkHandlerGame::updatePlayer()
 		sf::Packet packet;
 		Transform& t = this->sceneHandler->getScene()->getComponent<Transform>(this->player);
 		AnimationComponent& anim = this->sceneHandler->getScene()->getComponent<AnimationComponent>(this->player);
+		HealthComp& healthComp = this->sceneHandler->getScene()->getComponent<HealthComp>(this->player);
 
 		packet << (int)GameEvent::UPDATE_PLAYER <<
 			t.position.x << t.position.y << t.position.z <<
 			t.rotation.x << t.rotation.y << t.rotation.z <<
 			(int)anim.aniSlots[0].animationIndex << anim.aniSlots[0].timer << anim.aniSlots[0].timeScale <<
-			(int)anim.aniSlots[1].animationIndex << anim.aniSlots[1].timer << anim.aniSlots[1].timeScale;
+			(int)anim.aniSlots[1].animationIndex << anim.aniSlots[1].timer << anim.aniSlots[1].timeScale <<
+			(int)healthComp.health;
 		this->sendDataToServerUDP(packet);
 	}
 }

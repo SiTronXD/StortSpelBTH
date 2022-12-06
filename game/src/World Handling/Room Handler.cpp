@@ -202,9 +202,12 @@ bool RoomHandler::playerNewRoom(Entity player, PhysicsEngine* physicsEngine)
 	return false;
 }
 
-// TODO: Fix it pls
 void RoomHandler::startOver()
 {
+	if (this->activeIndex == -1 || this->prevRoomIndex == -1)
+	{
+		return;
+	}
 	Room& failedRoom = this->rooms[this->activeIndex];
 	Room& prevRoom = this->rooms[this->prevRoomIndex];
 
@@ -226,8 +229,12 @@ void RoomHandler::startOver()
 	this->prevRoomIndex = -1;
 }
 
-glm::vec3 RoomHandler::getRespawnPos(bool singlePlayer) const
+glm::vec3 RoomHandler::getRespawnPos() const
 {
+	if (this->respawnDoorIdx == -1)
+	{
+		return glm::vec3(0.0f);
+	}
 	const glm::vec3 respawnOffset[] =
 	{
 		glm::vec3(TILE_WIDTH, 0.f, 0.f),
@@ -237,14 +244,17 @@ glm::vec3 RoomHandler::getRespawnPos(bool singlePlayer) const
 	};
 
 	Entity door = this->rooms[this->activeIndex].doors[this->respawnDoorIdx];
-	glm::vec3 pos = this->scene->getComponent<Transform>(door).position + 
-		(singlePlayer ? respawnOffset[this->respawnDoorIdx] : -respawnOffset[this->respawnDoorIdx]);
+	glm::vec3 pos = this->scene->getComponent<Transform>(door).position + respawnOffset[this->respawnDoorIdx];
 	pos.y = 12.f;
 	return pos;
 }
 
 glm::vec3 RoomHandler::getRespawnRot() const
 {
+	if (this->respawnDoorIdx == -1)
+	{
+		return glm::vec3(0.0f);
+	}
 	const float respawnYRot[] =
 	{
 		-90.f,

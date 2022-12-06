@@ -57,6 +57,8 @@ private:
     virtual void onCollisionExit(Entity e1, Entity e2) override;
 	virtual int getNearestPlayer(const int& ent) override;
 
+    void updatePlayerHp(int id, int health);
+
 	// Returns itemID
 	int spawnItem(ItemType type, int otherType, float multiplier = 0.0f);
 	void deleteItem(int playerID, int index, ItemType type, int otherType, float multiplier = 0.0f);

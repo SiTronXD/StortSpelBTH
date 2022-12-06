@@ -461,6 +461,15 @@ int ServerGameMode::getNearestPlayer(const int& ent)
     return returnIndex;
 }
 
+void ServerGameMode::updatePlayerHp(int id, int health)
+{
+    // Check this, is kinda weird when done via UDP
+    HealthComp& healthComp = this->getComponent<HealthComp>(getPlayer(id));
+    int diff = health - healthComp.health;
+    healthComp.health += diff;
+    this->lastPlayerHps[id].health += diff;
+}
+
 int ServerGameMode::spawnItem(ItemType type, int otherType, float multiplier)
 {
 	this->curItems.push_back({ type, otherType, multiplier });
