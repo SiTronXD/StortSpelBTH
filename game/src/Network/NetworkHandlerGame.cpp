@@ -367,8 +367,8 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 			str = i1 == 0 ? "LowerBody" : i1 == 1 ? "UpperBody" : "";
 			if (str == "UpperBody" && f0 == 0.0f) // Shield anim for tank (ugly fix due to latency)
 			{
-				this->sceneHandler->getScene()->getAnimationSlot(i2, str).timer = 0.725f * 24.0f;
-				this->sceneHandler->getScene()->setAnimationTimeScale(i2, f0, str);
+				this->sceneHandler->getScene()->blendToAnimation(i2, "RaiseShield", str, 0.18f, 0.0f);
+				this->sceneHandler->getScene()->getAnimationSlot(i2, str).nTimer = 0.725f * 24.0f;
 			}
 			else
 			{
