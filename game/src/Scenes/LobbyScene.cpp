@@ -101,6 +101,39 @@ void LobbyScene::init()
 
     disconnectButton.position = glm::vec2(-700.f, -400.f);
     disconnectButton.dimension = glm::vec2(225.0f, 75.0f);
+
+    // Fireflies particle systems
+    const glm::vec3 firefliesOffset = glm::vec3(0.0f, -8.0f, 27.8f);
+    for (uint32_t i = 0; i < 10; ++i)
+    {
+        // Transform
+        Entity fireflies = this->createEntity();
+        Transform& firefliesTransform = this->getComponent<Transform>(fireflies);
+        float angle = (float(i) / 10.0f) * 2.0f * SMath::PI;
+        firefliesTransform.position = 
+            firefliesOffset + 
+            glm::vec3(std::cos(angle), 0.0f, std::sin(angle)) * 26.5f;
+
+        // Particle system
+        this->setComponent<ParticleSystem>(fireflies);
+        ParticleSystem& firefliesPS = this->getComponent<ParticleSystem>(fireflies);
+        firefliesPS.maxlifeTime = 2.0f;
+        firefliesPS.numParticles = 4;
+        firefliesPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/firefliesParticle2.png");
+        firefliesPS.startSize = glm::vec2(0.5f);
+        firefliesPS.endSize = glm::vec2(0.0f);
+        firefliesPS.startColor = glm::vec4(0.0f);
+        firefliesPS.endColor = glm::vec4(1.0f);
+        firefliesPS.velocityStrength = 0.7f;
+        firefliesPS.acceleration = glm::vec3(0.0f);
+        firefliesPS.spawnRate = 0.01f;
+        firefliesPS.coneSpawnVolume.diskRadius = 1.5f;
+        firefliesPS.coneSpawnVolume.coneAngle = 120.0f;
+        firefliesPS.coneSpawnVolume.localDirection = 
+            glm::vec3(0.0f, 1.0f, 0.0f) + 
+            glm::vec3(std::cos(angle), 0.0f, std::sin(angle)) * 0.2f;
+        firefliesPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+    }
 }
 
 void LobbyScene::start() 
