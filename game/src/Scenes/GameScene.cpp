@@ -166,13 +166,9 @@ void GameScene::start()
     this->setComponent<HealthComp>(playerID);
     this->setComponent<Combat>(playerID);
     this->createSystem<CombatSystem>(
-        this,
-        this->getResourceManager(),
+        this->getSceneHandler(),
         this->playerID,
         &this->paused,
-        this->getPhysicsEngine(),
-        this->getUIRenderer(),
-        this->getScriptHandler(),
         this->networkHandler
     );
     this->createSystem<HealSystem>(
