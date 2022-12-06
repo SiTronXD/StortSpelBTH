@@ -290,7 +290,6 @@ public:
 		}
 		else if (this->scene->hasComponents<Collider>(this->knockbackCollID))
 		{
-			printf("KNOCKING");
 			Transform& knockTrans = scene->getComponent<Transform>(this->knockbackCollID);
 			knockTrans.updateMatrix();
 			std::vector<int> hitID = physics->testContact(this->scene->getComponent<Collider>(this->knockbackCollID),
