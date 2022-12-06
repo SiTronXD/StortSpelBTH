@@ -19,6 +19,12 @@ struct TankFriendTarget
 
 struct TankComponent
 {
+	inline static bool s_initialized = false;
+	inline static int s_takeDmg = -1;
+	inline static int s_move = -1;
+	inline static int s_shockwave = -1;
+	inline static int s_charge = -1;
+
     inline static const uint32_t colliderRadius = 20;
 
 	TankComponent() 

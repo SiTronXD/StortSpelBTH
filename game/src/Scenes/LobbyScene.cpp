@@ -112,8 +112,8 @@ void LobbyScene::init()
     addCandle(glm::vec3(-26, 0, 0));
     addCandle(glm::vec3(22, 0, 14.5));
     addCandle(glm::vec3(-22, 0, 14.5));
-    addCandle(glm::vec3(8, 0, 24));
-    addCandle(glm::vec3(-8, 0, 24));
+    addCandle(glm::vec3(8, 0, 26));
+    addCandle(glm::vec3(-8, 0, 26));
 
     this->players.resize(MAX_PLAYER_COUNT);
     this->playersNames.resize(MAX_PLAYER_COUNT);
@@ -168,6 +168,25 @@ void LobbyScene::addCandle(glm::vec3 position)
     this->setComponent<MeshComponent>(candle, (int)this->getResourceManager()->addMesh("assets/models/Menu/candle.obj"));
     this->setComponent<PointLight>(candle, glm::vec3(0.5, -7, 26), glm::vec3(40, 10, 5));
     this->getComponent<Transform>(candle).position = position;
+
+    // Fireflies particle system
+    this->setComponent<ParticleSystem>(candle);
+    ParticleSystem& firefliesPS = this->getComponent<ParticleSystem>(candle);
+    firefliesPS.maxlifeTime = 2.0f;
+    firefliesPS.numParticles = 4;
+    firefliesPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/firefliesParticle2.png");
+    firefliesPS.startSize = glm::vec2(0.5f);
+    firefliesPS.endSize = glm::vec2(0.0f);
+    firefliesPS.startColor = glm::vec4(0.0f);
+    firefliesPS.endColor = glm::vec4(1.0f);
+    firefliesPS.velocityStrength = 0.7f;
+    firefliesPS.acceleration = glm::vec3(0.0f);
+    firefliesPS.spawnRate = 0.01f;
+    firefliesPS.coneSpawnVolume.diskRadius = 1.5f;
+    firefliesPS.coneSpawnVolume.coneAngle = 120.0f;
+    firefliesPS.coneSpawnVolume.localDirection =
+        glm::vec3(0.0f, 1.0f, 0.0f);
+    firefliesPS.coneSpawnVolume.localPosition = glm::vec3(0.5f, -8.2f, 26.5f);
 }
 
 void LobbyScene::update()

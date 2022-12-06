@@ -769,7 +769,20 @@ BTStatus LichBT::attack(Entity entityID)
                 auto spellVector = safeNormalize(playerTrans.position - lichTrans.position) * LichComponent::spellForce;
                 spellVector.y = 0;  //TODO: What if player is on top of something... Will not aim att player
                 orbRB.velocity = spellVector;
-                orb.orbPower = lichComp.curAttack;                
+                orb.orbPower = lichComp.curAttack;
+
+                if (lichComp.curAttack->type == ATTACK_STRATEGY::FIRE)
+                {
+                    sceneHandler->getAudioHandler()->playSound(entityID, LichComponent::s_fire, 30.f);
+                }
+                else if (lichComp.curAttack->type == ATTACK_STRATEGY::LIGHT)
+                {
+                    sceneHandler->getAudioHandler()->playSound(entityID, LichComponent::s_lightning, 30.f);
+                }
+                else if (lichComp.curAttack->type == ATTACK_STRATEGY::ICE)
+                {
+                    sceneHandler->getAudioHandler()->playSound(entityID, LichComponent::s_ice, 30.f);
+                }
                             
             }
             else
@@ -779,6 +792,19 @@ BTStatus LichBT::attack(Entity entityID)
                 spellVector.y = 0;  //TODO: What if player is on top of something... Will not aim att player
                 
                 netScene->addEvent({(int)GameEvent::THROW_ORB, (int)projectileID },{initialOrbPos.x,initialOrbPos.y,initialOrbPos.z, spellVector.x, spellVector.y,spellVector.z});
+
+                if (lichComp.curAttack->type == ATTACK_STRATEGY::FIRE)
+                {
+                    netScene->addEvent({ (int)GameEvent::PLAY_ENEMY_SOUND, entityID, 2, 1, 0 });
+                }
+                else if (lichComp.curAttack->type == ATTACK_STRATEGY::LIGHT)
+                {
+                    netScene->addEvent({ (int)GameEvent::PLAY_ENEMY_SOUND, entityID, 2, 1, 1 });
+                }
+                else if (lichComp.curAttack->type == ATTACK_STRATEGY::ICE)
+                {
+                    netScene->addEvent({ (int)GameEvent::PLAY_ENEMY_SOUND, entityID, 2, 1, 2 });
+                }
             }
 
             orb.timeAtCast = Time::getTimeSinceStart();
