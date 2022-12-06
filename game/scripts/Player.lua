@@ -62,20 +62,23 @@ function script:init()
 end
 
 function script:update(dt)
-    if (paused) then
-        local rb = scene.getComponent(self.ID, CompType.Rigidbody)
-        rb.velocity.x = 0
-        rb.velocity.z = 0
-        scene.setComponent(self.ID, CompType.Rigidbody, rb)
-        return
-    end
     if (self.currentAnimation == self.activeAnimation.dead and not self.isDead) then
         self.currentAnimation = 1
         scene.blendToAnimation(self.ID, "idle", "", 0.25, 1)
     end
-    if (self.currentAnimation == self.activeAnimation.dead) then
+    if self.currentHealth <= 0
+    then
+        if self.currentAnimation ~= self.activeAnimation.dead
+        then
+            scene.blendToAnimation(self.ID, "dead", "", 0.3, 1.0)
+            self.currentAnimation = self.activeAnimation.dead
+        end
+    end
+    if (paused and self.currentAnimation == self.activeAnimation.dead) then
         local rb = scene.getComponent(self.ID, CompType.Rigidbody)
-        rb.velocity = vector(0)
+        rb.velocity.x = 0
+        rb.velocity.z = 0
+        scene.setComponent(self.ID, CompType.Rigidbody, rb)
         return
     end
 
@@ -272,15 +275,6 @@ function script:update(dt)
                 scene.blendToAnimation(self.ID, "idle", "LowerBody", 0.2, self.idleAnimTime)
                 self.currentAnimation = self.activeAnimation.idle
             end
-        end
-    end
-
-    if self.currentHealth <= 0
-    then
-        if self.currentAnimation ~= self.activeAnimation.dead
-        then
-            scene.blendToAnimation(self.ID, "dead", "", 0.3, 1.0)
-            self.currentAnimation = self.activeAnimation.dead
         end
     end
 

@@ -223,7 +223,7 @@ void GameScene::start()
 
 void GameScene::update()
 {
-    if (this->isGhost)
+    if (this->isGhost && this->ghostTransitionTimer >= 1.0f || this->hasRespawned)
     {
         this->getUIRenderer()->setTexture(this->ghostOverlayIndex);
         this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
@@ -283,7 +283,8 @@ void GameScene::update()
             if (tempHealth <= 0.0f && !this->isDead)
             {
                 this->isDead = true;
-                this->deathTimer = 2.0f;
+                this->deathTimer = 1.5f;
+                this->ghostTransitionTimer = 0.0f;
                 this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
             }
             else if (this->isDead)
@@ -302,16 +303,15 @@ void GameScene::update()
                 {
                     this->isGhost = true;
                     this->hasRespawned = false;
-                    this->ghostTransitionTimer = 0.0f;
                 }
-                else if (this->isGhost && this->hasRespawned)
+                else if (this->isGhost && this->hasRespawned && this->ghostTransitionTimer >= 1.0f)
                 {
                     this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
                 }
 			}
         }
 
-        if (this->isGhost && this->ghostTransitionTimer < 5.0f)
+        if (this->isGhost && this->ghostTransitionTimer < 5.0f && this->deathTimer < 0.0f)
         {
             this->ghostTransitionTimer += Time::getDT();
 
@@ -339,7 +339,7 @@ void GameScene::update()
                 this->newRoomFrame = false;
             }
 
-            if (this->ghostTransitionTimer > 1.0f)
+            if (this->ghostTransitionTimer > 1.0f && !this->isDead)
             {
                 this->getUIRenderer()->renderString("one more chance...", glm::vec2(0.0f, 250.0f), glm::vec2(50.0f), 0.0f, StringAlignment::CENTER,
                     glm::vec4(1.0f, 1.0f, 1.0f, sin(this->ghostTransitionTimer * 0.75f) * 2.0f - 1.0f));

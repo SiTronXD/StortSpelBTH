@@ -465,9 +465,12 @@ void ServerGameMode::updatePlayerHp(int id, int health)
 {
     // Check this, is kinda weird when done via UDP
     HealthComp& healthComp = this->getComponent<HealthComp>(getPlayer(id));
-    int diff = health - healthComp.health;
-    healthComp.health += diff;
-    this->lastPlayerHps[id].health += diff;
+    if (healthComp.health == this->lastPlayerHps[id].health) // No current change
+    {
+        healthComp.health = health;
+        this->lastPlayerHps[id].health = health;
+        Log::write("Client " + std::to_string(id) + " health: " + std::to_string(health));
+    }
 }
 
 int ServerGameMode::spawnItem(ItemType type, int otherType, float multiplier)
