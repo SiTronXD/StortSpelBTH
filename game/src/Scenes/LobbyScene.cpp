@@ -210,8 +210,7 @@ void LobbyScene::update()
             }
         }
     }
-
-    if (!this->getNetworkHandler()->isConnected())
+    else if (!this->getNetworkHandler()->isConnected())
     {
         this->getNetworkHandler()->disconnectClient();
         this->getNetworkHandler()->deleteServer();
