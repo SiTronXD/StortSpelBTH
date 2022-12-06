@@ -892,9 +892,6 @@ void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
 		bool isEnemy = false;
 		if (sceneHandler->getScene()->hasComponents<SwarmComponent>(entityID)) {
 			this->sceneHandler->getAudioHandler()->playSound(entityID, SwarmComponent::s_takeDmg, 10.f);
-			//AudioSourceID =
-			//audioHandler->setVolume()
-			//audioHandler->set()
 			SwarmComponent& enemy = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
                   enemy.life -= damage;
                   isEnemy = true;

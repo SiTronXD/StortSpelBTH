@@ -7,7 +7,7 @@
 
 struct SwarmComponent
 {
-	inline static bool s_initialized = false; // IN PROGRESS
+	inline static bool s_initialized = false;
 	inline static int s_takeDmg = -1;
 	inline static int s_move = -1;
 	inline static int s_attack = -1;
