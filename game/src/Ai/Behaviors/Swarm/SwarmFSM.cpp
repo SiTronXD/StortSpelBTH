@@ -1,5 +1,6 @@
 #include "SwarmFSM.hpp"
 #include "../../../Scenes/GameScene.h"
+#include "../../../Network/NetworkHandlerGame.h"
 
 Entity SwarmFSM::getPlayerID(Entity entityID){
     int playerID = -1;
@@ -390,15 +391,23 @@ void SwarmFSM::updateSwarmGrounded(Entity entityID)
 			swarmComp.grounded = true;	
 			swarmComp.groundTimer = swarmComp.groundTimerOrig;
 
-			// Spawn particle system when grounded
-			if (!scene->hasComponents<ParticleSystem>(entityID))
-			{
-				scene->setComponent<ParticleSystem>(entityID);
-				ParticleSystem& partSys =
-					scene->getComponent<ParticleSystem>(entityID);
-				partSys = ((GameScene*) scene)->getSwarmParticleSystem();
-				partSys.spawn = true;
+			NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+            if (s == nullptr)
+            {
+                // Spawn particle system when grounded
+				if (!scene->hasComponents<ParticleSystem>(entityID))
+				{
+					scene->setComponent<ParticleSystem>(entityID);
+					ParticleSystem& partSys = scene->getComponent<ParticleSystem>(entityID);
+					partSys = ((NetworkHandlerGame*)scene->getNetworkHandler())->getSwarmParticleSystem();
+					partSys.spawn = true;
+				}
 			}
+            else
+            {
+                s->addEvent({(int)GameEvent::PLAY_PARTICLE, (int)ParticleTypes::SWARM, (int)entityID});
+			}
+			
 		}
     }
 

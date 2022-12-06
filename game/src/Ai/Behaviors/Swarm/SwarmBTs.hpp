@@ -38,6 +38,7 @@ class SwarmBT : public BehaviorTree
     void registerEntityComponents(Entity entityId) override;
 
   public:
+	  virtual ~SwarmBT() {};
 
    protected:
 	static BTStatus hasFriends(Entity entityID);

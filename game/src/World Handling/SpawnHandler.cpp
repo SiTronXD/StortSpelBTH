@@ -354,17 +354,37 @@ void SpawnHandler::createTank()
     ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
     if (netScene == nullptr)
     {
-        static int tank = this->resourceManager->addMesh("assets/models/golem.obj");
-        
         this->tankIDs.push_back(this->currScene->createEntity());
         this->allEntityIDs.push_back(this->tankIDs.back());
-        this->currScene->setComponent<MeshComponent>(this->tankIDs.back(), tank);        
+        static int tank = -1;
+        if (tank == -1)
+        {
+            tank = this->resourceManager->addAnimations({
+                        "assets/models/Tank/TankWalk.fbx",
+                        "assets/models/Tank/TankCharge.fbx",
+                        "assets/models/Tank/TankGroundHump.fbx",
+                        "assets/models/Tank/TankRaiseShield.fbx"
+                },
+                "assets/textures/"
+            );
+            this->resourceManager->mapAnimations(tank, {
+                "Walk",
+                "Charge",
+                "GroundHump",
+                "RaiseShield",
+                });
+            this->resourceManager->createAnimationSlot(tank, "LowerBody", "Character1_Hips");
+            this->resourceManager->createAnimationSlot(tank, "UpperBody", "Character1_Spine");
+        }
+        this->currScene->setComponent<MeshComponent>(this->tankIDs.back(), tank);
+        this->currScene->setComponent<AnimationComponent>(this->tankIDs.back());
     }
     else
     {
-        this->tankIDs.push_back(netScene->spawnEnemy(0));
+        this->tankIDs.push_back(netScene->spawnEnemy(2));
         this->allEntityIDs.push_back(this->tankIDs.back());
     }
+
     this->currScene->setComponent<AiCombatTank>(this->tankIDs.back());
     this->currScene->setComponent<Rigidbody>(this->tankIDs.back());
     Rigidbody& rb = this->currScene->getComponent<Rigidbody>(this->tankIDs.back());
@@ -373,8 +393,7 @@ void SpawnHandler::createTank()
     rb.friction = 3.0f;
     rb.mass = 10.0f;
     Transform& transform = this->currScene->getComponent<Transform>(this->tankIDs.back());
-    transform.scale = glm::vec3(3.0f, 3.0f, 3.0f); //TODO: Remove this line when we have real model 
-    this->currScene->setComponent<Collider>(this->tankIDs.back(), Collider::createSphere(TankComponent::colliderRadius));
+    this->currScene->setComponent<Collider>(this->tankIDs.back(), Collider::createSphere(TankComponent::colliderRadius, glm::vec3(0.0f, 19.5f, 0.0f)));
     this->aiHandler->createAIEntity(this->tankIDs.back(), "tankFSM");
     TankComponent& tankComp = this->currScene->getComponent<TankComponent>(this->tankIDs.back());
     tankComp.origScaleY = transform.scale.y;
@@ -410,7 +429,6 @@ void SpawnHandler::createTank()
 
 void SpawnHandler::createLich()
 {
-    
     ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
 
     // Create Lich
@@ -422,7 +440,7 @@ void SpawnHandler::createLich()
     }
     else
     {
-        this->lichIDs.push_back(netScene->spawnEnemy(0));
+        this->lichIDs.push_back(netScene->spawnEnemy(1));
     }
 
     this->currScene->setComponent<Rigidbody>(this->lichIDs.back());
@@ -432,8 +450,9 @@ void SpawnHandler::createLich()
     rb.friction = 3.0f;
     rb.mass = 10.0f;
     Transform& transform = this->currScene->getComponent<Transform>(this->lichIDs.back());
-    transform.scale = glm::vec3(1.0f, 3.0f, 1.0f); //TODO: Remove this line when we have real model 
-    this->currScene->setComponent<Collider>(this->lichIDs.back(), Collider::createCapsule(LichComponent::colliderRadius, LichComponent::colliderHeight));
+    transform.scale = glm::vec3(1.5f);
+    this->currScene->setComponent<Collider>(this->lichIDs.back(), 
+        Collider::createCapsule(LichComponent::colliderRadius, LichComponent::colliderHeight, glm::vec3(0.0f, 15.0f, 0.0f)));
     this->aiHandler->createAIEntity(this->lichIDs.back(), "lichFSM");
     LichComponent& lichComp = this->currScene->getComponent<LichComponent>(this->lichIDs.back());
     lichComp.origScaleY = transform.scale.y;
@@ -459,19 +478,31 @@ void SpawnHandler::createLich()
     this->currScene->getComponent<LichComponent>(this->lichIDs.back()).alterID = alterID;
     this->currScene->setInactive(alterID);
 
-    
-    
-
     if(netScene == nullptr)
     {
-        static int lich = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
         static int grave = this->resourceManager->addMesh("assets/models/grave.obj");
         static int alter = this->resourceManager->addMesh("assets/models/alter.obj");
         static int fireOrb_mesh = this->resourceManager->addMesh("assets/models/fire_orb.obj");
         static int lightOrb_mesh = this->resourceManager->addMesh("assets/models/light_orb.obj");
         static int iceOrb_mesh = this->resourceManager->addMesh("assets/models/ice_orb.obj");
 
+        static int lich = -1;
+        if (lich == -1)
+        {
+            lich = this->resourceManager->addAnimations({
+                "assets/models/Lich/Lich_Walk.fbx",
+                "assets/models/Lich/Lich_Attack.fbx",
+                },
+                "assets/textures/Lich/"
+                );
+            this->resourceManager->mapAnimations(lich,
+                {
+                    "Walk",
+                    "Attack"
+                });
+        }
         this->currScene->setComponent<MeshComponent>(this->lichIDs.back(), lich);
+        this->currScene->setComponent<AnimationComponent>(this->lichIDs.back());
 
         this->currScene->setComponent<MeshComponent>(graveID, grave);
         this->currScene->setComponent<MeshComponent>(alterID, alter);                

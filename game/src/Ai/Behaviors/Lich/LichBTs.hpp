@@ -27,6 +27,7 @@ class LichBT : public BehaviorTree
     void registerEntityComponents(Entity entityId) override;
 
   public:
+	  virtual ~LichBT() {};
 
    protected:
 
