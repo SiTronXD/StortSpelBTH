@@ -290,11 +290,11 @@ void avoidStuffBackwards(Entity entityID, SceneHandler* sceneHandler, bool& atta
 		{
 			if(attackGoRight)
 			{
-				dir -= entityTransform.right();
+				dir += entityTransform.right();
 			}
 			else
 			{
-				dir += entityTransform.right();
+				dir -= entityTransform.right();
 			}
 		}
 		else if(canGoLeft && canGoRight)
@@ -303,11 +303,11 @@ void avoidStuffBackwards(Entity entityID, SceneHandler* sceneHandler, bool& atta
 		}
 		else if(canGoRight && attackGoRight)
 		{
-			dir -= entityTransform.right();
+			dir += entityTransform.right();
 		}
 		else if(canGoLeft && !attackGoRight)
 		{
-			dir += entityTransform.right();
+			dir -= entityTransform.right();
 		}
 	}
 
@@ -398,4 +398,9 @@ glm::vec2 safeNormalize(glm::vec2&& vec)
     }
     Log::warning("Tried to normalize zero vector; glm::vec2");
     return glm::vec2(1.f, 1.f);
+}
+
+glm::vec3 getDir(glm::vec3 from, glm::vec3 to)
+{
+	return safeNormalize(to - from);
 }

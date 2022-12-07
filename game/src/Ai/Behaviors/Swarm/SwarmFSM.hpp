@@ -19,10 +19,10 @@ struct SwarmComponent
 	int FULL_HEALTH				= 100;
 	int life					= FULL_HEALTH;
 	//Floats
-	float speed					= 17.0f; // TODO: Was 0, why?... (assume testing)
-	float jumpForce				= 70.0f; // TODO: Was 0, why?... (assume testing)
-	float idleSpeed				= 10.0f; // TODO: Was 0, why?... (assume testing)
-	float jumpY					= 10.0f; // TODO: Was 0, why?... (assume testing)
+	float speed					= 17.0f;
+	float jumpForce				= 70.0f;
+	float idleSpeed				= 10.0f;
+	float jumpY					= 10.0f;
 	float deathAnimSpeed		= 1.0f;
 	float alertAnimSpeed		= 2.0f;
 	float chargeAnimSpeed		= 1.0f;
@@ -35,7 +35,7 @@ struct SwarmComponent
     float alert_top;
 	float idleRotSpeed			= 100.0f;
 	float tempRotAngle			= 0.0f;//Dont touch!
-	float lightHit = 10.f;
+	float lightHit = 15.f;
 	float lightAttackTime = 2.0f;
 	float timer = 0.f;
 	//Bools
