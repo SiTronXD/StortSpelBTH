@@ -13,9 +13,9 @@ enum class GameEvent
 {
 	EMPTY = (int)NetworkEvent::END + 1,
 	SEED, // Client -> Server: Request seed, Server -> Client: Seed to use
-	UPDATE_PLAYER, // Positions and animations
+	UPDATE_PLAYER, // Positions and animations (and health to server)
 	UPDATE_MONSTER, // How many enemies, What enemy, Position, rotation and animation udp
-	PLAY_PARTICLE, //What type, entity
+	PLAY_PARTICLE, // What type, entity
 	SPAWN_ITEM, // Client -> Server: Want to spawn item. Server -> Client: Spawn item in scene
 	DELETE_ITEM, // Server -> Client: Remove item from scene
 	PICKUP_ITEM, // Client -> Server: Want to pick up item. Server -> Client: Pick up the item
@@ -38,13 +38,14 @@ enum class GameEvent
 	PLAY_ENEMY_SOUND, // What entity, What component type
 	UPDATE_ANIM, // What entity, type (tank/lich), animIndex, slot
 	UPDATE_ANIM_TIMESCALE, // What entity, slot, timeScale
+	PLAYER_SET_GHOST, // Player ID
 
 	ROOM_CLEAR,
 	SPAWN_PORTAL,
 	NEXT_LEVEL,//CurrentLevel difficulty, 
 	CLOSE_OLD_DOORS,// Index of next room
 	CLOSE_NEW_DOORS,// :)
-
+	END_GAME, // All players dead
 };
 
 enum class ItemType
@@ -71,10 +72,10 @@ class NetworkHandlerGame : public NetworkHandler
 public:
 	inline static const glm::vec4 playerColors[]
 	{
-		glm::vec4(1.0f, 1.0f, 1.0f, 0.25f),
-		glm::vec4(0.0f, 0.0f, 1.0f, 0.25f),
-		glm::vec4(0.0f, 1.0f, 0.0f, 0.25f),
-		glm::vec4(1.0f, 1.0f, 0.0f, 0.25f),
+		glm::vec4(1.0f, 1.0f, 1.0f, 0.15f),
+		glm::vec4(0.0f, 0.0f, 1.0f, 0.15f),
+		glm::vec4(0.0f, 1.0f, 0.0f, 0.15f),
+		glm::vec4(1.0f, 1.0f, 0.0f, 0.15f),
 	};
 
 	inline static const std::string tankAnims[]
@@ -90,6 +91,8 @@ private:
 	int seed = -1;
 
 	CombatSystem* combatSystem;
+	Material* ghostMat;
+	Material origMat;
 
 	Entity player; // Own player
 	std::vector<Entity> playerEntities; // Other players connected
@@ -115,7 +118,7 @@ private:
 	float sf0, sf1, sf2;
 	glm::vec3 sv0, sv1, sv2;
     
-	//Meshes
+	// Meshes
 	int perkMeshes[PerkType::emptyPerk];
 	int abilityMeshes[AbilityType::emptyAbility];
 	int healAreaMesh;
@@ -124,7 +127,7 @@ private:
     int alterMesh;
     int humpMesh;
 
-	//Particles
+	// Particles
     bool deletedParticleSystems;
     ParticleSystemInstance healParticleSystem;
     ParticleSystemInstance bloodParticleSystems;
@@ -132,8 +135,7 @@ private:
     ParticleSystemInstance portalParticleSystemSide0;
     ParticleSystemInstance portalParticleSystemSide1;
 
-
-	//RoomHandler
+	// RoomHandler
     bool newRoomFrame;
     int* numRoomsCleared;
     RoomHandler* roomHandler;
@@ -162,13 +164,14 @@ private:
     void deleteInitialParticleSystems();
 
 	void setCombatSystem(CombatSystem* system);
+	void setGhostMat(Material* ghostMat);
 	int getSeed();
     void setRoomHandler(RoomHandler& roomHandler, int& numRoomsCleared);
 
 	virtual void handleTCPEventClient(sf::Packet& tcpPacket, int event) override;
 	virtual void handleUDPEventClient(sf::Packet& udpPacket, int event) override;
-	virtual void handleTCPEventServer(Server* server, int clientID, sf::Packet& tcpPacket, int event) override;
-	virtual void handleUDPEventServer(Server* server, int clientID, sf::Packet& udpPacket, int event) override;
+	virtual void handleTCPEventServer(Server* server, int clientIndex, sf::Packet& tcpPacket, int event) override;
+	virtual void handleUDPEventServer(Server* server, int clientIndex, sf::Packet& udpPacket, int event) override;
 	virtual void onDisconnect(int index) override;
 
 	void sendHitOn(int entityID, int damage, float knockBack);
@@ -176,7 +179,6 @@ private:
 	void setPlayerEntity(Entity player);
 	void createOtherPlayers(int playerMesh);
 
-	//THESE TWO PRIVATE?
 	void updatePlayer();
 	void interpolatePositions();
 
@@ -190,6 +192,7 @@ private:
 	void spawnItemRequest(AbilityType type, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	void pickUpItemRequest(Entity itemEntity, ItemType type);
 	void useHealAbilityRequest(glm::vec3 position);
+	void setGhost();
     void setPerks(const Perks perk[]);
 };
 

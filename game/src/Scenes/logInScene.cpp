@@ -80,7 +80,7 @@ void logInScene::update()
             if (this->getNetworkHandler()->connectClientToThis())
             {
                 std::string str = sf::IpAddress::getLocalAddress().toString();
-                this->getSceneHandler()->setScene(new LobbyScene(str.substr(str.length() - 3, 3)));
+                this->getSceneHandler()->setScene(new LobbyScene(str.substr(10)));
             }
             else
             {

@@ -132,11 +132,13 @@ void GameSceneNetwork::start()
   this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 
   bool paused = false;
+  bool disabled = false;
   this->setComponent<Combat>(playerID);
   this->createSystem<CombatSystem>(
       this->getSceneHandler(),
       this->playerID,
       &paused,
+      &disabled,
       nullptr
   );
 

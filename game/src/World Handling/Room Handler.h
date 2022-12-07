@@ -149,6 +149,8 @@ private:
 	Entity doorLamps[4];
 
 	// Room Updating
+	int respawnDoorIdx = -1;
+	int prevRoomIndex = -1;
 	int activeIndex = 0;
 	int serverNextIndex = -1; // Used by server
 	int oldIndex = -1; // Used by server
@@ -210,6 +212,9 @@ public:
 	// TRY COMPLETING ROOMS THAT AREN'T NEXT TO SPAWN (BUGGED ONCE NOT ANOTHER TIME?)
 
 	// numRoomsCleared++; IN NetworkHandler - event ROOM_CLEAR
+	void startOver();
+	glm::vec3 getRespawnPos() const;
+	glm::vec3 getRespawnRot() const;
 
 	const std::vector<glm::vec3>& getFreeTiles();
 	const std::vector<TileInfo>& getFreeTileInfos();

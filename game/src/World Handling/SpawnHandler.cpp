@@ -83,6 +83,14 @@ void SpawnHandler::spawnEnemiesIntoRoom()
     this->tilePicker.clean();
 }
 
+void SpawnHandler::resetEnemies()
+{
+    for (auto& e : this->allEntityIDs)
+    {
+        this->currScene->setInactive(e);
+    }
+}
+
 void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos, bool elite)
 {
     currScene->setActive(this->tankIDs[tankIdx]);
@@ -664,6 +672,7 @@ bool SpawnHandler::allDead()
 
 void SpawnHandler::updateImgui()
 {
+#ifdef _CONSOLE
     ImGui::Begin("SpawnHandler Info");
         if(ImGui::BeginTabBar("Enemies")){
 
@@ -714,6 +723,7 @@ void SpawnHandler::updateImgui()
         }
 
     ImGui::End();
+#endif
 }
 
 ImguiLambda SpawnHandler::TankImgui()

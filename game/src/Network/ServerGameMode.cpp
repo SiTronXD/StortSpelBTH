@@ -302,9 +302,11 @@ void ServerGameMode::makeDataSendToClient()
         }
     }
     //Check for updates in player hp and change it it should
+    bool allDead = true;
     for (int i = 0; i < getPlayerSize(); i++)
     {
-        if (this->getComponent<HealthComp>(getPlayer(i)).health != lastPlayerHps[i].health)
+        HealthComp& healthComp = this->getComponent<HealthComp>(getPlayer(i));
+        if (healthComp.health != lastPlayerHps[i].health)
         {
             //send that player new hp
             this->addEvent(
@@ -315,6 +317,15 @@ void ServerGameMode::makeDataSendToClient()
             //change lastPlayerHps
             lastPlayerHps[i].health = this->getComponent<HealthComp>(getPlayer(i)).health;
         }
+        // If someone is alive set to false
+        if (allDead && healthComp.health > 0)
+        {
+            allDead = false;
+        }
+    }
+    if (allDead)
+    {
+        this->addEvent({ (int)GameEvent::END_GAME });
     }
 
     //DEBUG
@@ -495,6 +506,33 @@ void ServerGameMode::onCollisionExit(Entity e1, Entity e2) {
     this->getComponent<SwarmComponent>(e1).touchedFriend = false;
     this->getComponent<SwarmComponent>(e2).touchedFriend = false;
   }
+}
+
+int ServerGameMode::getNearestPlayer(const int& ent)
+{
+    int returnIndex = 0;
+    float nearestLenght = glm::length(this->getComponent<Transform>(ent).position - this->getComponent<Transform>(players[0]).position);
+    for (int i = 1; i < this->players.size(); i++)
+    {
+        float nnl = glm::length(this->getComponent<Transform>(ent).position - this->getComponent<Transform>(players[i]).position);
+        if (nnl < nearestLenght && this->getComponent<HealthComp>(players[i]).health > 0.0f)
+        {
+            nearestLenght = nnl;
+            returnIndex = i;
+        }
+    }
+    return returnIndex;
+}
+
+void ServerGameMode::updatePlayerHp(int id, int health)
+{
+    // Check this, is kinda weird when done via UDP
+    HealthComp& healthComp = this->getComponent<HealthComp>(getPlayer(id));
+    if (healthComp.health == this->lastPlayerHps[id].health) // No current change
+    {
+        healthComp.health = health;
+        this->lastPlayerHps[id].health = health;
+    }
 }
 
 int ServerGameMode::spawnItem(ItemType type, int otherType, float multiplier)
