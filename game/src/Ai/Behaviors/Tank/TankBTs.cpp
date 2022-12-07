@@ -555,7 +555,7 @@ BTStatus TankBT::MoveAround(Entity entityID)
 		return ret;
 	}
 	Transform& tankTrans	= getTheScene()->getComponent<Transform>(entityID);
-	glm::vec3 moveDir		= pathFindingManager.getDirTo(tankTrans.position, tankComp.firendTarget.pos);
+	glm::vec3 moveDir		= getDir(tankTrans.position, tankComp.firendTarget.pos);
 	moveDir = safeNormalize(moveDir);
 
 	Rigidbody& tankRb		= getTheScene()->getComponent<Rigidbody>(entityID);
@@ -584,7 +584,7 @@ BTStatus TankBT::MoveAround(Entity entityID)
 	}
 	else
 	{
-		avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, tankComp.firendTarget.pos, moveDir, glm::vec3(0.0f, -3.0f, 0.0f));
+		avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, tankComp.firendTarget.pos, moveDir);
 		tankRb.velocity = moveDir * tankComp.idleSpeed;
 	}
 
@@ -838,9 +838,9 @@ BTStatus TankBT::moveTowardsGroup(Entity entityID)
 	BTStatus ret			= BTStatus::Success;
 	Transform& tankTrans	= getTheScene()->getComponent<Transform>(entityID);
 	Rigidbody& tankRb		= getTheScene()->getComponent<Rigidbody>(entityID);
-	glm::vec3 moveDir		= pathFindingManager.getDirTo(tankTrans.position, tankComp.shieldTargetPos);
+	glm::vec3 moveDir		= getDir(tankTrans.position, tankComp.shieldTargetPos);
 	moveDir					= safeNormalize(moveDir);
-	avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, tankComp.firendTarget.pos, moveDir, glm::vec3(0.0f, -3.0f, 0.0f));
+	avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, tankComp.firendTarget.pos, moveDir);
 	tankRb.velocity			= moveDir * tankComp.shieldSpeed;
 	return ret;
 }
