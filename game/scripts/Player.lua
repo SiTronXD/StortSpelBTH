@@ -250,8 +250,14 @@ function script:update(dt)
             then
                 if self.currentAnimation ~= self.activeAnimation.sprint
                 then
-                    scene.blendToAnimation(self.ID, "run", "", 0.3, self.sprintAnimTime)
-                    self.currentAnimation = self.activeAnimation.sprint
+                    if self.currentAnimation == self.activeAnimation.run
+                    then
+                        scene.setAnimationTimeScale(self.ID, self.sprintAnimTime, "")
+                        self.currentAnimation = self.activeAnimation.sprint
+                    else
+                        scene.blendToAnimation(self.ID, "run", "", 0.3, self.sprintAnimTime)
+                        self.currentAnimation = self.activeAnimation.sprint
+                    end
                 end
             end
         end
@@ -263,8 +269,14 @@ function script:update(dt)
         then
             if self.moveDir ~= vector(0) and self.currentAnimation ~= self.activeAnimation.run
             then
-                scene.blendToAnimation(self.ID, "run", "", 0.3, self.runAnimTime)
-                self.currentAnimation = self.activeAnimation.run
+                if self.currentAnimation == self.activeAnimation.sprint
+                then
+                    scene.setAnimationTimeScale(self.ID, self.runAnimTime, "")
+                    self.currentAnimation = self.activeAnimation.run
+                else
+                    scene.blendToAnimation(self.ID, "run", "", 0.3, self.runAnimTime)
+                    self.currentAnimation = self.activeAnimation.run
+                end
             elseif curMoveSum < 0.1 and self.currentAnimation ~= self.activeAnimation.idle
             then
                 scene.blendToAnimation(self.ID, "idle", "", 0.2, self.idleAnimTime)
@@ -274,8 +286,14 @@ function script:update(dt)
         then
             if (self.isMoving and self.currentAnimation ~= self.activeAnimation.run)
             then
-                scene.blendToAnimation(self.ID, "run", "LowerBody", 0.3, self.runAnimTime)
-                self.currentAnimation = self.activeAnimation.run
+                if self.currentAnimation == self.activeAnimation.sprint
+                then
+                    scene.setAnimationTimeScale(self.ID, self.runAnimTime, "LowerBody")
+                    self.currentAnimation = self.activeAnimation.run
+                else
+                    scene.blendToAnimation(self.ID, "run", "LowerBody", 0.3, self.runAnimTime)
+                    self.currentAnimation = self.activeAnimation.run
+                end
             elseif (not self.isMoving and self.currentAnimation ~= self.activeAnimation.idle)
             then
                 scene.blendToAnimation(self.ID, "idle", "LowerBody", 0.2, self.idleAnimTime)
