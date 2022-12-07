@@ -42,8 +42,8 @@ int main(int argc, char* argv[])
     {
         Engine engine;
         engine.setCustomNetworkHandler(new NetworkHandlerGame());
-        engine.run("Presumed Dead", "", new LobbyScene());
-        //engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
+        //engine.run("Presumed Dead", "", new LobbyScene());
+        engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
         //engine.run("Presumed Dead", "", new RoomTesting());
         //engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
         //engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
