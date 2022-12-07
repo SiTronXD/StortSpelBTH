@@ -62,10 +62,12 @@ function script:init()
 end
 
 function script:update(dt)
+    -- Dead as animation but no longer dead
     if (self.currentAnimation == self.activeAnimation.dead and not self.isDead) then
         self.currentAnimation = 1
         scene.blendToAnimation(self.ID, "idle", "", 0.25, 1)
     end
+    -- Dead change to death animation
     if self.currentHealth <= 0
     then
         if self.currentAnimation ~= self.activeAnimation.dead
@@ -74,7 +76,8 @@ function script:update(dt)
             self.currentAnimation = self.activeAnimation.dead
         end
     end
-    if (paused and self.currentAnimation == self.activeAnimation.dead) then
+    -- Paused game or dead
+    if (paused or self.currentAnimation == self.activeAnimation.dead) then
         local rb = scene.getComponent(self.ID, CompType.Rigidbody)
         rb.velocity.x = 0
         rb.velocity.z = 0
@@ -91,14 +94,14 @@ function script:update(dt)
         end
     end
 
-    -- New movement using rigidbody
+    -- Movement using rigidbody
     local camTransform = scene.getComponent(self.camID, CompType.Transform)
     local forward = camTransform:forward()
     forward.y = 0
     local right = camTransform:right()
     right.y = 0
 
-    --push timer countdown
+    -- Push timer countdown
     if self.pushTimer > 0.0 then
         self.pushTimer = self.pushTimer - dt
         self.isPushed = true
@@ -136,6 +139,7 @@ function script:update(dt)
         end
     end
 
+    -- Sprint
     if (input.isKeyDown(Keys.SHIFT))
     then
         if (self.currentStamina > 0 and self.useStamina == true and self.moveDir ~= vector(0))
@@ -158,6 +162,7 @@ function script:update(dt)
         self.dodgeTimer = self.dodgeTimer - dt
     end
 
+    -- Dodge
     if (input.isKeyPressed(Keys.CTRL))
     then
         self.currentMoveDir = self.moveDir:normalize()
@@ -182,6 +187,7 @@ function script:update(dt)
     -- Final vector in 3D using cameras directional vectors
     self.currentSpeed = forward:normalize() * self.currentSpeed.y + right:normalize() * self.currentSpeed.x
 
+    -- Jumping
     if (input.isKeyDown(Keys.SPACE) and self.onGround) then
         self.jumpTimer = 0.25
     elseif (self.jumpTimer > 0) then
@@ -348,8 +354,6 @@ function script:rotate2(deltaTime)
         
         self.transform.rotation.y = self.transform.rotation.y + 180
     end
-    
-    --print(self.moveDir.x .. " " .. self.moveDir.y)
 end
 
 return script

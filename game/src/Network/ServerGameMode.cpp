@@ -469,7 +469,6 @@ void ServerGameMode::updatePlayerHp(int id, int health)
     {
         healthComp.health = health;
         this->lastPlayerHps[id].health = health;
-        Log::write("Client " + std::to_string(id) + " health: " + std::to_string(health));
     }
 }
 

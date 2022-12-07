@@ -36,6 +36,7 @@ private:
   Material* ghostMat;
   Material origMat;
 
+  float fadeTimer;
   float deathTimer;
   bool isDead;
   

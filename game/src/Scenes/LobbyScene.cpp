@@ -39,10 +39,10 @@ void LobbyScene::init()
     );
 
     int tank = this->getResourceManager()->addAnimations({
-                        "assets/models/Tank/TankWalk.fbx",
-                        "assets/models/Tank/TankCharge.fbx",
-                        "assets/models/Tank/TankGroundHump.fbx",
-                        "assets/models/Tank/TankRaiseShield.fbx"
+            "assets/models/Tank/TankWalk.fbx",
+            "assets/models/Tank/TankCharge.fbx",
+            "assets/models/Tank/TankGroundHump.fbx",
+            "assets/models/Tank/TankRaiseShield.fbx"
         },
         "assets/textures/"
     );
@@ -56,16 +56,15 @@ void LobbyScene::init()
     this->getResourceManager()->createAnimationSlot(tank, "UpperBody", "Character1_Spine");
 
     int lich = this->getResourceManager()->addAnimations({
-                "assets/models/Lich/Lich_Walk.fbx",
-                "assets/models/Lich/Lich_Attack.fbx",
+            "assets/models/Lich/Lich_Walk.fbx",
+            "assets/models/Lich/Lich_Attack.fbx",
         },
         "assets/textures/Lich/"
-        );
-    this->getResourceManager()->mapAnimations(lich,
-        {
-            "Walk",
-            "Attack"
-        });
+    );
+    this->getResourceManager()->mapAnimations(lich, {
+        "Walk",
+        "Attack"
+    });
    
   TextureSamplerSettings samplerSettings{};
   samplerSettings.filterMode = vk::Filter::eNearest;
@@ -242,7 +241,7 @@ void LobbyScene::update()
         if (this->startButton.isClicking())
         {
             // Start singleplayer
-            /*if (this->activePlayers == 1 && !Input::isKeyDown(Keys::M))
+            if (this->activePlayers == 1 && !Input::isKeyDown(Keys::M))
             {
                this->getNetworkHandler()->disconnectClient();
                this->getNetworkHandler()->deleteServer();
@@ -251,7 +250,7 @@ void LobbyScene::update()
                    new GameScene(), "scripts/gamescene.lua"
                );
             }
-            else*/
+            else
             {
                 this->helpPacket << (int)NetworkEvent::START;
                 this->getNetworkHandler()->sendDataToServerTCP(helpPacket);

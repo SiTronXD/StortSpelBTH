@@ -37,6 +37,7 @@ enum class GameEvent
 	ACTIVATE, // What entity
 	UPDATE_ANIM, // What entity, type (tank/lich), animIndex, slot
 	UPDATE_ANIM_TIMESCALE, // What entity, slot, timeScale
+	PLAYER_SET_GHOST, // Player ID
 
 	ROOM_CLEAR,
 	SPAWN_PORTAL,
@@ -68,10 +69,10 @@ class NetworkHandlerGame : public NetworkHandler
 public:
 	inline static const glm::vec4 playerColors[]
 	{
-		glm::vec4(1.0f, 1.0f, 1.0f, 0.25f),
-		glm::vec4(0.0f, 0.0f, 1.0f, 0.25f),
-		glm::vec4(0.0f, 1.0f, 0.0f, 0.25f),
-		glm::vec4(1.0f, 1.0f, 0.0f, 0.25f),
+		glm::vec4(1.0f, 1.0f, 1.0f, 0.15f),
+		glm::vec4(0.0f, 0.0f, 1.0f, 0.15f),
+		glm::vec4(0.0f, 1.0f, 0.0f, 0.15f),
+		glm::vec4(1.0f, 1.0f, 0.0f, 0.15f),
 	};
 
 	inline static const std::string tankAnims[]
@@ -114,7 +115,7 @@ private:
 	float sf0, sf1, sf2;
 	glm::vec3 sv0, sv1, sv2;
     
-	//Meshes
+	// Meshes
 	int perkMeshes[PerkType::emptyPerk];
 	int abilityMeshes[AbilityType::emptyAbility];
 	int healAreaMesh;
@@ -123,7 +124,7 @@ private:
     int alterMesh;
     int humpMesh;
 
-	//Particles
+	// Particles
     bool deletedParticleSystems;
     ParticleSystemInstance healParticleSystem;
     ParticleSystemInstance bloodParticleSystems;
@@ -131,7 +132,7 @@ private:
     ParticleSystemInstance portalParticleSystemSide0;
     ParticleSystemInstance portalParticleSystemSide1;
 
-	//RoomHandler
+	// RoomHandler
     bool newRoomFrame;
     int* numRoomsCleared;
     RoomHandler* roomHandler;
@@ -166,8 +167,8 @@ private:
 
 	virtual void handleTCPEventClient(sf::Packet& tcpPacket, int event) override;
 	virtual void handleUDPEventClient(sf::Packet& udpPacket, int event) override;
-	virtual void handleTCPEventServer(Server* server, int clientID, sf::Packet& tcpPacket, int event) override;
-	virtual void handleUDPEventServer(Server* server, int clientID, sf::Packet& udpPacket, int event) override;
+	virtual void handleTCPEventServer(Server* server, int clientIndex, sf::Packet& tcpPacket, int event) override;
+	virtual void handleUDPEventServer(Server* server, int clientIndex, sf::Packet& udpPacket, int event) override;
 	virtual void onDisconnect(int index) override;
 
 	void sendHitOn(int entityID, int damage, float knockBack);
@@ -175,7 +176,6 @@ private:
 	void setPlayerEntity(Entity player);
 	void createOtherPlayers(int playerMesh);
 
-	//THESE TWO PRIVATE?
 	void updatePlayer();
 	void interpolatePositions();
 
@@ -189,5 +189,6 @@ private:
 	void spawnItemRequest(AbilityType type, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	void pickUpItemRequest(Entity itemEntity, ItemType type);
 	void useHealAbilityRequest(glm::vec3 position);
+	void setGhost();
 };
 
