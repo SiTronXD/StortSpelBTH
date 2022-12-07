@@ -621,24 +621,23 @@ void GameScene::imguiUpdate()
 
 void GameScene::createPortal()
 {
-    glm::vec3 portalTriggerDims(6.f, 18.f, 1.f);
-    glm::vec3 portalBlockDims(3.f, 18.f, 3.f);
+    glm::vec3 portalTriggerDims(11.f, 27.f, 1.f);
 
     portalOffMesh =
         this->getResourceManager()->addMesh("assets/models/PortalOff.obj");
     portalOnMesh =
         this->getResourceManager()->addMesh("assets/models/PortalOn.obj");
 
-    int colliderID = (int)this->getResourceManager()->addCollisionShapeFromMesh("assets/models/PortalCollider.obj");
+    int colliderID = (int)this->getResourceManager()->addCollisionShapeFromMesh("assets/models/portal.fbx");
     std::vector<ColliderDataRes> colliders = this->getResourceManager()->getCollisionShapeFromMesh(colliderID);
 
 
     portal = this->createEntity();
     Transform& portalTransform = this->getComponent<Transform>(portal);
     portalTransform.position = this->roomHandler.getExitRoom().position;
-    //this->setComponent<Collider>(
-    //    portal, Collider::createBox(portalTriggerDims, glm::vec3(0, 0, 0), true)
-    //    );
+    this->setComponent<Collider>(
+        portal, Collider::createBox(portalTriggerDims, glm::vec3(0, 0, 0), true)
+        );
 
     this->setComponent<MeshComponent>(portal);
     this->getComponent<MeshComponent>(portal).meshID = portalOffMesh;
