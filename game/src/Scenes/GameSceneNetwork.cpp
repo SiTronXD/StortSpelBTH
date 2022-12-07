@@ -135,8 +135,7 @@ void GameSceneNetwork::start()
   bool disabled = false;
   this->setComponent<Combat>(playerID);
   this->createSystem<CombatSystem>(
-      this,
-      this->getResourceManager(),
+      this->getSceneHandler(),
       this->playerID,
       &paused,
       &disabled,

@@ -43,12 +43,35 @@ void GameScene::testParticleSystem(const Entity& particleSystemEntity)
     #endif
 }
 
-GameScene::GameScene() :
+void GameScene::setCurrentLevel(const GameSceneLevel& lvl) {
+    this->getComponent<HealthComp>(playerID).health = lvl.hp;
+    this->getComponent<Combat>(playerID).ability = lvl.ability;
+    ((NetworkHandlerGame*)this->getNetworkHandler())->setPerks(lvl.perks);
+}
+
+GameSceneLevel GameScene::setNewLevel() {
+    GameSceneLevel theReturn;
+
+    theReturn.level = currentLevel.level + 1;
+    theReturn.hp = this->getComponent<HealthComp>(playerID).health;
+    Combat &c = this->getComponent<Combat>(playerID);
+    for (int i = 0; i < 4; i++)
+    {
+        theReturn.perks[i] = this->getComponent<Combat>(playerID).perks[i];
+
+    }
+    theReturn.ability = this->getComponent<Combat>(playerID).ability;
+    
+    return theReturn;
+}
+
+GameScene::GameScene(GameSceneLevel gameSceneLevel) :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
     perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1), 
     deathTimer(0.0f), isDead(false), fadeTimer(3.0f)
 {
     Input::setHideCursor(true);
+    currentLevel = gameSceneLevel;
 }
 
 GameScene::~GameScene()
@@ -159,8 +182,7 @@ void GameScene::start()
     this->setComponent<HealthComp>(playerID);
     this->setComponent<Combat>(playerID);
     this->createSystem<CombatSystem>(
-        this,
-        this->getResourceManager(),
+        this->getSceneHandler(),
         this->playerID,
         &this->paused,
         &this->combatDisabled,
@@ -192,6 +214,8 @@ void GameScene::start()
         this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
     }
 
+    this->levelString = "level " + std::to_string(currentLevel.level);
+
     // Pause menu
     this->resumeButton.position = glm::vec2(0.0f, 100.0f);
     this->exitButton.position = glm::vec2(0.0f, -100.0f);
@@ -219,6 +243,7 @@ void GameScene::start()
 	
     // Create particle systems for this scene
     networkHandler->initParticleSystems();
+    this->setCurrentLevel(currentLevel);
 }
 
 void GameScene::update()
@@ -463,6 +488,8 @@ void GameScene::update()
             glm::vec2(76.0f)
         );
     }
+    // Render Level
+    this->getUIRenderer()->renderString(this->levelString, glm::vec2(-750, 500), glm::vec2(60,60));
 
     // Render HP bar UI
     HealthComp& playerHealth = this->getComponent<HealthComp>(this->playerID);
@@ -565,7 +592,8 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
         {
 		    if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room            
 		    {
-		    	this->switchScene(new GameScene(), "scripts/gamescene.lua");
+                networkHandler->cleanUp();
+		    	this->switchScene(new GameScene(this->setNewLevel()), "scripts/gamescene.lua");
 		    }
         }
 	}
@@ -663,13 +691,12 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
       auto& swarmComp = this->getComponent<SwarmComponent>(other);
       if (swarmComp.inAttack)
         {
-          auto& aiCombat = this->getComponent<AiCombatSwarm>(other);
           swarmComp.inAttack = false;
           swarmComp.touchedPlayer = true;
           //aiCombat.timer = aiCombat.lightAttackTime;
           HealthComp& playerHealth = this->getComponent<HealthComp>(player);
           playerHealth.health -=
-              (int)aiCombat.lightHit;
+              (int)swarmComp.lightHit;
           playerHealth.srcDmgEntity = other;
             
           Log::write("WAS HIT", BT_FILTER);
@@ -771,10 +798,8 @@ void GameScene::createPortal()
     glm::vec3 portalTriggerDims(6.f, 18.f, 1.f);
     glm::vec3 portalBlockDims(3.f, 18.f, 3.f);
 
-    portalOffMesh =
-        this->getResourceManager()->addMesh("assets/models/PortalOff.obj");
-    portalOnMesh =
-        this->getResourceManager()->addMesh("assets/models/PortalOn.obj");
+    portalOffMesh = this->getResourceManager()->addMesh("assets/models/PortalOff.obj");
+    portalOnMesh = this->getResourceManager()->addMesh("assets/models/PortalOn.obj");
 
     portal = this->createEntity();
     this->getComponent<Transform>(portal).position =

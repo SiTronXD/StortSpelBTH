@@ -33,8 +33,9 @@ enum class GameEvent
 	ENTITY_SET_HP, // What entity, how much hp
 	PUSH_PLAYER, // What player, direction
 	MONSTER_TAKE_DAMAGE,
-	INACTIVATE, // What entity
-	ACTIVATE, // What entity
+	INACTIVATE, //what entity
+	ACTIVATE, //what entity
+	PLAY_ENEMY_SOUND, // What entity, What component type
 	UPDATE_ANIM, // What entity, type (tank/lich), animIndex, slot
 	UPDATE_ANIM_TIMESCALE, // What entity, slot, timeScale
 	PLAYER_SET_GHOST, // Player ID
@@ -111,7 +112,7 @@ private:
 	glm::vec3 v0, v1, v2;
 
 	// Server helpers
-	int si0, si1, si2;
+	int si0, si1, si2, si3, si4, si5;
 	float sf0, sf1, sf2;
 	glm::vec3 sv0, sv1, sv2;
     
@@ -190,5 +191,6 @@ private:
 	void pickUpItemRequest(Entity itemEntity, ItemType type);
 	void useHealAbilityRequest(glm::vec3 position);
 	void setGhost();
+    void setPerks(const Perks perk[]);
 };
 

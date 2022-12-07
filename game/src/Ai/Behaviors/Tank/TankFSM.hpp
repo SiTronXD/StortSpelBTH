@@ -1,7 +1,7 @@
 #pragma once
 #include "vengine.h"
 #include "TankBTs.hpp"
-#include "../../../Components/AICombatTank.hpp"
+#include "../../../Components/AiElite.hpp"
 #include "../Swarm/SwarmFSM.hpp"
 #include "../Lich/LichFSM.hpp"
 
@@ -19,6 +19,12 @@ struct TankFriendTarget
 
 struct TankComponent
 {
+	inline static bool s_initialized = false;
+	inline static int s_takeDmg = -1;
+	inline static int s_move = -1;
+	inline static int s_shockwave = -1;
+	inline static int s_charge = -1;
+
     inline static const uint32_t colliderRadius = 20;
 
 	TankComponent() 
@@ -91,7 +97,8 @@ struct TankComponent
 	bool alertDone					= false;
 	bool canAttack					= false;
 	bool attackGoRight				= false;
-	bool hasDoneFirstHump			= false;
+	bool isElite					= false;
+	//bool hasDoneFirstHump			= false;
 
 	//Timers
 	float alertTimerOrig			= 1.0f;
@@ -114,6 +121,7 @@ struct TankComponent
 	glm::vec3 runTarget				= glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 runOrigin				= glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 runDir				= glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 origScale				= glm::vec3(0.0f, 0.0f, 0.0f);
 
 	//Current animation
 	int lowerCurrentAnim = 0;
@@ -126,6 +134,61 @@ struct TankComponent
 
 	std::unordered_map<int, TankFriend> friendsInSight;
 	std::unordered_map<int, TankFriend> allFriends;
+	AiEliteComponent eliteStats;
+
+	void applyEliteStats(AiEliteComponent& eliteComp, Scene* scene, Entity entityID)
+    {
+		this->eliteStats				= eliteComp;
+		this->isElite					= true;
+
+        this->directHit		            *= eliteComp.dmgMultiplier;
+        this->humpHit		            *= eliteComp.dmgMultiplier;
+       
+        this->FULL_HEALTH               *= eliteComp.healthMultiplier;
+
+		this->idleSpeed					*= eliteComp.speedMultiplier;
+		this->shieldSpeed				*= eliteComp.speedMultiplier;
+		this->cahargeSpeed				*= eliteComp.speedMultiplier;
+		this->combatRotSpeed			*= eliteComp.speedMultiplier;
+		this->idleRotSpeed				*= eliteComp.speedMultiplier;
+		this->shildRotSpeed				*= eliteComp.speedMultiplier;
+
+		this->sightRadius				*= eliteComp.radiusMultiplier; 
+		this->peronalSpaceRadius		*= eliteComp.radiusMultiplier;
+		this->friendVisitRadius			*= eliteComp.radiusMultiplier; 
+		Collider& col = scene->getComponent<Collider>(entityID);
+		col.radius *= eliteComp.sizeMultiplier;
+		col.offset += glm::vec3(0.0f, 5.0f, 0.0f);
+		Transform& trans = scene->getComponent<Transform>(entityID);
+		trans.scale = this->origScale * eliteComp.sizeMultiplier;
+		this->origScale = trans.scale;
+        
+
+    }
+    void removeEliteStats(Scene* scene, Entity entityID)
+    {
+      	this->isElite					= false;
+
+        this->directHit		            /= this->eliteStats.dmgMultiplier;
+        this->humpHit		            /= this->eliteStats.dmgMultiplier;
+        this->FULL_HEALTH               /= this->eliteStats.healthMultiplier;
+		this->idleSpeed					/= this->eliteStats.speedMultiplier;
+		this->shieldSpeed				/= this->eliteStats.speedMultiplier;
+		this->cahargeSpeed				/= this->eliteStats.speedMultiplier;
+		this->combatRotSpeed			/= this->eliteStats.speedMultiplier;
+		this->idleRotSpeed				/= this->eliteStats.speedMultiplier;
+		this->shildRotSpeed				/= this->eliteStats.speedMultiplier;
+		this->sightRadius				/= this->eliteStats.radiusMultiplier; 
+		this->peronalSpaceRadius		/= this->eliteStats.radiusMultiplier;
+		this->friendVisitRadius			/= this->eliteStats.radiusMultiplier; 
+										
+		Collider& col = scene->getComponent<Collider>(entityID);
+		col.radius /= this->eliteStats.sizeMultiplier;
+		col.offset -= glm::vec3(0.0f, 5.0f, 0.0f);
+		Transform& trans = scene->getComponent<Transform>(entityID);
+		trans.scale = this->origScale / this->eliteStats.sizeMultiplier;
+		this->origScale = trans.scale;
+    }
 };
 
 
