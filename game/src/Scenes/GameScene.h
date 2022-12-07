@@ -13,6 +13,27 @@
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
 #include "../Components/AICombatTank.hpp"
 
+struct GameSceneLevel
+{
+    uint16_t level;
+    Perks perks[4];
+    Abilities ability;
+    int hp;
+
+    GameSceneLevel() {
+        this->level = 0;
+        Perks noPerk;
+        noPerk.multiplier = 0.0;
+        noPerk.perkType = PerkType::emptyPerk;
+        for (int i = 0; i < 4; i++)
+        {
+                perks[i] = noPerk;
+        }
+        hp = 100;
+        ability.abilityType = AbilityType::emptyAbility;
+    }
+};
+
 class NetworkHandlerGame;
 
 class GameScene : public Scene
@@ -61,11 +82,17 @@ private:
   uint32_t portalOffMesh;
   uint32_t portalOnMesh;
 
+  GameSceneLevel currentLevel;
+
   void testParticleSystem(const Entity& particleSystemEntity);
+  void setCurrentLevel(const GameSceneLevel& lvl);
+  
 
 public:
-  GameScene();
+  GameScene(GameSceneLevel gameSceneLevel = GameSceneLevel());
   virtual ~GameScene();
+
+  GameSceneLevel setNewLevel();
 
   // Inherited via Scene
   virtual void init() override;

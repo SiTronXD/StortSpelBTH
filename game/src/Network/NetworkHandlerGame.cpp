@@ -244,10 +244,12 @@ NetworkHandlerGame::~NetworkHandlerGame() {
     {
 		delete lich_light;    
 	}
+    this->cleanUp();
 }
 
 void NetworkHandlerGame::init()
 {
+    this->cleanUp();
     this->deletedParticleSystems = false;
 	this->perkMeshes[0] = this->resourceManger->addMesh("assets/models/Perk_Hp.obj");
 	this->perkMeshes[1] = this->resourceManger->addMesh("assets/models/Perk_Dmg.obj");
@@ -576,7 +578,13 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		std::cout << "GameScene: number of rooms cleared:" << this->numRoomsCleared << std::endl;  
         break;
     case GameEvent::NEXT_LEVEL:
-        this->sceneHandler->setScene(new GameScene(), "scripts/gamescene.lua");
+        this->cleanUp();
+        this->sceneHandler->setScene(
+            new GameScene(
+                ((GameScene*)this->sceneHandler->getScene())->setNewLevel()
+            ),
+            "scripts/gamescene.lua"
+        );
 		break;
     case GameEvent::PLAY_PARTICLE:
         tcpPacket >> i0 >> i1;
@@ -1109,6 +1117,39 @@ void NetworkHandlerGame::useHealAbilityRequest(glm::vec3 position)
 		this->spawnHealArea(position);
 	}
 }
+
+void NetworkHandlerGame::setPerks(const Perks perk[])
+{
+    
+    Combat& combat = sceneHandler->getScene()->getComponent<Combat>(player);
+	HealthComp& healthComp = sceneHandler->getScene()->getComponent<HealthComp>(player);
+	for (size_t j = 0; j < 4; j++)
+			{
+				if (combat.perks[j].perkType == emptyPerk)
+				{
+					combat.perks[j] = perk[j];
+					switch (combat.perks[j].perkType)
+					{
+					case hpUpPerk:
+						this->combatSystem->updateHealth(combat, healthComp, combat.perks[j]);
+						break;
+					case dmgUpPerk:
+						this->combatSystem->updateDmg(combat, combat.perks[j]);
+						break;
+					case attackSpeedUpPerk:
+						this->combatSystem->updateAttackSpeed(combat, combat.perks[j]);
+						break;
+					case movementUpPerk:
+						this->combatSystem->updateMovementSpeed(combat, combat.perks[j]);
+						break;
+					case staminaUpPerk:
+						this->combatSystem->updateStamina(combat, combat.perks[j]);
+						break;
+					}
+				}
+			}
+}
+
 Entity NetworkHandlerGame::spawnOrbs(int orbType)
 {
     static int fireOrb_mesh  = this->resourceManger->addMesh("assets/models/fire_orb.obj");
