@@ -211,7 +211,7 @@ void LobbyScene::update()
         }
     }
 
-    // Button backtgrounds
+    // Button backgrounds
     this->getUIRenderer()->setTexture(this->buttonId);
     this->getUIRenderer()->renderTexture(
         this->disconnectButton.position, this->disconnectButton.dimension,
