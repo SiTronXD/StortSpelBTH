@@ -629,29 +629,44 @@ void GameScene::createPortal()
     portalOnMesh =
         this->getResourceManager()->addMesh("assets/models/PortalOn.obj");
 
+    int colliderID = (int)this->getResourceManager()->addCollisionShapeFromMesh("assets/models/PortalCollider.obj");
+    std::vector<ColliderDataRes> colliders = this->getResourceManager()->getCollisionShapeFromMesh(colliderID);
+
+
     portal = this->createEntity();
-    this->getComponent<Transform>(portal).position =
-        this->roomHandler.getExitRoom().position;
-    this->setComponent<Collider>(
-        portal, Collider::createBox(portalTriggerDims, glm::vec3(0, 0, 0), true)
-        );
+    Transform& portalTransform = this->getComponent<Transform>(portal);
+    portalTransform.position = this->roomHandler.getExitRoom().position;
+    //this->setComponent<Collider>(
+    //    portal, Collider::createBox(portalTriggerDims, glm::vec3(0, 0, 0), true)
+    //    );
 
     this->setComponent<MeshComponent>(portal);
     this->getComponent<MeshComponent>(portal).meshID = portalOffMesh;
 
-    Entity collider1 = this->createEntity();
-    this->getComponent<Transform>(collider1).position =
-        this->getComponent<Transform>(portal).position;
-    this->getComponent<Transform>(collider1).position.x += 9.f;
-    this->getComponent<Transform>(collider1).position.y += 9.f;
-    this->setComponent<Collider>(collider1, Collider::createBox(portalBlockDims));
+        Entity collisionEntity;
 
-    Entity collider2 = this->createEntity();
-    this->getComponent<Transform>(collider2).position =
-        this->getComponent<Transform>(portal).position;
-    this->getComponent<Transform>(collider2).position.x -= 9.f;
-    this->getComponent<Transform>(collider2).position.y += 9.f;
-    this->setComponent<Collider>(collider2, Collider::createBox(portalBlockDims));
+    for (size_t i = 0; i < colliders.size(); i++)
+    {
+        collisionEntity = this->createEntity();
+        this->setComponent<Collider>(collisionEntity, colliders[i].col);
+        Transform& t = this->getComponent<Transform>(collisionEntity);
+        t.position = portalTransform.position + colliders[i].position;
+        t.rotation = portalTransform.rotation + colliders[i].rotation;
+    }
+
+    //Entity collider1 = this->createEntity();
+    //this->getComponent<Transform>(collider1).position =
+    //    this->getComponent<Transform>(portal).position;
+    //this->getComponent<Transform>(collider1).position.x += 9.f;
+    //this->getComponent<Transform>(collider1).position.y += 9.f;
+    //this->setComponent<Collider>(collider1, Collider::createBox(portalBlockDims));
+    //
+    //Entity collider2 = this->createEntity();
+    //this->getComponent<Transform>(collider2).position =
+    //    this->getComponent<Transform>(portal).position;
+    //this->getComponent<Transform>(collider2).position.x -= 9.f;
+    //this->getComponent<Transform>(collider2).position.y += 9.f;
+    //this->setComponent<Collider>(collider2, Collider::createBox(portalBlockDims));
 }
 
 #ifdef _CONSOLE
