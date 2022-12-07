@@ -790,6 +790,7 @@ void GameScene::endGame()
 
 void GameScene::imguiUpdate()
 {
+#ifdef _CONSOLE
     ImGui::Begin("Game Scene");
     std::string playerString = "playerID";
     int playerID;
@@ -803,6 +804,7 @@ void GameScene::imguiUpdate()
     }
 
     ImGui::End();
+#endif
 }
 
 void GameScene::createPortal()

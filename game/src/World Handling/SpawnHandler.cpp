@@ -672,6 +672,7 @@ bool SpawnHandler::allDead()
 
 void SpawnHandler::updateImgui()
 {
+#ifdef _CONSOLE
     ImGui::Begin("SpawnHandler Info");
         if(ImGui::BeginTabBar("Enemies")){
 
@@ -722,6 +723,7 @@ void SpawnHandler::updateImgui()
         }
 
     ImGui::End();
+#endif
 }
 
 ImguiLambda SpawnHandler::TankImgui()
