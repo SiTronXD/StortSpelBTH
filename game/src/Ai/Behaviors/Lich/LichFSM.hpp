@@ -225,9 +225,11 @@ struct LichComponent
         this->attackRadius              *= eliteComp.radiusMultiplier;
         this->nonoRadius                *= eliteComp.radiusMultiplier;
 
-        scene->getComponent<Collider>(entityID).radius *= eliteComp.sizeMultiplier;
-        scene->getComponent<Collider>(entityID).height *= eliteComp.sizeMultiplier;
-        scene->getComponent<Collider>(entityID).offset.y = LichComponent::colliderYOffsetElite;
+        Collider col = scene->getComponent<Collider>(entityID);
+		col.radius *= eliteComp.sizeMultiplier;
+		col.height *= eliteComp.sizeMultiplier;
+		col.offset.y = LichComponent::colliderYOffsetElite;
+		scene->setComponent<Collider>(entityID, col);
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale * eliteComp.sizeMultiplier;
 		this->origScale = trans.scale;
@@ -256,9 +258,12 @@ struct LichComponent
         this->attackRadius              /= this->eliteStats.radiusMultiplier;
         this->nonoRadius                /= this->eliteStats.radiusMultiplier;
 
-        scene->getComponent<Collider>(entityID).radius /= this->eliteStats.sizeMultiplier;
-        scene->getComponent<Collider>(entityID).height /= this->eliteStats.sizeMultiplier;
-        scene->getComponent<Collider>(entityID).offset.y = LichComponent::colliderYOffset;
+
+        Collider col = scene->getComponent<Collider>(entityID);
+		col.radius /= this->eliteStats.sizeMultiplier;
+		col.height /= this->eliteStats.sizeMultiplier;
+        col.offset.y = LichComponent::colliderYOffset;
+		scene->setComponent<Collider>(entityID, col);
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale / this->eliteStats.sizeMultiplier;
 		this->origScale = trans.scale;

@@ -92,7 +92,9 @@ struct SwarmComponent
         this->sightRadius               *= eliteComp.radiusMultiplier;
 		this->attackRange				*= eliteComp.radiusMultiplier;
 
-		scene->getComponent<Collider>(entityID).radius *= eliteComp.sizeMultiplier;
+		Collider col = scene->getComponent<Collider>(entityID);
+		col.radius *= eliteComp.sizeMultiplier;
+		scene->setComponent<Collider>(entityID, col);
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale * eliteComp.sizeMultiplier;
 		this->origScale = trans.scale;
@@ -110,8 +112,10 @@ struct SwarmComponent
         this->FULL_HEALTH               /= this->eliteStats.healthMultiplier;
         this->sightRadius               /= this->eliteStats.radiusMultiplier;
 		this->attackRange				/= this->eliteStats.radiusMultiplier;
-										
-		scene->getComponent<Collider>(entityID).radius /= this->eliteStats.sizeMultiplier;
+				
+		Collider col = scene->getComponent<Collider>(entityID);
+		col.radius /= this->eliteStats.sizeMultiplier;
+		scene->setComponent<Collider>(entityID, col);
 		scene->getComponent<Transform>(entityID).scale /= this->eliteStats.sizeMultiplier;
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale / this->eliteStats.sizeMultiplier;
