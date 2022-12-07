@@ -451,7 +451,8 @@ void SpawnHandler::createLich()
     //Create Grave
     auto& graveID = this->lichObjects[this->lichIDs.back()].graveID = this->currScene->createEntity();
     this->currScene->setComponent<Collider>(graveID, Collider::createBox(
-        glm::vec3{LichComponent::graveWidth,LichComponent::graveHeight,LichComponent::graveDepth})
+        glm::vec3{LichComponent::graveWidth,LichComponent::graveHeight,LichComponent::graveDepth},
+        glm::vec3(0.f,LichComponent::graveHeight/2.f, 0.f))
         );
 
     this->currScene->getComponent<LichComponent>(this->lichIDs.back()).graveID = graveID;
@@ -460,7 +461,8 @@ void SpawnHandler::createLich()
     //Create Alter
     auto& alterID = this->lichObjects[this->lichIDs.back()].alterID = this->currScene->createEntity();    
     this->currScene->setComponent<Collider>(alterID, Collider::createBox(
-        glm::vec3{LichComponent::alterWidth,LichComponent::alterHeight,LichComponent::alterDepth})
+        glm::vec3{LichComponent::alterWidth,LichComponent::alterHeight,LichComponent::alterDepth},
+        glm::vec3(0.f,LichComponent::alterHeight/2.f, 0.f))
         );
     
     this->currScene->getComponent<LichComponent>(this->lichIDs.back()).alterID = alterID;

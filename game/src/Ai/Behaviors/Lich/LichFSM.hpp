@@ -107,7 +107,7 @@ struct LichComponent
     inline static const uint32_t graveWidth = 6;
     inline static const uint32_t graveDepth = 4;
 
-    inline static const uint32_t alterHeight = 8;
+    inline static const uint32_t alterHeight = 14;
     inline static const uint32_t alterWidth = 3;
     inline static const uint32_t alterDepth = 3;
 
