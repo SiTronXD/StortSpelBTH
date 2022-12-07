@@ -602,7 +602,7 @@ void SpawnHandler::createSwarmGroup()
         if (netScene == nullptr)
         {
             this->swarmIDs.push_back(this->currScene->createEntity());
-            static int swarm = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
+            static int swarm = this->resourceManager->addMesh("assets/models/Swarm_RotTest.obj");
             this->currScene->setComponent<MeshComponent>(this->swarmIDs.back(), swarm);
         }
         else
