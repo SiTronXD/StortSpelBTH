@@ -69,9 +69,9 @@ public:
     inline static const int MAX_NR_LICHS        = (int)(MAX_NR_OF_ENEMIES * PERCENTAGE_LICHS);
     inline static const int MAX_NR_SWARMGROUPS  = (int)((MAX_NR_OF_ENEMIES * PERCENTAGE_SWARMS)/NR_BLOBS_IN_GROUP);
 
-    inline static const bool USE_DEBUG = true;
+    inline static const bool USE_DEBUG = false;
     inline static const int NR_TANK_DBG         = 0;
-    inline static const int NR_LICH_DBG         = 1;
+    inline static const int NR_LICH_DBG         = 2;
     inline static const int NR_SWARM_GROUPS_DBG = 0;
 
 private:
