@@ -1,7 +1,6 @@
 #include "Room Handler.h"
 #include "vengine/application/Scene.hpp"
 #include "vengine/dev/Random.hpp"
-#include "vengine/graphics/DebugRenderer.hpp"
 #include "vengine/physics/PhysicsEngine.h"
 #include "vengine/application/Input.hpp"
 #include "vengine/components/PointLight.hpp"
@@ -171,6 +170,18 @@ void RoomHandler::mutliplayerCloseDoors()
 	}
 }
 
+void RoomHandler::serverActivateCurrentRoom()
+{
+	this->activateRoom(this->activeIndex);
+	for (size_t i = 0; i < this->rooms.size(); i++)
+	{
+		if (i != this->activeIndex)
+		{
+			this->deactivateRoom(i);
+		}
+	}
+}
+
 void RoomHandler::roomCompleted()
 {	
 	Room& curRoom = this->rooms[this->activeIndex];
@@ -187,7 +198,6 @@ void RoomHandler::roomCompleted()
 		this->toggleDoors(this->oldIndex, true);
 	}
 
-#ifndef _DEBUG
 	for (int i = 0; i < 4; i++)
 	{
 		if (curRoom.connectingIndex[i] != -1)
@@ -195,7 +205,6 @@ void RoomHandler::roomCompleted()
 			this->activateRoom(curRoom.connectingIndex[i]);
 		}
 	}
-#endif
 	
 	this->oldIndex = -1;
 	this->serverNextIndex = -1;
@@ -557,15 +566,6 @@ void RoomHandler::generate(uint32_t seed)
 				{
 					curRoom.objects.emplace_back(this->createFloorDecoEntity(tile.position, true));
 				}
-				Entity e = this->scene->createEntity();
-				curRoom.objects.emplace_back(e);
-				auto& tra = scene->getComponent<Transform>(e);
-				tra.position.x = tile.position.x * TILE_WIDTH;
-				tra.position.z = tile.position.y * TILE_WIDTH;
-				tra.scale *= 0.25F;
-
-				if (useMeshes)
-					scene->setComponent<MeshComponent>(e, twoXTwoMeshIds[0].first);
 
 				curRoom.mainTiles.emplace_back(tile.position.x, 0.f, tile.position.y);
 				curRoom.mainTiles.back() *= TILE_WIDTH;
@@ -632,7 +632,8 @@ void RoomHandler::generate(uint32_t seed)
 			this->scene->getComponent<Transform>(entity).position += glm::vec3(TILE_WIDTH * -0.5f, 0.f, TILE_WIDTH * -0.5f);
 		}
 	}
-	printf("Num Rooms: %zd | numPathsEntities: %zd\n", rooms.size(), pathEntities.size());
+	// Keep for testing
+	//printf("Num Rooms: %zd | numPathsEntities: %zd\n", rooms.size(), pathEntities.size());
 	for (int i = 0; i < numTotRooms; i++)
 	{
 		this->moveRoom(i, glm::vec3(TILE_WIDTH * -0.5f, 0.f, TILE_WIDTH * -0.5f));
@@ -640,10 +641,11 @@ void RoomHandler::generate(uint32_t seed)
 		this->rooms[i].mainTiles.shrink_to_fit();
 		this->rooms[i].objects.shrink_to_fit();
 
-		printf("Room: %d\n", i);
-		printf("Num mainTiles: %zd | numObjects: %zd\n", rooms[i].mainTiles.size(), rooms[i].objects.size());
-		printf("Connecting idx: 0: %d, 1: %d, 2: %d, 3: %d\n", rooms[i].connectingIndex[0], rooms[i].connectingIndex[1], rooms[i].connectingIndex[2], rooms[i].connectingIndex[3]);
-		printf("Type: %d | pos: (%d, %d, %d)\n----------\n", (int)rooms[i].type, (int)rooms[i].position.x, (int)rooms[i].position.y, (int)rooms[i].position.z);
+		// Keep for testing
+		//printf("Room: %d\n", i);
+		//printf("Num mainTiles: %zd | numObjects: %zd\n", rooms[i].mainTiles.size(), rooms[i].objects.size());
+		//printf("Connecting idx: 0: %d, 1: %d, 2: %d, 3: %d\n", rooms[i].connectingIndex[0], rooms[i].connectingIndex[1], rooms[i].connectingIndex[2], rooms[i].connectingIndex[3]);
+		//printf("Type: %d | pos: (%d, %d, %d)\n----------\n", (int)rooms[i].type, (int)rooms[i].position.x, (int)rooms[i].position.y, (int)rooms[i].position.z);
 
 	}
 
@@ -707,12 +709,10 @@ void RoomHandler::generate(uint32_t seed)
 					if (this->rooms[i].doors[j] != -1)
 					{
 						this->scene->setScriptComponent(this->rooms[i].doors[j], "scripts/opendoor.lua");
-#ifndef _DEBUG
 						if (i == 0)
 						{
 							this->activateRoom(startRoom.connectingIndex[j]);
 						}
-#endif // !_DEBUG
 					}
 				}
 			}
@@ -1592,6 +1592,7 @@ void RoomHandler::placeDoorLamps()
 
 #ifdef _CONSOLE
 #include "../Scenes/RoomTesting.h"
+#include "vengine/graphics/DebugRenderer.hpp"
 void RoomHandler::imgui(DebugRenderer* dr)
 {
 	if (ImGui::Begin("Rooms"))

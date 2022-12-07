@@ -189,7 +189,7 @@ public:
 	~RoomHandler();
 
 	void init(Scene* scene, ResourceManager* resourceMan, PhysicsEngine* physicsEngine, bool useMeshes);
-	void generate(uint32_t seed, Entity dir = -1);
+	void generate(uint32_t seed);
 
 #ifdef _CONSOLE
 	void imgui(DebugRenderer* dr);
@@ -203,6 +203,7 @@ public:
 	bool playersInsideNewRoom(const std::vector<Entity>& players);
 	void multiplayerToggleCurrentDoors(int nextRoom);
 	void mutliplayerCloseDoors();
+	void serverActivateCurrentRoom();
 
 	bool playerNewRoom(Entity player);
 

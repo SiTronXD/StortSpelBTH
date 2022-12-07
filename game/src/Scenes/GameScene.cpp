@@ -174,7 +174,7 @@ void GameScene::start()
     }
     else
     {
-        roomHandler.generate(rand(), this->dirLightEntity);
+        roomHandler.generate(rand());
     }
     
     createPortal();
