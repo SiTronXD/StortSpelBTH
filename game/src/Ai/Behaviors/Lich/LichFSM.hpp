@@ -97,6 +97,12 @@ struct LichComponent
     inline static const uint32_t colliderRadius = 6;
     inline static const uint32_t colliderHeight = 22;
 
+    inline static const float    colliderYOffset = 15;
+    inline static const float    colliderYOffsetElite = 32;
+
+    inline static const float    handPosition       = 12;
+    inline static const float    handPositionElite  = 25;
+
     inline static const uint32_t graveHeight = 8;
     inline static const uint32_t graveWidth = 6;
     inline static const uint32_t graveDepth = 4;
@@ -219,6 +225,7 @@ struct LichComponent
 
         scene->getComponent<Collider>(entityID).radius *= eliteComp.sizeMultiplier;
         scene->getComponent<Collider>(entityID).height *= eliteComp.sizeMultiplier;
+        scene->getComponent<Collider>(entityID).offset.y = LichComponent::colliderYOffsetElite;
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale * eliteComp.sizeMultiplier;
 		this->origScale = trans.scale;
@@ -249,6 +256,7 @@ struct LichComponent
 
         scene->getComponent<Collider>(entityID).radius /= this->eliteStats.sizeMultiplier;
         scene->getComponent<Collider>(entityID).height /= this->eliteStats.sizeMultiplier;
+        scene->getComponent<Collider>(entityID).offset.y = LichComponent::colliderYOffset;
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale / this->eliteStats.sizeMultiplier;
 		this->origScale = trans.scale;

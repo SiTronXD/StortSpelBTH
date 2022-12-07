@@ -765,7 +765,15 @@ BTStatus LichBT::attack(Entity entityID)
                 Transform&  orbTrans = getTheScene()->getComponent<Transform>(projectileID);
                 Rigidbody&  orbRB    = getTheScene()->getComponent<Rigidbody>(projectileID);
                 
-                orbTrans.position = lichTrans.position + glm::vec3(0.0f, 12.0f, 0.0f) + (lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
+                if(lichComp.isElite)
+                {
+                    orbTrans.position = lichTrans.position + glm::vec3(0.0f, LichComponent::handPositionElite, 0.0f) + (lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
+                }
+                else
+                {
+                    orbTrans.position = lichTrans.position + glm::vec3(0.0f, LichComponent::handPosition, 0.0f) + (lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
+                }
+
                 auto spellVector = safeNormalize(playerTrans.position - lichTrans.position) * LichComponent::spellForce;
                 spellVector.y = 0;  //TODO: What if player is on top of something... Will not aim att player
                 orbRB.velocity = spellVector;

@@ -439,7 +439,8 @@ void SpawnHandler::createLich()
     Transform& transform = this->currScene->getComponent<Transform>(this->lichIDs.back());
     transform.scale = glm::vec3(1.5f);
     this->currScene->setComponent<Collider>(this->lichIDs.back(), 
-        Collider::createCapsule(LichComponent::colliderRadius, LichComponent::colliderHeight, glm::vec3(0.0f, 15.0f, 0.0f)));
+        Collider::createCapsule(LichComponent::colliderRadius, LichComponent::colliderHeight, 
+            glm::vec3(0.0f, LichComponent::colliderYOffset, 0.0f)));
     this->aiHandler->createAIEntity(this->lichIDs.back(), "lichFSM");
     LichComponent& lichComp = this->currScene->getComponent<LichComponent>(this->lichIDs.back());
     lichComp.origScaleY = transform.scale.y;
