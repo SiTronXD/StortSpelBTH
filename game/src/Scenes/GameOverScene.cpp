@@ -24,6 +24,9 @@ GameOverScene::~GameOverScene()
 
 void GameOverScene::init() 
 {
+	this->getNetworkHandler()->disconnectClient();
+	this->getNetworkHandler()->deleteServer();
+
 	TextureSamplerSettings samplerSettings{};
 	samplerSettings.filterMode = vk::Filter::eNearest;
 	samplerSettings.unnormalizedCoordinates = VK_TRUE;

@@ -68,7 +68,7 @@ GameSceneLevel GameScene::setNewLevel() {
 GameScene::GameScene(GameSceneLevel gameSceneLevel) :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
     perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1), 
-    deathTimer(2.f), isDead(false)
+    deathTimer(0.0f), isDead(false), fadeTimer(3.0f)
 {
     Input::setHideCursor(true);
     currentLevel = gameSceneLevel;
@@ -123,6 +123,8 @@ void GameScene::init()
     this->perkTextures[5] = resourceMng->addTexture("assets/textures/UI/empty.png");
     this->hpBarBackgroundTextureID = resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
     this->hpBarTextureID = resourceMng->addTexture("assets/textures/UI/hpBar.png");
+    this->blackTextureIndex = resourceMng->addTexture("vengine_assets/textures/Black.png");
+    this->ghostOverlayIndex = resourceMng->addTexture("assets/textures/UI/GhostUI.png");
 
     // Temporary light
     this->dirLightEntity = this->createEntity();
@@ -138,6 +140,18 @@ void GameScene::init()
     dirLight.cascadeDepthScale = 36.952f;
     dirLight.shadowMapMinBias = 0.00001f;
     dirLight.shadowMapAngleBias = 0.0004f;
+	
+    // Non active Entity with ghostMat
+    Entity ghost = this->createEntity();
+    this->setInactive(ghost);
+    this->setComponent<MeshComponent>(ghost);
+    MeshComponent& ghostMesh = this->getComponent<MeshComponent>(ghost);
+    this->getResourceManager()->makeUniqueMaterials(ghostMesh);
+    this->ghostMat = &ghostMesh.overrideMaterials[0];
+    this->ghostMat->diffuseTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhost.png");
+    this->ghostMat->glowMapTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhostGlow.png");
+    this->ghostMat->emissionColor = glm::vec3(0.0f, 1.0f, 0.35f);
+    this->ghostMat->emissionIntensity = 0.75f;
 }
 
 void GameScene::start()
@@ -148,6 +162,8 @@ void GameScene::start()
     this->networkHandler->init();
     this->networkHandler->setPlayerEntity(playerID);
     this->networkHandler->createOtherPlayers(this->getComponent<MeshComponent>(playerID).meshID);
+    this->networkHandler->setGhostMat(this->ghostMat);
+    this->origMat = this->getResourceManager()->getMaterial(this->getComponent<MeshComponent>(this->playerID), 0);
 
     if (networkHandler->isConnected())
     {
@@ -169,6 +185,7 @@ void GameScene::start()
         this->getSceneHandler(),
         this->playerID,
         &this->paused,
+        &this->combatDisabled,
         this->networkHandler
     );
     this->createSystem<HealSystem>(
@@ -222,14 +239,21 @@ void GameScene::start()
     this->createSystem<OrbSystem>(this->getSceneHandler());
 	
     // Create particle systems for this scene
-    ((NetworkHandlerGame*)this->getNetworkHandler())->initParticleSystems();
-
+    networkHandler->initParticleSystems();
     this->setCurrentLevel(currentLevel);
 }
 
 void GameScene::update()
 {
-    ((NetworkHandlerGame*)this->getNetworkHandler())->deleteInitialParticleSystems();
+    // Ghost overlay
+    if (this->isGhost && this->ghostTransitionTimer >= 1.0f || this->hasRespawned)
+    {
+        this->getUIRenderer()->setTexture(this->ghostOverlayIndex);
+        this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
+            glm::vec4(1.0f, 1.0f, 1.0f, 0.4f + sin(this->timer * 2.0f) * 0.15f));
+    }
+
+    networkHandler->deleteInitialParticleSystems();
 
     if (!networkHandler->isConnected() && networkHandler->getStatus() == ServerStatus::WAITING)
     {   
@@ -245,7 +269,6 @@ void GameScene::update()
         }
         if(!this->safetyCleanDone)
         {
-            
             if(this->timeWhenEnteredRoom + delayToSafetyDelete < Time::getTimeSinceStart())
             {
                 this->spawnHandler.killAllEnemiesOutsideRoom();
@@ -275,13 +298,15 @@ void GameScene::update()
             }
         }
         // Switch scene if the player is dead
-        if (this->hasComponents<Combat>(this->playerID))
+        if (this->hasComponents<HealthComp>(this->playerID))
         {
-            Script& playerScript = this->getComponent<Script>(this->playerID);
+			Script& playerScript = this->getComponent<Script>(this->playerID);
             int tempHealth = this->getComponent<HealthComp>(this->playerID).health;
-            if (tempHealth <= 0.0f && !this->isDead)
+            if (tempHealth <= 0 && !this->isDead)
             {
                 this->isDead = true;
+                this->deathTimer = 1.5f;
+                this->ghostTransitionTimer = 0.0f;
                 this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
             }
             else if (this->isDead)
@@ -289,6 +314,11 @@ void GameScene::update()
                 if (this->deathTimer >= 0.f)
                 {
                     this->deathTimer -= Time::getDT();
+                    if (this->deathTimer <= 0.0f)
+                    {
+                        this->fadeTimer = 0.0f;
+                    }
+
                     int currentAnim = -1;
                     this->getScriptHandler()->getScriptComponentValue(playerScript, currentAnim, "currentAnimation");
                     if (currentAnim != 7)
@@ -296,10 +326,50 @@ void GameScene::update()
                         this->getScriptHandler()->setScriptComponentValue(playerScript, tempHealth, "currentHealth");
                     }
                 }
-                else
+                else if (!this->isGhost)
+                {
+                    this->isGhost = true;
+                    this->hasRespawned = false;
+                }
+                else if (this->isGhost && this->hasRespawned && this->ghostTransitionTimer >= 1.0f)
                 {
                     this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
                 }
+			}
+        }
+
+        if (this->isGhost && this->ghostTransitionTimer < 5.0f && this->deathTimer < 0.0f)
+        {
+            this->ghostTransitionTimer += Time::getDT();
+
+            // Respawn player
+            if (this->ghostTransitionTimer > 1.0f && !this->hasRespawned)
+            {
+                this->hasRespawned = true;
+                this->isDead = false;
+
+                HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
+                healthComp.health = healthComp.maxHealth;
+                
+                Script& playerScript = this->getComponent<Script>(this->playerID);
+                this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
+                this->getScriptHandler()->setScriptComponentValue(playerScript, healthComp.health, "currentHealth");
+
+                this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = *this->ghostMat;
+                this->getComponent<Transform>(this->playerID).position = this->roomHandler.getRespawnPos();
+                this->getComponent<Transform>(this->playerID).rotation = this->roomHandler.getRespawnRot();
+                this->getComponent<Rigidbody>(this->playerID).assigned = false; // For some reason this is needed, otherwise the position isn't changed
+                this->getComponent<Transform>(this->getMainCameraID()).rotation = this->roomHandler.getRespawnRot();
+
+                this->roomHandler.startOver();
+                this->spawnHandler.resetEnemies();
+                this->newRoomFrame = false;
+            }
+
+            if (this->ghostTransitionTimer > 1.0f && !this->isDead)
+            {
+                this->getUIRenderer()->renderString("one more chance...", glm::vec2(0.0f, 250.0f), glm::vec2(50.0f), 0.0f, StringAlignment::CENTER,
+                    glm::vec4(1.0f, 1.0f, 1.0f, sin(this->ghostTransitionTimer * 0.75f) * 2.0f - 1.0f));
             }
         }
         this->spawnHandler.updateImgui();
@@ -312,22 +382,60 @@ void GameScene::update()
             this->newRoomFrame = true;
         }
 
-         // Server is diconnected
-        if (this->networkHandler->getStatus() == ServerStatus::DISCONNECTED)
-        {
-            this->networkHandler->disconnectClient();
-            this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
-        }
-
-        // If player is dead make the player not able to move
-        // and server shall say if we shall switch scene
+        // If player is dead make the player a ghost with no combat
         if (this->hasComponents<HealthComp>(this->playerID))
         {
-            if (this->getComponent<HealthComp>(this->playerID).health <= 0.0f)
+            Script& playerScript = this->getComponent<Script>(this->playerID);
+            int tempHealth = this->getComponent<HealthComp>(this->playerID).health;
+            if (tempHealth <= 0 && !this->isDead && !this->isGhost)
             {
-                this->networkHandler->disconnectClient(); // TEMP: probably will be in game over scene later
-                this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+                this->isDead = true;
+                this->combatDisabled = true;
+                this->deathTimer = 1.5f;
+                this->ghostTransitionTimer = 0.0f;
+                this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
+                HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
+                healthComp.health = 0;
             }
+            else if (this->isDead && this->deathTimer >= 0.f)
+            {
+                this->deathTimer -= Time::getDT();
+                if (this->deathTimer <= 0.0f)
+                {
+                    this->fadeTimer = 0.0f;
+                    this->isGhost = true;
+                    this->hasRespawned = false;
+                }
+
+                int currentAnim = -1;
+                this->getScriptHandler()->getScriptComponentValue(playerScript, currentAnim, "currentAnimation");
+                if (currentAnim != 7)
+                {
+                    this->getScriptHandler()->setScriptComponentValue(playerScript, tempHealth, "currentHealth");
+                }
+            }
+        }
+
+        if (this->isGhost && this->ghostTransitionTimer < 5.0f)
+        {
+            this->ghostTransitionTimer += Time::getDT();
+        }
+        // "Respawned" Basically only applying ghost material after some time
+        if (this->ghostTransitionTimer > 1.0f && !this->hasRespawned)
+        {
+            this->hasRespawned = true;
+            this->isDead = false;
+
+            this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = *this->ghostMat;
+            Script& playerScript = this->getComponent<Script>(this->playerID);
+            this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
+            this->getScriptHandler()->setScriptComponentValue(playerScript, 1, "currentHealth");
+
+            this->networkHandler->setGhost();
+        }
+        if (this->isGhost && this->ghostTransitionTimer > 1.0f)
+        {
+            this->getUIRenderer()->renderString("you are dead", glm::vec2(0.0f, 250.0f), glm::vec2(50.0f));
         }
         if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
         {
@@ -337,6 +445,30 @@ void GameScene::update()
         // Network
         this->networkHandler->updatePlayer();
         this->networkHandler->interpolatePositions();
+
+        if (this->fadeTimer >= 1.0f && this->end)
+        {
+            this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+        }
+
+        // Server is diconnected
+        if (this->networkHandler->getStatus() == ServerStatus::DISCONNECTED && !this->end)
+        {
+            this->networkHandler->disconnectClient();
+            this->networkHandler->deleteServer();
+            this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
+        }
+
+        this->imguiUpdate();
+    }
+
+    // Fade in/out to black
+    if (this->fadeTimer < 2.75f)
+    {
+        this->getUIRenderer()->setTexture(this->blackTextureIndex);
+        this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
+            glm::vec4(1.0f, 1.0f, 1.0f, sin(this->fadeTimer * 2.0f - glm::half_pi<float>() + 1.25f) * 0.5f + 0.5f));
+        this->fadeTimer += Time::getDT();
     }
 
     Combat& playerCombat = this->getComponent<Combat>(this->playerID);
@@ -404,6 +536,10 @@ void GameScene::update()
             this->networkHandler->deleteServer();
             this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
         }
+    }
+    else
+    {
+        this->timer += Time::getDT();
     }
 
 #ifdef _CONSOLE
@@ -625,6 +761,31 @@ void GameScene::onCollisionExit(Entity e1, Entity e2)
     this->getComponent<SwarmComponent>(e2).touchedFriend = false;
   }
 
+}
+
+void GameScene::revivePlayer()
+{
+    if (this->isGhost)
+    {
+        // Get back half hp
+        this->getComponent<HealthComp>(this->playerID).health = this->getComponent<HealthComp>(this->playerID).maxHealth / 2;
+
+        this->isGhost = false;
+        this->combatDisabled = false;
+        this->hasRespawned = false;
+        this->ghostTransitionTimer = 0.0f;
+        this->fadeTimer = 0.0f;
+        this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = this->origMat;
+    }
+}
+
+void GameScene::endGame()
+{
+    if (!this->end)
+    {
+        this->fadeTimer = 0.0f;
+        this->end = true;
+    }
 }
 
 void GameScene::imguiUpdate()

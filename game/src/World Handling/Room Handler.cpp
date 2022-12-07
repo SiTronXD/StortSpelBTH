@@ -151,7 +151,7 @@ bool RoomHandler::playerNewRoom(Entity player, PhysicsEngine* physicsEngine)
 			{
 				if (entity == player) // Player entered different room
 				{
-					const int oldIndex = this->activeIndex;
+					prevRoomIndex = this->activeIndex;
 					this->activeIndex = curRoom.connectingIndex[i];
 					this->placeDoorLamps();
 
@@ -163,6 +163,10 @@ bool RoomHandler::playerNewRoom(Entity player, PhysicsEngine* physicsEngine)
 							if (newRoom.connectingIndex[j] != -1)
 							{
 								this->deactivateRoom(newRoom.connectingIndex[j]);
+								if (newRoom.connectingIndex[j] == prevRoomIndex)
+								{
+									this->respawnDoorIdx = j;
+								}
 							}
 						}
 #ifdef _DEBUG
@@ -180,13 +184,13 @@ bool RoomHandler::playerNewRoom(Entity player, PhysicsEngine* physicsEngine)
 							this->deactivateRoom(curRoom.connectingIndex[j]);
 						}
 #ifndef _DEBUG
-						if (newRoom.doors[j] != -1 && newRoom.connectingIndex[j] != oldIndex)
+						if (newRoom.doors[j] != -1 && newRoom.connectingIndex[j] != prevRoomIndex)
 						{
 							this->activateRoom(newRoom.connectingIndex[j]);
 						}
 #else
 						this->activateRoom(this->activeIndex);
-						this->deactivateRoom(oldIndex);
+						this->deactivateRoom(prevRoomIndex);
 #endif // !_DEBUG
 					}
 					return false;
@@ -196,6 +200,69 @@ bool RoomHandler::playerNewRoom(Entity player, PhysicsEngine* physicsEngine)
 	}
 	
 	return false;
+}
+
+void RoomHandler::startOver()
+{
+	if (this->activeIndex == -1 || this->prevRoomIndex == -1)
+	{
+		return;
+	}
+	Room& failedRoom = this->rooms[this->activeIndex];
+	Room& prevRoom = this->rooms[this->prevRoomIndex];
+
+	for (int i = 0; i < 4; i++)
+	{
+		if (failedRoom.doors[i] != -1)
+		{
+			this->scene->setScriptComponent(failedRoom.doors[i], "scripts/opendoor.lua");
+			this->scene->removeComponent<Collider>(failedRoom.doors[i]);
+		}
+		if (prevRoom.doors[i] != -1 && prevRoom.connectingIndex[i] != this->activeIndex)
+		{
+			this->activateRoom(prevRoom.connectingIndex[i]);
+		}
+	}
+	this->activateRoom(this->prevRoomIndex);
+
+	this->activeIndex = this->prevRoomIndex;
+	this->prevRoomIndex = -1;
+}
+
+glm::vec3 RoomHandler::getRespawnPos() const
+{
+	if (this->respawnDoorIdx == -1)
+	{
+		return glm::vec3(0.0f);
+	}
+	const glm::vec3 respawnOffset[] =
+	{
+		glm::vec3(TILE_WIDTH, 0.f, 0.f),
+		glm::vec3(-TILE_WIDTH, 0.f, 0.f),
+		glm::vec3(0.f, 0.f, TILE_WIDTH),
+		glm::vec3(0.f, 0.f, -TILE_WIDTH)
+	};
+
+	Entity door = this->rooms[this->activeIndex].doors[this->respawnDoorIdx];
+	glm::vec3 pos = this->scene->getComponent<Transform>(door).position + respawnOffset[this->respawnDoorIdx];
+	pos.y = 12.f;
+	return pos;
+}
+
+glm::vec3 RoomHandler::getRespawnRot() const
+{
+	if (this->respawnDoorIdx == -1)
+	{
+		return glm::vec3(0.0f);
+	}
+	const float respawnYRot[] =
+	{
+		-90.f,
+		90.f,
+		180.f,
+		0.f
+	};
+	return glm::vec3(0.f, respawnYRot[this->respawnDoorIdx], 0.f);
 }
 
 void RoomHandler::generate(uint32_t seed)
