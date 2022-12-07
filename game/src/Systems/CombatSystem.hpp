@@ -28,6 +28,7 @@ private:
 	Entity swordCollID;
 	Entity knockbackCollID;
 	const bool* paused;
+	const bool* disabled;
 
 	int lostHealth;
 	std::vector<uint32_t> attackSounds;
@@ -45,10 +46,9 @@ private:
 	bool canHit = true;
 
 public:
-
-	CombatSystem(SceneHandler* sceneHandler, Entity playerID,
-		const bool* paused, NetworkHandlerGame* networkHandler)
-		: sceneHandler(sceneHandler), playerID(playerID), paused(paused),
+	CombatSystem(SceneHandler* sceneHandler, Entity playerID, 
+		const bool* paused, const bool* disabled, NetworkHandlerGame* networkHandler)
+		: sceneHandler(sceneHandler), playerID(playerID), paused(paused), disabled(disabled),
 		swordID(-1), swordCollID(-1), knockbackCollID(-1), networkHandler(networkHandler)
 	{
 		this->resourceMng = this->sceneHandler->getResourceManager();
@@ -100,7 +100,21 @@ public:
 			checkPerkCollision(combat);
 			checkAbilityCollision(combat);
 			decreaseTimers(combat, deltaTime);
-			updateSwordPos();
+			if (!*this->disabled)
+			{
+				this->scene->setActive(this->swordID);
+				updateSwordPos();
+			}
+			else
+			{
+				this->scene->setInactive(this->swordID);
+			}
+
+			// Return if paused of disabled
+			if (*this->paused || *this->disabled)
+			{
+				return;
+			}
 
 			if (checkActiveAttack(combat) != noActive)
 			{
