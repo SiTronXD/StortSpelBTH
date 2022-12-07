@@ -52,8 +52,6 @@ void ServerGameMode::init()
     lastSwarmHp.resize(this->aiHandler.FSMsEntities[swarmFSM].size());
     lastLichHp.resize(this->aiHandler.FSMsEntities[lichFSM].size());
     lastTankHp.resize(this->aiHandler.FSMsEntities[tankFSM].size());
-
-    printf(__FUNCTION__ "scene: %p, physics: %p\n", this, getPhysicsEngine());
 }
 
 void ServerGameMode::update(float dt)
