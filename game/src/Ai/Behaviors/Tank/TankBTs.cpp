@@ -86,6 +86,7 @@ void TankBT::groundHumpShortcut(Entity entityID)
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	tankComp.chargeTimer = tankComp.chargeTimerOrig;
 	tankComp.hasRunTarget = false;
+
 	if(glm::length(tankRb.velocity) <= 0.1f && (tankTrans.position.y - tankCol.radius) <= 1.0f)
 	{
 		if(tankComp.groundHumpTimer <= 0)
@@ -732,16 +733,6 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.runDir = safeNormalize(playerTrans.position - tankTrans.position);
 		tankComp.hasRunTarget = true;
 		tankComp.canAttack = true;
-
-		ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
-		if (netScene)
-		{
-			netScene->addEvent({ (int)GameEvent::PLAY_ENEMY_SOUND, entityID, 0, 1, 0 });
-		}
-		else if (!netScene)
-		{
-			sceneHandler->getAudioHandler()->playSound(entityID, TankComponent::s_charge, 30.f);
-		}
 	}
 
 
@@ -749,6 +740,22 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.runTimer > 0.0f)
 	{
 		rb.velocity = tankComp.runDir * tankComp.cahargeSpeed;
+        ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+
+        if (netScene && tankComp.s_activateCharge)
+        {
+            netScene->addEvent(
+                {(int)GameEvent::PLAY_ENEMY_SOUND, entityID, 0, 1, 0}
+            );
+            tankComp.s_activateCharge = false;
+        }
+        else if (!netScene && tankComp.s_activateCharge)
+        {
+            sceneHandler->getAudioHandler()->playSound(
+                entityID, TankComponent::s_charge, 30.f
+            );
+            tankComp.s_activateCharge = false;
+        }
 	}
 	else
 	{
@@ -756,6 +763,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.runTimer = tankComp.runTimerOrig;
 		tankComp.hasRunTarget = false;
 		tankComp.canAttack = false;
+        tankComp.s_activateCharge = true;
 	}
 
 	return ret;
