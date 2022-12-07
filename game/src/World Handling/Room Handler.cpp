@@ -119,25 +119,56 @@ bool RoomHandler::playersOnCollider(Collider& col, const glm::vec3& pos, const s
 
 int RoomHandler::serverGetNextRoomIndex() const
 {
-	return this->nextIndex;
+	return this->serverNextIndex;
 }
 
-void RoomHandler::multiplayerToggleCurrentDoors(int nextRoom)
+void RoomHandler::multiplayerToggleCurrentDoors(int nextIndex)
 {
 	this->toggleDoors(this->activeIndex, false);
+	Room& oldRoom = this->rooms[this->activeIndex];
+	for (int i = 0; i < 4; i++)
+	{
+		int conIdx = oldRoom.connectingIndex[i];
+		if (conIdx != -1 && conIdx != nextIndex)
+		{
+			this->deactivateRoom(conIdx);
+		}
+	}
+
+	Room& nextRoom = this->rooms[nextIndex];
+	for (int i = 0; i < 4; i++)
+	{
+		int conIdx = nextRoom.connectingIndex[i];
+		if (conIdx != -1 && conIdx != this->activeIndex)
+		{
+			this->activateRoom(conIdx);
+		}
+	}
 	
 	this->oldIndex = this->activeIndex;
-	this->activeIndex = nextRoom;
+	this->activeIndex = nextIndex;
 
 	this->placeDoorLamps();
 	this->togglePaths(this->activeIndex, true);
-	this->toggleDoors(nextRoom, true);
+	this->toggleDoors(this->activeIndex, true);
 }
 
 void RoomHandler::mutliplayerCloseDoors()
 {
+
 	this->toggleDoors(this->oldIndex, true);
 	this->toggleDoors(this->activeIndex, false);
+	this->togglePaths(this->oldIndex, false);
+	this->togglePaths(this->activeIndex, true);
+	Room& curRoom = this->rooms[this->activeIndex];
+	for (int i = 0; i < 4; i++)
+	{
+		int conIdx = curRoom.connectingIndex[i];
+		if (conIdx != -1)
+		{
+			this->deactivateRoom(conIdx);
+		}
+	}
 }
 
 void RoomHandler::roomCompleted()
@@ -153,7 +184,7 @@ void RoomHandler::roomCompleted()
 	this->toggleDoors(this->activeIndex, true);
 	if (this->oldIndex != -1)
 	{
-		this->toggleDoors(oldIndex, true);
+		this->toggleDoors(this->oldIndex, true);
 	}
 
 #ifndef _DEBUG
@@ -167,16 +198,16 @@ void RoomHandler::roomCompleted()
 #endif
 	
 	this->oldIndex = -1;
-	this->nextIndex = -1;
+	this->serverNextIndex = -1;
 }
 
 bool RoomHandler::playerNewRoom(Entity player)
 {
 	// Light flicker
-	flickerTimer += Time::getDT();
+	this->flickerTimer += Time::getDT();
 	if (flickerTimer >= FLICKER_INTERVAL)
 	{
-		flickerTimer = 0.f;
+		this->flickerTimer = 0.f;
 		for (int i = 0; i < 4; i++)
 		{
 			PointLight& light = this->scene->getComponent<PointLight>(this->doorLamps[i]);
@@ -203,7 +234,7 @@ bool RoomHandler::playerNewRoom(Entity player)
 			if (this->physicsEngine->testContactPair(newRoom.box, newRoom.colliderPos, glm::vec3(0.f), 
 				playerCol, playerTra.position, playerTra.rotation))
 			{
-				this->nextIndex = -1;
+				this->serverNextIndex = -1; // rmv ?
 				this->oldIndex = this->activeIndex;
 				this->activeIndex = curRoom.connectingIndex[i];
 				this->placeDoorLamps();
@@ -221,15 +252,20 @@ bool RoomHandler::playerNewRoom(Entity player)
 					NetworkHandler* network = this->scene->getNetworkHandler();
 					if (network)
 					{
-						if (network->isConnected())
+						if (network->isConnected()) // lol remove
 						{
-							this->toggleDoors(oldIndex, true);
+						}
+						else
+						{
+							this->deactivateRoom(this->oldIndex);
+							this->toggleDoors(this->oldIndex, true);
+							this->togglePaths(this->oldIndex, false);
+
+							this->toggleDoors(this->activeIndex, false);
+							this->togglePaths(this->activeIndex, true);
 						}
 					}
-					this->deactivateRoom(oldIndex);
-					this->toggleDoors(this->activeIndex, false);
-					this->togglePaths(oldIndex, false);
-					this->togglePaths(this->activeIndex, true);
+					
 					return true;
 				}
 
@@ -240,18 +276,20 @@ bool RoomHandler::playerNewRoom(Entity player)
 					{
 						this->deactivateRoom(curRoom.connectingIndex[j]);
 					}
-#ifndef _DEBUG
 					if (newRoom.doors[j] != -1 && newRoom.connectingIndex[j] != oldIndex)
 					{
 						this->activateRoom(newRoom.connectingIndex[j]);
 					}
-#else
-					this->activateRoom(this->activeIndex);
-					this->deactivateRoom(oldIndex);
-#endif // !_DEBUG
 				}
-					
-				this->togglePaths(oldIndex, false);
+				
+				NetworkHandler* network = this->scene->getNetworkHandler();
+				if (network)
+				{
+					if (!network->isConnected())
+					{
+					}
+				};
+				this->togglePaths(this->oldIndex, false);
 				this->togglePaths(this->activeIndex, true);
 
 				return false;
@@ -291,9 +329,9 @@ bool RoomHandler::playersInPathway(const std::vector<Entity>& players)
 				Pathway& path = this->paths[curRoom.connPathIndex[i]];
 				if (this->playersOnCollider(path.box, path.colliderPos, players))
 				{
-					oldIndex = this->activeIndex;
+					this->oldIndex = this->activeIndex;
 					this->activeIndex = curRoom.connectingIndex[i];
-					this->nextIndex = curRoom.connectingIndex[i];
+					this->serverNextIndex = curRoom.connectingIndex[i];
 					return true;
 				}
 			}
@@ -302,11 +340,7 @@ bool RoomHandler::playersInPathway(const std::vector<Entity>& players)
 
 	return false;
 }
-// CLOSE OLD DOOR
-// CLOSE OLD DOOR
-// CLOSE OLD DOOR
 
-// Remember activeIndex fix in multiplayer, should be set in multiplayerToggleCurrentDoors (?)
 bool RoomHandler::playersInsideNewRoom(const std::vector<Entity>& players)
 {
 	Room& curRoom = this->rooms[this->activeIndex];
@@ -570,29 +604,23 @@ void RoomHandler::generate(uint32_t seed, Entity dir)
 	{
 		if (network->isConnected())
 		{
-			for (int j = 0; j < 4; j++)
-			{
-				if (startRoom.doors[j] != -1)
-				{
-					this->scene->setScriptComponent(startRoom.doors[j], "scripts/opendoor.lua");
-					this->activateRoom(startRoom.connectingIndex[j]);
-				}
-			}
 			for (size_t i = 1; i < this->rooms.size(); i++)
 			{
-				for (int j = 0; j < 4; j++)
+				this->forceToggleDoors(i, false);
+				this->deactivateRoom(i);
+			}
+
+			for (int i = 0; i < 4; i++)
+			{
+				if (startRoom.doors[i] != -1)
 				{
-					if (this->rooms[i].doors[j] != -1)
-					{
-						this->scene->setScriptComponent(this->rooms[i].doors[j], "scripts/closedoor.lua");
-						this->scene->setComponent<Collider>(this->rooms[i].doors[j], Collider::createBox(
-							glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH * 2.f, TILE_WIDTH * 0.1f), glm::vec3(0.f, TILE_WIDTH * 2.f, 0.f)));
-					}
+					this->scene->setScriptComponent(startRoom.doors[i], "scripts/opendoor.lua");
+					this->activateRoom(startRoom.connectingIndex[i]);
 				}
 			}
 		}
 		else
-		{
+		{ 
 			for (size_t i = 0; i < this->rooms.size(); i++)
 			{
 				for (int j = 0; j < 4; j++)
@@ -787,7 +815,6 @@ const glm::vec3& RoomHandler::getRoomPos() const
     return this->rooms[this->activeIndex].position;
 }
 
-
 void RoomHandler::createTileInfos(uint32_t roomIndex)
 {
 	auto rawTiles = this->rooms[roomIndex].mainTiles;
@@ -929,21 +956,21 @@ void RoomHandler::setConnections(int numMainRooms, const std::vector<glm::ivec2>
 		if (delta.x < 1.f) { delta.x += TILE_WIDTH;}
 		if (delta.z < 1.f) { delta.z += TILE_WIDTH;}
 
-		paths[i].box = Collider::createBox(delta);
-		paths[i].box.extents.y = TILE_WIDTH;
+		this->paths[i].box = Collider::createBox(delta);
+		this->paths[i].box.extents.y = TILE_WIDTH;
 
-		paths[i].colliderPos = (pair.first + pair.second) * 0.5f;
-		paths[i].colliderPos.y = TILE_WIDTH;
-		
-		paths[i].colliderPos.x -= TILE_WIDTH * 0.5f;
-		paths[i].colliderPos.z -= TILE_WIDTH * 0.5f;
+		this->paths[i].colliderPos = (pair.first + pair.second) * 0.5f;
+		this->paths[i].colliderPos.y = TILE_WIDTH;
+
+		this->paths[i].colliderPos.x -= TILE_WIDTH * 0.5f;
+		this->paths[i].colliderPos.z -= TILE_WIDTH * 0.5f;
 		if (this->verticalConnection[i])
 		{ 
-			paths[i].box.extents.z -= TILE_WIDTH;
+			this->paths[i].box.extents.z -= TILE_WIDTH * 0.8f;
 		}
 		else
 		{ 
-			paths[i].box.extents.x -= TILE_WIDTH;
+			this->paths[i].box.extents.x -= TILE_WIDTH * 0.8f;
 		}
 	}
 }
@@ -1318,10 +1345,10 @@ void RoomHandler::reset()
 	this->roomExitPoints.clear();
 
 	this->activeIndex = 0;
-	this->nextIndex = -1;
+	this->serverNextIndex = -1;
 }
 
-void RoomHandler::toggleDoors(int index, bool open)
+void RoomHandler::toggleDoors(int index, bool open, int ignore)
 {
 #ifdef _CONSOLE
 	if (index < 0 || index >= (int)this->rooms.size())
@@ -1353,9 +1380,40 @@ void RoomHandler::toggleDoors(int index, bool open)
 	}
 }
 
+void RoomHandler::forceToggleDoors(int index, bool open, int ignore)
+{
+	#ifdef _CONSOLE
+	if (index < 0 || index >= (int)this->rooms.size())
+	{
+		Log::error("RoomHandler::forceToggleDoors | Invalid index: " + std::to_string(index) + 
+		". Num rooms: " + std::to_string(this->rooms.size()));
+		return;
+	}
+#endif
+
+	Room& room = this->rooms[index];
+
+	for (int i = 0; i < 4; i++)
+	{
+		if (room.doors[i] != -1)
+		{
+			if (open/* && this->scene->hasComponents<Collider>(room.doors[i])*/)
+			{
+				this->scene->getComponent<Transform>(room.doors[i]).position.y = -25.f;
+				this->scene->removeComponent<Collider>(room.doors[i]);
+			}
+			else// if (!this->scene->hasComponents<Collider>(room.doors[i]))
+			{
+				this->scene->getComponent<Transform>(room.doors[i]).position.y = 0.f;
+				this->scene->setComponent<Collider>(room.doors[i], Collider::createBox(
+						glm::vec3(TILE_WIDTH * 0.5f, TILE_WIDTH * 2.f, TILE_WIDTH * 0.1f), glm::vec3(0.f, TILE_WIDTH * 2.f, 0.f)));
+			}
+		}
+	}
+}
+
 void RoomHandler::activateRoom(int index)
 {
-	return;
 #ifdef _CONSOLE
 	if (index < 0 || index >= (int)this->rooms.size())
 	{
@@ -1376,7 +1434,6 @@ void RoomHandler::activateRoom(int index)
 		if (curRoom.doors[i] != -1)
 		{
 			this->scene->setActive(curRoom.doors[i]);
-			this->scene->getComponent<Transform>(curRoom.doors[i]).position.y = -25;
 		}
 	}
 
@@ -1389,7 +1446,6 @@ void RoomHandler::activateRoom(int index)
 
 void RoomHandler::deactivateRoom(int index)
 {
-	return;
 #ifdef _CONSOLE
 	if (index < 0 || index >= (int)this->rooms.size())
 	{

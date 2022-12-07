@@ -150,10 +150,11 @@ private:
 
 	// Room Updating
 	int activeIndex = 0;
-	int nextIndex = -1; // Used by server
+	int serverNextIndex = -1; // Used by server
 	int oldIndex = -1; // Used by server
 	void togglePaths(int roomIndex, bool show);
-	void toggleDoors(int index, bool open);
+	void toggleDoors(int index, bool open, int ignore = -1);
+	void forceToggleDoors(int index, bool open, int ignore = -1);
 	void activateRoom(int index);
 	void deactivateRoom(int index);
 	void placeDoorLamps();
