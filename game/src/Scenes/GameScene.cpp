@@ -134,7 +134,7 @@ void GameScene::init()
     DirectionalLight& dirLight = this->getComponent<DirectionalLight>(this->dirLightEntity);
     dirLight.cascadeSizes[0] = 45.0f;
     dirLight.cascadeSizes[1] = 120.0f;
-    dirLight.cascadeSizes[2] = 693.0f;
+    dirLight.cascadeSizes[2] = 356.0f;
     dirLight.cascadeDepthScale = 36.952f;
     dirLight.shadowMapMinBias = 0.00001f;
     dirLight.shadowMapAngleBias = 0.0004f;
