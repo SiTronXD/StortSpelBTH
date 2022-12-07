@@ -584,7 +584,7 @@ BTStatus TankBT::MoveAround(Entity entityID)
 	}
 	else
 	{
-		avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, tankComp.firendTarget.pos, moveDir, glm::vec3(0.0f, -3.0f, 0.0f));
+		avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, tankComp.firendTarget.pos, moveDir);
 		tankRb.velocity = moveDir * tankComp.idleSpeed;
 	}
 
@@ -840,7 +840,7 @@ BTStatus TankBT::moveTowardsGroup(Entity entityID)
 	Rigidbody& tankRb		= getTheScene()->getComponent<Rigidbody>(entityID);
 	glm::vec3 moveDir		= pathFindingManager.getDirTo(tankTrans.position, tankComp.shieldTargetPos);
 	moveDir					= safeNormalize(moveDir);
-	avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, tankComp.firendTarget.pos, moveDir, glm::vec3(0.0f, -3.0f, 0.0f));
+	avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, tankComp.firendTarget.pos, moveDir);
 	tankRb.velocity			= moveDir * tankComp.shieldSpeed;
 	return ret;
 }

@@ -350,7 +350,7 @@ BTStatus LichBT::goToGrave(Entity entityID)
     Transform& graveTrans   = getTheScene()->getComponent<Transform>(lichComp.graveID);
 
     glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, graveTrans.position);
-    avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, graveTrans.position, moveDir, glm::vec3(0.0f, -3.0f, 0.0f));
+    avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, graveTrans.position, moveDir);
     lichRb.velocity = moveDir * lichComp.speed;
     rotateTowards(entityID, graveTrans.position, lichComp.idleTurnSpeed);
 
@@ -374,7 +374,7 @@ BTStatus LichBT::goToAlter(Entity entityID)
     Transform& alterTrans   = getTheScene()->getComponent<Transform>(lichComp.alterID);
 
     glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, alterTrans.position);
-    avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, alterTrans.position, moveDir, glm::vec3(0.0f, -3.0f, 0.0f));
+    avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, alterTrans.position, moveDir);
 	moveDir = safeNormalize(moveDir);
     lichRb.velocity = moveDir * lichComp.speed;
     rotateTowards(entityID, alterTrans.position, lichComp.idleTurnSpeed);
@@ -486,7 +486,7 @@ BTStatus LichBT::huntingPlayer(Entity entityID)
     rayChecking(entityID, moveDir);
 
 	moveDir = safeNormalize(moveDir);
-    avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, playerTrans.position, moveDir, glm::vec3(0.0f, -3.0f, 0.0f));
+    avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, playerTrans.position, moveDir);
     lichRb.velocity = moveDir * lichComp.huntSpeed;
     rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
 
@@ -539,7 +539,7 @@ BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
     Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
     Rigidbody& lichRb = getTheScene()->getComponent<Rigidbody>(entityID);
     glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, playerTrans.position);
-    //avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, playerTrans.position, moveDir, glm::vec3(0.0f, -3.0f, 0.0f)); //TODO: Check if this improves or not
+    //avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, playerTrans.position, moveDir); //TODO: Check if this improves or not
 	moveDir = -safeNormalize(moveDir);
     lichRb.velocity = moveDir * lichComp.huntSpeed;
 
@@ -887,7 +887,7 @@ BTStatus LichBT::runAwayFromPlayer(Entity entityID)
     Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
     Rigidbody& lichRb = getTheScene()->getComponent<Rigidbody>(entityID);
     glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, playerTrans.position);
-    //avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, playerTrans.position, moveDir, glm::vec3(0.0f, -3.0f, 0.0f)); //TODO: Check if this improves or not
+    //avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, playerTrans.position, moveDir); //TODO: Check if this improves or not
 	moveDir = -safeNormalize(moveDir);
     lichRb.velocity = moveDir * lichComp.huntSpeed;
     //rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);

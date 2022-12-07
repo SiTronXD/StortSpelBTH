@@ -47,7 +47,7 @@ void drawRaySimple(SceneHandler* sceneHandler, Ray& ray, float dist, glm::vec3 c
 
 }
 
-void avoidStuff(Entity entityID, SceneHandler* sceneHandler, bool& attackGoRight, glm::vec3 target, glm::vec3& wantedDir, glm::vec3 rayOriginOffset, bool drawRays)
+void avoidStuff(Entity entityID, SceneHandler* sceneHandler, bool& attackGoRight, glm::vec3 target, glm::vec3& wantedDir, bool drawRays)
 {
 	bool somethingInTheWay = false;
 	bool canGoForward=true;	
@@ -58,7 +58,8 @@ void avoidStuff(Entity entityID, SceneHandler* sceneHandler, bool& attackGoRight
 	Transform& entityTransform = sceneHandler->getScene()->getComponent<Transform>(entityID);
     
 	entityTransform.updateMatrix();
-	glm::vec3 from = entityTransform.position + rayOriginOffset;
+	glm::vec3 from = entityTransform.position;
+	from.y = 2.0f;
 	glm::vec3 to = target;
 	glm::vec3 dirToTarget =  safeNormalize(glm::vec3(to - entityTransform.position));
 	float maxDist = glm::length(from - to);
