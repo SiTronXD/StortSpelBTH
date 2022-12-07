@@ -589,12 +589,17 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
     case GameEvent::PLAY_PARTICLE:
         tcpPacket >> i0 >> i1;
         if (serverEntities.find(i1) != serverEntities.end()){
-			if (!this->sceneHandler->getScene()->hasComponents<ParticleSystem>(serverEntities[i1]))
+            this->playParticle((ParticleTypes)i0, serverEntities[i1]);
+		}
+		break;
+	case GameEvent::PLAY_PARTICLE_P:
+        tcpPacket >> i0 >> i1;
+        for (int i = 0; i < this->otherPlayersServerId.size(); i++)
+		{
+			if (this->otherPlayersServerId[i] == i1)
 			{
-				this->sceneHandler->getScene()->setComponent<ParticleSystem>(serverEntities[i1]);
-				ParticleSystem& partSys = this->sceneHandler->getScene()->getComponent<ParticleSystem>(serverEntities[i1]);
-				partSys = getSwarmParticleSystem();
-				partSys.spawn = true;
+                playParticle((ParticleTypes)i0, playerEntities[i]);		
+				break;
 			}
 		}
 		break;
@@ -1148,6 +1153,31 @@ void NetworkHandlerGame::setPerks(const Perks perk[])
 					}
 				}
 			}
+}
+
+void NetworkHandlerGame::playParticle(const ParticleTypes& particleType, Entity entity)
+{
+    if (!this->sceneHandler->getScene()->hasComponents<ParticleSystem>(entity))
+    {
+    	this->sceneHandler->getScene()->setComponent<ParticleSystem>(entity);
+    	ParticleSystem& partSys = this->sceneHandler->getScene()->getComponent<ParticleSystem>(entity);
+        switch (particleType)
+        {
+			case ParticleTypes::HEAL:
+                partSys = this->getHealParticleSystem();
+                break;
+            case ParticleTypes::BLOOD:
+                partSys = this->getBloodParticleSystem();
+                break;
+            case ParticleTypes::SWARM:
+                partSys = this->getSwarmParticleSystem();
+                break;
+            default:
+                return;
+                break;
+        }
+    	partSys.spawn = true;
+    }
 }
 
 Entity NetworkHandlerGame::spawnOrbs(int orbType)

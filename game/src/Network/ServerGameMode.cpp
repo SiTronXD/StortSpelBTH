@@ -259,6 +259,14 @@ void ServerGameMode::makeDataSendToClient()
                  getPlayer(i),
                  this->getComponent<HealthComp>(getPlayer(i)).health}
             );
+            if (this->getComponent<HealthComp>(getPlayer(i)).health < lastPlayerHps[i].health) 
+            {
+                this->addEvent({
+                    (int)GameEvent::PLAY_PARTICLE_P,
+                    (int)ParticleTypes::BLOOD,
+                    i
+                });
+            }
             //change lastPlayerHps
             lastPlayerHps[i].health = this->getComponent<HealthComp>(getPlayer(i)).health;
         }

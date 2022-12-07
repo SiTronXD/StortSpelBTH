@@ -16,6 +16,7 @@ enum class GameEvent
 	UPDATE_PLAYER, // Positions and animations
 	UPDATE_MONSTER, // How many enemies, What enemy, Position, rotation and animation udp
 	PLAY_PARTICLE, //What type, entity
+	PLAY_PARTICLE_P, //What type, player
 	SPAWN_ITEM, // Client -> Server: Want to spawn item. Server -> Client: Spawn item in scene
 	DELETE_ITEM, // Server -> Client: Remove item from scene
 	PICKUP_ITEM, // Client -> Server: Want to pick up item. Server -> Client: Pick up the item
@@ -129,6 +130,7 @@ private:
     ParticleSystemInstance swarmParticleSystems;
     ParticleSystemInstance portalParticleSystemSide0;
     ParticleSystemInstance portalParticleSystemSide1;
+    void playParticle(const ParticleTypes &particleType, Entity entity);
 
 
 	//RoomHandler
