@@ -150,6 +150,14 @@ void MainMenu::start()
 	area.dimension = glm::vec2(50 * 10, 55);
 	this->setComponent<UIArea>(this->fullscreenButton, area);
 
+	if (this->getNetworkHandler()->hasServer())
+    {
+		this->getNetworkHandler()->deleteServer();    
+	}
+    if (this->getNetworkHandler()->isConnected())
+    {
+		this->getNetworkHandler()->disconnectClient();    
+	}
 
 	Input::setHideCursor(false);
 }
