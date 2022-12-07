@@ -168,7 +168,7 @@ void GameOverScene::init()
 	this->setComponent<MeshComponent>(this->ground, ground);
 	Transform& groundTrans = this->getComponent<Transform>(this->ground);
 	groundTrans.position.y = -1.;
-	groundTrans.scale = glm::vec3(400.f);
+	groundTrans.scale = glm::vec3(2000.f);
 
 	// DIRLIGHT FOR SCENE
 	this->dirLight = this->createEntity();
