@@ -1,7 +1,7 @@
 #include "ServerGameMode.h"
 #include "../Components/HealthComp.h"
 
-//#define ROOMDEBUG false
+//#define ROOMDEBUG
 
 ServerGameMode::ServerGameMode(int level) {
     this->level = level;
@@ -52,6 +52,8 @@ void ServerGameMode::init()
     lastSwarmHp.resize(this->aiHandler.FSMsEntities[swarmFSM].size());
     lastLichHp.resize(this->aiHandler.FSMsEntities[lichFSM].size());
     lastTankHp.resize(this->aiHandler.FSMsEntities[tankFSM].size());
+
+    printf(__FUNCTION__ "scene: %p, physics: %p\n", this, getPhysicsEngine());
 }
 
 void ServerGameMode::update(float dt)
@@ -59,7 +61,7 @@ void ServerGameMode::update(float dt)
     if (!this->newRoomFrame && roomHandler.playersInPathway(this->players))
     {
         addEvent({(int)GameEvent::CLOSE_OLD_DOORS}, {roomHandler.serverGetNextRoomIndex()});
-        printf("Server Active: %d\n", roomHandler.activeIndex);
+        printf("Server Active: %d\n", roomHandler.getActiveIndex());
         this->spawnHandler.spawnEnemiesIntoRoom();
 
         std::cout << "Server: player in new room" << std::endl;
@@ -169,6 +171,48 @@ void ServerGameMode::update(float dt)
                 glm::vec3 dp = this->getComponent<Transform>(roomHandler.rooms[i].doors[d]).position;
                  addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {dp.x, dp.y, dp.z, 0.f, 0.f, 0.f, 10.f, 10.f, 10.f});
             }    
+        }
+
+        for (auto ent : roomHandler.rooms[i].objects)
+        {
+            if (hasComponents<Collider>(ent))
+            {
+                glm::vec3 dp = this->getComponent<Transform>(ent).position;
+                auto& col = getComponent<Collider>(ent);
+                auto ex = col.extents * 2.f;
+                switch (col.type)
+                {
+                default:
+                    break;
+                case ColType::BOX:
+                    addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {dp.x, dp.y, dp.z, 0.f, 0.f, 0.f, ex.x, ex.y, ex.z});
+                    break;
+                case ColType::SPHERE:
+                    addEvent({(int)NetworkEvent::DEBUG_DRAW_SPHERE}, {dp.x, dp.y, dp.z, col.radius});
+                    break;
+                }
+            }
+        }
+
+        for (auto ent : spawnHandler.allEntityIDs)
+        {
+            if (hasComponents<Collider>(ent))
+            {
+                glm::vec3 dp = this->getComponent<Transform>(ent).position;
+                auto& col = getComponent<Collider>(ent);
+                auto ex = col.extents * 2.f;
+                switch (col.type)
+                {
+                default:
+                    break;
+                case ColType::BOX:
+                    addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {dp.x, dp.y, dp.z, 0.f, 0.f, 0.f, ex.x, ex.y, ex.z});
+                    break;
+                case ColType::SPHERE:
+                    addEvent({(int)NetworkEvent::DEBUG_DRAW_SPHERE}, {dp.x, dp.y, dp.z, col.radius});
+                    break;
+                }
+            }
         }
     }
     for (int i = 0; i < this->getPlayerSize(); i++)
