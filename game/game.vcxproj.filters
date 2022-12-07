@@ -28,6 +28,7 @@
     <ClCompile Include="src\ServerGameModes\NetworkLobbyScene.cpp" />
     <ClCompile Include="src\ServerGameModes\NetworkGameScene.cpp" />
     <ClCompile Include="src\World Handling\SpawnHandler.cpp" />
+    <ClCompile Include="src\Settings\Settings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -83,6 +84,7 @@
     <ClInclude Include="src\Systems\ParticleRemoveEntity.hpp" />
     <ClInclude Include="src\Systems\ParticleRemoveComponent.hpp" />
     <ClInclude Include="src\World Handling\ParticleSystemGenerator.hpp" />
+    <ClInclude Include="src\Settings\Settings.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

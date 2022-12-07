@@ -291,6 +291,7 @@ SET ERRORLEVEL=0</Command>
     <ClCompile Include="src\ServerGameModes\NetworkGameScene.cpp" />
     <ClCompile Include="src\ServerGameModes\NetworkLobbyScene.cpp" />
     <ClCompile Include="src\Scenes\LevelEditor.cpp" />
+    <ClCompile Include="src\Settings\Settings.cpp" />
     <ClCompile Include="src\World Handling\Room Generator.cpp" />
     <ClCompile Include="src\World Handling\Room Handler.cpp" />
     <ClCompile Include="src\World Handling\Room Layout.cpp" />
@@ -301,6 +302,7 @@ SET ERRORLEVEL=0</Command>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
     <ClInclude Include="Components\Movement.h" />
+    <ClInclude Include="src\Settings\Settings.h" />
     <ClInclude Include="src\Components\HealArea.h" />
     <ClInclude Include="src\Components\HealthComp.h" />
     <ClInclude Include="src\Network\ServerGameMode.h" />
