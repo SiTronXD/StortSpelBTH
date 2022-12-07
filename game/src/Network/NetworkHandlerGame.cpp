@@ -275,6 +275,12 @@ void NetworkHandlerGame::init()
 	{
 		LichComponent::s_takeDmg =
 			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
+		LichComponent::s_lightning =
+			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
+		LichComponent::s_fire =
+			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
+		LichComponent::s_ice =
+			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
 		LichComponent::s_initialized = true;
 	}
 	if (!SwarmComponent::s_initialized)
@@ -502,22 +508,22 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		{
 			if (i2 == 0)
 			{
-				this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(i0).s_takeDmg, 30.f);
+				this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_takeDmg, 30.f);
 			}
 			else if (i2 == 1)
 			{
 				// DEAL DAMAGE SOUND
 				if (i3 == 0)
 				{
-					this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(i0).s_fire, 30.f);
+					this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_fire, 30.f);
 				}
 				else if (i3 == 1)
 				{
-					this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(i0).s_lightning, 30.f);
+					this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_lightning, 30.f);
 				}
 				else if (i3 == 2)
 				{
-					this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(i0).s_ice, 30.f);
+					this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_ice, 30.f);
 				}
 			}
 			else if (i2 == 3)
