@@ -541,7 +541,7 @@ BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
     glm::vec3 moveDir		= getDir(lichTrans.position, playerTrans.position);
     avoidStuffBackwards(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, playerTrans.position, moveDir);
 	moveDir = safeNormalize(moveDir);
-    lichRb.velocity = moveDir * lichComp.speed;
+    lichRb.velocity = moveDir * lichComp.combatSpeed;
 
     rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
 
