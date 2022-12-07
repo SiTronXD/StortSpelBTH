@@ -103,6 +103,8 @@ struct LichComponent
     inline static const float    handPosition       = 12;
     inline static const float    handPositionElite  = 25;
 
+    inline static const float    aimAtPlayerYOffset  = 5;
+
     inline static const uint32_t graveHeight = 8;
     inline static const uint32_t graveWidth = 6;
     inline static const uint32_t graveDepth = 4;

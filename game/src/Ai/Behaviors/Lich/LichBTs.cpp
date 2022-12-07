@@ -764,19 +764,24 @@ BTStatus LichBT::attack(Entity entityID)
                 //Shoot projectile!
                 Transform&  orbTrans = getTheScene()->getComponent<Transform>(projectileID);
                 Rigidbody&  orbRB    = getTheScene()->getComponent<Rigidbody>(projectileID);
-                
+                glm::vec3 spellVector{};
                 if(lichComp.isElite)
                 {
                     orbTrans.position = lichTrans.position + glm::vec3(0.0f, LichComponent::handPositionElite, 0.0f) + (lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
+                    const glm::vec3 aimAtPlayerPos {playerTrans.position.x, playerTrans.position.y+LichComponent::aimAtPlayerYOffset, playerTrans.position.z};               
+                    const glm::vec3 aimFromLichPos {lichTrans.position.x, lichTrans.position.y+LichComponent::handPositionElite, lichTrans.position.z};               
+                    spellVector = safeNormalize(aimAtPlayerPos - aimFromLichPos);
                 }
                 else
                 {
                     orbTrans.position = lichTrans.position + glm::vec3(0.0f, LichComponent::handPosition, 0.0f) + (lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
+                    const glm::vec3 aimAtPlayerPos {playerTrans.position.x, playerTrans.position.y+LichComponent::aimAtPlayerYOffset, playerTrans.position.z};               
+                    const glm::vec3 aimFromLichPos {lichTrans.position.x, lichTrans.position.y+LichComponent::handPosition, lichTrans.position.z};               
+                    spellVector = safeNormalize(aimAtPlayerPos - aimFromLichPos);
                 }
+                
+                orbRB.velocity = spellVector * LichComponent::spellForce;
 
-                auto spellVector = safeNormalize(playerTrans.position - lichTrans.position) * LichComponent::spellForce;
-                spellVector.y = 0;  //TODO: What if player is on top of something... Will not aim att player
-                orbRB.velocity = spellVector;
                 orb.orbPower = lichComp.curAttack;
 
                 if (lichComp.curAttack->type == ATTACK_STRATEGY::FIRE)
@@ -795,9 +800,24 @@ BTStatus LichBT::attack(Entity entityID)
             }
             else
             {
-                glm::vec3 initialOrbPos = lichTrans.position + glm::vec3(0.0f, 12.0f, 0.0f) + (lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
-                glm::vec3 spellVector = safeNormalize(playerTrans.position - lichTrans.position) * LichComponent::spellForce;
-                spellVector.y = 0;  //TODO: What if player is on top of something... Will not aim att player
+                glm::vec3 initialOrbPos{0.f};
+                glm::vec3 spellVector{};
+                if(lichComp.isElite)
+                {
+                    initialOrbPos = lichTrans.position + glm::vec3(0.0f, LichComponent::handPositionElite, 0.0f) + (lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
+                    const glm::vec3 aimAtPlayerPos {playerTrans.position.x, playerTrans.position.y+LichComponent::aimAtPlayerYOffset, playerTrans.position.z};               
+                    const glm::vec3 aimFromLichPos {lichTrans.position.x, lichTrans.position.y+LichComponent::handPositionElite, lichTrans.position.z};               
+                    spellVector = safeNormalize(aimAtPlayerPos - aimFromLichPos);
+                }
+                else
+                {
+                    initialOrbPos = lichTrans.position + glm::vec3(0.0f, LichComponent::handPosition, 0.0f) + (lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
+                    const glm::vec3 aimAtPlayerPos {playerTrans.position.x, playerTrans.position.y+LichComponent::aimAtPlayerYOffset, playerTrans.position.z};               
+                    const glm::vec3 aimFromLichPos {lichTrans.position.x, lichTrans.position.y+LichComponent::handPosition, lichTrans.position.z};               
+                    spellVector = safeNormalize(aimAtPlayerPos - aimFromLichPos);
+                }
+                
+                spellVector *= LichComponent::spellForce;
                 
                 netScene->addEvent({(int)GameEvent::THROW_ORB, (int)projectileID },{initialOrbPos.x,initialOrbPos.y,initialOrbPos.z, spellVector.x, spellVector.y,spellVector.z});
 

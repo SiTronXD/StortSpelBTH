@@ -1227,7 +1227,9 @@ Entity NetworkHandlerGame::spawnObject(
                     Collider::createBox(glm::vec3{
                         LichComponent::alterWidth,
                         LichComponent::alterHeight,
-                        LichComponent::alterDepth})
+                        LichComponent::alterDepth},
+                        glm::vec3(0.f,LichComponent::alterHeight/2.f, 0.f)
+                        )
                 );
 
                 break;
@@ -1240,7 +1242,9 @@ Entity NetworkHandlerGame::spawnObject(
                     Collider::createBox(glm::vec3{
                         LichComponent::graveWidth,
                         LichComponent::graveHeight,
-                        LichComponent::graveDepth})
+                        LichComponent::graveDepth},
+                        glm::vec3(0.f,LichComponent::graveHeight/2.f, 0.f)
+                        )
                 );
                 break;
             default:
