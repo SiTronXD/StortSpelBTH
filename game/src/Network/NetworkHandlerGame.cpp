@@ -589,7 +589,7 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
     case GameEvent::PLAY_PARTICLE:
         tcpPacket >> i0 >> i1;
         if (serverEntities.find(i1) != serverEntities.end()){
-            this->playParticle((ParticleTypes)i0, serverEntities[i1]);
+            //this->playParticle((ParticleTypes)i0, serverEntities[i1]);
 		}
 		break;
 	case GameEvent::PLAY_PARTICLE_P:
@@ -598,7 +598,7 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		{
 			if (this->otherPlayersServerId[i] == i1)
 			{
-                playParticle((ParticleTypes)i0, playerEntities[i]);		
+                playParticle((ParticleTypes)i0, otherPlayers[i].first);
 				break;
 			}
 		}
@@ -956,6 +956,7 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 	for (int i = 0; i < size; i++)
 	{
 		this->playerEntities[i] = scene->createEntity();
+        this->otherPlayers[i].first = this->playerEntities[i];
 		scene->setComponent<MeshComponent>(this->playerEntities[i], playerMesh);
 		scene->setComponent<AnimationComponent>(this->playerEntities[i]);
 		scene->setComponent<Collider>(this->playerEntities[i], Collider::createCapsule(2, 10, glm::vec3(0, 7.3, 0)));
@@ -1001,9 +1002,18 @@ void NetworkHandlerGame::updatePlayer()
 
 void NetworkHandlerGame::interpolatePositions()
 {
+    
 	Scene* scene = this->sceneHandler->getScene();
 	UIRenderer* UI = this->sceneHandler->getUIRenderer();
 	this->timer += Time::getDT();
+
+	if (playerEntities.size() > 0 && !scene->entityValid(this->playerEntities[0])) {
+            std::cout << "stop1.5" << std::endl;
+	}
+	if (playerEntities.size() > 0 && !scene->hasComponents<Transform>(this->playerEntities[0]))
+    {
+            std::cout << "stop2" << std::endl; 
+    }
 
 	float percent = this->timer / UPDATE_RATE;
 	for (int i = 0; i < this->playerEntities.size(); i++)
@@ -1155,12 +1165,15 @@ void NetworkHandlerGame::setPerks(const Perks perk[])
 			}
 }
 
-void NetworkHandlerGame::playParticle(const ParticleTypes& particleType, Entity entity)
+void NetworkHandlerGame::playParticle(const ParticleTypes& particleType, const Entity& entity)
 {
     if (!this->sceneHandler->getScene()->hasComponents<ParticleSystem>(entity))
     {
     	this->sceneHandler->getScene()->setComponent<ParticleSystem>(entity);
-    	ParticleSystem& partSys = this->sceneHandler->getScene()->getComponent<ParticleSystem>(entity);
+    	
+    	
+    }
+	ParticleSystem& partSys = this->sceneHandler->getScene()->getComponent<ParticleSystem>(entity);
         switch (particleType)
         {
 			case ParticleTypes::HEAL:
@@ -1176,8 +1189,7 @@ void NetworkHandlerGame::playParticle(const ParticleTypes& particleType, Entity 
                 return;
                 break;
         }
-    	partSys.spawn = true;
-    }
+        partSys.spawn = true;
 }
 
 Entity NetworkHandlerGame::spawnOrbs(int orbType)
