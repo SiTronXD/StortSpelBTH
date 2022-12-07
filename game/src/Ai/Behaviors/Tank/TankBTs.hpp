@@ -5,7 +5,6 @@
 #include "vengine.h"
 
 #include "../HelperFuncs.hpp"
-#include "vengine/ai/PathFinding.h"
 #include "../../../Components/AICombatTank.hpp"
 #include "../../../Components/Combat.h"
 

@@ -156,8 +156,9 @@ struct TankComponent
 		this->sightRadius				*= eliteComp.radiusMultiplier; 
 		this->peronalSpaceRadius		*= eliteComp.radiusMultiplier;
 		this->friendVisitRadius			*= eliteComp.radiusMultiplier; 
-
-		scene->getComponent<Collider>(entityID).radius *= eliteComp.sizeMultiplier;
+		Collider& col = scene->getComponent<Collider>(entityID);
+		col.radius *= eliteComp.sizeMultiplier;
+		col.offset += glm::vec3(0.0f, 5.0f, 0.0f);
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale * eliteComp.sizeMultiplier;
 		this->origScale = trans.scale;
@@ -181,7 +182,9 @@ struct TankComponent
 		this->peronalSpaceRadius		/= this->eliteStats.radiusMultiplier;
 		this->friendVisitRadius			/= this->eliteStats.radiusMultiplier; 
 										
-        scene->getComponent<Collider>(entityID).radius /= this->eliteStats.sizeMultiplier;
+		Collider& col = scene->getComponent<Collider>(entityID);
+		col.radius /= this->eliteStats.sizeMultiplier;
+		col.offset -= glm::vec3(0.0f, 5.0f, 0.0f);
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale / this->eliteStats.sizeMultiplier;
 		this->origScale = trans.scale;

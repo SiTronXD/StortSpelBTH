@@ -276,7 +276,8 @@ void LobbyScene::update()
                 this->getNetworkHandler()->sendDataToServerTCP(helpPacket);
             }
         }
-    }else if (!this->getNetworkHandler()->isConnected())
+    }
+    else if (!this->getNetworkHandler()->isConnected())
     {
         this->getNetworkHandler()->disconnectClient();
         this->getNetworkHandler()->deleteServer();

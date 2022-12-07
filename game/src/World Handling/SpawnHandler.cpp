@@ -57,19 +57,6 @@ void SpawnHandler::spawnEnemiesIntoRoom()
         this->spawnTank(tankIdx, this->tilePicker.getRandomEmptyTile()->getPos(), true);
         this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2), true);
         this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP), true);
-
-       /* switch (rand()%3)
-        {
-        case 0:
-            this->spawnTank(tankIdx, this->tilePicker.getRandomEmptyTile()->getPos(), true);
-            break;
-        case 1:
-            this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2), true);
-            break;
-        case 2:
-            this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP), true);
-            break;
-        }*/
     }
     else 
     {
@@ -110,7 +97,7 @@ void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos, bool elite
     TankComponent& tankComp = currScene->getComponent<TankComponent>(this->tankIDs[tankIdx]);
 
     AiEliteComponent defaultEliteComp;
-    defaultEliteComp.sizeMultiplier = 2.0f;
+    defaultEliteComp.sizeMultiplier = 1.25f;
 
     if(elite)
     {
@@ -452,7 +439,8 @@ void SpawnHandler::createLich()
     Transform& transform = this->currScene->getComponent<Transform>(this->lichIDs.back());
     transform.scale = glm::vec3(1.5f);
     this->currScene->setComponent<Collider>(this->lichIDs.back(), 
-        Collider::createCapsule(LichComponent::colliderRadius, LichComponent::colliderHeight, glm::vec3(0.0f, 15.0f, 0.0f)));
+        Collider::createCapsule(LichComponent::colliderRadius, LichComponent::colliderHeight, 
+            glm::vec3(0.0f, LichComponent::colliderYOffset, 0.0f)));
     this->aiHandler->createAIEntity(this->lichIDs.back(), "lichFSM");
     LichComponent& lichComp = this->currScene->getComponent<LichComponent>(this->lichIDs.back());
     lichComp.origScaleY = transform.scale.y;
@@ -463,7 +451,8 @@ void SpawnHandler::createLich()
     //Create Grave
     auto& graveID = this->lichObjects[this->lichIDs.back()].graveID = this->currScene->createEntity();
     this->currScene->setComponent<Collider>(graveID, Collider::createBox(
-        glm::vec3{LichComponent::graveWidth,LichComponent::graveHeight,LichComponent::graveDepth})
+        glm::vec3{LichComponent::graveWidth,LichComponent::graveHeight,LichComponent::graveDepth},
+        glm::vec3(0.f,LichComponent::graveHeight/2.f, 0.f))
         );
 
     this->currScene->getComponent<LichComponent>(this->lichIDs.back()).graveID = graveID;
@@ -472,7 +461,8 @@ void SpawnHandler::createLich()
     //Create Alter
     auto& alterID = this->lichObjects[this->lichIDs.back()].alterID = this->currScene->createEntity();    
     this->currScene->setComponent<Collider>(alterID, Collider::createBox(
-        glm::vec3{LichComponent::alterWidth,LichComponent::alterHeight,LichComponent::alterDepth})
+        glm::vec3{LichComponent::alterWidth,LichComponent::alterHeight,LichComponent::alterDepth},
+        glm::vec3(0.f,LichComponent::alterHeight/2.f, 0.f))
         );
     
     this->currScene->getComponent<LichComponent>(this->lichIDs.back()).alterID = alterID;

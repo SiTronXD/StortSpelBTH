@@ -97,11 +97,19 @@ struct LichComponent
     inline static const uint32_t colliderRadius = 6;
     inline static const uint32_t colliderHeight = 22;
 
+    inline static const float    colliderYOffset = 15;
+    inline static const float    colliderYOffsetElite = 32;
+
+    inline static const float    handPosition       = 12;
+    inline static const float    handPositionElite  = 25;
+
+    inline static const float    aimAtPlayerYOffset  = 5;
+
     inline static const uint32_t graveHeight = 8;
     inline static const uint32_t graveWidth = 6;
     inline static const uint32_t graveDepth = 4;
 
-    inline static const uint32_t alterHeight = 8;
+    inline static const uint32_t alterHeight = 14;
     inline static const uint32_t alterWidth = 3;
     inline static const uint32_t alterDepth = 3;
 
@@ -164,7 +172,7 @@ struct LichComponent
     float healthRegenSpeed      = 2.0f;
     float deathAnimSpeed        = 3.0f;
     float huntSpeed             = 60.0f;
-    float speed                 = 20.0f ; // Too close, I will back away from you! (while shooting) 
+    float speed                 = 30.0f ; // Too close, I will back away from you! (while shooting) 
 
     //ATTACK_STRATEGY strat       = ATTACK_STRATEGY::NONE;
 
@@ -219,6 +227,7 @@ struct LichComponent
 
         scene->getComponent<Collider>(entityID).radius *= eliteComp.sizeMultiplier;
         scene->getComponent<Collider>(entityID).height *= eliteComp.sizeMultiplier;
+        scene->getComponent<Collider>(entityID).offset.y = LichComponent::colliderYOffsetElite;
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale * eliteComp.sizeMultiplier;
 		this->origScale = trans.scale;
@@ -249,6 +258,7 @@ struct LichComponent
 
         scene->getComponent<Collider>(entityID).radius /= this->eliteStats.sizeMultiplier;
         scene->getComponent<Collider>(entityID).height /= this->eliteStats.sizeMultiplier;
+        scene->getComponent<Collider>(entityID).offset.y = LichComponent::colliderYOffset;
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale / this->eliteStats.sizeMultiplier;
 		this->origScale = trans.scale;
