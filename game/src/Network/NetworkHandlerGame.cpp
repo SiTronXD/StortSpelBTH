@@ -292,7 +292,7 @@ void NetworkHandlerGame::init()
 		SwarmComponent::s_takeDmg =
 			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
 		SwarmComponent::s_move =
-			this->resourceManger->addSound("assets/Sounds/RunningSound.ogg");
+			this->resourceManger->addSound("assets/Sounds/PlayerSounds/RunningSound.ogg");
 		SwarmComponent::s_attack =
 			this->resourceManger->addSound("assets/Sounds/SwishSound.ogg");
 		SwarmComponent::s_initialized = true;
