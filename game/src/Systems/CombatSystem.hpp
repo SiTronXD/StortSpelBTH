@@ -65,9 +65,9 @@ public:
 			combat.combos.emplace_back("Light Heavy Light ");
 			combat.combos.emplace_back("Heavy Light Heavy ");
 
-			this->takeDmgSound = this->resourceMng->addSound("assets/Sounds/OufSound.ogg");
-			this->moveSound = this->resourceMng->addSound("assets/Sounds/RunningSound.ogg");
-			this->attackSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/SwishSound.ogg"));
+			this->takeDmgSound = this->resourceMng->addSound("assets/Sounds/PlayerSounds/hurt-2.ogg");
+			this->moveSound = this->resourceMng->addSound("assets/Sounds/PlayerSounds/RunningSound.ogg");
+			this->attackSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/PlayerSounds/sword-swing-1.ogg"));
 
 			this->swordCollID = this->scene->createEntity();
 			this->knockbackCollID = this->scene->createEntity();
@@ -134,6 +134,17 @@ public:
             {
 				useAbility(combat);
             }
+
+			AnimationStatus status = this->scene->getAnimationStatus(this->playerID, "UpperBody");
+			if (combat.normalAttack)
+			{
+				if ((status.timer / status.endTime) > 0.1f && status.animationName == "lightAttack" ||
+					(status.timer / status.endTime) > 0.3f && status.animationName == "heavyAttack")
+				{
+					this->scene->setComponent<Collider>(this->swordCollID, Collider::createCapsule(3.f, 18.f, glm::vec3(0), true));
+					combat.normalAttack = false;
+				}
+			}
 
             // Check if player wants to drop a perk
             if (Input::isKeyPressed(Keys::ONE))
@@ -259,11 +270,19 @@ public:
 				{
 					if (combat.activeAttack == lightActive)
 					{
+						this->scene->removeComponent<Collider>(this->swordCollID);
+						this->hitEnemies.clear();
+						this->canHit = true;
+						this->scene->setAnimation(this->playerID, "idle", "UpperBody", 1.f);
 						combat.activeAttack = noActive;
 						lightAttack(combat);
 					}
 					else if (combat.activeAttack == heavyActive)
 					{
+						this->scene->removeComponent<Collider>(this->swordCollID);
+						this->hitEnemies.clear();
+						this->canHit = true;
+						this->scene->setAnimation(this->playerID, "idle", "UpperBody", 1.f);
 						combat.activeAttack = noActive;
 						heavyAttack(combat);
 					}
@@ -279,11 +298,19 @@ public:
 				{
 					if (combat.activeAttack == lightActive)
 					{
+						this->scene->removeComponent<Collider>(this->swordCollID);
+						this->hitEnemies.clear();
+						this->canHit = true;
+						this->scene->setAnimation(this->playerID, "idle", "UpperBody", 1.f);
 						combat.activeAttack = noActive;
 						lightAttack(combat);
 					}
 					else if (combat.activeAttack == heavyActive)
 					{
+						this->scene->removeComponent<Collider>(this->swordCollID);
+						this->hitEnemies.clear();
+						this->canHit = true;
+						this->scene->setAnimation(this->playerID, "idle", "UpperBody", 1.f);
 						combat.activeAttack = noActive;
 						heavyAttack(combat);
 					}
@@ -447,9 +474,15 @@ public:
 			}
 			else
 			{
-				Transform& swordTrans = this->scene->getComponent<Transform>(this->swordCollID);
-				swordTrans.updateMatrix();
-				this->scene->setComponent<Collider>(this->swordCollID, Collider::createCapsule(3.f, 18.f, glm::vec3(0), true));
+				if (animName == "lightAttack" || animName == "heavyAttack")
+				{
+					this->scene->getComponent<Combat>(this->playerID).normalAttack = true;
+				}
+				else
+				{
+					this->scene->setComponent<Collider>(this->swordCollID, Collider::createCapsule(3.f, 18.f, glm::vec3(0), true));
+					this->scene->getComponent<Combat>(this->playerID).normalAttack = false;
+				}
 			}
 		}
 	}
@@ -578,6 +611,10 @@ public:
 	{
 		if (idx == 0)
 		{
+			if (this->scene->hasComponents<Collider>(this->swordCollID))
+			{
+				this->scene->removeComponent<Collider>(this->swordCollID);
+			}
 			combat.attackTimer = combat.comboLightCd;
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive1;
@@ -585,6 +622,10 @@ public:
 		}
 		else if (idx == 1)
 		{
+			if (this->scene->hasComponents<Collider>(this->swordCollID))
+			{
+				this->scene->removeComponent<Collider>(this->swordCollID);
+			}
 			combat.attackTimer = combat.comboMixCd;
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive2;
@@ -592,6 +633,10 @@ public:
 		}
 		else if (idx == 2)
 		{
+			if (this->scene->hasComponents<Collider>(this->swordCollID))
+			{
+				this->scene->removeComponent<Collider>(this->swordCollID);
+			}
 			combat.attackTimer = combat.comboHeavyCd;
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive3;
