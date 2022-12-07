@@ -159,7 +159,7 @@ private:
   public:
     ~NetworkHandlerGame();
 	void init();
-	void cleanUp();
+	void cleanUp() override;
     void initParticleSystems();
     void deleteInitialParticleSystems();
 
