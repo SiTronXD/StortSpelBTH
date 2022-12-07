@@ -48,7 +48,7 @@ private:
 public:
 	CombatSystem(SceneHandler* sceneHandler, Entity playerID, 
 		const bool* paused, const bool* disabled, NetworkHandlerGame* networkHandler)
-		: sceneHandler(sceneHandler), playerID(playerID), paused(paused), 
+		: sceneHandler(sceneHandler), playerID(playerID), paused(paused), disabled(disabled),
 		swordID(-1), swordCollID(-1), knockbackCollID(-1), networkHandler(networkHandler)
 	{
 		this->resourceMng = this->sceneHandler->getResourceManager();

@@ -61,6 +61,7 @@ private:
   float fadeTimer;
   float deathTimer;
   bool isDead;
+  bool end = false; // End game in multiplayer
   
   bool safetyCleanDone = false;
   uint32_t timeWhenEnteredRoom = 0;
@@ -117,8 +118,9 @@ public:
   virtual void onCollisionStay(Entity e1, Entity e2) override;
   virtual void onCollisionExit(Entity e1, Entity e2) override;
 
-  // Multiplayer: revive self
+  // Multiplayer
   void revivePlayer();
+  void endGame();
 private:
 
     void imguiUpdate();

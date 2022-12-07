@@ -695,6 +695,9 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 			this->sceneHandler->getScene()->setInactive(this->swords[i1]);
 		}
 		break;
+	case GameEvent::END_GAME:
+		((GameScene*)this->sceneHandler->getScene())->endGame();
+		break;
 	default:
 		break;
 	}
@@ -847,14 +850,14 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientIndex, s
 		server->sendToAllClientsTCP(packet);
         
 		break;
+	case GameEvent::PLAYER_SET_GHOST:
+		packet << (int)GameEvent::PLAYER_SET_GHOST << server->getClientID(clientIndex);
+		server->sendToAllOtherClientsTCP(packet, clientIndex);
+		break;
     case GameEvent::ROOM_CLEAR:
         this->newRoomFrame = false;
         roomHandler->roomCompleted();
 		this->numRoomsCleared++;
-		break;
-	case GameEvent::PLAYER_SET_GHOST:
-		packet << (int)GameEvent::PLAYER_SET_GHOST << server->getClientID(clientIndex);
-		server->sendToAllOtherClientsTCP(packet, clientIndex);
 		break;
 	default:
 		packet << event;

@@ -186,9 +186,6 @@ void GameScene::start()
         this->playerID,
         &this->paused,
         &this->combatDisabled,
-        this->getPhysicsEngine(),
-        this->getUIRenderer(),
-        this->getScriptHandler(),
         this->networkHandler
     );
     this->createSystem<HealSystem>(
@@ -254,14 +251,6 @@ void GameScene::update()
         this->getUIRenderer()->setTexture(this->ghostOverlayIndex);
         this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
             glm::vec4(1.0f, 1.0f, 1.0f, 0.4f + sin(this->timer * 2.0f) * 0.15f));
-    }
-    // Fade in/out to black
-    if (this->fadeTimer < 2.75f)
-    {
-        this->getUIRenderer()->setTexture(this->blackTextureIndex);
-        this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
-            glm::vec4(1.0f, 1.0f, 1.0f, sin(this->fadeTimer * 2.0f - glm::half_pi<float>() + 1.25f) * 0.5f + 0.5f));
-        this->fadeTimer += Time::getDT();
     }
 
     networkHandler->deleteInitialParticleSystems();
@@ -457,8 +446,13 @@ void GameScene::update()
         this->networkHandler->updatePlayer();
         this->networkHandler->interpolatePositions();
 
+        if (this->fadeTimer >= 1.0f && this->end)
+        {
+            this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+        }
+
         // Server is diconnected
-        if (this->networkHandler->getStatus() == ServerStatus::DISCONNECTED)
+        if (this->networkHandler->getStatus() == ServerStatus::DISCONNECTED && !this->end)
         {
             this->networkHandler->disconnectClient();
             this->networkHandler->deleteServer();
@@ -466,6 +460,15 @@ void GameScene::update()
         }
 
         this->imguiUpdate();
+    }
+
+    // Fade in/out to black
+    if (this->fadeTimer < 2.75f)
+    {
+        this->getUIRenderer()->setTexture(this->blackTextureIndex);
+        this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
+            glm::vec4(1.0f, 1.0f, 1.0f, sin(this->fadeTimer * 2.0f - glm::half_pi<float>() + 1.25f) * 0.5f + 0.5f));
+        this->fadeTimer += Time::getDT();
     }
 
     Combat& playerCombat = this->getComponent<Combat>(this->playerID);
@@ -773,6 +776,15 @@ void GameScene::revivePlayer()
         this->ghostTransitionTimer = 0.0f;
         this->fadeTimer = 0.0f;
         this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = this->origMat;
+    }
+}
+
+void GameScene::endGame()
+{
+    if (!this->end)
+    {
+        this->fadeTimer = 0.0f;
+        this->end = true;
     }
 }
 

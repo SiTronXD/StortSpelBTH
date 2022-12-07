@@ -249,9 +249,11 @@ void ServerGameMode::makeDataSendToClient()
         }
     }
     //Check for updates in player hp and change it it should
+    bool allDead = true;
     for (int i = 0; i < getPlayerSize(); i++)
     {
-        if (this->getComponent<HealthComp>(getPlayer(i)).health != lastPlayerHps[i].health)
+        HealthComp& healthComp = this->getComponent<HealthComp>(getPlayer(i));
+        if (healthComp.health != lastPlayerHps[i].health)
         {
             //send that player new hp
             this->addEvent(
@@ -262,6 +264,15 @@ void ServerGameMode::makeDataSendToClient()
             //change lastPlayerHps
             lastPlayerHps[i].health = this->getComponent<HealthComp>(getPlayer(i)).health;
         }
+        // If someone is alive set to false
+        if (allDead && healthComp.health > 0)
+        {
+            allDead = false;
+        }
+    }
+    if (allDead)
+    {
+        this->addEvent({ (int)GameEvent::END_GAME });
     }
 
     //DEBUG
