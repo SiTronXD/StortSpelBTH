@@ -104,7 +104,12 @@ void TankBT::groundHumpShortcut(Entity entityID)
 				if(netScene)
 		        {
 		            netScene->addEvent({(int)GameEvent::DO_HUMP, (int)newHump}, {hTrans.position.x, hTrans.position.y, hTrans.position.z});
-		        }            
+					netScene->addEvent({ (int)GameEvent::PLAY_ENEMY_SOUND, entityID, 1, 1, 0 });
+		        }
+				else
+				{
+					sceneHandler->getAudioHandler()->playSound(entityID, TankComponent::s_shockwave, 30.f);
+				}
 			}
 			else
 			{
@@ -727,6 +732,16 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.runDir = safeNormalize(playerTrans.position - tankTrans.position);
 		tankComp.hasRunTarget = true;
 		tankComp.canAttack = true;
+
+		ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+		if (netScene)
+		{
+			netScene->addEvent({ (int)GameEvent::PLAY_ENEMY_SOUND, entityID, 0, 1, 0 });
+		}
+		else if (!netScene)
+		{
+			sceneHandler->getAudioHandler()->playSound(entityID, TankComponent::s_charge, 30.f);
+		}
 	}
 
 

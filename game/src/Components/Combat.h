@@ -27,7 +27,7 @@ struct Combat
     float comboLightCd = 1.f;
     float comboHeavyCd = 1.f;
     float comboMixCd = 1.f;
-    float knockbackCd = 2.f;
+    float knockbackCd = 1.f;
     float healCd = 10.f;
 
     // Different types of combos aviable
@@ -63,7 +63,7 @@ struct Combat
     // 3 = Mix Combo Attack
     // 4 = Heavy Combo Attack
     // 5 = Knockback Ability
-    float knockbackArr[6] = { 50.f, 80.f, 120.f, 50.f, 50.f, 100.f };
+    float knockbackArr[6] = { 50.f, 80.f, 120.f, 50.f, 50.f, 500.f };
 
     ActiveAttack activeAttack = noActive;
 };

@@ -705,6 +705,16 @@ BTStatus SwarmBT::attack(Entity entityID)
 		rigidbody.velocity = dir * swarmComp.jumpForce;
 		swarmComp.inAttack = true; 
 		rigidbody.friction = 0.0f;
+
+		ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+		if (netScene)
+		{
+			netScene->addEvent({ (int)GameEvent::PLAY_ENEMY_SOUND, entityID, 0, 1, 0 });
+		}
+		else
+		{
+			sceneHandler->getAudioHandler()->playSound(entityID, SwarmComponent::s_attack, 10.f);
+		}
 	
 		Log::write("ATTACK!!!!", BT_FILTER);
 		ret = BTStatus::Success;
