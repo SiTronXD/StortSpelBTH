@@ -52,7 +52,7 @@ void GameScene::setCurrentLevel(const GameSceneLevel& lvl) {
 GameSceneLevel GameScene::setNewLevel() {
     GameSceneLevel theReturn;
 
-    theReturn.level = currentLevel.level++;
+    theReturn.level = currentLevel.level + 1;
     theReturn.hp = this->getComponent<HealthComp>(playerID).health;
     Combat &c = this->getComponent<Combat>(playerID);
     for (int i = 0; i < 4; i++)
@@ -193,6 +193,8 @@ void GameScene::start()
         this->networkHandler->spawnItemRequest(movementUpPerk, 1.0f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
     }
+
+    this->levelString = "level " + std::to_string(currentLevel.level);
 
     // Pause menu
     this->resumeButton.position = glm::vec2(0.0f, 100.0f);
@@ -357,6 +359,8 @@ void GameScene::update()
             glm::vec2(76.0f)
         );
     }
+    // Render Level
+    this->getUIRenderer()->renderString(this->levelString, glm::vec2(-750, 500), glm::vec2(60,60));
 
     // Render HP bar UI
     HealthComp& playerHealth = this->getComponent<HealthComp>(this->playerID);
@@ -645,10 +649,8 @@ void GameScene::createPortal()
     glm::vec3 portalTriggerDims(6.f, 18.f, 1.f);
     glm::vec3 portalBlockDims(3.f, 18.f, 3.f);
 
-    portalOffMesh =
-        this->getResourceManager()->addMesh("assets/models/PortalOff.obj");
-    portalOnMesh =
-        this->getResourceManager()->addMesh("assets/models/PortalOn.obj");
+    portalOffMesh = this->getResourceManager()->addMesh("assets/models/PortalOff.obj");
+    portalOnMesh = this->getResourceManager()->addMesh("assets/models/PortalOn.obj");
 
     portal = this->createEntity();
     this->getComponent<Transform>(portal).position =
