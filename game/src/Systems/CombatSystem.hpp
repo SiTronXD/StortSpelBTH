@@ -243,8 +243,16 @@ public:
 				combat.nextAttack = noActive;
 				if (combat.activeAttack != noActive)
 				{
-					combat.activeAttack = noActive;
-					lightAttack(combat);
+					if (combat.activeAttack == lightActive)
+					{
+						combat.activeAttack = noActive;
+						lightAttack(combat);
+					}
+					else if (combat.activeAttack == heavyActive)
+					{
+						combat.activeAttack = noActive;
+						heavyAttack(combat);
+					}
 				}
 			}
 			return combat.activeAttack;
@@ -255,8 +263,16 @@ public:
 				combat.nextAttack = noActive;
 				if (combat.activeAttack != noActive)
 				{
-					combat.activeAttack = noActive;
-					heavyAttack(combat);
+					if (combat.activeAttack == lightActive)
+					{
+						combat.activeAttack = noActive;
+						lightAttack(combat);
+					}
+					else if (combat.activeAttack == heavyActive)
+					{
+						combat.activeAttack = noActive;
+						heavyAttack(combat);
+					}
 				}
 			}
 			return combat.activeAttack;
@@ -450,7 +466,7 @@ public:
 				return true;
 			}
 		}
-		else if (combat.attackTimer < 0.5f)
+		else if (combat.attackTimer <= 0.5f)
 		{
 			combat.nextAttack = lightActive;
 		}
@@ -481,6 +497,11 @@ public:
 				return true;
 			}
 		}
+		else if (combat.attackTimer <= 0.5f)
+		{
+			combat.nextAttack = heavyActive;
+		}
+
 		return false;
 	};
 
