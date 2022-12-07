@@ -494,7 +494,16 @@ void RoomHandler::generate(uint32_t seed, Entity dir)
 				{
 					curRoom.objects.emplace_back(this->createFloorDecoEntity(tile.position, true));
 				}
-				
+				Entity e = this->scene->createEntity();
+				curRoom.objects.emplace_back(e);
+				auto& tra = scene->getComponent<Transform>(e);
+				tra.position.x = tile.position.x * TILE_WIDTH;
+				tra.position.z = tile.position.y * TILE_WIDTH;
+				tra.scale *= 0.25F;
+
+				if (useMeshes)
+					scene->setComponent<MeshComponent>(e, twoXTwoMeshIds[0].first);
+
 				curRoom.mainTiles.emplace_back(tile.position.x, 0.f, tile.position.y);
 				curRoom.mainTiles.back() *= TILE_WIDTH;
 				break;
@@ -560,12 +569,19 @@ void RoomHandler::generate(uint32_t seed, Entity dir)
 			this->scene->getComponent<Transform>(entity).position += glm::vec3(TILE_WIDTH * -0.5f, 0.f, TILE_WIDTH * -0.5f);
 		}
 	}
+	printf("Num Rooms: %zd | numPathsEntities: %zd\n", rooms.size(), pathEntities.size());
 	for (int i = 0; i < numTotRooms; i++)
 	{
 		this->moveRoom(i, glm::vec3(TILE_WIDTH * -0.5f, 0.f, TILE_WIDTH * -0.5f));
 
 		this->rooms[i].mainTiles.shrink_to_fit();
 		this->rooms[i].objects.shrink_to_fit();
+
+		printf("Room: %d\n", i);
+		printf("Num mainTiles: %zd | numObjects: %zd\n", rooms[i].mainTiles.size(), rooms[i].objects.size());
+		printf("Connecting idx: 0: %d, 1: %d, 2: %d, 3: %d\n", rooms[i].connectingIndex[0], rooms[i].connectingIndex[1], rooms[i].connectingIndex[2], rooms[i].connectingIndex[3]);
+		printf("Type: %d | pos: (%d, %d, %d)\n----------\n", (int)rooms[i].type, (int)rooms[i].position.x, (int)rooms[i].position.y, (int)rooms[i].position.z);
+
 	}
 
 	roomLayout.clear();

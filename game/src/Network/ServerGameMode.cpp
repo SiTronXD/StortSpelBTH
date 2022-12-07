@@ -59,6 +59,7 @@ void ServerGameMode::update(float dt)
     if (!this->newRoomFrame && roomHandler.playersInPathway(this->players))
     {
         addEvent({(int)GameEvent::CLOSE_OLD_DOORS}, {roomHandler.serverGetNextRoomIndex()});
+        printf("Server Active: %d\n", roomHandler.activeIndex);
         this->spawnHandler.spawnEnemiesIntoRoom();
 
         std::cout << "Server: player in new room" << std::endl;

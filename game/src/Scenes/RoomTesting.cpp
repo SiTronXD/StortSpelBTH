@@ -11,7 +11,7 @@ RoomTesting::~RoomTesting()
 
 void RoomTesting::init()
 {
-	this->roomHandler.init(this, this->getResourceManager(), this->getPhysicsEngine(), true);
+	this->roomHandler.init(this, this->getResourceManager(), this->getPhysicsEngine(), false);
 	this->roomHandler.generate(123);
 
 	Entity cam = this->createEntity();
