@@ -652,20 +652,6 @@ void GameScene::createPortal()
         t.position = portalTransform.position + colliders[i].position;
         t.rotation = portalTransform.rotation + colliders[i].rotation;
     }
-
-    //Entity collider1 = this->createEntity();
-    //this->getComponent<Transform>(collider1).position =
-    //    this->getComponent<Transform>(portal).position;
-    //this->getComponent<Transform>(collider1).position.x += 9.f;
-    //this->getComponent<Transform>(collider1).position.y += 9.f;
-    //this->setComponent<Collider>(collider1, Collider::createBox(portalBlockDims));
-    //
-    //Entity collider2 = this->createEntity();
-    //this->getComponent<Transform>(collider2).position =
-    //    this->getComponent<Transform>(portal).position;
-    //this->getComponent<Transform>(collider2).position.x -= 9.f;
-    //this->getComponent<Transform>(collider2).position.y += 9.f;
-    //this->setComponent<Collider>(collider2, Collider::createBox(portalBlockDims));
 }
 
 #ifdef _CONSOLE
