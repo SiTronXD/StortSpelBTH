@@ -14,6 +14,8 @@ struct SwarmComponent
     inline static const uint32_t colliderRadius = 4;
     inline static const uint32_t GROUP_RAD_MULTIPLER = 4;
 
+    inline static const uint32_t aimAtPlayerYOffset = 7;
+
 	//Ints
 	int LOW_HEALTH				= 30;
 	int FULL_HEALTH				= 100;
@@ -36,9 +38,9 @@ struct SwarmComponent
 	float idleRotSpeed			= 100.0f;
 	float attackRotSpeed		= 200.0f;
 	float tempRotAngle			= 0.0f;//Dont touch!
-	float lightHit = 15.f;
-	float lightAttackTime = 2.0f;
-	float timer = 0.f;
+	float lightHit              = 15.f;
+	float lightAttackTime       = 2.0f;
+	float timer                 = 0.f;
 	//Bools
     bool alert_go_up			= true;
 	bool alertAtTop				= false;
