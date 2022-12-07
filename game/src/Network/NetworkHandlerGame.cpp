@@ -469,12 +469,12 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 			if (i2 == 0)
 			{
 				
-				this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<SwarmComponent>(serverEntities[i0]).s_takeDmg, 30.f);
+				this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<SwarmComponent>(serverEntities[i0]).s_takeDmg, 30.f);
 			}
 			else if (i2 == 1)
 			{
 				// DEAL DAMAGE SOUND
-				this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<SwarmComponent>(serverEntities[i0]).s_attack, 30.f);
+				this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<SwarmComponent>(serverEntities[i0]).s_attack, 30.f);
 			}
 			else if (i2 == 3)
 			{
@@ -485,18 +485,18 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		{
 			if (i2 == 0)
 			{
-				this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<TankComponent>(serverEntities[i0]).s_takeDmg, 30.f);
+				this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<TankComponent>(serverEntities[i0]).s_takeDmg, 30.f);
 			}
 			else if (i2 == 1)
 			{
 				// DEAL DAMAGE SOUND
 				if (i3 == 0)
 				{
-					this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<TankComponent>(serverEntities[i0]).s_shockwave, 30.f);
+					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<TankComponent>(serverEntities[i0]).s_shockwave, 30.f);
 				}
 				else if (i3 == 1)
 				{
-					this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<TankComponent>(serverEntities[i0]).s_charge, 30.f);
+					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<TankComponent>(serverEntities[i0]).s_charge, 30.f);
 				}
 			}
 			else if (i2 == 3)
@@ -508,22 +508,22 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		{
 			if (i2 == 0)
 			{
-				this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_takeDmg, 30.f);
+				this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_takeDmg, 30.f);
 			}
 			else if (i2 == 1)
 			{
 				// DEAL DAMAGE SOUND
 				if (i3 == 0)
 				{
-					this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_fire, 30.f);
+					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_fire, 30.f);
 				}
 				else if (i3 == 1)
 				{
-					this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_lightning, 30.f);
+					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_lightning, 30.f);
 				}
 				else if (i3 == 2)
 				{
-					this->sceneHandler->getAudioHandler()->playSound(i0, this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_ice, 30.f);
+					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_ice, 30.f);
 				}
 			}
 			else if (i2 == 3)
