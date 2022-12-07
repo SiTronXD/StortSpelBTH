@@ -218,6 +218,7 @@ public:
 	bool inExitRoom() const;
 
     const glm::vec3& getRoomPos() const;
+	int getActiveIndex() const;
 
 	Entity getFloor() const;
 

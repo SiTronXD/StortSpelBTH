@@ -836,6 +836,11 @@ const glm::vec3& RoomHandler::getRoomPos() const
     return this->rooms[this->activeIndex].position;
 }
 
+int RoomHandler::getActiveIndex() const
+{
+	return this->activeIndex;
+}
+
 void RoomHandler::createTileInfos(uint32_t roomIndex)
 {
 	auto rawTiles = this->rooms[roomIndex].mainTiles;
