@@ -5,6 +5,7 @@
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
+#include "../Components/AiElite.hpp"
 
 #include <list>
 #include <random>
@@ -69,8 +70,8 @@ public:
     inline static const int MAX_NR_SWARMGROUPS  = (int)((MAX_NR_OF_ENEMIES * PERCENTAGE_SWARMS)/NR_BLOBS_IN_GROUP);
 
     inline static const bool USE_DEBUG = false;
-    inline static const int NR_TANK_DBG         = 1;
-    inline static const int NR_LICH_DBG         = 0;
+    inline static const int NR_TANK_DBG         = 0;
+    inline static const int NR_LICH_DBG         = 2;
     inline static const int NR_SWARM_GROUPS_DBG = 0;
 
 private:
@@ -108,11 +109,11 @@ private:
 
     TilePicker tilePicker;
 
-    void spawnTank( const int tankIdx,  const glm::vec3& pos);
-    uint32_t spawnLich( const int lichIdx, std::vector<const TileInfo*> tileInfos);
-    uint32_t spawnSwarmGroup(const int swarmStartIdx, std::vector<const TileInfo*> tileInfo); //TODO: Do we need to have a vector of pos; say 2 to let a swarm spawn over two tiles?
-    void spawnSwarm(const int swarmIdx, const glm::vec3& pos);
-    void initTanks();
+    void        spawnTank        (const int tankIdx         , const glm::vec3& pos                  , bool elite = false);
+    uint32_t    spawnLich        (const int lichIdx         , std::vector<const TileInfo*> tileInfos, bool elite = false);
+    uint32_t    spawnSwarmGroup  (const int swarmStartIdx   , std::vector<const TileInfo*> tileInfo , bool elite = false); //TODO: Do we need to have a vector of pos; say 2 to let a swarm spawn over two tiles?
+    void        spawnSwarm       (const int swarmIdx        , const glm::vec3& pos                  , bool elite = false);
+    void        initTanks        ();
 
     void createTank();
     void createLich();

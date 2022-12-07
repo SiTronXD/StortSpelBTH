@@ -215,6 +215,7 @@ public:
 	const std::vector<TileInfo>& getFreeTileInfos();
 	const Room& getExitRoom() const;
 	int getNumRooms() const;
+	bool inExitRoom() const;
 
     const glm::vec3& getRoomPos() const;
 

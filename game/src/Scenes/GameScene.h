@@ -43,6 +43,7 @@ private:
   SpawnHandler spawnHandler;
   AIHandler* aiHandler = nullptr;
   NetworkHandlerGame* networkHandler;
+  std::string levelString;
 
   bool paused = false;
   UIArea resumeButton;

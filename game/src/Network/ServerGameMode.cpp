@@ -408,13 +408,12 @@ void ServerGameMode::onCollisionStay(Entity e1, Entity e2) {
       auto& swarmComp = this->getComponent<SwarmComponent>(other);
       if (swarmComp.inAttack)
         {
-          auto& aiCombat = this->getComponent<AiCombatSwarm>(other);
           swarmComp.inAttack = false;
           swarmComp.touchedPlayer = true;
           //aiCombat.timer = aiCombat.lightAttackTime;
           HealthComp& playerHealth = this->getComponent<HealthComp>(player);
           playerHealth.health -=
-              (int)aiCombat.lightHit;
+              (int)swarmComp.lightHit;
           playerHealth.srcDmgEntity = other;
             
           Log::write("WAS HIT", BT_FILTER);

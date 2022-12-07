@@ -2,8 +2,7 @@
 #include "vengine.h"
 #include "SwarmBTs.hpp"
 #include "../../../Components/HealthComp.h"
-#include "../../../Components/AiCombatSwarm.h"
-
+#include "../../../Components/AiElite.hpp"
 
 struct SwarmComponent
 {
@@ -20,21 +19,25 @@ struct SwarmComponent
 	int FULL_HEALTH				= 100;
 	int life					= FULL_HEALTH;
 	//Floats
-	float speed					= 17.0f; // TODO: Was 0, why?... (assume testing)
-	float jumpForce				= 70.0f; // TODO: Was 0, why?... (assume testing)
-	float idleSpeed				= 10.0f; // TODO: Was 0, why?... (assume testing)
-	float jumpY					= 10.0f; // TODO: Was 0, why?... (assume testing)
+	float speed					= 17.0f;
+	float jumpForce				= 70.0f;
+	float idleSpeed				= 10.0f;
+	float jumpY					= 10.0f;
 	float deathAnimSpeed		= 1.0f;
 	float alertAnimSpeed		= 2.0f;
 	float chargeAnimSpeed		= 1.0f;
 	float escapeAnimSpeed		= 2.0f;
 	float alertScale			= 1.5f;
+	float origScaleY			= 1.0f;
 	float alertTempYpos			= 0.0f;
     float sightRadius			= 70.0f;
 	float attackRange			= 40.0f;
     float alert_top;
 	float idleRotSpeed			= 100.0f;
 	float tempRotAngle			= 0.0f;//Dont touch!
+	float lightHit = 15.f;
+	float lightAttackTime = 2.0f;
+	float timer = 0.f;
 	//Bools
     bool alert_go_up			= true;
 	bool alertAtTop				= false;
@@ -49,6 +52,7 @@ struct SwarmComponent
 	bool idleIgnoreCol			= false;
 	bool attackGoRight			= false;
 	bool rotateLeft				= false;
+	bool isElite				= false;
 	//Timers					
 	float groundTimer			= 0.0f;
 	float groundTimerOrig		= 1.0f;
@@ -57,22 +61,63 @@ struct SwarmComponent
 	float ignoreColTimerOrig	= 1.0f;
 	float ignoreColTimer		= ignoreColTimerOrig;
 
-
-	glm::vec3 friendTouched = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 idleMoveTo = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 lonelyDir = glm::vec3(0.0f, 0.0f, 1.0f);
-	glm::vec3 dir = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 forward = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 right = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 origScale			= glm::vec3(0.0f, 0.0f, 0.0f); 
+	glm::vec3 friendTouched		= glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 idleMoveTo		= glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 lonelyDir			= glm::vec3(0.0f, 0.0f, 1.0f);
+	glm::vec3 dir				= glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 forward			= glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 right				= glm::vec3(0.0f, 0.0f, 0.0f);
 
 	SwarmGroup* group;
 	std::vector<SwarmGroup*> groupsInSight;
-
-
+	AiEliteComponent eliteStats;
 	SwarmComponent() 
 	{
 		attackGoRight = rand()%2;
 	};
+
+	void applyEliteStats(AiEliteComponent& eliteComp, Scene* scene, Entity entityID)
+    {
+		this->eliteStats = eliteComp;
+		this->isElite					= true;
+
+        this->lightHit		            *= eliteComp.dmgMultiplier;
+        this->LOW_HEALTH                *= eliteComp.healthMultiplier;           
+        this->FULL_HEALTH               *= eliteComp.healthMultiplier;
+
+        this->sightRadius               *= eliteComp.radiusMultiplier;
+		this->attackRange				*= eliteComp.radiusMultiplier;
+
+		scene->getComponent<Collider>(entityID).radius *= eliteComp.sizeMultiplier;
+		Transform& trans = scene->getComponent<Transform>(entityID);
+		trans.scale = this->origScale * eliteComp.sizeMultiplier;
+		this->origScale = trans.scale;
+        
+		this->speed						*= eliteComp.speedMultiplier;
+		this->idleRotSpeed				*= eliteComp.speedMultiplier;
+        this->speed                     *= eliteComp.speedMultiplier;
+    }
+    void removeEliteStats(Scene* scene, Entity entityID)
+    {
+      	this->isElite					= false;
+
+        this->lightHit		            /= this->eliteStats.dmgMultiplier;
+        this->LOW_HEALTH                /= this->eliteStats.healthMultiplier;           
+        this->FULL_HEALTH               /= this->eliteStats.healthMultiplier;
+        this->sightRadius               /= this->eliteStats.radiusMultiplier;
+		this->attackRange				/= this->eliteStats.radiusMultiplier;
+										
+		scene->getComponent<Collider>(entityID).radius /= this->eliteStats.sizeMultiplier;
+		scene->getComponent<Transform>(entityID).scale /= this->eliteStats.sizeMultiplier;
+		Transform& trans = scene->getComponent<Transform>(entityID);
+		trans.scale = this->origScale / this->eliteStats.sizeMultiplier;
+		this->origScale = trans.scale;
+        								
+		this->speed						/= this->eliteStats.speedMultiplier;
+		this->idleRotSpeed				/= this->eliteStats.speedMultiplier;
+        this->speed                     /= this->eliteStats.speedMultiplier;
+    }
 
 	float getGroupHealth(Scene* scene)
 	{
@@ -174,7 +219,6 @@ protected:
 	virtual void registerEntityComponents(Entity entityId) override
 	{
 		addRequiredComponent<SwarmComponent>(entityId);
-		addRequiredComponent<AiCombatSwarm>(entityId);
 	}
 
 	virtual void real_init() override
