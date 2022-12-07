@@ -27,7 +27,7 @@ struct Combat
     float comboLightCd = 1.f;
     float comboHeavyCd = 1.f;
     float comboMixCd = 1.f;
-    float knockbackCd = 2.f;
+    float knockbackCd = 1.f;
     float healCd = 10.f;
 
     // Different types of combos aviable
@@ -35,8 +35,8 @@ struct Combat
     std::vector<std::string> combos;
 
     // Timers to clear combo. Too long time between attacks = Combo cleared
-    float attackTimer = 0.f;
-    float knockbackTimer = 0.f;
+    float attackTimer = -1.f;
+    float knockbackTimer = -1.f;
     float healTimer = 0.f;
     float comboClearTimer = 0.f;
     float comboClearDelay = 2.f;
@@ -63,7 +63,8 @@ struct Combat
     // 3 = Mix Combo Attack
     // 4 = Heavy Combo Attack
     // 5 = Knockback Ability
-    float knockbackArr[6] = { 50.f, 80.f, 120.f, 50.f, 50.f, 100.f };
+    float knockbackArr[6] = { 50.f, 80.f, 120.f, 50.f, 50.f, 500.f };
 
     ActiveAttack activeAttack = noActive;
+    ActiveAttack nextAttack = noActive;
 };

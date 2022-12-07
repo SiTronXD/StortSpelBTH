@@ -134,13 +134,9 @@ void GameSceneNetwork::start()
   bool paused = false;
   this->setComponent<Combat>(playerID);
   this->createSystem<CombatSystem>(
-      this,
-      this->getResourceManager(),
+      this->getSceneHandler(),
       this->playerID,
       &paused,
-      this->getPhysicsEngine(),
-      this->getUIRenderer(),
-      this->getScriptHandler(),
       nullptr
   );
 

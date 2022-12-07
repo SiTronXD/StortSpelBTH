@@ -88,8 +88,14 @@ public:
 
 struct LichComponent
 {
-    inline static const uint32_t colliderRadius = 4;
-    inline static const uint32_t colliderHeight = 12;
+    inline static bool s_initialized = false;
+    inline static int s_takeDmg = -1;
+    inline static int s_lightning = -1;
+    inline static int s_ice = -1;
+    inline static int s_fire = -1;
+
+    inline static const uint32_t colliderRadius = 6;
+    inline static const uint32_t colliderHeight = 22;
 
     inline static const uint32_t graveHeight = 8;
     inline static const uint32_t graveWidth = 6;
@@ -176,6 +182,10 @@ struct LichComponent
     bool carryingBones          = false;
 
     glm::vec3 origScale         = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    // Anim
+    int currentAnim;
+    float attackAnimTimer;
 
     // Orbs
     std::array<Entity, LichComponent::NR_FIRE_ORBS>  fireOrbs;

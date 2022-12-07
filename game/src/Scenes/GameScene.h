@@ -12,7 +12,27 @@
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
 #include "../Components/AICombatTank.hpp"
-#include "../World Handling/ParticleSystemGenerator.hpp"
+
+struct GameSceneLevel
+{
+    uint16_t level;
+    Perks perks[4];
+    Abilities ability;
+    int hp;
+
+    GameSceneLevel() {
+        this->level = 0;
+        Perks noPerk;
+        noPerk.multiplier = 0.0;
+        noPerk.perkType = PerkType::emptyPerk;
+        for (int i = 0; i < 4; i++)
+        {
+                perks[i] = noPerk;
+        }
+        hp = 100;
+        ability.abilityType = AbilityType::emptyAbility;
+    }
+};
 
 class NetworkHandlerGame;
 
@@ -23,6 +43,7 @@ private:
   SpawnHandler spawnHandler;
   AIHandler* aiHandler = nullptr;
   NetworkHandlerGame* networkHandler;
+  std::string levelString;
 
   bool paused = false;
   UIArea resumeButton;
@@ -62,22 +83,17 @@ private:
   uint32_t portalOffMesh;
   uint32_t portalOnMesh;
 
-  ParticleSystemInstance healParticleSystem;
-  ParticleSystemInstance bloodParticleSystems;
-  ParticleSystemInstance swarmParticleSystems;
-  ParticleSystemInstance portalParticleSystemSide0;
-  ParticleSystemInstance portalParticleSystemSide1;
-
-  bool deletedParticleSystems;
-
-  void initParticleSystems();
-  void deleteInitialParticleSystems();
+  GameSceneLevel currentLevel;
 
   void testParticleSystem(const Entity& particleSystemEntity);
+  void setCurrentLevel(const GameSceneLevel& lvl);
+  
 
 public:
-  GameScene();
+  GameScene(GameSceneLevel gameSceneLevel = GameSceneLevel());
   virtual ~GameScene();
+
+  GameSceneLevel setNewLevel();
 
   // Inherited via Scene
   virtual void init() override;
@@ -88,10 +104,6 @@ public:
   virtual void onCollisionEnter(Entity e1, Entity e2) override;
   virtual void onCollisionStay(Entity e1, Entity e2) override;
   virtual void onCollisionExit(Entity e1, Entity e2) override;
-
-  inline const ParticleSystem& getHealParticleSystem() { return this->healParticleSystem.getParticleSystem(); }
-  inline const ParticleSystem& getBloodParticleSystem() { return this->bloodParticleSystems.getParticleSystem(); }
-  inline const ParticleSystem& getSwarmParticleSystem() { return this->swarmParticleSystems.getParticleSystem(); }
 
 private:
 

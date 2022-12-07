@@ -57,7 +57,7 @@ void LichBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 	lichTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
 	glm::vec2 lichPos			= glm::vec2(lichTrans.position.x, lichTrans.position.z);
-	glm::vec2 curRot			= -safeNormalize(glm::vec2(lichTrans.forward().x, lichTrans.forward().z));
+	glm::vec2 curRot			= safeNormalize(glm::vec2(lichTrans.forward().x, lichTrans.forward().z));
 	glm::vec2 lich_to_friend	= safeNormalize(targetPos - lichPos);
 
 	float angle_between			= glm::degrees(glm::acos(glm::dot(lich_to_friend, curRot)));
@@ -76,7 +76,7 @@ void LichBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 	lichTrans.updateMatrix();
 	targetPos			= glm::vec2(target.x, target.z);
 	lichPos				= glm::vec2(lichTrans.position.x, lichTrans.position.z);
-	curRot				= -safeNormalize(glm::vec2(lichTrans.forward().x, lichTrans.forward().z));
+	curRot				= safeNormalize(glm::vec2(lichTrans.forward().x, lichTrans.forward().z));
 	lich_to_friend		= safeNormalize(targetPos - lichPos);
 	angle_between		= glm::degrees(glm::acos(glm::dot(lich_to_friend, curRot)));
 	//If angle got bigger, then change direction
@@ -122,8 +122,8 @@ bool LichBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 	from = from + playerTransform.up() * 3.0f;
 	glm::vec3 to = entityTransform.position;
 	float maxDist = glm::length(to - from);
-	glm::vec3 dir = safeNormalize(from - to);
-	Ray rayToPlayer{from, -dir};    
+    glm::vec3 dir = safeNormalize(from - to);
+    Ray rayToPlayer{ from, -dir };
 	Ray rayRight{to, entityTransform.right()};    
 	Ray rayLeft{to, -entityTransform.right()};    
 	float left_right_maxDist = entityCollider.radius + 3.0f;
@@ -200,7 +200,7 @@ bool LichBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 }
 
 //Giving points for attack strategy
-void LichBT::givePointsForPlayerHealth	(Entity entityID, float& l_points, float& i_points, float& f_points)
+void LichBT::givePointsForPlayerHealth(Entity entityID, float& l_points, float& i_points, float& f_points)
 {
     int playerID = getPlayerID(entityID);
     if(playerID == -1){return;}
@@ -216,7 +216,7 @@ void LichBT::givePointsForPlayerHealth	(Entity entityID, float& l_points, float&
     else if(playerHealth > lichComp.attacks["lightning"].damage && playerHealth <= lichComp.attacks["ice"].damage){i_points+=pointsForPlayerHealth;}//Player medium health
     else if(playerHealth > lichComp.attacks["ice"].damage){f_points+=pointsForPlayerHealth;}//Player high health
 }
-void LichBT::givePointsForOwnHealth		(Entity entityID, float& l_points, float& i_points, float& f_points)
+void LichBT::givePointsForOwnHealth(Entity entityID, float& l_points, float& i_points, float& f_points)
 {
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
 
@@ -227,7 +227,7 @@ void LichBT::givePointsForOwnHealth		(Entity entityID, float& l_points, float& i
     else if(lichComp.life > 50 && lichComp.life <= 150) {i_points+=pointsForLichHealth;}//Lich medium health
     else if(lichComp.life > 150){f_points+=pointsForLichHealth;}//Lich high health
 }
-void LichBT::givePointsForDistance	    (Entity entityID, float& l_points, float& i_points, float& f_points)
+void LichBT::givePointsForDistance(Entity entityID, float& l_points, float& i_points, float& f_points)
 {
     int playerID = getPlayerID(entityID);
     if(playerID == -1){return;}
@@ -242,7 +242,7 @@ void LichBT::givePointsForDistance	    (Entity entityID, float& l_points, float&
     else if(dist > lichComp.nonoRadius && dist <= lichComp.peronalSpaceRadius) {i_points+=pointsForDistance;}//Medium distance to player
     else if(dist > lichComp.peronalSpaceRadius){f_points+=pointsForDistance;}//Far away from player
 }
-void LichBT::setStrategyBasedOnPoints	(Entity entityID, float& l_points, float& i_points, float& f_points)
+void LichBT::setStrategyBasedOnPoints(Entity entityID, float& l_points, float& i_points, float& f_points)
 {
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     if(l_points > i_points && l_points > f_points && lichComp.attacks["lightning"].manaCost <= lichComp.mana)
@@ -343,7 +343,6 @@ BTStatus LichBT::plunder(Entity entityID)
 
 BTStatus LichBT::goToGrave(Entity entityID)
 {
-
     BTStatus ret = BTStatus::Running;
     Transform& lichTrans    = getTheScene()->getComponent<Transform>(entityID);
     Rigidbody& lichRb       = getTheScene()->getComponent<Rigidbody>(entityID);
@@ -461,6 +460,20 @@ BTStatus LichBT::creepyLook(Entity entityID)
 
 BTStatus LichBT::huntingPlayer(Entity entityID)
 {
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    if (lichComp.currentAnim != 0) // Walk
+    {
+        lichComp.currentAnim = 0;
+        if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+        {
+            ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+            netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 1, 0, -1 });
+        }
+        else
+        {
+            getTheScene()->blendToAnimation(entityID, "Walk");
+        }
+    }
     BTStatus ret = BTStatus::Running;
     
     int playerID = getPlayerID(entityID);
@@ -468,7 +481,6 @@ BTStatus LichBT::huntingPlayer(Entity entityID)
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
     Rigidbody& lichRb = getTheScene()->getComponent<Rigidbody>(entityID);
-    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, playerTrans.position);
 
     rayChecking(entityID, moveDir);
@@ -505,13 +517,27 @@ BTStatus LichBT::playerInNoNoZone(Entity entityID)
 
 BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
 {
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    if (lichComp.currentAnim != 0) // Walk
+    {
+        lichComp.currentAnim = 0;
+        if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+        {
+            ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+            netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 1, 0, -1 });
+        }
+        else
+        {
+            getTheScene()->blendToAnimation(entityID, "Walk");
+        }
+    }
+
     BTStatus ret = BTStatus::Running;
     int playerID = getPlayerID(entityID);
     if(playerID == -1){return ret;}
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
     Rigidbody& lichRb = getTheScene()->getComponent<Rigidbody>(entityID);
-    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, playerTrans.position);
     //avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, playerTrans.position, moveDir, glm::vec3(0.0f, -3.0f, 0.0f)); //TODO: Check if this improves or not
 	moveDir = -safeNormalize(moveDir);
@@ -519,6 +545,9 @@ BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
 
     rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
 
+    /*glm::vec3 player_to_lich = safeNormalize(lichTrans.position - playerTrans.position);
+    glm::vec3 lookAtPos = lichTrans.position + player_to_lich * 2.0f;
+    rotateTowards(entityID, lookAtPos, lichComp.huntRotSpeed);*/
 
     return ret;
 }
@@ -661,8 +690,27 @@ BTStatus LichBT::pickRandomStrategy(Entity entityID)
 
 BTStatus LichBT::attack(Entity entityID)
 {
-    BTStatus ret = BTStatus::Failure;
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    if (lichComp.attackAnimTimer <= 0.0f && lichComp.currentAnim != 0) // Switch back to walk
+    {
+        lichComp.currentAnim = 0;
+        lichComp.attackAnimTimer = 0.0f;
+        if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+        {
+            ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+            netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 1, 0, -1 });
+        }
+        else
+        {
+            getTheScene()->blendToAnimation(entityID, "Walk");
+        }
+    }
+    else
+    {
+        lichComp.attackAnimTimer -= get_dt();
+    }
+
+    BTStatus ret = BTStatus::Failure;
     int playerID = getPlayerID(entityID);
     if(playerID == -1){return ret;}
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
@@ -674,6 +722,20 @@ BTStatus LichBT::attack(Entity entityID)
     if(lichComp.curAttack->castTimeTimer > 0.0f)
     {
         lichComp.curAttack->castTimeTimer -= get_dt();
+    }
+    else if (lichComp.currentAnim != 1 && lichComp.curAttack->castTimeTimer < 1.5f) // Attack
+    {
+        lichComp.currentAnim = 1;
+        lichComp.attackAnimTimer = 0.3f;
+        if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+        {
+            ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+            netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 1, 1, -1 });
+        }
+        else
+        {
+            getTheScene()->blendToAnimation(entityID, "Attack", "", 0.18f, 2.0f);
+        }
     }
     else
     {
@@ -703,20 +765,46 @@ BTStatus LichBT::attack(Entity entityID)
                 Transform&  orbTrans = getTheScene()->getComponent<Transform>(projectileID);
                 Rigidbody&  orbRB    = getTheScene()->getComponent<Rigidbody>(projectileID);
                 
-                orbTrans.position = lichTrans.position + (-lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
+                orbTrans.position = lichTrans.position + glm::vec3(0.0f, 12.0f, 0.0f) + (lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
                 auto spellVector = safeNormalize(playerTrans.position - lichTrans.position) * LichComponent::spellForce;
                 spellVector.y = 0;  //TODO: What if player is on top of something... Will not aim att player
                 orbRB.velocity = spellVector;
-                orb.orbPower = lichComp.curAttack;                
+                orb.orbPower = lichComp.curAttack;
+
+                if (lichComp.curAttack->type == ATTACK_STRATEGY::FIRE)
+                {
+                    sceneHandler->getAudioHandler()->playSound(entityID, LichComponent::s_fire, 30.f);
+                }
+                else if (lichComp.curAttack->type == ATTACK_STRATEGY::LIGHT)
+                {
+                    sceneHandler->getAudioHandler()->playSound(entityID, LichComponent::s_lightning, 30.f);
+                }
+                else if (lichComp.curAttack->type == ATTACK_STRATEGY::ICE)
+                {
+                    sceneHandler->getAudioHandler()->playSound(entityID, LichComponent::s_ice, 30.f);
+                }
                             
             }
             else
             {
-                glm::vec3 initialOrbPos = lichTrans.position + (-lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
+                glm::vec3 initialOrbPos = lichTrans.position + glm::vec3(0.0f, 12.0f, 0.0f) + (lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
                 glm::vec3 spellVector = safeNormalize(playerTrans.position - lichTrans.position) * LichComponent::spellForce;
                 spellVector.y = 0;  //TODO: What if player is on top of something... Will not aim att player
                 
                 netScene->addEvent({(int)GameEvent::THROW_ORB, (int)projectileID },{initialOrbPos.x,initialOrbPos.y,initialOrbPos.z, spellVector.x, spellVector.y,spellVector.z});
+
+                if (lichComp.curAttack->type == ATTACK_STRATEGY::FIRE)
+                {
+                    netScene->addEvent({ (int)GameEvent::PLAY_ENEMY_SOUND, entityID, 2, 1, 0 });
+                }
+                else if (lichComp.curAttack->type == ATTACK_STRATEGY::LIGHT)
+                {
+                    netScene->addEvent({ (int)GameEvent::PLAY_ENEMY_SOUND, entityID, 2, 1, 1 });
+                }
+                else if (lichComp.curAttack->type == ATTACK_STRATEGY::ICE)
+                {
+                    netScene->addEvent({ (int)GameEvent::PLAY_ENEMY_SOUND, entityID, 2, 1, 2 });
+                }
             }
 
             orb.timeAtCast = Time::getTimeSinceStart();
@@ -777,13 +865,27 @@ BTStatus LichBT::playerNotVisible(Entity entityID)
 
 BTStatus LichBT::runAwayFromPlayer(Entity entityID)
 {
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    if (lichComp.currentAnim != 0) // Walk
+    {
+        lichComp.currentAnim = 0;
+        if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+        {
+            ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+            netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 1, 0, -1 });
+        }
+        else
+        {
+            getTheScene()->blendToAnimation(entityID, "Walk");
+        }
+    }
+
     BTStatus ret = BTStatus::Running;
     int playerID = getPlayerID(entityID);
     if(playerID == -1){return ret;}
     Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
     Transform& lichTrans = getTheScene()->getComponent<Transform>(entityID);
     Rigidbody& lichRb = getTheScene()->getComponent<Rigidbody>(entityID);
-    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     glm::vec3 moveDir		= pathFindingManager.getDirTo(lichTrans.position, playerTrans.position);
     //avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, playerTrans.position, moveDir, glm::vec3(0.0f, -3.0f, 0.0f)); //TODO: Check if this improves or not
 	moveDir = -safeNormalize(moveDir);
@@ -850,9 +952,12 @@ BTStatus LichBT::die(Entity entityID)
 
 BTStatus LichBT::alerted(Entity entityID)
 {
+	LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    lichComp.alertDone = true;
+    return BTStatus::Success; // No scale 
+
     BTStatus ret = BTStatus::Running;
 
-	LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
 	int playerID = getPlayerID(entityID);
     if(playerID == -1){return ret;}
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
