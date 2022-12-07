@@ -169,15 +169,6 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 	Rigidbody& swarmRB = getTheScene()->getComponent<Rigidbody>(entityID);
 	Collider& swarmCol = getTheScene()->getComponent<Collider>(entityID);
 
-	/*if(outsideRadius(entityID))
-	{
-
-	}
-	else
-	{
-
-	}*/
-
 	static Ray rayForward, rayForwardLeft, rayForwardRight;
 
 	swarmTransform.updateMatrix();
@@ -313,6 +304,8 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 
 	Transform tempTrans = swarmTransform;
 	float tempVelY = swarmRB.velocity.y;
+	glm::vec3 target = swarmTransform.position + swarmComp.dir*10.0f;
+	avoidStuff(entityID, BehaviorTree::sceneHandler, swarmComp.attackGoRight, target, swarmComp.dir);
 	swarmRB.velocity = swarmComp.dir * swarmComp.idleSpeed;
 	swarmRB.velocity.y = tempVelY;
 	glm::vec3 to = swarmTransform.position + swarmComp.dir * 3.0f;
@@ -463,7 +456,7 @@ BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
     thisTransform.updateMatrix();
 
     glm::vec3 dir = safeNormalize(thisTransform.position - playerTransform.position);
-	avoidStuff(entityID, BehaviorTree::sceneHandler, thisSwarmComp.attackGoRight, target, dir, true);
+	avoidStuff(entityID, BehaviorTree::sceneHandler, thisSwarmComp.attackGoRight, target, dir);
     dir.y = 0;
     float tempYvel = rigidbody.velocity.y;
     rigidbody.velocity = dir * swarmComp.speed;
@@ -623,7 +616,7 @@ BTStatus SwarmBT::attack(Entity entityID)
 		if(glm::length(playerTransform.position - thisTransform.position) < swarmComp.attackRange/2.0f)
 		{
 			glm::vec3 direction = safeNormalize(thisTransform.position - playerTransform.position);
-			avoidStuffBackwards(entityID, BehaviorTree::sceneHandler, swarmComp.attackGoRight, playerTransform.position, direction, true);
+			avoidStuffBackwards(entityID, BehaviorTree::sceneHandler, swarmComp.attackGoRight, playerTransform.position, direction);
 			rigidbody.velocity =  direction * swarmComp.speed;
 		}
 	}
