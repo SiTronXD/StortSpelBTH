@@ -166,21 +166,6 @@ void MainMenu::update()
 	default:
 		break;
 	case Menu:
-		///THIS SHALL BE REMOVED/////////////////////////////////////
-        this->getUIRenderer()->renderString(
-            "host game",
-            glm::vec2(-400.f, 400.f),
-            glm::vec2(60.0f)
-        );
-        this->getUIRenderer()->renderString(
-            "singleplayer",
-            glm::vec2(-400.f, 50.f),
-            glm::vec2(60.0f)
-        );
-        this->getUIRenderer()->renderString(
-            "levelEditor", glm::vec2(650.f, -400.f), glm::vec2(30.0f)
-        );
-		////////////////////////////////////////////////////////////
 		if (this->getComponent<UIArea>(hostButton).isClicking())
 		{
 			this->getUIRenderer()->setTexture(this->fontTextureId);
