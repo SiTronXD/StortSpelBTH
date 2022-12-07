@@ -594,7 +594,8 @@ BTStatus SwarmBT::attack(Entity entityID)
 	Rigidbody& rigidbody = getTheScene()->getComponent<Rigidbody>(entityID);
 	Collider& sawrmCollider = getTheScene()->getComponent<Collider>(entityID);
 
-    glm::vec3 dir = playerTransform.position - thisTransform.position;
+    glm::vec3 playerTargetPos{playerTransform.position.x,playerTransform.position.y + SwarmComponent::aimAtPlayerYOffset, playerTransform.position.z};
+    glm::vec3 dir = playerTargetPos - thisTransform.position;
     dir.y += swarmComp.jumpY;
     dir = safeNormalize(dir);
 
