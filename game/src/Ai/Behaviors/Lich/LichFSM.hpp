@@ -164,7 +164,7 @@ struct LichComponent
     float healthRegenSpeed      = 2.0f;
     float deathAnimSpeed        = 3.0f;
     float huntSpeed             = 60.0f;
-    float speed                 = 20.0f ; // Too close, I will back away from you! (while shooting) 
+    float speed                 = 30.0f ; // Too close, I will back away from you! (while shooting) 
 
     //ATTACK_STRATEGY strat       = ATTACK_STRATEGY::NONE;
 
