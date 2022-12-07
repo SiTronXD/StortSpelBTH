@@ -313,6 +313,7 @@ SET ERRORLEVEL=0</Command>
     <ClInclude Include="src\Components\AiCombatLich.hpp" />
     <ClInclude Include="src\Components\AiCombatSwarm.h" />
     <ClInclude Include="src\Components\AICombatTank.hpp" />
+    <ClInclude Include="src\Components\AiElite.hpp" />
     <ClInclude Include="src\Components\Perks.h" />
     <ClInclude Include="src\LevelEditor\mayaStructures.h" />
     <ClInclude Include="src\LevelEditor\ObjectHandler.h" />

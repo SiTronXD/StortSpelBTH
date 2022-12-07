@@ -675,7 +675,6 @@ BTStatus SwarmBT::attack(Entity entityID)
 	Transform& thisTransform = getTheScene()->getComponent<Transform>(entityID);
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 	SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(entityID);
-	AiCombatSwarm& combat = getTheScene()->getComponent<AiCombatSwarm>(entityID);
 	Rigidbody& rigidbody = getTheScene()->getComponent<Rigidbody>(entityID);
 	Collider& sawrmCollider = getTheScene()->getComponent<Collider>(entityID);
 
@@ -690,10 +689,10 @@ BTStatus SwarmBT::attack(Entity entityID)
 
     static Ray downRay{thisTransform.position, glm::vec3(0.0f, -1.0f, 0.0f)};
 
-	if(swarmComp.grounded && combat.timer > 0.0f)
+	if(swarmComp.grounded && swarmComp.timer > 0.0f)
 	{
-		combat.timer -= get_dt();
-		if(thisTransform.scale.y > 0.5f)
+		swarmComp.timer -= get_dt();
+		if(thisTransform.scale.y > (swarmComp.origScaleY * 0.5f))
 		{
 			thisTransform.scale.y -= swarmComp.chargeAnimSpeed * get_dt();
 		}
@@ -702,7 +701,7 @@ BTStatus SwarmBT::attack(Entity entityID)
 	{
 		//JUMP!
 		swarmComp.grounded = false;
-		thisTransform.scale.y = 1.0f;
+		thisTransform.scale.y = swarmComp.origScaleY;
 		rigidbody.velocity = dir * swarmComp.jumpForce;
 		swarmComp.inAttack = true; 
 		rigidbody.friction = 0.0f;
@@ -725,7 +724,7 @@ BTStatus SwarmBT::attack(Entity entityID)
 		swarmComp.inAttack = false; 
 		swarmComp.touchedPlayer = false; 
 		rigidbody.friction = initialFriction;
-		combat.timer = combat.lightAttackTime;
+		swarmComp.timer = swarmComp.lightAttackTime;
     }
 
 	return ret;
@@ -862,6 +861,15 @@ BTStatus SwarmBT::die(Entity entityID)
         serverScene->addEvent({(int)GameEvent::INACTIVATE, entityID});
     }
     sceneHandler->getScene()->setInactive(entityID);
+	ret = BTStatus::Success;
+	if(ret==BTStatus::Success)
+	{
+		SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+		if(swarmComp.isElite)
+		{
+			swarmComp.removeEliteStats(sceneHandler->getScene(), entityID);
+		}
+	}
 
     return ret;
 }
@@ -875,24 +883,22 @@ BTStatus SwarmBT::alerted(Entity entityID)
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 	Transform& swarmTrans = getTheScene()->getComponent<Transform>(entityID);
 	Collider& swarmCol = getTheScene()->getComponent<Collider>(entityID);
-	float toMove = (swarmCol.radius*2) * (1.0f - swarmComp.alertScale);
+	float toMove = (swarmCol.radius*2) * (swarmComp.origScaleY - (swarmComp.origScaleY*swarmComp.alertScale));
 	
 	swarmTrans.rotation.y = lookAtY(swarmTrans, playerTransform);
 	swarmTrans.updateMatrix();
 
-    swarmTrans.rotation.y = lookAtY(swarmTrans, playerTransform);
-    swarmTrans.updateMatrix();
 
     if (!swarmComp.alertAtTop)
         {
-            if (swarmTrans.scale.y >= swarmComp.alertScale &&
+            if (swarmTrans.scale.y >= (swarmComp.origScaleY*swarmComp.alertScale) &&
                 swarmTrans.position.y >= (swarmComp.alertTempYpos + toMove))
                 {
                     swarmComp.alertAtTop = true;
                 }
             else
                 {
-                    if (swarmTrans.scale.y < swarmComp.alertScale)
+                    if (swarmTrans.scale.y < (swarmComp.origScaleY*swarmComp.alertScale))
                         {
                             swarmTrans.scale.y +=
                                 swarmComp.alertAnimSpeed * get_dt();
@@ -907,9 +913,9 @@ BTStatus SwarmBT::alerted(Entity entityID)
         }
     else
         {
-            if (swarmTrans.scale.y <= 1.0f)
+            if (swarmTrans.scale.y <= swarmComp.origScaleY)
                 {
-                    swarmTrans.scale.y = 1.0f;
+                    swarmTrans.scale.y = swarmComp.origScaleY;
                     swarmTrans.position.y = swarmComp.alertTempYpos;
                     swarmComp.alertAtTop = false;
                     swarmComp.alertDone = true;
@@ -917,7 +923,7 @@ BTStatus SwarmBT::alerted(Entity entityID)
                 }
             else
                 {
-                    if (swarmTrans.scale.y > 1.0)
+                    if (swarmTrans.scale.y > swarmComp.origScaleY)
                         {
                             swarmTrans.scale.y -=
                                 swarmComp.alertAnimSpeed * get_dt();
