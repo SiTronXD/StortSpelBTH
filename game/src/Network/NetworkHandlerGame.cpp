@@ -83,7 +83,8 @@ Entity NetworkHandlerGame::spawnEnemy(const int& type, const glm::vec3& pos) {
     return e;
 }
 
-void NetworkHandlerGame::initParticleSystems() {
+void NetworkHandlerGame::initParticleSystems() 
+{
     deletedParticleSystems = false;
 
     // Heal particle system

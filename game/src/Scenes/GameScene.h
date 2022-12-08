@@ -79,6 +79,8 @@ private:
 
   Entity dirLightEntity;
 
+  Entity orbEntityPS;
+
   int numRoomsCleared;
   bool newRoomFrame;
 

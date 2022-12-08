@@ -94,7 +94,7 @@ void MainMenu::init()
 	);
 	DirectionalLight& dirLight =
 		this->getComponent<DirectionalLight>(light);
-	dirLight.shadowMapAngleBias = 0.003f;
+	dirLight.shadowMapAngleBias = 0.006f;
 
 	this->fontTextureId = Scene::getResourceManager()->addTexture("assets/textures/UI/font.png", { samplerSettings, true });
 	Scene::getUIRenderer()->setBitmapFont(
