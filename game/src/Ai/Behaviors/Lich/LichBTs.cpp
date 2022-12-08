@@ -806,6 +806,32 @@ BTStatus LichBT::selfHeal(Entity entityID)
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     if(lichComp.life < lichComp.FULL_HEALTH)
     {
+
+
+        //Testing particle system
+        /* ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
+
+        if (serverScene != nullptr)
+        {
+
+        }
+        else
+        {
+            NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
+            // Particle system transform
+		    Entity bloodParticleSystemEntity = getTheScene()->createEntity();
+		    Transform& bloodTransform =  getTheScene()->getComponent<Transform>(bloodParticleSystemEntity);
+		    bloodTransform = getTheScene()->getComponent<Transform>(entityID);
+
+
+		    // Particle system spawn
+		    getTheScene()->setComponent<ParticleSystem>(bloodParticleSystemEntity);
+		    ParticleSystem& bloodPS = getTheScene()->getComponent<ParticleSystem>(bloodParticleSystemEntity);
+		    bloodPS = network->getBloodParticleSystem();
+		    bloodPS.spawn = true;
+
+        }*/
+
         lichComp.life_float += get_dt() * lichComp.healthRegenSpeed;
         if(lichComp.life_float > 1.0f)
         {
