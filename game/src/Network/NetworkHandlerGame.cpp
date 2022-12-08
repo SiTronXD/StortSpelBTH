@@ -538,6 +538,18 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 			}
 		}
 		break;
+    case GameEvent::PLAY_PLAYER_SOUND:
+        tcpPacket >> i0 >> i1 >> f0;
+        for (int i = 0; i < otherPlayersServerId.size(); i++)
+        {
+			if (otherPlayersServerId[i] == i0) 
+			{
+				//what shall be the id
+				this->sceneHandler->getAudioHandler()->playSound(otherPlayers[i].first, i1, f0);
+				break;
+			}
+		}
+		break;
     case GameEvent::PLAYER_SETHP:
         tcpPacket >> i0 >> i1;
         if (i0 == this->ID)
@@ -849,6 +861,11 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientIndex, s
 		packet << (int)GameEvent::PLAY_ENEMY_SOUND << si0 << si3 << si4 << si5;
 		server->sendToAllClientsTCP(packet);
         
+		break;
+    case GameEvent::PLAY_PLAYER_SOUND:
+            tcpPacket >> i0 >> f0;
+			packet << (int)GameEvent::PLAY_PLAYER_SOUND << server->getClientID(clientIndex) << i0 << f0;
+            server->sendToAllOtherClientsTCP(packet, clientIndex);
 		break;
 	case GameEvent::PLAYER_SET_GHOST:
 		packet << (int)GameEvent::PLAYER_SET_GHOST << server->getClientID(clientIndex);

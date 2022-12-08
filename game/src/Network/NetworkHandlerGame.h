@@ -36,6 +36,7 @@ enum class GameEvent
 	INACTIVATE, //what entity
 	ACTIVATE, //what entity
 	PLAY_ENEMY_SOUND, // What entity, What component type
+	PLAY_PLAYER_SOUND, // client -> server : soundIndex, volume, // server -> client : playerID, soundIndex, volume
 	UPDATE_ANIM, // What entity, type (tank/lich), animIndex, slot
 	UPDATE_ANIM_TIMESCALE, // What entity, slot, timeScale
 	PLAYER_SET_GHOST, // Player ID

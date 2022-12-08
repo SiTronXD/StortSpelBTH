@@ -1062,6 +1062,12 @@ public:
 	void playerEffectSound(int soundIdx, float volume)
 	{
 		this->audio->playSound(this->playerID, soundIdx, volume);
+        if (networkHandler->isConnected())
+        {
+			sf::Packet p;
+            p << (int)GameEvent::PLAY_PLAYER_SOUND << soundIdx << volume;
+            networkHandler->sendDataToServerTCP(p);
+		}
 	}
 	
 	void pickUpAbility(Entity entity)
