@@ -846,8 +846,48 @@ void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 			entityLastPosScale[i1].second = entityToPosScale[i1].second;
 			entityToPosScale[i1].first = v0;
 			entityToPosScale[i1].second = v2;
+			
+			i2 = serverEntities.find(i1)->second;
+
+			// Update full health (not that pretty however)
+			if (sceneHandler->getScene()->hasComponents<SwarmComponent>(i2))
+			{
+				SwarmComponent& swarm = sceneHandler->getScene()->getComponent<SwarmComponent>(i2);
+				if (v2.x > 1.0f)
+				{
+					swarm.FULL_HEALTH = 150;
+				}
+				else
+				{
+					swarm.FULL_HEALTH = 100;
+				}
+			}
+			else if (sceneHandler->getScene()->hasComponents<LichComponent>(i2))
+			{
+				LichComponent& lich = sceneHandler->getScene()->getComponent<LichComponent>(i2);
+				if (v2.x > 1.5f)
+				{
+					lich.FULL_HEALTH = 450;
+				}
+				else
+				{
+					lich.FULL_HEALTH = 300;
+				}
+			}
+			else if (sceneHandler->getScene()->hasComponents<TankComponent>(i2))
+			{
+				TankComponent& tank = sceneHandler->getScene()->getComponent<TankComponent>(i2);
+				if (v2.x > 1.0f)
+				{
+					tank.FULL_HEALTH = 750;
+				}
+				else
+				{
+					tank.FULL_HEALTH = 500;
+				}
+			}
             
-            sceneHandler->getScene()->getComponent<Transform>(serverEntities.find(i1)->second).rotation = v1;
+            sceneHandler->getScene()->getComponent<Transform>(i2).rotation = v1;
 		}
 		break;
 	default:
