@@ -186,27 +186,6 @@ void MainMenu::start()
 
 void MainMenu::update()
 {
-	ImGui::Begin("Particle System");
-	{
-		Transform& partSysTran = this->getComponent<Transform>(this->leaves);
-		ParticleSystem& partSys = this->getComponent<ParticleSystem>(this->leaves);
-		ImGui::SliderFloat3("Entity position: ", &partSysTran.position[0], -100.0f, 100.0f);
-		ImGui::SliderFloat3("Entity rotation: ", &partSysTran.rotation[0], -180.0f, 180.0f);
-		ImGui::SliderFloat3("Cone pos: ", &partSys.coneSpawnVolume.localPosition[0], -5.0f, 5.0f);
-		ImGui::SliderFloat3("Cone dir: ", &partSys.coneSpawnVolume.localDirection[0], -1.0f, 1.0f);
-		ImGui::SliderFloat("Disk radius: ", &partSys.coneSpawnVolume.diskRadius, 0.0f, 10.0f);
-		ImGui::SliderFloat("Cone angle: ", &partSys.coneSpawnVolume.coneAngle, 0.0f, 180.0f);
-		ImGui::SliderFloat("Velocity strength: ", &partSys.velocityStrength, 0.0f, 20.0f);
-		ImGui::SliderFloat("Spawn rate: ", &partSys.spawnRate, 0.0f, 1.0f);
-		ImGui::Checkbox("Spawn: ", &partSys.spawn);
-
-		static bool renderPS = true;
-		ImGui::Checkbox("Render cone: ", &renderPS);
-		if(renderPS)
-			this->getDebugRenderer()->renderParticleSystemCone(this->leaves);
-	}
-	ImGui::End();
-
 	switch (this->state)
 	{
 	default:
