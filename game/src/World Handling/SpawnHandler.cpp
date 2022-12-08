@@ -432,7 +432,7 @@ void SpawnHandler::createTank()
     this->currScene->setComponent<Rigidbody>(this->tankIDs.back());
     Rigidbody& rb = this->currScene->getComponent<Rigidbody>(this->tankIDs.back());
     rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
-    rb.gravityMult = 5.0f;
+    rb.gravityMult = 50.0f;
     rb.friction = 3.0f;
     rb.mass = 100.0f;
     Transform& transform = this->currScene->getComponent<Transform>(this->tankIDs.back());
