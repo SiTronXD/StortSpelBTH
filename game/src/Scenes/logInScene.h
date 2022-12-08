@@ -7,6 +7,7 @@ private:
 	uint32_t fontTextureId;
 	uint32_t backgroundId;
 	uint32_t buttonId;
+	uint32_t buttonSound;
 	std::string title;
 	std::string name;
 	std::string ipAddress;

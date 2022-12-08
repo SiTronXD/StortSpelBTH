@@ -1,10 +1,11 @@
 #include "Settings.h"
 #include "vengine/application/SceneHandler.hpp"
 
+// Default values
 SceneHandler* Settings::sceneHandler = nullptr;
 Entity Settings::settingsEntity = -1;
 float Settings::volume = 0.5f;
-float Settings::musicVolume = 0.5f;
+float Settings::musicVolume = 0.25f;
 bool Settings::fullScreen = false;
 float Settings::sensitivity = 25.0f;
 float Settings::cameraFOV = 90.0f;

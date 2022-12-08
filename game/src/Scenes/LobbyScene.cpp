@@ -49,6 +49,8 @@ void LobbyScene::init()
     this->buttonId =
         this->getResourceManager()->addTexture("assets/textures/UI/button.png");
 
+    this->buttonSound = this->getResourceManager()->addSound("assets/Sounds/buttonClick.ogg");
+
     this->fontTextureId = Scene::getResourceManager()->addTexture(
         "assets/textures/UI/font.png", {samplerSettings, true}
     );
@@ -231,6 +233,7 @@ void LobbyScene::update()
         );
         if (this->startButton.isClicking())
         {
+            this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
             // Start singleplayer
             if (this->activePlayers == 1 && !Input::isKeyDown(Keys::M))
             {
@@ -259,6 +262,7 @@ void LobbyScene::update()
         "disconnect", this->disconnectButton.position, glm::vec2(25.0f), 0.0f, StringAlignment::CENTER
     );
     if (this->disconnectButton.isClicking()) {
+        this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
         this->getNetworkHandler()->disconnectClient();
         this->getNetworkHandler()->deleteServer();
         this->getSceneHandler()->setScene(new MainMenu, "scripts/MainMenu.lua");

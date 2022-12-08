@@ -2,7 +2,7 @@ local script = {}
 
 function script:init()
 	self.volume = 0.5
-	self.musicVolume = 0.5
+	self.musicVolume = 0.25
 	self.sensitivity = 25.0
 	self.cameraFOV = 90.0
 	self.fullScreen = false
@@ -16,6 +16,7 @@ function script:init()
 	self.barMid = resources.addTexture("assets/textures/UI/UIBarMid.png")
 	self.barSide = resources.addTexture("assets/textures/UI/UIBarSide.png")
 	self.barFill = resources.addTexture("assets/textures/UI/UIBarFill.png")
+	self.buttonSound = resources.addSound("assets/Sounds/buttonClick.ogg")
 
 	scene.setComponent(self.ID, CompType.UIArea, { position = vector(), dimension = vector() })
 
@@ -40,8 +41,8 @@ function script:init()
 	self.backButton.dimension = vector(190, 65)
 
 	self.fullScreenButton = scene.getComponent(self.ID, CompType.UIArea)
-	self.fullScreenButton.position = vector(0, -300)
-	self.fullScreenButton.dimension = vector(100, 100)
+	self.fullScreenButton.position = vector(0, -325)
+	self.fullScreenButton.dimension = vector(75, 75)
 
 	scene.removeComponent(self.ID, CompType.UIArea)
 
@@ -52,28 +53,19 @@ function script:update()
 	
 	local barLength = 800
 	local barLengthHalf = barLength / 2
-	
-	-- Temp
-	self.volumeArea.position = vector(0, 200)
-	self.volumeArea.dimension = vector(800, 32)
-
-	self.musicVolumeArea.position = vector(0, 75)
-	self.musicVolumeArea.dimension = vector(800, 32)
-
-	self.sensitivityArea.position = vector(0, -50)
-	self.sensitivityArea.dimension = vector(800, 32)
-
-	self.fullScreenButton.position = vector(0, -325)
-	self.fullScreenButton.dimension = vector(75, 75)
 
 	-- Select slider
 	if(self.volumeArea:isClicking()) then
+		scene.playSound(self.buttonSound)
 		self.selected = self.volumeArea
 	elseif(self.musicVolumeArea:isClicking()) then
+		scene.playSound(self.buttonSound)
 		self.selected = self.musicVolumeArea
 	elseif(self.sensitivityArea:isClicking()) then
+		scene.playSound(self.buttonSound)
 		self.selected = self.sensitivityArea
 	elseif(self.FOVArea:isClicking()) then
+		scene.playSound(self.buttonSound)
 		self.selected = self.FOVArea
 	elseif (input.isMouseButtonReleased(Mouse.LEFT)) then
 		self.selected = {}
@@ -116,6 +108,7 @@ function script:update()
 
 	-- Set fullscreen bool
 	if(self.fullScreenButton:isClicking()) then
+		scene.playSound(self.buttonSound)
 		self.fullScreen = not self.fullScreen
 	end
 

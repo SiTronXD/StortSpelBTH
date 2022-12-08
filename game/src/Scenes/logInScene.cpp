@@ -22,6 +22,7 @@ void logInScene::start()
     this->fontTextureId = Scene::getResourceManager()->addTexture(
         "assets/textures/UI/font.png", {samplerSettings, true}
     );
+    this->buttonSound = this->getResourceManager()->addSound("assets/Sounds/buttonClick.ogg");
 
     Scene::getUIRenderer()->setBitmapFont(
         {"abcdefghij",
@@ -57,10 +58,12 @@ void logInScene::update()
 {
     if (this->nameButton.isClicking())
     {
+        this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
         selected = &name;
     }
     else if (this->ipButton.isClicking() && !this->getNetworkHandler()->hasServer())
     {
+        this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
         selected = &ipAddress;
     }
     else if (Input::isMouseButtonPressed(Mouse::LEFT))
@@ -74,6 +77,7 @@ void logInScene::update()
     }
     else if (this->startButton.isClicking())
     {
+        this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
         this->getNetworkHandler()->createClient(name);
         if (this->getNetworkHandler()->hasServer())
         {
@@ -103,6 +107,7 @@ void logInScene::update()
     }
     if (this->backButton.isClicking())
     {
+        this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
         this->getNetworkHandler()->deleteServer();
         this->getSceneHandler()->setScene(new MainMenu(), "scripts/MainMenu.lua");
     }

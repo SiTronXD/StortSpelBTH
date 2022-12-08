@@ -27,7 +27,9 @@ private:
     uint32_t settingsBackgroundId;
     uint32_t howToPlayBackgroundId;
     uint32_t buttonTexture;
-    bool startGame;
+
+    uint32_t buttonSound;
+    //float buttonListenTimer;
 
     void howToPlay();
     void settings();

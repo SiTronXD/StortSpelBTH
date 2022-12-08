@@ -99,6 +99,9 @@ private:
   uint32_t portalOffMesh;
   uint32_t portalOnMesh;
 
+  uint32_t buttonSound;
+  float buttonListenTimer;
+
   GameSceneLevel currentLevel;
 
   void testParticleSystem(const Entity& particleSystemEntity);

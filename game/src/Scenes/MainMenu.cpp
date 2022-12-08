@@ -11,7 +11,6 @@
 void MainMenu::init()
 {
 	this->state = State::Menu;
-	this->startGame = false;
 	Settings::sceneHandler = this->getSceneHandler();
 
 	TextureSamplerSettings samplerSettings{};
@@ -56,6 +55,7 @@ void MainMenu::init()
 	this->settingsBackgroundId = this->getResourceManager()->addTexture("assets/textures/UI/settings.png");
 	this->howToPlayBackgroundId = this->getResourceManager()->addTexture("assets/textures/UI/howToPlay.png");
 	this->buttonTexture = this->getResourceManager()->addTexture("assets/textures/UI/button.png");
+	this->buttonSound = this->getResourceManager()->addSound("assets/Sounds/buttonClick.ogg");
 
 	Transform& tS = this->getComponent<Transform>(signpost);
 	tS.position = glm::vec3(18.3f, -6.2f, -12.4f);
@@ -85,10 +85,6 @@ void MainMenu::init()
 		fontTextureId,
 		glm::uvec2(50, 50)
 	);
-
-	this->settingsEntity = this->createEntity();
-	this->setScriptComponent(this->settingsEntity, "scripts/settings.lua");
-	Settings::setEntity(this->settingsEntity);
 }
 
 void MainMenu::start()
@@ -156,6 +152,10 @@ void MainMenu::start()
 	}
 
 	Input::setHideCursor(false);
+	this->settingsEntity = this->createEntity();
+	this->setScriptComponent(this->settingsEntity, "scripts/settings.lua");
+	Settings::setEntity(this->settingsEntity);
+	Settings::updateValues();
 }
 
 void MainMenu::update()
@@ -168,6 +168,7 @@ void MainMenu::update()
 	case Menu:
 		if (this->getComponent<UIArea>(playButton).isClicking())
 		{
+			this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
 			this->getUIRenderer()->setTexture(this->fontTextureId);
 			this->getUIRenderer()->renderString(
 				"loading...", glm::vec2(0.f, 0.f), glm::vec2(100.f, 100.f)
@@ -177,6 +178,7 @@ void MainMenu::update()
 		}
 		if (this->getComponent<UIArea>(joinGameButton).isClicking())
 		{
+			this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
 			this->getUIRenderer()->setTexture(this->fontTextureId);
 			this->getUIRenderer()->renderString(
 				"loading...", glm::vec2(0.f, 0.f), glm::vec2(100.f, 100.f)
@@ -185,14 +187,17 @@ void MainMenu::update()
 		}
 		if (this->getComponent<UIArea>(settingsButton).isClicking())
 		{
+			this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
 			this->state = State::Settings;
 		}
 		if (this->getComponent<UIArea>(howToPlayButton).isClicking())
 		{
+			this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
 			this->state = State::HowToPlay;
 		}
 		if (this->getComponent<UIArea>(quitButton).isClicking())
 		{
+			this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
 			this->state = State::Quit;
 		}
 		if (this->getComponent<UIArea>(levelEditButton).isClicking())
@@ -232,6 +237,7 @@ void MainMenu::settings()
 
 	if (this->getComponent<UIArea>(backButton).isClicking())
 	{
+		this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
 		this->state = State::Menu;
 	}
 	Settings::updateValues();
@@ -286,6 +292,7 @@ void MainMenu::howToPlay()
 
 	if (this->getComponent<UIArea>(backButton).isClicking())
 	{
+		this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
 		this->state = State::Menu;
 	}
 }
