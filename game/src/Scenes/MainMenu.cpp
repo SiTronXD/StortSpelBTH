@@ -185,6 +185,7 @@ void MainMenu::start()
     {
 		this->getNetworkHandler()->disconnectClient();    
 	}
+    this->getNetworkHandler()->setStatus(ServerStatus::WAITING);
 
 	Input::setHideCursor(false);
 }
