@@ -302,8 +302,6 @@ function script:update(dt)
         end
     end
 
-    print(self.maxSpeed)
-
     if (scene.getComponent(self.ID, CompType.Mesh).meshID == self.playerMesh)
     then
         self:rotate2(dt)
