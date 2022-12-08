@@ -103,7 +103,7 @@ void GameScene::init()
 
     roomHandler.init(
         this,
-        this->getResourceManager(), true);
+        this->getResourceManager(), this->getPhysicsEngine(), true);
     
     ResourceManager* resourceMng = this->getResourceManager();
     this->abilityMeshes[0] = resourceMng->addMesh("assets/models/KnockbackAbility.obj");
@@ -226,7 +226,7 @@ void GameScene::start()
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic/AmbiensMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
     this->getAudioHandler()->setMusicVolume(0.2f);
-    this->getAudioHandler()->playMusic();
+   // this->getAudioHandler()->playMusic();
 	
     // If we are not multiplayer we do this by ourself
     if (!networkHandler->isConnected())
@@ -249,6 +249,12 @@ void GameScene::start()
 
 void GameScene::update()
 {
+    static float musicCounter = 0;
+    if (++musicCounter == 20)
+    {
+        this->getAudioHandler()->playMusic();
+    }
+
     // Ghost overlay
     if (this->isGhost && this->ghostTransitionTimer >= 1.0f || this->hasRespawned)
     {
@@ -263,7 +269,7 @@ void GameScene::update()
     {   
         this->aiHandler->update(Time::getDT());
 
-        if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
+        if (this->roomHandler.playerNewRoom(this->playerID))
         {
             this->newRoomFrame = true;
             this->timeWhenEnteredRoom = Time::getTimeSinceStart();
@@ -381,7 +387,7 @@ void GameScene::update()
     }
     else
     {
-        if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
+        if (this->roomHandler.playerNewRoom(this->playerID))
         {
             this->newRoomFrame = true;
         }
@@ -603,7 +609,30 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 		    	this->switchScene(new GameScene(this->setNewLevel()), "scripts/gamescene.lua");
 		    }
         }
+        
+        if (this->hasComponents<Orb>(other)) 
+        {
+            auto& orb = this->getComponent<Orb>(other);
+            HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+            playerHealth.health -=
+                orb.orbPower->damage;
+            playerHealth.srcDmgEntity = other;
+            orb.onCollision(other, this->getSceneHandler());
+        }
 	}
+    else 
+    { // Collision between two things that isnt player
+        
+        if((this->hasComponents<Orb>(e1) || this->hasComponents<Orb>(e2))&&
+            !(this->hasComponents<LichComponent>(e1) || this->hasComponents<LichComponent>(e2)))
+        {
+            Entity collidingOrb = this->hasComponents<Orb>(e1) ? e1 : e2; 
+            
+            auto& orb = this->getComponent<Orb>(collidingOrb);        
+            orb.onCollision(collidingOrb, this->getSceneHandler());
+            
+        }
+    }
 }
 
 void GameScene::onTriggerEnter(Entity e1, Entity e2)
@@ -700,7 +729,6 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
         {
           swarmComp.inAttack = false;
           swarmComp.touchedPlayer = true;
-          //aiCombat.timer = aiCombat.lightAttackTime;
           HealthComp& playerHealth = this->getComponent<HealthComp>(player);
           playerHealth.health -=
               (int)swarmComp.lightHit;

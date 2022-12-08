@@ -15,7 +15,8 @@ enum class GameEvent
 	SEED, // Client -> Server: Request seed, Server -> Client: Seed to use
 	UPDATE_PLAYER, // Positions and animations (and health to server)
 	UPDATE_MONSTER, // How many enemies, What enemy, Position, rotation and animation udp
-	PLAY_PARTICLE, // What type, entity
+	PLAY_PARTICLE, //What type, entity
+	PLAY_PARTICLE_P, //What type, player
 	SPAWN_ITEM, // Client -> Server: Want to spawn item. Server -> Client: Spawn item in scene
 	DELETE_ITEM, // Server -> Client: Remove item from scene
 	PICKUP_ITEM, // Client -> Server: Want to pick up item. Server -> Client: Pick up the item
@@ -36,6 +37,7 @@ enum class GameEvent
 	INACTIVATE, //what entity
 	ACTIVATE, //what entity
 	PLAY_ENEMY_SOUND, // What entity, What component type
+	PLAY_PLAYER_SOUND, // client -> server : soundIndex, volume, // server -> client : playerID, soundIndex, volume
 	UPDATE_ANIM, // What entity, type (tank/lich), animIndex, slot
 	UPDATE_ANIM_TIMESCALE, // What entity, slot, timeScale
 	PLAYER_SET_GHOST, // Player ID
@@ -44,6 +46,8 @@ enum class GameEvent
 	SPAWN_PORTAL,
 	NEXT_LEVEL,// CurrentLevel difficulty, 
 	END_GAME, // All players dead
+	CLOSE_OLD_DOORS,// Index of next room
+	CLOSE_NEW_DOORS,// :)
 };
 
 enum class ItemType
@@ -104,6 +108,9 @@ private:
 	std::vector<glm::vec3> playerPosCurrent;
     std::map<int, std::pair<glm::vec3, glm::vec3>> entityToPosScale;
     std::map<int, std::pair<glm::vec3, glm::vec3>> entityLastPosScale;
+    std::vector<float> currDistToStepSound;
+    inline static const float distToStepSound = 20.f;//I don't know why this is perfect but it is
+    uint32_t moveSound;
 
 	// Client helpers
 	std::string str;
@@ -130,18 +137,21 @@ private:
     ParticleSystemInstance healParticleSystem;
     ParticleSystemInstance bloodParticleSystems;
     ParticleSystemInstance swarmParticleSystems;
+    ParticleSystemInstance footstepParticleSystems;
     ParticleSystemInstance portalParticleSystemSide0;
     ParticleSystemInstance portalParticleSystemSide1;
 	ParticleSystemInstance orbParticleSystems;
+	
+    void playParticle(const ParticleTypes& particleType, Entity& entity);
 
 	// RoomHandler
     bool newRoomFrame;
     int* numRoomsCleared;
     RoomHandler* roomHandler;
 
-    LichAttack* lich_fire;
-    LichAttack* lich_ice;
-    LichAttack* lich_light;
+    static LichAttack lich_fire;
+    static LichAttack lich_ice;
+    static LichAttack lich_light;
 
     Entity spawnOrbs(int orbType);
     Entity spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));

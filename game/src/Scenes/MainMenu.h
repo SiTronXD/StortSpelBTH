@@ -27,6 +27,7 @@ private:
     uint32_t fontTextureId;
     uint32_t settingsBackgroundId;
     uint32_t howToPlayBackgroundId;
+    uint32_t qrCodeID;
     bool startGame;
 
     void howToPlay();

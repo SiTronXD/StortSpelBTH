@@ -143,7 +143,7 @@ public:
 				{
 					this->scene->setComponent<Collider>(this->swordCollID, Collider::createCapsule(3.f, 18.f, glm::vec3(0), true));
 					combat.normalAttack = false;
-					playerEffectSound(this->attackSounds[swing], 10.f);
+					playerEffectSound(this->attackSounds[swing], 15.f);
 				}
 			}
 
@@ -405,7 +405,7 @@ public:
 
 	void takeDmg(Entity srcDmgEntity)
 	{
-		playerEffectSound(this->takeDmgSound, 10.f);
+		playerEffectSound(this->takeDmgSound, 15.f);
 
 		// Particle system transform
 		Entity bloodParticleSystemEntity = this->scene->createEntity();
@@ -619,7 +619,7 @@ public:
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive1;
 			setupAttack("spinAttack", 6, combat.comboLightCd, combat.animationMultiplier[comboActive1]);
-			playerEffectSound(this->attackSounds[swing], 10.f);
+			playerEffectSound(this->attackSounds[swing], 15.f);
 		}
 		else if (idx == 1)
 		{
@@ -1128,6 +1128,12 @@ public:
 	void playerEffectSound(int soundIdx, float volume)
 	{
 		this->audio->playSound(this->playerID, soundIdx, volume);
+        if (soundIdx != this->moveSound && networkHandler->isConnected())
+        {
+			sf::Packet p;
+            p << (int)GameEvent::PLAY_PLAYER_SOUND << soundIdx << volume;
+            networkHandler->sendDataToServerTCP(p);
+		}
 	}
 	
 	void pickUpAbility(Entity entity)
