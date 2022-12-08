@@ -142,10 +142,8 @@ void NetworkHandlerGame::initParticleSystems() {
     swarmPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
     swarmPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, 0.0f, 0.0f);
     this->swarmParticleSystems.create(this->sceneHandler->getScene(), swarmPS, 5);
-
-    // Fotstep particle system
-    this->sceneHandler->getScene()->setComponent<ParticleSystem>(this->player);
-    ParticleSystem& footstepPS = this->sceneHandler->getScene()->getComponent<ParticleSystem>(this->player);
+	 
+    ParticleSystem footstepPS{};
     footstepPS.maxlifeTime = 1.2f;
     footstepPS.numParticles = 12;
     footstepPS.textureIndex = resourceManger->addTexture("assets/textures/grassDustParticle.png");
@@ -160,6 +158,17 @@ void NetworkHandlerGame::initParticleSystems() {
     footstepPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
     footstepPS.coneSpawnVolume.localPosition = glm::vec3(0.0f);
     footstepPS.spawn = false;
+
+	
+	this->sceneHandler->getScene()->setComponent<ParticleSystem>(this->player);
+    ParticleSystem& footSteepPPS = this->sceneHandler->getScene()->getComponent<ParticleSystem>(this->player);
+    footSteepPPS = footstepPS;
+    for (int i = 0; i < this->playerEntities.size(); i++)
+    {
+        this->sceneHandler->getScene()->setComponent<ParticleSystem>(playerEntities[i]);
+		ParticleSystem& footSteepOPPS = this->sceneHandler->getScene()->getComponent<ParticleSystem>(playerEntities[i]);
+        footSteepOPPS = footstepPS;
+	}
 
     // Portal particle system
     ParticleSystem portalPS0{};
@@ -1073,14 +1082,6 @@ void NetworkHandlerGame::interpolatePositions()
 	UIRenderer* UI = this->sceneHandler->getUIRenderer();
 	this->timer += Time::getDT();
 
-	if (playerEntities.size() > 0 && !scene->entityValid(this->playerEntities[0])) {
-            std::cout << "stop1.5" << std::endl;
-	}
-	if (playerEntities.size() > 0 && !scene->hasComponents<Transform>(this->playerEntities[0]))
-    {
-            std::cout << "stop2" << std::endl; 
-    }
-
 	float percent = this->timer / UPDATE_RATE;
 	for (int i = 0; i < this->playerEntities.size(); i++)
 	{
@@ -1088,7 +1089,10 @@ void NetworkHandlerGame::interpolatePositions()
 		glm::vec3 newPosition = this->playerPosLast[i] + percent * (this->playerPosCurrent[i] - this->playerPosLast[i]);
         if (newPosition.y < 3)//3 seems to be an ok value
         {    
-            currDistToStepSound[i] -= glm::length(newPosition - t.position);
+			float moveLenght = glm::length(newPosition - t.position);
+            currDistToStepSound[i] -= moveLenght;
+			ParticleSystem& footstepPS = scene->getComponent<ParticleSystem>(this->otherPlayers[i].first);
+            footstepPS.spawn = moveLenght > 0.01f;
 		}
         t.position = newPosition;
 		UI->renderString(this->otherPlayers[i].second, t.position + glm::vec3(0.0f, 20.0f, 0.0f) + t.forward(), glm::vec2(150.0f));

@@ -137,6 +137,7 @@ private:
     ParticleSystemInstance healParticleSystem;
     ParticleSystemInstance bloodParticleSystems;
     ParticleSystemInstance swarmParticleSystems;
+    ParticleSystemInstance footstepParticleSystems;
     ParticleSystemInstance portalParticleSystemSide0;
     ParticleSystemInstance portalParticleSystemSide1;
     void playParticle(const ParticleTypes& particleType, Entity& entity);
