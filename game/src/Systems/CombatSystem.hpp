@@ -143,7 +143,7 @@ public:
 				{
 					this->scene->setComponent<Collider>(this->swordCollID, Collider::createCapsule(3.f, 18.f, glm::vec3(0), true));
 					combat.normalAttack = false;
-					playerEffectSound(this->attackSounds[swing], 15.f);
+					playerEffectSound(this->attackSounds[swing], 20.f);
 				}
 			}
 
@@ -177,7 +177,7 @@ public:
 				if (this->walkTimer <= 0.f)
 				{
 					this->walkTimer = this->walkTime;
-					playerEffectSound(this->moveSound, 15.f);
+					playerEffectSound(this->moveSound, 7.f);
 				}
 			}
 
@@ -619,7 +619,7 @@ public:
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive1;
 			setupAttack("spinAttack", 6, combat.comboLightCd, combat.animationMultiplier[comboActive1]);
-			playerEffectSound(this->attackSounds[swing], 15.f);
+			playerEffectSound(this->attackSounds[swing], 20.f);
 		}
 		else if (idx == 1)
 		{
