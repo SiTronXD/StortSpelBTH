@@ -1,0 +1,26 @@
+Network
+	Simon Strand
+	William Kamnert
+
+Engine
+	Simon Hultsborn
+	William Kamnert
+
+AI
+	Lowe Raivio
+	Oscar Nordström
+
+Graphical head
+	Rebecca Künkel
+
+Gameplay
+	Adam Åkesson
+
+Rum generation
+	Oliver Klingspor
+
+Sound Design
+	Adams kompis :D
+
+Lich Design
+	Alexandra Lindberg

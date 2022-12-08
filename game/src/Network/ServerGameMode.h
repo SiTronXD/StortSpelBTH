@@ -36,7 +36,7 @@ private:
     int roomSeed;
     uint8_t numRoomsCleared;
     bool newRoomFrame;
-
+    bool doorsClosed = false;
     bool safetyCleanDone = false;
     uint32_t timeWhenEnteredRoom = 0;
     const uint32_t delayToSafetyDelete = 2;

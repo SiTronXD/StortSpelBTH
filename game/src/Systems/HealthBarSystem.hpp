@@ -48,19 +48,19 @@ public:
 
 		auto tankHealthBar = [&](Transform& transform, TankComponent& tank)
 		{
-			float percentage = (float)tank.life / tank.FULL_HEALTH;
+			float percentage = std::max((float)tank.life / tank.FULL_HEALTH, 0.0f);
 			uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 36.0f, 0.0f) + camTransform.right() * 9.0f * (1.0f - percentage), glm::vec2(1950.0f * percentage, 100.0f));
 		};
 		tankView.each(tankHealthBar);
 		auto lichHealthBar = [&](Transform& transform, LichComponent& lich)
 		{
-			float percentage = (float)lich.life / lich.FULL_HEALTH;
+			float percentage = std::max((float)lich.life / lich.FULL_HEALTH, 0.0f);
 			uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 28.0f, 0.0f) + camTransform.right() * 7.75f * (1.0f - percentage), glm::vec2(1700.0f * percentage, 100.0f));
 		};
 		lichView.each(lichHealthBar);
 		auto swarmHealthBar = [&](Transform& transform, SwarmComponent& swarm)
 		{
-			float percentage = (float)swarm.life / swarm.FULL_HEALTH;
+			float percentage = std::max((float)swarm.life / swarm.FULL_HEALTH, 0.0f);
 			uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 10.0f, 0.0f) + camTransform.right() * 6.75f * (1.0f - percentage), glm::vec2(1450.0f * percentage, 100.0f));
 		};
 		swarmView.each(swarmHealthBar);

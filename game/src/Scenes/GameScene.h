@@ -46,11 +46,15 @@ private:
   std::string levelString;
 
   // Timer that "stops" if paused
+  Entity settingsEntity;
   float timer = 0.0f;
   bool paused = false;
   bool combatDisabled = false;
+  float musicCounter = 0;
   UIArea resumeButton;
+  UIArea settingsButton;
   UIArea exitButton;
+  UIArea backButton;
 
   bool isGhost = false;
   bool hasRespawned = false;
@@ -95,6 +99,9 @@ private:
   uint32_t hpBarTextureID;
   uint32_t portalOffMesh;
   uint32_t portalOnMesh;
+
+  uint32_t buttonSound;
+  float buttonListenTimer;
 
   GameSceneLevel currentLevel;
 

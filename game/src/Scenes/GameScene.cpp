@@ -14,6 +14,7 @@
 #include "vengine/application/Time.hpp"
 #include "GameOverScene.h"
 #include "MainMenu.h"
+#include "../Settings/Settings.h"
 
 #ifdef _CONSOLE
 // decreaseFps used for testing game with different framerates
@@ -97,12 +98,39 @@ void GameScene::init()
         fontTextureId,
         glm::uvec2(50, 50));
 
-    int swarm =
-        this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+    int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+
+    int tank = this->getResourceManager()->addAnimations({
+            "assets/models/Tank/TankWalk.fbx",
+            "assets/models/Tank/TankCharge.fbx",
+            "assets/models/Tank/TankGroundHump.fbx",
+            "assets/models/Tank/TankRaiseShield.fbx"
+        },
+        "assets/textures/"
+    );
+    this->getResourceManager()->mapAnimations(tank, {
+        "Walk",
+        "Charge",
+        "GroundHump",
+        "RaiseShield",
+        });
+    this->getResourceManager()->createAnimationSlot(tank, "LowerBody", "Character1_Hips");
+    this->getResourceManager()->createAnimationSlot(tank, "UpperBody", "Character1_Spine");
+
+    int lich = this->getResourceManager()->addAnimations({
+            "assets/models/Lich/Lich_Walk.fbx",
+            "assets/models/Lich/Lich_Attack.fbx",
+        },
+        "assets/textures/Lich/"
+        );
+    this->getResourceManager()->mapAnimations(lich, {
+        "Walk",
+        "Attack"
+        });
 
     roomHandler.init(
         this,
-        this->getResourceManager(), true);
+        this->getResourceManager(), this->getPhysicsEngine(), true);
     
     ResourceManager* resourceMng = this->getResourceManager();
     this->abilityMeshes[0] = resourceMng->addMesh("assets/models/KnockbackAbility.obj");
@@ -126,6 +154,7 @@ void GameScene::init()
     this->hpBarTextureID = resourceMng->addTexture("assets/textures/UI/hpBar.png");
     this->blackTextureIndex = resourceMng->addTexture("vengine_assets/textures/Black.png");
     this->ghostOverlayIndex = resourceMng->addTexture("assets/textures/UI/GhostUI.png");
+    this->buttonSound = resourceMng->addSound("assets/Sounds/buttonClick.ogg");
 
     // Temporary light
     this->dirLightEntity = this->createEntity();
@@ -153,6 +182,13 @@ void GameScene::init()
     this->ghostMat->glowMapTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhostGlow.png");
     this->ghostMat->emissionColor = glm::vec3(0.0f, 1.0f, 0.35f);
     this->ghostMat->emissionIntensity = 0.75f;
+
+    // Settings
+    Settings::sceneHandler = this->getSceneHandler();
+    this->settingsEntity = this->createEntity();
+    this->setScriptComponent(this->settingsEntity, "scripts/settings.lua");
+    Settings::setEntity(this->settingsEntity);
+    this->setInactive(this->settingsEntity);
 }
 
 void GameScene::start()
@@ -205,26 +241,29 @@ void GameScene::start()
 
     if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {
-        /*this->networkHandler->spawnItemRequest(knockbackAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(hpUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(movementUpPerk, 1.0f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));*/
+        //this->networkHandler->spawnItemRequest(knockbackAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        //this->networkHandler->spawnItemRequest(hpUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        //this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        //this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        //this->networkHandler->spawnItemRequest(movementUpPerk, 1.f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        //this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
     }
 
     this->levelString = "level " + std::to_string(currentLevel.level);
 
     // Pause menu
-    this->resumeButton.position = glm::vec2(0.0f, 100.0f);
-    this->exitButton.position = glm::vec2(0.0f, -100.0f);
+    this->resumeButton.position = glm::vec2(0.0f, 150.0f);
+    this->settingsButton.position = glm::vec2(0.0f, 0.0f);
+    this->exitButton.position = glm::vec2(0.0f, -150.0f);
+    this->backButton.position = glm::vec2(-745.0f, -360.0f);
     this->resumeButton.dimension = glm::vec2(500.0f, 100.0f);
+    this->settingsButton.dimension = glm::vec2(500.0f, 100.0f);
     this->exitButton.dimension = glm::vec2(500.0f, 100.0f);
+    this->backButton.dimension = glm::vec2(190.0f, 65.0f);
 
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic/AmbiensMusic.ogg");
-    this->getAudioHandler()->setMasterVolume(0.5f);
-    this->getAudioHandler()->setMusicVolume(1.0f);
-    this->getAudioHandler()->playMusic();
+    //this->getAudioHandler()->playMusic();
+    Settings::updateValues();
 	
     // If we are not multiplayer we do this by ourself
     if (!networkHandler->isConnected())
@@ -247,6 +286,11 @@ void GameScene::start()
 
 void GameScene::update()
 {
+    if (++this->musicCounter == 20)
+    {
+        this->getAudioHandler()->playMusic();
+    }
+
     // Ghost overlay
     if (this->isGhost && this->ghostTransitionTimer >= 1.0f || this->hasRespawned)
     {
@@ -261,7 +305,7 @@ void GameScene::update()
     {   
         this->aiHandler->update(Time::getDT());
 
-        if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
+        if (this->roomHandler.playerNewRoom(this->playerID))
         {
             this->newRoomFrame = true;
             this->timeWhenEnteredRoom = Time::getTimeSinceStart();
@@ -379,7 +423,7 @@ void GameScene::update()
     }
     else
     {
-        if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
+        if (this->roomHandler.playerNewRoom(this->playerID))
         {
             this->newRoomFrame = true;
         }
@@ -498,12 +542,12 @@ void GameScene::update()
 
     // Render HP bar UI
     HealthComp& playerHealth = this->getComponent<HealthComp>(this->playerID);
-    float hpPercent = playerHealth.health * 0.01f;
+    float hpPercent = std::max(playerHealth.health * 0.01f, 0.0f);
     float maxHpPercent = playerHealth.maxHealth * 0.01f;
     float xPos = -600.f;
     float yPos = -472.f;
-    float xSize = 1200.f * 0.35f;
-    float ySize = 64.f * 0.35f;
+    float xSize = 420.0f;
+    float ySize = 22.4f;
 
     this->getUIRenderer()->setTexture(this->hpBarBackgroundTextureID);
     this->getUIRenderer()->renderTexture(
@@ -521,22 +565,46 @@ void GameScene::update()
     {
         this->paused = !this->paused;
         this->getScriptHandler()->setGlobal(this->paused, "paused");
+        this->getScriptHandler()->setGlobal(false, "settings");
         Input::setHideCursor(!this->paused);
         this->getComponent<Rigidbody>(this->playerID).velocity = glm::vec3(0.0f);
+        this->setInactive(this->settingsEntity);
     }
     if (this->paused)
     {
-        if (this->resumeButton.isClicking())
+        if (this->isActive(this->settingsEntity))
         {
-            this->paused = false;
-            this->getScriptHandler()->setGlobal(this->paused, "paused");
-            Input::setHideCursor(!this->paused);
+            Settings::updateValues();
+            if (this->backButton.isClicking())
+            {
+                this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
+                this->getScriptHandler()->setGlobal(false, "settings");
+                this->setInactive(this->settingsEntity);
+            }
         }
-        else if (this->exitButton.isClicking())
+        else
         {
-            this->networkHandler->disconnectClient();
-            this->networkHandler->deleteServer();
-            this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
+            if (this->resumeButton.isClicking())
+            {
+                this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
+                this->paused = false;
+                this->getScriptHandler()->setGlobal(this->paused, "paused");
+                this->getScriptHandler()->setGlobal(false, "settings");
+                Input::setHideCursor(!this->paused);
+            }
+            else if (this->settingsButton.isClicking())
+            {
+                this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
+                this->getScriptHandler()->setGlobal(true, "settings");
+                this->setActive(this->settingsEntity);
+            }
+            else if (this->exitButton.isClicking())
+            {
+                this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
+                this->networkHandler->disconnectClient();
+                this->networkHandler->deleteServer();
+                this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
+            }
         }
     }
     else
@@ -601,7 +669,30 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 		    	this->switchScene(new GameScene(this->setNewLevel()), "scripts/gamescene.lua");
 		    }
         }
+        
+        if (this->hasComponents<Orb>(other)) 
+        {
+            auto& orb = this->getComponent<Orb>(other);
+            HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+            playerHealth.health -=
+                orb.orbPower->damage;
+            playerHealth.srcDmgEntity = other;
+            orb.onCollision(other, this->getSceneHandler());
+        }
 	}
+    else 
+    { // Collision between two things that isnt player
+        
+        if((this->hasComponents<Orb>(e1) || this->hasComponents<Orb>(e2))&&
+            !(this->hasComponents<LichComponent>(e1) || this->hasComponents<LichComponent>(e2)))
+        {
+            Entity collidingOrb = this->hasComponents<Orb>(e1) ? e1 : e2; 
+            
+            auto& orb = this->getComponent<Orb>(collidingOrb);        
+            orb.onCollision(collidingOrb, this->getSceneHandler());
+            
+        }
+    }
 }
 
 void GameScene::onTriggerEnter(Entity e1, Entity e2)
@@ -698,7 +789,6 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
         {
           swarmComp.inAttack = false;
           swarmComp.touchedPlayer = true;
-          //aiCombat.timer = aiCombat.lightAttackTime;
           HealthComp& playerHealth = this->getComponent<HealthComp>(player);
           playerHealth.health -=
               (int)swarmComp.lightHit;

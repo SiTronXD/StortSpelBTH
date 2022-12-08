@@ -25,8 +25,9 @@ public:
 		auto view = reg.view<Transform, ParticleSystem>();
 		auto func = [&](const auto entity, Transform& transform, ParticleSystem& particleSystem)
 		{
-			// Found blood particle system
-			if (strcmp(particleSystem.name, "SwarmPS") == 0)
+			// Particle system components to remove
+			if (strcmp(particleSystem.name, "SwarmPS") == 0 ||
+				strcmp(particleSystem.name, "RmvComponent") == 0)
 			{
 				// Entity was recently created
 				if (this->entityTimers.count((Entity)entity) <= 0)
