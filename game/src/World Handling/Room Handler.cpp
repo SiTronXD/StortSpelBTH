@@ -307,7 +307,7 @@ bool RoomHandler::playerNewRoom(Entity player)
 	
 	return false;
 }
-//respawn door closed
+
 bool RoomHandler::playersInPathway(const std::vector<Entity>& players)
 {
 	Room& curRoom = this->rooms[this->activeIndex];
@@ -579,14 +579,16 @@ void RoomHandler::generate(uint32_t seed)
 			Entity entity = this->scene->createEntity();
 			curRoom.rockFence = entity;
 			this->scene->getComponent<Transform>(entity).position += glm::vec3(TILE_WIDTH * 0.5f, 0.f, TILE_WIDTH * 0.5f);
+			this->scene->setComponent<RockFenceComp>(entity);
 			this->scene->setComponent<Collider>(entity, Collider::createBox(
-					glm::vec3(TILE_WIDTH), glm::vec3(0.f, TILE_WIDTH, 0.f)));
+					glm::vec3(TILE_WIDTH, TILE_WIDTH * 2.f, TILE_WIDTH), glm::vec3(0.f, TILE_WIDTH, 0.f)));
 			if (this->useMeshes)
 			{
 				this->scene->setComponent<MeshComponent>(entity, (int)this->rockFenceMeshId);
 			}
 
 			entity = this->scene->createEntity();
+			this->scene->setComponent<Collider>(entity, Collider::createCapsule(24.f, 200.f));
 			Transform& rockTra = this->scene->getComponent<Transform>(entity);
 			rockTra.position = glm::vec3(8.15f, -36.5f, -7.2f);
 			rockTra.position += glm::vec3(TILE_WIDTH * 0.5f, 0.f, TILE_WIDTH * 0.5f);

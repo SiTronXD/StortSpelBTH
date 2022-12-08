@@ -18,6 +18,11 @@ struct EdgeTile
     char dummy{};
 };
 
+struct RockFenceComp
+{
+    char dummy{};
+};
+
 struct TileInfo 
 {
 public: 
