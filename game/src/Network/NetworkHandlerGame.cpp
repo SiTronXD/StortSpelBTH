@@ -1065,8 +1065,7 @@ void NetworkHandlerGame::interpolatePositions()
 	{
 		Transform& t = scene->getComponent<Transform>(this->playerEntities[i]);
 		glm::vec3 newPosition = this->playerPosLast[i] + percent * (this->playerPosCurrent[i] - this->playerPosLast[i]);
-        std::cout << "other player pos.y: " << newPosition.y << std::endl;
-        if (newPosition.y < 3)//check if 3 is a ok value
+        if (newPosition.y < 3)//3 seems to be an ok value
         {    
             currDistToStepSound[i] -= glm::length(newPosition - t.position);
 		}
@@ -1075,7 +1074,7 @@ void NetworkHandlerGame::interpolatePositions()
         if (currDistToStepSound[i] <= 0)
         {
 			currDistToStepSound[i] = distToStepSound;
-            this->sceneHandler->getAudioHandler()->playSound(this->otherPlayers[i].first, moveSound, 10.f);
+            this->sceneHandler->getAudioHandler()->playSound(this->otherPlayers[i].first, moveSound, 15.f);
 		}
 		// Put sword in characters hand and keep updating it
 		scene->getComponent<Transform>(this->swords[i]).setMatrix(
