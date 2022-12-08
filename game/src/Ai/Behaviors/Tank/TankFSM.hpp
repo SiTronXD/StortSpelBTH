@@ -30,7 +30,6 @@ struct TankComponent
 
 	TankComponent() 
 	{
-		//this->hitCol = Collider::createSphere(4.0f);
 	};
 
 	void setFriends(Scene* scene, Entity entityID)
@@ -187,7 +186,7 @@ struct TankComponent
 
 
 		Collider col = scene->getComponent<Collider>(entityID);
-		col.radius = this->eliteStats.sizeMultiplier;
+		col.radius /= this->eliteStats.sizeMultiplier;
 		col.offset -= glm::vec3(0.0f, 5.0f, 0.0f);
 		scene->setComponent<Collider>(entityID, col);
 		Transform& trans = scene->getComponent<Transform>(entityID);

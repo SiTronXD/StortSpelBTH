@@ -615,7 +615,8 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
     else 
     { // Collision between two things that isnt player
         
-        if(this->hasComponents<Orb>(e1) || this->hasComponents<Orb>(e2))
+        if((this->hasComponents<Orb>(e1) || this->hasComponents<Orb>(e2))&&
+            !(this->hasComponents<LichComponent>(e1) || this->hasComponents<LichComponent>(e2)))
         {
             Entity collidingOrb = this->hasComponents<Orb>(e1) ? e1 : e2; 
             
