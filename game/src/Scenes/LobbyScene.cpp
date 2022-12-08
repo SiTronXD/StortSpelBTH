@@ -39,10 +39,10 @@ void LobbyScene::init()
     );
 
     int tank = this->getResourceManager()->addAnimations({
-                        "assets/models/Tank/TankWalk.fbx",
-                        "assets/models/Tank/TankCharge.fbx",
-                        "assets/models/Tank/TankGroundHump.fbx",
-                        "assets/models/Tank/TankRaiseShield.fbx"
+            "assets/models/Tank/TankWalk.fbx",
+            "assets/models/Tank/TankCharge.fbx",
+            "assets/models/Tank/TankGroundHump.fbx",
+            "assets/models/Tank/TankRaiseShield.fbx"
         },
         "assets/textures/"
     );
@@ -56,16 +56,15 @@ void LobbyScene::init()
     this->getResourceManager()->createAnimationSlot(tank, "UpperBody", "Character1_Spine");
 
     int lich = this->getResourceManager()->addAnimations({
-                "assets/models/Lich/Lich_Walk.fbx",
-                "assets/models/Lich/Lich_Attack.fbx",
+            "assets/models/Lich/Lich_Walk.fbx",
+            "assets/models/Lich/Lich_Attack.fbx",
         },
         "assets/textures/Lich/"
-        );
-    this->getResourceManager()->mapAnimations(lich,
-        {
-            "Walk",
-            "Attack"
-        });
+    );
+    this->getResourceManager()->mapAnimations(lich, {
+        "Walk",
+        "Attack"
+    });
    
   TextureSamplerSettings samplerSettings{};
   samplerSettings.filterMode = vk::Filter::eNearest;
@@ -134,7 +133,7 @@ void LobbyScene::init()
             mesh.overrideMaterials[0].tintColor = this->networkHandler->playerColors[i];
         }
     }
-    this->setActive(players[0]);
+    this->setActive(this->players[0]);
 
     startButton.position = glm::vec2(0.0f, -450.f);
     startButton.dimension = glm::vec2(275.0f, 100.0f);
@@ -277,8 +276,7 @@ void LobbyScene::update()
             }
         }
     }
-
-    if (!this->getNetworkHandler()->isConnected())
+    else if (!this->getNetworkHandler()->isConnected())
     {
         this->getNetworkHandler()->disconnectClient();
         this->getNetworkHandler()->deleteServer();

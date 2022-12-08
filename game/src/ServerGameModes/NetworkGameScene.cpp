@@ -33,7 +33,7 @@ void NetworkGameScene::start()
   //send seed to players
   std::cout << "SERVER: seed is: " << roomSeed << std::endl;
   this->addEvent({(int)NetworkEvent::EMPTY, this->roomSeed});
-  this->roomHandler.init(this, this->getResourceManager(), false);
+  this->roomHandler.init(this, this->getResourceManager(), this->getPhysicsEngine(), false);
   this->roomHandler.generate(this->roomSeed);
   
   // Ai management
@@ -131,14 +131,13 @@ void NetworkGameScene::onCollisionStay(Entity e1, Entity e2)
           auto& swarmComp = this->getComponent<SwarmComponent>(other);
           if (swarmComp.inAttack)
             {
-              auto& aiCombat = this->getComponent<AiCombatSwarm>(other);
               swarmComp.inAttack = false;
               swarmComp.touchedPlayer = true;
-              aiCombat.timer = aiCombat.lightAttackTime;
+              swarmComp.timer = swarmComp.lightAttackTime;
               this->addEvent(
                   {(int)NetworkEvent::CLIENTJOINED,
                    other,
-                   (int)aiCombat.lightHit,
+                   (int)swarmComp.lightHit,
                    player}
               );
             }

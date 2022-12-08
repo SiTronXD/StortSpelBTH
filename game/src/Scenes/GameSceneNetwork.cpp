@@ -86,7 +86,7 @@ void GameSceneNetwork::init()
 
   roomHandler.init(
       this,
-      this->getResourceManager(), true
+      this->getResourceManager(), this->getPhysicsEngine(), true
   );
   roomHandler.generate(123);
   createPortal();
@@ -132,11 +132,13 @@ void GameSceneNetwork::start()
   this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 
   bool paused = false;
+  bool disabled = false;
   this->setComponent<Combat>(playerID);
   this->createSystem<CombatSystem>(
       this->getSceneHandler(),
       this->playerID,
       &paused,
+      &disabled,
       nullptr
   );
 
@@ -197,7 +199,7 @@ void GameSceneNetwork::update()
 {
     
             // TODO: Move to SpawnHandler ---- 
-    if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
+    if (this->roomHandler.playerNewRoom(this->playerID))
     {
         this->newRoomFrame = true;
     }

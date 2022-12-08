@@ -22,9 +22,9 @@ private:
 	static const int MAX_PLAYER_COUNT = 4;
 	inline static const std::vector<glm::vec3> POSITIONS = { 
 		glm::vec3(0, -10, 15), 
-		glm::vec3(10, -10, 18), 
-		glm::vec3(-10, -10, 18),
-		glm::vec3(-5, -10, 21) 
+		glm::vec3(10, -10, 22), 
+		glm::vec3(-10, -10, 22),
+		glm::vec3(-5, -10, 28) 
 	};
 
 	Entity scene;

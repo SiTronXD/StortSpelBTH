@@ -30,7 +30,7 @@ public:
 			area.accumulator += area.regen * deltaTime;
 			glm::vec3 diff = playerTransform.position - transform.position;
 
-			if (glm::dot(diff, diff) <= area.radius * area.radius) { playerHealth.health = std::min(playerHealth.health + (int)area.accumulator, playerHealth.maxHealth); }
+			if (glm::dot(diff, diff) <= area.radius * area.radius && playerHealth.health > 0) { playerHealth.health = std::min(playerHealth.health + (int)area.accumulator, playerHealth.maxHealth); }
 			if (area.accumulator >= 1.0f) { area.accumulator -= (int)area.accumulator; }
 			if (area.lifeTime < 0.0f) { toRemove.push_back((Entity)entity); }
 		};
