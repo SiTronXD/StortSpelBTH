@@ -71,6 +71,7 @@ void MainMenu::init()
 	leavesPS.coneSpawnVolume.coneAngle = 140.0f;
 	leavesPS.coneSpawnVolume.localDirection = glm::vec3(1.0f, -1.0f, 0.2f);
 	leavesPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+	leavesPS.initialSimulation = true;
 
 	this->settingsBackgroundId =
 		this->getResourceManager()->addTexture(
