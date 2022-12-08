@@ -207,12 +207,6 @@ public:
 
 	bool playerNewRoom(Entity player);
 
-	//TODO: Fix rooms in DEBUG
-	//TODO: Make path box slightly bigger 
-
-	// TRY COMPLETING ROOMS THAT AREN'T NEXT TO SPAWN (BUGGED ONCE NOT ANOTHER TIME?)
-
-	// numRoomsCleared++; IN NetworkHandler - event ROOM_CLEAR
 	void startOver();
 	glm::vec3 getRespawnPos() const;
 	glm::vec3 getRespawnRot() const;
