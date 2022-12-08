@@ -101,7 +101,7 @@ void GameScene::init()
 
     roomHandler.init(
         this,
-        this->getResourceManager(), true);
+        this->getResourceManager(), this->getPhysicsEngine(), true);
     
     ResourceManager* resourceMng = this->getResourceManager();
     this->abilityMeshes[0] = resourceMng->addMesh("assets/models/KnockbackAbility.obj");
@@ -259,7 +259,7 @@ void GameScene::update()
     {   
         this->aiHandler->update(Time::getDT());
 
-        if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
+        if (this->roomHandler.playerNewRoom(this->playerID))
         {
             this->newRoomFrame = true;
             this->timeWhenEnteredRoom = Time::getTimeSinceStart();
@@ -377,7 +377,7 @@ void GameScene::update()
     }
     else
     {
-        if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
+        if (this->roomHandler.playerNewRoom(this->playerID))
         {
             this->newRoomFrame = true;
         }
@@ -604,16 +604,16 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 
 void GameScene::onTriggerEnter(Entity e1, Entity e2)
 {
-    Entity ground = e1 == this->roomHandler.getFloor()   ? e1
-                    : e2 == this->roomHandler.getFloor() ? e2
-                                                        : -1;
-    Entity perk = this->hasComponents<Perks>(e1)   ? e1
-                : this->hasComponents<Perks>(e2) ? e2
-                                                    : -1;
-    Entity ability = this->hasComponents<Abilities>(e1)   ? e1
-                    : this->hasComponents<Abilities>(e2) ? e2
+  Entity ground = e1 == this->roomHandler.getFloor()   ? e1
+                  : e2 == this->roomHandler.getFloor() ? e2
                                                        : -1;
-
+  Entity perk = this->hasComponents<Perks>(e1)   ? e1
+                : this->hasComponents<Perks>(e2) ? e2
+                                                 : -1;
+  Entity ability = this->hasComponents<Abilities>(e1)   ? e1
+                   : this->hasComponents<Abilities>(e2) ? e2
+                                                        : -1;
+   
 	if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<SwarmComponent>(e2))
 	{
 		SwarmComponent& s1 = this->getComponent<SwarmComponent>(e1);

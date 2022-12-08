@@ -42,7 +42,9 @@ enum class GameEvent
 
 	ROOM_CLEAR,
 	SPAWN_PORTAL,
-	NEXT_LEVEL,// CurrentLevel difficulty, 
+	NEXT_LEVEL,//CurrentLevel difficulty, 
+	CLOSE_OLD_DOORS,// Index of next room
+	CLOSE_NEW_DOORS,// :)
 	END_GAME, // All players dead
 };
 

@@ -82,6 +82,7 @@ private:
 			:doors{-1,-1,-1,-1}, connectingIndex{-1,-1,-1,-1}, 
 			finished(false), type(RoomData::INVALID), position(0.f)
 			, extents{}, rock(-1), rockFence(-1), colliderPos(0.f)
+			, connPathIndex{-1,-1,-1,-1}
 		{		
 		}
 
@@ -89,7 +90,7 @@ private:
 		float extents[4];
 		RoomData::Type type;
 		
-        std::vector<TileInfo>  tileInfos;
+        std::vector<TileInfo> tileInfos;
 		std::vector<glm::vec3> mainTiles; // "Playable" tiles (used for spawning enemies)
 		std::vector<Entity> objects;	  // Objects inside room (borders, rocks etc)
 
@@ -97,15 +98,24 @@ private:
 		Collider box;
 		Entity doors[4];
 		int connectingIndex[4];
+		int connPathIndex[4];
 
 		bool finished;
 		Entity rock;
 		Entity rockFence;
 	};
 
+	struct Pathway
+	{
+		std::vector<Entity> entities;
+		glm::vec3 colliderPos;
+		Collider box;
+	};
+
 	// Scene
 	Scene* scene;
 	ResourceManager* resourceMan;
+	PhysicsEngine* physicsEngine;
 
 	// Layout generation
 	std::vector<bool> verticalConnection;
@@ -126,10 +136,11 @@ private:
     void createTileInfos(uint32_t roomIndex);
 
 	// Doors and paths
+	std::vector<Pathway> paths;
 	void createDoors(int roomIndex, const glm::ivec2* doorTilePos);
 	void setConnections(int numMainRooms, const std::vector<glm::ivec2>& connections);
 	void generatePathways();
-	void surroundPaths(size_t startIdx, const std::vector<glm::vec3>& pathPos, glm::vec3 p0, glm::vec3 p1, float distFactor, bool vertical, bool colliders);
+	void surroundPaths(size_t pathIndex, const std::vector<glm::vec3>& pathPos, glm::vec3 p0, glm::vec3 p1, float distFactor, bool vertical, bool colliders);
 
 	// IDs
 	std::vector<Room> rooms;
@@ -141,8 +152,11 @@ private:
 	int respawnDoorIdx = -1;
 	int prevRoomIndex = -1;
 	int activeIndex = 0;
-	void showPaths(bool show);
-	void closeDoors(int index);
+	int serverNextIndex = -1; // Used by server
+	int oldIndex = -1; // Used by server
+	void togglePaths(int roomIndex, bool show);
+	void toggleDoors(int index, bool open, int ignore = -1);
+	void forceToggleDoors(int index, bool open, int ignore = -1);
 	void activateRoom(int index);
 	void deactivateRoom(int index);
 	void placeDoorLamps();
@@ -168,12 +182,13 @@ private:
 	bool useMeshes; // Required by server
 	float flickerTimer = 0.f;
 
+	bool playersOnCollider(Collider& col, const glm::vec3& pos, const std::vector<Entity>& players);
 
 public:
 	RoomHandler();
 	~RoomHandler();
 
-	void init(Scene* scene, ResourceManager* resourceMan, bool useMeshes);
+	void init(Scene* scene, ResourceManager* resourceMan, PhysicsEngine* physicsEngine, bool useMeshes);
 	void generate(uint32_t seed);
 
 #ifdef _CONSOLE
@@ -181,7 +196,17 @@ public:
 #endif //  _CONSOLE
 
 	void roomCompleted();
-	bool playerNewRoom(Entity player, PhysicsEngine* physicsEngine);
+
+	// Multiplayer
+	int serverGetNextRoomIndex() const;
+	bool playersInPathway(const std::vector<Entity>& players);
+	bool playersInsideNewRoom(const std::vector<Entity>& players);
+	void multiplayerToggleCurrentDoors(int nextRoom);
+	void mutliplayerCloseDoors();
+	void serverActivateCurrentRoom();
+
+	bool playerNewRoom(Entity player);
+
 	void startOver();
 	glm::vec3 getRespawnPos() const;
 	glm::vec3 getRespawnRot() const;
@@ -193,6 +218,7 @@ public:
 	bool inExitRoom() const;
 
     const glm::vec3& getRoomPos() const;
+	int getActiveIndex() const;
 
 	Entity getFloor() const;
 

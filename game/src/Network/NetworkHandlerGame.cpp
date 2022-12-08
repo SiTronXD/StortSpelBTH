@@ -589,7 +589,7 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
     case GameEvent::ROOM_CLEAR:
         this->newRoomFrame = false;
         roomHandler->roomCompleted();
-        this->numRoomsCleared++;
+        this->numRoomsCleared++; // ++ on ptr ?
 		std::cout << "GameScene: number of rooms cleared:" << this->numRoomsCleared << std::endl;  
 		
 		dynamic_cast<GameScene*>(scene)->revivePlayer();
@@ -701,6 +701,13 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		break;
 	case GameEvent::END_GAME:
 		((GameScene*)this->sceneHandler->getScene())->endGame();
+		break;
+	case GameEvent::CLOSE_OLD_DOORS:
+		tcpPacket >> i0;
+		roomHandler->multiplayerToggleCurrentDoors(i0);
+		break;
+	case GameEvent::CLOSE_NEW_DOORS:
+		roomHandler->mutliplayerCloseDoors();
 		break;
 	default:
 		break;
