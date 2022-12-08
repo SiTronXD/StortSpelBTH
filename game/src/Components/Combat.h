@@ -67,4 +67,5 @@ struct Combat
 
     ActiveAttack activeAttack = noActive;
     ActiveAttack nextAttack = noActive;
+    bool normalAttack = false;
 };

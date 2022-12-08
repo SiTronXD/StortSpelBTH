@@ -65,9 +65,9 @@ public:
 			combat.combos.emplace_back("Light Heavy Light ");
 			combat.combos.emplace_back("Heavy Light Heavy ");
 
-			this->takeDmgSound = this->resourceMng->addSound("assets/Sounds/OufSound.ogg");
-			this->moveSound = this->resourceMng->addSound("assets/Sounds/RunningSound.ogg");
-			this->attackSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/SwishSound.ogg"));
+			this->takeDmgSound = this->resourceMng->addSound("assets/Sounds/PlayerSounds/hurt-2.ogg");
+			this->moveSound = this->resourceMng->addSound("assets/Sounds/PlayerSounds/RunningSound.ogg");
+			this->attackSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/PlayerSounds/sword-swing-1.ogg"));
 
 			this->swordCollID = this->scene->createEntity();
 			this->knockbackCollID = this->scene->createEntity();
@@ -135,6 +135,18 @@ public:
 				useAbility(combat);
             }
 
+			AnimationStatus status = this->scene->getAnimationStatus(this->playerID, "UpperBody");
+			if (combat.normalAttack)
+			{
+				if ((status.timer / status.endTime) > 0.1f && status.animationName == "lightAttack" ||
+					(status.timer / status.endTime) > 0.3f && status.animationName == "heavyAttack")
+				{
+					this->scene->setComponent<Collider>(this->swordCollID, Collider::createCapsule(3.f, 18.f, glm::vec3(0), true));
+					combat.normalAttack = false;
+					playerEffectSound(this->attackSounds[swing], 10.f);
+				}
+			}
+
             // Check if player wants to drop a perk
             if (Input::isKeyPressed(Keys::ONE))
             {
@@ -162,10 +174,10 @@ public:
 			
 			if (isPlayingRunAnim)
 			{
-				if (this->walkTimer < 0.f)
+				if (this->walkTimer <= 0.f)
 				{
 					this->walkTimer = this->walkTime;
-					playerEffectSound(this->moveSound, 10.f);
+					playerEffectSound(this->moveSound, 15.f);
 				}
 			}
 
@@ -189,43 +201,44 @@ public:
 				healthComp.srcDmgEntity = -1;
 			}
 
-#ifdef _CONSOLE
-			float animMultis[6] = { combat.animationMultiplier[0], combat.animationMultiplier[1], combat.animationMultiplier[2],
-			combat.animationMultiplier[3], combat.animationMultiplier[4], combat.animationMultiplier[5] };
-
-			ImGui::Begin("AnimationMultipliers");
-			ImGui::SliderFloat("Light Anim", &animMultis[0], 0.f, 10.f);
-			ImGui::SliderFloat("Heavy Anim", &animMultis[1], 0.f, 10.f);
-			ImGui::SliderFloat("Combo1 Anim", &animMultis[2], 0.f, 10.f);
-			ImGui::SliderFloat("Combo2 Anim", &animMultis[3], 0.f, 10.f);
-			ImGui::SliderFloat("Combo3 Anim", &animMultis[4], 0.f, 10.f);
-			ImGui::SliderFloat("Knockback Anim", &animMultis[5], 0.f, 10.f);
-			ImGui::End();
-			for (size_t i = 0; i < 6; i++)
-			{
-				combat.animationMultiplier[i] = animMultis[i];
-			}
-
-			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-			float runAnim = 0.f;
-            this->script->getScriptComponentValue(
-                playerScript, runAnim, "runAnimTime"
-            );
-			float sprintAnim = 0.f;
-            this->script->getScriptComponentValue(
-                playerScript, sprintAnim, "sprintAnimTime"
-            );
-			ImGui::Begin("Running Animation");
-            ImGui::SliderFloat("Running Anim", &runAnim, 0.f, 10.f);
-            ImGui::SliderFloat("Running Anim", &sprintAnim, 0.f, 10.f);
-            ImGui::End();
-            this->script->setScriptComponentValue(
-                playerScript, runAnim, "runAnimTime"
-            );
-            this->script->setScriptComponentValue(
-                playerScript, sprintAnim, "sprintAnimTime"
-            );
-#endif
+//#ifdef _CONSOLE
+//			float animMultis[6] = { combat.animationMultiplier[0], combat.animationMultiplier[1], combat.animationMultiplier[2],
+//			combat.animationMultiplier[3], combat.animationMultiplier[4], combat.animationMultiplier[5] };
+//
+//			ImGui::Begin("AnimationMultipliers");
+//			ImGui::SliderFloat("Light Anim", &this->walkTime, 0.f, 10.f);
+//			ImGui::SliderFloat("Light Anim", &animMultis[0], 0.f, 10.f);
+//			ImGui::SliderFloat("Heavy Anim", &animMultis[1], 0.f, 10.f);
+//			ImGui::SliderFloat("Combo1 Anim", &animMultis[2], 0.f, 10.f);
+//			ImGui::SliderFloat("Combo2 Anim", &animMultis[3], 0.f, 10.f);
+//			ImGui::SliderFloat("Combo3 Anim", &animMultis[4], 0.f, 10.f);
+//			ImGui::SliderFloat("Knockback Anim", &animMultis[5], 0.f, 10.f);
+//			ImGui::End();
+//			for (size_t i = 0; i < 6; i++)
+//			{
+//				combat.animationMultiplier[i] = animMultis[i];
+//			}
+//
+//			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+//			float runAnim = 0.f;
+//            this->script->getScriptComponentValue(
+//                playerScript, runAnim, "runAnimTime"
+//            );
+//			float sprintAnim = 0.f;
+//            this->script->getScriptComponentValue(
+//                playerScript, sprintAnim, "sprintAnimTime"
+//            );
+//			ImGui::Begin("Running Animation");
+//            ImGui::SliderFloat("Running Anim", &runAnim, 0.f, 10.f);
+//            ImGui::SliderFloat("Running Anim", &sprintAnim, 0.f, 10.f);
+//            ImGui::End();
+//            this->script->setScriptComponentValue(
+//                playerScript, runAnim, "runAnimTime"
+//            );
+//            this->script->setScriptComponentValue(
+//                playerScript, sprintAnim, "sprintAnimTime"
+//            );
+//#endif
 		};
 		view.each(foo);
 
@@ -259,11 +272,19 @@ public:
 				{
 					if (combat.activeAttack == lightActive)
 					{
+						this->scene->removeComponent<Collider>(this->swordCollID);
+						this->hitEnemies.clear();
+						this->canHit = true;
+						this->scene->setAnimation(this->playerID, "idle", "UpperBody", 1.f);
 						combat.activeAttack = noActive;
 						lightAttack(combat);
 					}
 					else if (combat.activeAttack == heavyActive)
 					{
+						this->scene->removeComponent<Collider>(this->swordCollID);
+						this->hitEnemies.clear();
+						this->canHit = true;
+						this->scene->setAnimation(this->playerID, "idle", "UpperBody", 1.f);
 						combat.activeAttack = noActive;
 						heavyAttack(combat);
 					}
@@ -279,11 +300,19 @@ public:
 				{
 					if (combat.activeAttack == lightActive)
 					{
+						this->scene->removeComponent<Collider>(this->swordCollID);
+						this->hitEnemies.clear();
+						this->canHit = true;
+						this->scene->setAnimation(this->playerID, "idle", "UpperBody", 1.f);
 						combat.activeAttack = noActive;
 						lightAttack(combat);
 					}
 					else if (combat.activeAttack == heavyActive)
 					{
+						this->scene->removeComponent<Collider>(this->swordCollID);
+						this->hitEnemies.clear();
+						this->canHit = true;
+						this->scene->setAnimation(this->playerID, "idle", "UpperBody", 1.f);
 						combat.activeAttack = noActive;
 						heavyAttack(combat);
 					}
@@ -419,8 +448,6 @@ public:
 		this->script->getScriptComponentValue(playerScript, cannotAttack, "isDodging");
 		if (!cannotAttack)
 		{
-			playerEffectSound(this->attackSounds[swing], 10.f);
-
 			int currentAnimation = 0;
 			this->script->getScriptComponentValue(playerScript, currentAnimation, "currentAnimation");
 
@@ -447,9 +474,15 @@ public:
 			}
 			else
 			{
-				Transform& swordTrans = this->scene->getComponent<Transform>(this->swordCollID);
-				swordTrans.updateMatrix();
-				this->scene->setComponent<Collider>(this->swordCollID, Collider::createCapsule(3.f, 18.f, glm::vec3(0), true));
+				if (animName == "lightAttack" || animName == "heavyAttack")
+				{
+					this->scene->getComponent<Combat>(this->playerID).normalAttack = true;
+				}
+				else
+				{
+					this->scene->setComponent<Collider>(this->swordCollID, Collider::createCapsule(3.f, 18.f, glm::vec3(0), true));
+					this->scene->getComponent<Combat>(this->playerID).normalAttack = false;
+				}
 			}
 		}
 	}
@@ -578,24 +611,39 @@ public:
 	{
 		if (idx == 0)
 		{
+			if (this->scene->hasComponents<Collider>(this->swordCollID))
+			{
+				this->scene->removeComponent<Collider>(this->swordCollID);
+			}
 			combat.attackTimer = combat.comboLightCd;
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive1;
 			setupAttack("spinAttack", 6, combat.comboLightCd, combat.animationMultiplier[comboActive1]);
+			playerEffectSound(this->attackSounds[swing], 10.f);
 		}
 		else if (idx == 1)
 		{
+			if (this->scene->hasComponents<Collider>(this->swordCollID))
+			{
+				this->scene->removeComponent<Collider>(this->swordCollID);
+			}
 			combat.attackTimer = combat.comboMixCd;
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive2;
 			setupAttack("mixAttack", 5, combat.comboMixCd, combat.animationMultiplier[comboActive2]);
+			playerEffectSound(this->attackSounds[swing], 10.f);
 		}
 		else if (idx == 2)
 		{
+			if (this->scene->hasComponents<Collider>(this->swordCollID))
+			{
+				this->scene->removeComponent<Collider>(this->swordCollID);
+			}
 			combat.attackTimer = combat.comboHeavyCd;
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive3;
 			setupAttack("slashAttack", 5, combat.comboHeavyCd, combat.animationMultiplier[comboActive3]);
+			playerEffectSound(this->attackSounds[swing], 10.f);
 		}
 	};
 
@@ -724,6 +772,23 @@ public:
 		this->script->setScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
 		this->script->setScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
 
+		std::cout << maxSpeed << " C++ MaxSpeed" << std::endl << std::endl;
+		if (maxSpeed > 58)
+		{
+			this->walkTime = 0.3f;
+			std::cout << "ABOVE 60" << std::endl << std::endl;
+		}
+		else if (maxSpeed > 46)
+		{
+			this->walkTime = 0.35f;
+			std::cout << "ABOVE 44" << std::endl << std::endl;
+		}
+		else if (maxSpeed >= 36)
+		{
+			this->walkTime = 0.45f;
+			std::cout << "ABOVE 36" << std::endl << std::endl;
+		}
+
 		if (currentAnimation == 2)
 		{
 			this->script->setScriptComponentValue(playerScript, 3, "currentAnimation");
@@ -808,6 +873,7 @@ public:
 		this->script->setScriptComponentValue(playerScript, 1.8f, "runAnimTime"); // 0.7f
 		this->script->setScriptComponentValue(playerScript, 2.8f, "sprintAnimTime"); // 1.2f
 		this->script->setScriptComponentValue(playerScript, 3.f, "dodgeAnimTime");
+		this->walkTime = 0.5f;
 	}
 
 	void setDefaultStamina(Combat& combat)

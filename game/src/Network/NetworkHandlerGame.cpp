@@ -269,19 +269,23 @@ void NetworkHandlerGame::init()
 	if (!TankComponent::s_initialized)
 	{
 		TankComponent::s_takeDmg =
-			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
+			this->resourceManger->addSound("assets/Sounds/Enemysounds/Golem/GolemTakeDmg.ogg");
+		TankComponent::s_shockwave =
+			this->resourceManger->addSound("assets/Sounds/Enemysounds/Golem/Shockwave.ogg");
+		TankComponent::s_charge =
+			this->resourceManger->addSound("assets/Sounds/Enemysounds/Golem/GolemCharge.ogg");
 		TankComponent::s_initialized = true;
 	}
 	if (!LichComponent::s_initialized)
 	{
 		LichComponent::s_takeDmg =
-			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Lich/LichTakeDmg.ogg");
 		LichComponent::s_lightning =
-			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Lich/ChargeLightning.ogg");
 		LichComponent::s_fire =
-			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Lich/ChargeFire.ogg");
 		LichComponent::s_ice =
-			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Lich/ChargeIce.ogg");
 		LichComponent::s_initialized = true;
 	}
 	if (!SwarmComponent::s_initialized)
@@ -289,7 +293,7 @@ void NetworkHandlerGame::init()
 		SwarmComponent::s_takeDmg =
 			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
 		SwarmComponent::s_move =
-			this->resourceManger->addSound("assets/Sounds/RunningSound.ogg");
+			this->resourceManger->addSound("assets/Sounds/PlayerSounds/RunningSound.ogg");
 		SwarmComponent::s_attack =
 			this->resourceManger->addSound("assets/Sounds/SwishSound.ogg");
 		SwarmComponent::s_initialized = true;
