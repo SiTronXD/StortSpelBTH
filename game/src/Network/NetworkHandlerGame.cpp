@@ -1009,6 +1009,7 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 	for (int i = 0; i < size; i++)
 	{
 		this->playerEntities[i] = scene->createEntity();
+        this->otherPlayers[i].first = this->playerEntities[i];
 		scene->setComponent<MeshComponent>(this->playerEntities[i], playerMesh);
 		scene->setComponent<AnimationComponent>(this->playerEntities[i]);
 		scene->setComponent<Collider>(this->playerEntities[i], Collider::createCapsule(2, 10, glm::vec3(0, 7.3, 0)));
