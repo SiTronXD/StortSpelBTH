@@ -202,9 +202,9 @@ void NetworkHandlerGame::initParticleSystems()
 	ParticleSystem orbPS{};
 	std::strcpy(orbPS.name, "RmvEntity");
 	orbPS.maxlifeTime = 0.9f;
-	orbPS.numParticles = 32;
+	orbPS.numParticles = 64;
 	orbPS.textureIndex = this->resourceManger->addTexture("assets/textures/orbParticle.png");
-	orbPS.startSize = glm::vec2(0.9f);
+	orbPS.startSize = glm::vec2(0.8f);
 	orbPS.endSize = glm::vec2(0.3f);
 	orbPS.startColor = glm::vec4(0.2f, 0.2f, 0.8f, 1.0f) * 4.0f;
 	orbPS.endColor = orbPS.startColor * 0.0f;
@@ -596,6 +596,29 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
             this->sceneHandler->getScene()->getComponent<Transform>(serverEntities[i0]).position = v0;
             this->sceneHandler->getScene()->getComponent<Rigidbody>(serverEntities[i0]).velocity = v1;
             this->sceneHandler->getScene()->getComponent<Orb>(serverEntities[i0]).timeAtCast = Time::getTimeSinceStart();
+
+			// Orb particle effect color
+			glm::vec4 projectileColor = glm::vec4(0.8f, 0.2f, 0.8f, 1.0f) * 4.0f;
+			switch (this->sceneHandler->getScene()->getComponent<Orb>(serverEntities[i0]).orbPower->type)
+			{
+			case ATTACK_STRATEGY::FIRE:
+				projectileColor = glm::vec4(0.8f, 0.3f, 0.2f, 1.0f) * 4.0f;
+				break;
+
+			case ATTACK_STRATEGY::LIGHT:
+				projectileColor = glm::vec4(0.90f, 0.8f, 0.2f, 1.0f) * 4.0f;
+				break;
+
+			case ATTACK_STRATEGY::ICE:
+				projectileColor = glm::vec4(0.2f, 0.2f, 0.8f, 1.0f) * 4.0f;
+				break;
+			}
+
+			// Spawn particle effect on orb
+			this->createProjectileParticleSystem(
+				serverEntities[i0], 
+				projectileColor
+			);
         }
 
         
