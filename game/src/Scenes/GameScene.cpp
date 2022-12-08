@@ -946,7 +946,7 @@ void GameScene::imguiUpdate()
 
 void GameScene::createPortal()
 {
-    glm::vec3 portalTriggerDims(11.f, 27.f, 1.f);
+    glm::vec3 portalTriggerDims(11.f, 27.f, 6.f);
 
     portalOffMesh = this->getResourceManager()->addMesh("assets/models/PortalOff.obj");
     portalOnMesh = this->getResourceManager()->addMesh("assets/models/PortalOn.obj");
