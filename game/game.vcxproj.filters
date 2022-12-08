@@ -85,6 +85,7 @@
     <ClInclude Include="src\Systems\ParticleRemoveComponent.hpp" />
     <ClInclude Include="src\World Handling\ParticleSystemGenerator.hpp" />
     <ClInclude Include="src\Settings\Settings.h" />
+    <ClInclude Include="src\Systems\PerkAbilityOutsideRangeSystem.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

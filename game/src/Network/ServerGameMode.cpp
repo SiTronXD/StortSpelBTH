@@ -26,7 +26,7 @@ void ServerGameMode::init()
     aiHandler.init(this->getSceneHandler());
     this->getSceneHandler()->setAIHandler(&aiHandler);
 
-    roomHandler.init(this, this->getResourceManager(), false);
+    roomHandler.init(this, this->getResourceManager(), this->getPhysicsEngine(), false);
     roomHandler.generate(this->roomSeed);
     createPortal();
     spawnHandler.init(
@@ -59,15 +59,34 @@ void ServerGameMode::update(float dt)
 {
     aiHandler.update(dt);
 
-    // For now we only look at player 0
-    if (this->roomHandler.playerNewRoom(this->getPlayer(0), this->getPhysicsEngine()))
+    if (!this->newRoomFrame && roomHandler.playersInPathway(this->players))
     {
+        addEvent({(int)GameEvent::CLOSE_OLD_DOORS}, {roomHandler.serverGetNextRoomIndex()});
+
+#ifdef _CONSOLE
+        printf("Server Active: %d\n", roomHandler.getActiveIndex());
         std::cout << "Server: player in new room" << std::endl;
+#endif
+        
+        roomHandler.serverActivateCurrentRoom();
+        roomHandler.serverToggleCurrentPaths(true);
+        spawnHandler.spawnEnemiesIntoRoom();
+
         this->newRoomFrame = true;
         this->timeWhenEnteredRoom = Time::getTimeSinceStart();
         this->safetyCleanDone = false; 
-        spawnHandler.spawnEnemiesIntoRoom();
     }
+    else if (this->newRoomFrame)
+    {
+        if (!this->doorsClosed && roomHandler.playersInsideNewRoom(this->players))
+        {
+            addEvent({(int)GameEvent::CLOSE_NEW_DOORS});
+            this->doorsClosed = true;
+            roomHandler.serverToggleCurrentPaths(false);
+        }
+    }
+
+
     if(!this->safetyCleanDone)
     {
         
@@ -86,7 +105,7 @@ void ServerGameMode::update(float dt)
         // Call when a room is cleared
         roomHandler.roomCompleted();
         this->numRoomsCleared++;
-        
+        this->doorsClosed = false;
         if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
         {
             std::cout << "Server: Spawn portal" << std::endl;
@@ -151,16 +170,59 @@ void ServerGameMode::update(float dt)
 
 	//DEBUG ONLY
 #ifdef ROOMDEBUG
-    for (int i = 0; i < roomHandler.rooms.size(); i++)
+    const auto& rooms = roomHandler.getRooms();
+    for (int i = 0; i <rooms.size(); i++)
     {
         for (int d = 0; d < 4; d++)
         {
-            if (roomHandler.rooms[i].doors[d] != -1)
+            if (rooms[i].doors[d] != -1)
             {
-                glm::vec3 dp = this->getComponent<Transform>(roomHandler.rooms[i].doors[d]).position;
+                glm::vec3 dp = this->getComponent<Transform>(rooms[i].doors[d]).position;
                  addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {dp.x, dp.y, dp.z, 0.f, 0.f, 0.f, 10.f, 10.f, 10.f});
             }    
         }
+		
+        for (auto ent : rooms[i].objects)
+        {
+            if (hasComponents<Collider>(ent) && isActive(ent))
+            {
+                glm::vec3 dp = this->getComponent<Transform>(ent).position;
+                auto& col = getComponent<Collider>(ent);
+                auto ex = col.extents * 2.f;
+                switch (col.type)
+                {
+                default:
+                    break;
+                case ColType::BOX:
+                    addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {dp.x, dp.y, dp.z, 0.f, 0.f, 0.f, ex.x, ex.y, ex.z});
+                    break;
+                case ColType::SPHERE:
+                    addEvent({(int)NetworkEvent::DEBUG_DRAW_SPHERE}, {dp.x, dp.y, dp.z, col.radius});
+                    break;
+                }
+            }
+        }
+
+        /*for (auto ent : spawnHandler.allEntityIDs)
+        {
+            if (hasComponents<Collider>(ent))
+            {
+                glm::vec3 dp = this->getComponent<Transform>(ent).position;
+                auto& col = getComponent<Collider>(ent);
+                auto ex = col.extents * 2.f;
+                switch (col.type)
+                {
+                default:
+                    break;
+                case ColType::BOX:
+                    addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {dp.x, dp.y, dp.z, 0.f, 0.f, 0.f, ex.x, ex.y, ex.z});
+                    break;
+                case ColType::SPHERE:
+                    addEvent({(int)NetworkEvent::DEBUG_DRAW_SPHERE}, {dp.x, dp.y, dp.z, col.radius});
+                    break;
+                }
+            }
+        }*/
     }
     for (int i = 0; i < this->getPlayerSize(); i++)
     {
@@ -261,6 +323,14 @@ void ServerGameMode::makeDataSendToClient()
                  getPlayer(i),
                  this->getComponent<HealthComp>(getPlayer(i)).health}
             );
+            if (this->getComponent<HealthComp>(getPlayer(i)).health < lastPlayerHps[i].health) 
+            {
+                this->addEvent({
+                    (int)GameEvent::PLAY_PARTICLE_P,
+                    (int)ParticleTypes::BLOOD,
+                    i
+                });
+            }
             //change lastPlayerHps
             lastPlayerHps[i].health = this->getComponent<HealthComp>(getPlayer(i)).health;
         }

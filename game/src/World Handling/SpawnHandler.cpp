@@ -109,7 +109,17 @@ void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos, bool elite
 
     if(elite)
     {
-        tankComp.applyEliteStats(defaultEliteComp, currScene, this->tankIDs[tankIdx]);
+        if(!tankComp.isElite)
+        {
+            tankComp.applyEliteStats(defaultEliteComp, currScene, this->tankIDs[tankIdx]);
+        }
+    }
+    else
+    {
+        if(tankComp.isElite)
+        {
+            tankComp.removeEliteStats(currScene, this->tankIDs[tankIdx]);
+        }
     }
 
     tankComp.life = tankComp.FULL_HEALTH;
@@ -148,7 +158,17 @@ uint32_t SpawnHandler::spawnLich(int lichIdx, std::vector<const TileInfo*> tileI
         defaultEliteComp.sizeMultiplier = 2.0f;
         if(elite)
         {
-            lichComp.applyEliteStats(defaultEliteComp, currScene, this->lichIDs[lichIdx]);
+            if(!lichComp.isElite)
+            {
+                lichComp.applyEliteStats(defaultEliteComp, currScene, this->lichIDs[lichIdx]);
+            }
+        }
+        else
+        {
+            if(lichComp.isElite)
+            {
+                lichComp.removeEliteStats(currScene, this->lichIDs[lichIdx]);
+            }
         }
         //Reset
         lichComp.life = lichComp.FULL_HEALTH;
@@ -215,8 +235,19 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos, bool elite)
     defaultEliteComp.sizeMultiplier = 2.0f;
     if(elite)
     {
-        swarmComp.applyEliteStats(defaultEliteComp, currScene, this->swarmIDs[swarmIdx]);
+        if(!swarmComp.isElite)
+        {
+            swarmComp.applyEliteStats(defaultEliteComp, currScene, this->swarmIDs[swarmIdx]);
+        }
     }
+    else
+    {
+        if(swarmComp.isElite)
+        {
+            swarmComp.removeEliteStats(currScene, this->swarmIDs[swarmIdx]);
+        }
+    }
+    
     transform.scale = swarmComp.origScale;
     swarmComp.origScaleY = transform.scale.y;
     swarmComp.life = swarmComp.FULL_HEALTH;
@@ -350,7 +381,6 @@ void SpawnHandler::createTank()
     if (netScene == nullptr)
     {
         this->tankIDs.push_back(this->currScene->createEntity());
-        this->allEntityIDs.push_back(this->tankIDs.back());
         static int tank = -1;
         if (tank == -1)
         {
@@ -377,8 +407,8 @@ void SpawnHandler::createTank()
     else
     {
         this->tankIDs.push_back(netScene->spawnEnemy(2));
-        this->allEntityIDs.push_back(this->tankIDs.back());
     }
+    this->allEntityIDs.push_back(this->tankIDs.back());
 
     this->currScene->setComponent<AiCombatTank>(this->tankIDs.back());
     this->currScene->setComponent<Rigidbody>(this->tankIDs.back());
@@ -386,7 +416,7 @@ void SpawnHandler::createTank()
     rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
     rb.gravityMult = 5.0f;
     rb.friction = 3.0f;
-    rb.mass = 10.0f;
+    rb.mass = 100.0f;
     Transform& transform = this->currScene->getComponent<Transform>(this->tankIDs.back());
     this->currScene->setComponent<Collider>(this->tankIDs.back(), Collider::createSphere(TankComponent::colliderRadius, glm::vec3(0.0f, 19.5f, 0.0f)));
     this->aiHandler->createAIEntity(this->tankIDs.back(), "tankFSM");
@@ -430,13 +460,13 @@ void SpawnHandler::createLich()
     if(netScene == nullptr)
     {        
         this->lichIDs.push_back(this->currScene->createEntity());
-        this->allEntityIDs.push_back(this->lichIDs.back());
         //TODO :  Move createEntities stuff in here
     }
     else
     {
         this->lichIDs.push_back(netScene->spawnEnemy(1));
     }
+    this->allEntityIDs.push_back(this->lichIDs.back());
 
     this->currScene->setComponent<Rigidbody>(this->lichIDs.back());
     Rigidbody& rb = this->currScene->getComponent<Rigidbody>(this->lichIDs.back());
@@ -461,7 +491,7 @@ void SpawnHandler::createLich()
     this->currScene->setComponent<Collider>(graveID, Collider::createBox(
         glm::vec3{LichComponent::graveWidth,LichComponent::graveHeight,LichComponent::graveDepth},
         glm::vec3(0.f,LichComponent::graveHeight/2.f, 0.f))
-        );
+        );    
 
     this->currScene->getComponent<LichComponent>(this->lichIDs.back()).graveID = graveID;
     this->currScene->setInactive(graveID);
@@ -509,7 +539,7 @@ void SpawnHandler::createLich()
         for(size_t i = 0; i < LichComponent::NR_FIRE_ORBS;i++)
         {
             lichComp.fireOrbs[i] = this->currScene->createEntity();
-            this->currScene->setComponent<Collider>(lichComp.fireOrbs[i], Collider::createSphere(LichComponent::orbRadius));
+            this->currScene->setComponent<Collider>(lichComp.fireOrbs[i], Collider::createSphere(LichComponent::orbRadius,glm::vec3(0.0f),true));
             this->currScene->setComponent<Orb>(lichComp.fireOrbs[i]);
             this->currScene->setInactive(lichComp.fireOrbs[i]);
             this->currScene->setComponent<Rigidbody>(lichComp.fireOrbs[i]);
@@ -522,7 +552,7 @@ void SpawnHandler::createLich()
         for(size_t i = 0; i < LichComponent::NR_ICE_ORBS;i++)
         {
             lichComp.iceOrbs[i] = this->currScene->createEntity();
-            this->currScene->setComponent<Collider>(lichComp.iceOrbs[i], Collider::createSphere(LichComponent::orbRadius));
+            this->currScene->setComponent<Collider>(lichComp.iceOrbs[i], Collider::createSphere(LichComponent::orbRadius,glm::vec3(0.0f),true));
             this->currScene->setComponent<Orb>(lichComp.iceOrbs[i]);
             this->currScene->setInactive(lichComp.iceOrbs[i]);
             this->currScene->setComponent<Rigidbody>(lichComp.iceOrbs[i]);
@@ -535,7 +565,7 @@ void SpawnHandler::createLich()
         for(size_t i = 0; i < LichComponent::NR_LIGHT_ORBS;i++)
         {
             lichComp.lightOrbs[i] = this->currScene->createEntity();
-            this->currScene->setComponent<Collider>(lichComp.lightOrbs[i], Collider::createSphere(LichComponent::orbRadius));
+            this->currScene->setComponent<Collider>(lichComp.lightOrbs[i], Collider::createSphere(LichComponent::orbRadius,glm::vec3(0.0f),true));
             this->currScene->setComponent<Orb>(lichComp.lightOrbs[i]);
             this->currScene->setInactive(lichComp.lightOrbs[i]);
             this->currScene->setComponent<Rigidbody>(lichComp.lightOrbs[i]);
@@ -610,7 +640,7 @@ void SpawnHandler::createSwarmGroup()
         if (netScene == nullptr)
         {
             this->swarmIDs.push_back(this->currScene->createEntity());
-            static int swarm = this->resourceManager->addMesh("assets/models/Swarm_Model.obj");
+            static int swarm = this->resourceManager->addMesh("assets/models/Swarm_RotTest.obj");
             this->currScene->setComponent<MeshComponent>(this->swarmIDs.back(), swarm);
         }
         else

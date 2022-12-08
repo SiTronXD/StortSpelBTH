@@ -86,7 +86,8 @@ void TankBT::groundHumpShortcut(Entity entityID)
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	tankComp.chargeTimer = tankComp.chargeTimerOrig;
 	tankComp.hasRunTarget = false;
-	if(glm::length(tankRb.velocity) <= 0.1f && (tankTrans.position.y - tankCol.radius) <= 1.0f)
+	bool grounded = (tankTrans.position.y - tankCol.radius) <= 3.0f;
+	if(glm::length(tankRb.velocity) <= 0.1f && grounded)
 	{
 		if(tankComp.groundHumpTimer <= 0)
 		{
@@ -96,7 +97,7 @@ void TankBT::groundHumpShortcut(Entity entityID)
 		        uint32_t newHump = activateHump(entityID);
 		        Transform& hTrans = getTheScene()->getComponent<Transform>(newHump);
 		        hTrans.position = getTheScene()->getComponent<Transform>(entityID).position;
-		        hTrans.position.y = 0.0f;
+		        hTrans.position.y = 0.5f;
 		        tankComp.humps.insert({newHump, 1.0f});
 		        tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
 				
@@ -124,11 +125,11 @@ void TankBT::groundHumpShortcut(Entity entityID)
 	}
 	
 
-	int playerID = getPlayerID(entityID);
-	if(playerID == -1){return;}
-	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+	//int playerID = getPlayerID(entityID);
+	//if(playerID == -1){return;}
+	//Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 
-	rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
+	//rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
 	updateCanBeHit(entityID);
 }
 
@@ -141,7 +142,7 @@ void TankBT::drawRaySimple(Ray& ray, float dist, glm::vec3 color)
 	glm::vec3(1.0f, 0.0f, 0.0f));
 }
 
-bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
+bool TankBT::rayChecking(Entity entityID)
 {
 	bool ret = true;
 	bool somethingInTheWay = false;
@@ -173,75 +174,31 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
     RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, maxDist);
     RayPayload rp1 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_right, maxDist);
     RayPayload rp2 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_left, maxDist);
-	drawRaySimple(rayToPlayer, maxDist);
-	drawRaySimple(rayToPlayer_right, maxDist);
-	drawRaySimple(rayToPlayer_left, maxDist);
+	//drawRaySimple(rayToPlayer, maxDist);
+	//drawRaySimple(rayToPlayer_right, maxDist);
+	//drawRaySimple(rayToPlayer_left, maxDist);
 	if(rp.hit || rp1.hit || rp2.hit)
 	{
-		bool one = (rp.entity != -1 && sceneHandler->getScene()->hasComponents<Collider>(rp.entity) && !getTheScene()->getComponent<Collider>(rp.entity).isTrigger && rp.entity != entityID);
-		bool two = (rp1.entity != -1 && sceneHandler->getScene()->hasComponents<Collider>(rp1.entity) && !getTheScene()->getComponent<Collider>(rp1.entity).isTrigger && rp1.entity != entityID);
-		bool three= (rp2.entity != -1 && sceneHandler->getScene()->hasComponents<Collider>(rp2.entity) && !getTheScene()->getComponent<Collider>(rp2.entity).isTrigger && rp2.entity != entityID);
+		bool one = (rp.entity != -1 && 
+			sceneHandler->getScene()->hasComponents<Collider>(rp.entity) && 
+			!getTheScene()->getComponent<Collider>(rp.entity).isTrigger && 
+			rp.entity != entityID &&
+			(!getTheScene()->hasComponents<SwarmComponent>(rp.entity) || !getTheScene()->hasComponents<LichComponent>(rp.entity)));
+		bool two = (rp1.entity != -1 && 
+			sceneHandler->getScene()->hasComponents<Collider>(rp1.entity) && 
+			!getTheScene()->getComponent<Collider>(rp1.entity).isTrigger &&
+			rp1.entity != entityID) &&
+			(!getTheScene()->hasComponents<SwarmComponent>(rp.entity) || !getTheScene()->hasComponents<LichComponent>(rp.entity));
+		bool three= (rp2.entity != -1 && 
+			sceneHandler->getScene()->hasComponents<Collider>(rp2.entity) && 
+			!getTheScene()->getComponent<Collider>(rp2.entity).isTrigger && rp2.entity 
+			!= entityID &&
+			(!getTheScene()->hasComponents<SwarmComponent>(rp.entity) || !getTheScene()->hasComponents<LichComponent>(rp.entity)));
 		if(one || two || three)
 		{
 			ret = false;
-			somethingInTheWay = true;
-			entityTransform.updateMatrix();
-
-			RayPayload r_right= BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayRight, left_right_maxDist);
-			RayPayload r_left = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayLeft, left_right_maxDist);
-			RayPayload r_forward = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, left_right_maxDist);
-			drawRaySimple(rayToPlayer, left_right_maxDist);
-			drawRaySimple(rayRight, left_right_maxDist);
-			drawRaySimple(rayLeft, left_right_maxDist);
-
-			if(r_forward.hit && !getTheScene()->getComponent<Collider>(r_forward.entity).isTrigger)
-			{
-				canGoForward = false;
-			}
-			if(r_right.hit && !getTheScene()->getComponent<Collider>(r_right.entity).isTrigger)
-			{
-				canGoRight = false;
-				tankComp.attackGoRight = false;
-			}
-			if(r_left.hit && !getTheScene()->getComponent<Collider>(r_left.entity).isTrigger)
-			{
-				canGoLeft = false;
-				tankComp.attackGoRight = true;
-			}
-
 		}
 	}
-
-	if(somethingInTheWay)
-	{
-		ret = false;
-		dir = glm::vec3(0.0f, 0.0f, 0.0f);
-		entityTransform.updateMatrix();
-
-		if(canGoForward)
-		{
-			dir += -entityTransform.forward();
-		}
-
-		if(canGoRight && tankComp.attackGoRight)
-		{
-			dir += entityTransform.right();
-		}
-		else if(canGoLeft && !tankComp.attackGoRight)
-		{
-			dir -= entityTransform.right();
-		}
-	}
-
-	if(dir == glm::vec3(0.0f, 0.0f, 0.0f))
-	{
-		dir = entityTransform.forward();
-	}
-	rotateTowards(entityID, playerTransform.position, tankComp.idleRotSpeed, 5.0f);
-	safeNormalize(dir);
-	dir.y = 0;
-	moveDir = dir;
-
 
 	return ret;
 }
@@ -633,6 +590,8 @@ BTStatus TankBT::GroundHump(Entity entityID)
 	}
 
 	BTStatus ret = BTStatus::Running;
+	glm::vec3 target = getTheScene()->getComponent<Transform>(getPlayerID(entityID)).position;
+	rotateTowards(entityID, target, tankComp.combatRotSpeed, 5.0f);
 
 	if (tankComp.groundHumpTimer <= 0.0f/* || tankComp.hasDoneFirstHump*/)
 	{
@@ -708,10 +667,13 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	Collider& tankCol = getTheScene()->getComponent<Collider>(entityID);
 	Rigidbody& rb = getTheScene()->getComponent<Rigidbody>(entityID);
 
+	rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
 
-	glm::vec3 dir;
-	if(!rayChecking(entityID, dir))
+	if(!rayChecking(entityID))
 	{
+		
+		glm::vec3 dir = safeNormalize(playerTrans.position - tankTrans.position);
+		avoidStuff(entityID, BehaviorTree::getSceneHandler(), tankComp.attackGoRight, playerTrans.position, dir);
 		rb.velocity = dir * tankComp.idleSpeed;
 		return ret;
 	}
@@ -723,6 +685,25 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.chargeTimer -= get_dt();
 		return ret;
 	}
+	if (tankComp.chargeTimer < 1.f)
+	{
+		ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+
+		if (netScene && tankComp.s_activateCharge)
+		{
+			netScene->addEvent(
+				{ (int)GameEvent::PLAY_ENEMY_SOUND, entityID, 0, 1, 0 }
+			);
+			tankComp.s_activateCharge = false;
+		}
+		else if (!netScene && tankComp.s_activateCharge)
+		{
+			sceneHandler->getAudioHandler()->playSound(
+				entityID, TankComponent::s_charge, 30.f
+			);
+			tankComp.s_activateCharge = false;
+		}
+	}
 	//Set target
 	if(!tankComp.hasRunTarget)
 	{
@@ -732,16 +713,6 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.runDir = safeNormalize(playerTrans.position - tankTrans.position);
 		tankComp.hasRunTarget = true;
 		tankComp.canAttack = true;
-
-		ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
-		if (netScene)
-		{
-			netScene->addEvent({ (int)GameEvent::PLAY_ENEMY_SOUND, entityID, 0, 1, 0 });
-		}
-		else if (!netScene)
-		{
-			sceneHandler->getAudioHandler()->playSound(entityID, TankComponent::s_charge, 30.f);
-		}
 	}
 
 
@@ -756,6 +727,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.runTimer = tankComp.runTimerOrig;
 		tankComp.hasRunTarget = false;
 		tankComp.canAttack = false;
+        tankComp.s_activateCharge = true;
 	}
 
 	return ret;

@@ -22,24 +22,27 @@ private:
     Entity light;
     Entity settingsEntity;
 
+    Entity leaves;
+
     State state;
     uint32_t fontTextureId;
     uint32_t settingsBackgroundId;
     uint32_t howToPlayBackgroundId;
     uint32_t buttonTexture;
+	uint32_t qrCodeID;
 
     uint32_t buttonSound;
-    //float buttonListenTimer;
 
     void howToPlay();
     void settings();
 
     //buttons
     //menu buttons
-    int playButton;
+    int hostButton;
     int joinGameButton;
     int settingsButton;
     int levelEditButton;
+    int singlePlayerButton;
     int quitButton;
     int howToPlayButton;
 
