@@ -86,7 +86,7 @@ void GameSceneNetwork::init()
 
   roomHandler.init(
       this,
-      this->getResourceManager(), this->getPhysicsEngine(), true
+      this->getResourceManager(), true
   );
   roomHandler.generate(123);
   createPortal();
@@ -199,7 +199,7 @@ void GameSceneNetwork::update()
 {
     
             // TODO: Move to SpawnHandler ---- 
-    if (this->roomHandler.playerNewRoom(this->playerID))
+    if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
     {
         this->newRoomFrame = true;
     }

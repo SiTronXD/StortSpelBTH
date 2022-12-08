@@ -9,6 +9,7 @@
 #include "../Systems/MovementSystem.hpp"
 #include "../Systems/ParticleRemoveEntity.hpp"
 #include "../Systems/ParticleRemoveComponent.hpp"
+#include "../Systems/PerkAbilityOutsideRangeSystem.hpp"
 #include "../Network/NetworkHandlerGame.h"
 #include "vengine/application/Time.hpp"
 #include "GameOverScene.h"
@@ -101,7 +102,7 @@ void GameScene::init()
 
     roomHandler.init(
         this,
-        this->getResourceManager(), this->getPhysicsEngine(), true);
+        this->getResourceManager(), true);
     
     ResourceManager* resourceMng = this->getResourceManager();
     this->abilityMeshes[0] = resourceMng->addMesh("assets/models/KnockbackAbility.obj");
@@ -200,15 +201,16 @@ void GameScene::start()
         );
     this->createSystem<ParticleRemoveEntity>(this);
     this->createSystem<ParticleRemoveComponent>(this);
+    this->createSystem<PerkAbilityOutsideRangeSystem>(this, &this->getComponent<Transform>(this->playerID));
 
     if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {
-        this->networkHandler->spawnItemRequest(knockbackAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        /*this->networkHandler->spawnItemRequest(knockbackAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         this->networkHandler->spawnItemRequest(hpUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         this->networkHandler->spawnItemRequest(movementUpPerk, 1.0f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));*/
     }
 
     this->levelString = "level " + std::to_string(currentLevel.level);
@@ -219,9 +221,9 @@ void GameScene::start()
     this->resumeButton.dimension = glm::vec2(500.0f, 100.0f);
     this->exitButton.dimension = glm::vec2(500.0f, 100.0f);
 
-    this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
+    this->getAudioHandler()->setMusic("assets/Sounds/GameMusic/AmbiensMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
-    this->getAudioHandler()->setMusicVolume(0.0f);
+    this->getAudioHandler()->setMusicVolume(1.0f);
     this->getAudioHandler()->playMusic();
 	
     // If we are not multiplayer we do this by ourself
@@ -259,7 +261,7 @@ void GameScene::update()
     {   
         this->aiHandler->update(Time::getDT());
 
-        if (this->roomHandler.playerNewRoom(this->playerID))
+        if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
         {
             this->newRoomFrame = true;
             this->timeWhenEnteredRoom = Time::getTimeSinceStart();
@@ -377,7 +379,7 @@ void GameScene::update()
     }
     else
     {
-        if (this->roomHandler.playerNewRoom(this->playerID))
+        if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
         {
             this->newRoomFrame = true;
         }
@@ -604,16 +606,16 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 
 void GameScene::onTriggerEnter(Entity e1, Entity e2)
 {
-  Entity ground = e1 == this->roomHandler.getFloor()   ? e1
-                  : e2 == this->roomHandler.getFloor() ? e2
-                                                       : -1;
-  Entity perk = this->hasComponents<Perks>(e1)   ? e1
-                : this->hasComponents<Perks>(e2) ? e2
-                                                 : -1;
-  Entity ability = this->hasComponents<Abilities>(e1)   ? e1
-                   : this->hasComponents<Abilities>(e2) ? e2
+    Entity ground = e1 == this->roomHandler.getFloor()   ? e1
+                    : e2 == this->roomHandler.getFloor() ? e2
                                                         : -1;
-   
+    Entity perk = this->hasComponents<Perks>(e1)   ? e1
+                : this->hasComponents<Perks>(e2) ? e2
+                                                    : -1;
+    Entity ability = this->hasComponents<Abilities>(e1)   ? e1
+                    : this->hasComponents<Abilities>(e2) ? e2
+                                                       : -1;
+
 	if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<SwarmComponent>(e2))
 	{
 		SwarmComponent& s1 = this->getComponent<SwarmComponent>(e1);

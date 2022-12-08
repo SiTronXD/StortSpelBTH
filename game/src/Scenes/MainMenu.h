@@ -32,10 +32,11 @@ private:
 
     //buttons
     //menu buttons
-    int playButton;
+    int hostButton;
     int joinGameButton;
     int settingsButton;
     int levelEditButton;
+    int singlePlayerButton;
     int quitButton;
     int howToPlayButton;
 

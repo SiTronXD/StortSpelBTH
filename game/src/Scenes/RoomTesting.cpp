@@ -11,7 +11,7 @@ RoomTesting::~RoomTesting()
 
 void RoomTesting::init()
 {
-	this->roomHandler.init(this, this->getResourceManager(), this->getPhysicsEngine(), false);
+	this->roomHandler.init(this, this->getResourceManager(), true);
 	this->roomHandler.generate(123);
 
 	Entity cam = this->createEntity();
@@ -31,17 +31,9 @@ void RoomTesting::init()
 
 
 	int playerMesh = this->getResourceManager()->addMesh("assets/models/Character/CharRun.fbx");
-
-	player1 = this->createEntity();
-	this->setComponent<MeshComponent>(player1);
-	this->getComponent<MeshComponent>(player1).meshID = playerMesh;
-	this->setComponent<Collider>(player1, Collider::createCapsule(2.f, 10.f, glm::vec3(0.f, 7.3f, 0.f)));
-
-	player2 = this->createEntity();
-	this->setComponent<MeshComponent>(player2);
-	this->getComponent<MeshComponent>(player2).meshID = playerMesh;
-	this->setComponent<Collider>(player2, Collider::createCapsule(2.f, 10.f, glm::vec3(0.f, 7.3f, 0.f)));
-
+	player = this->createEntity();
+	this->setComponent<MeshComponent>(player);
+	this->getComponent<MeshComponent>(player).meshID = playerMesh;
 }
 
 void RoomTesting::start()
@@ -72,41 +64,13 @@ void RoomTesting::update()
 	if (Input::isKeyDown(Keys::Q))
 		camTra.position.y -= frameSpeed;
 
-	if (roomHandler.playerNewRoom(player1))
-	{
-		printf("New room Player 1\n");
-	}
-	//if (roomHandler.playersInPathway(player1, player2))
-	//{
-	//	printf("Both players in pathway\n");
-	//}
-	
 	if (ImGui::Begin("aa"))
 	{
-		ImGui::Text("Cam pos: (%.1f, %.1f, %.1f)", camTra.position.x, camTra.position.y, camTra.position.z);
+		ImGui::Text("Cam pos: (%d, %d, %d)", (int)camTra.position.x,(int)camTra.position.y,(int)camTra.position.z);
 		static bool colls = false;
-		static bool follow = false;
-		static bool follow2 = false;
-		
-		ImGui::Checkbox("Show colliders", &colls);
-		ImGui::Checkbox("player1 follow", &follow);
-		ImGui::Checkbox("player2 follow", &follow2);
-		
-		this->getPhysicsEngine()->renderDebugShapes(colls);
-		
-		if (follow)
+		if (ImGui::Checkbox("Show colliders", &colls))
 		{
-			Transform& plaTra = this->getComponent<Transform>(player1);
-			plaTra.position.x = camTra.position.x;
-			plaTra.position.y = 0.f;
-			plaTra.position.z = camTra.position.z;
-		}
-		if (follow2)
-		{
-			Transform& plaTra = this->getComponent<Transform>(player2);
-			plaTra.position.x = camTra.position.x;
-			plaTra.position.y = 0.f;
-			plaTra.position.z = camTra.position.z;
+			this->getPhysicsEngine()->renderDebugShapes(colls);
 		}
 
 	}
@@ -125,4 +89,14 @@ void RoomTesting::update()
 		ImGui::PopItemWidth();
 	}
 	ImGui::End();
+
+	Transform& plaTra = this->getComponent<Transform>(player);
+	if (Input::isKeyDown(Keys::LEFT))
+		plaTra.position.x += frameSpeed;
+	if (Input::isKeyDown(Keys::RIGHT))
+		plaTra.position.x -= frameSpeed;
+	if (Input::isKeyDown(Keys::UP))
+		plaTra.position.z += frameSpeed;
+	if (Input::isKeyDown(Keys::DOWN))
+		plaTra.position.z -= frameSpeed;
 }
