@@ -34,7 +34,7 @@ public:
 			{
 				// Follow
 				transform.position =
-					scene->getComponent<Transform>(
+					this->scene->getComponent<Transform>(
 						followEntityComponent.entityToFollow
 						).position;
 			}
