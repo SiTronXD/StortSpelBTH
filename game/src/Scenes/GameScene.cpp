@@ -263,7 +263,7 @@ void GameScene::start()
     this->backButton.dimension = glm::vec2(190.0f, 65.0f);
 
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic/AmbiensMusic.ogg");
-    this->getAudioHandler()->playMusic();
+    //this->getAudioHandler()->playMusic();
     Settings::updateValues();
 	
     // If we are not multiplayer we do this by ourself
@@ -287,8 +287,7 @@ void GameScene::start()
 
 void GameScene::update()
 {
-    static float musicCounter = 0;
-    if (++musicCounter == 20)
+    if (++this->musicCounter == 20)
     {
         this->getAudioHandler()->playMusic();
     }
@@ -544,7 +543,7 @@ void GameScene::update()
 
     // Render HP bar UI
     HealthComp& playerHealth = this->getComponent<HealthComp>(this->playerID);
-    float hpPercent = playerHealth.health * 0.01f;
+    float hpPercent = std::max(playerHealth.health * 0.01f, 0.0f);
     float maxHpPercent = playerHealth.maxHealth * 0.01f;
     float xPos = -600.f;
     float yPos = -472.f;
