@@ -205,12 +205,12 @@ void GameScene::start()
 
     if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {
-        /*this->networkHandler->spawnItemRequest(knockbackAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(knockbackAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         this->networkHandler->spawnItemRequest(hpUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(movementUpPerk, 1.0f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));*/
+        this->networkHandler->spawnItemRequest(movementUpPerk, 0.4f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
     }
 
     this->levelString = "level " + std::to_string(currentLevel.level);
@@ -223,7 +223,7 @@ void GameScene::start()
 
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic/AmbiensMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
-    this->getAudioHandler()->setMusicVolume(1.0f);
+    this->getAudioHandler()->setMusicVolume(0.2f);
     this->getAudioHandler()->playMusic();
 	
     // If we are not multiplayer we do this by ourself
