@@ -72,6 +72,7 @@ void MainMenu::init()
 	leavesPS.coneSpawnVolume.coneAngle = 140.0f;
 	leavesPS.coneSpawnVolume.localDirection = glm::vec3(1.0f, -1.0f, 0.2f);
 	leavesPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+	leavesPS.initialSimulation = true;
 
 	this->settingsBackgroundId = this->getResourceManager()->addTexture("assets/textures/UI/settings.png");
 	this->howToPlayBackgroundId = this->getResourceManager()->addTexture("assets/textures/UI/howToPlay.png");
@@ -93,7 +94,7 @@ void MainMenu::init()
 	);
 	DirectionalLight& dirLight =
 		this->getComponent<DirectionalLight>(light);
-	dirLight.shadowMapAngleBias = 0.003f;
+	dirLight.shadowMapAngleBias = 0.006f;
 
 	this->fontTextureId = Scene::getResourceManager()->addTexture("assets/textures/UI/font.png", { samplerSettings, true });
 	Scene::getUIRenderer()->setBitmapFont(
