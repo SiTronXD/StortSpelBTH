@@ -62,6 +62,7 @@ void ServerGameMode::update(float dt)
         printf("Server Active: %d\n", roomHandler.getActiveIndex());
         this->spawnHandler.spawnEnemiesIntoRoom();
         roomHandler.serverActivateCurrentRoom();
+        roomHandler.serverToggleCurrentPaths(true);
         std::cout << "Server: player in new room" << std::endl;
         this->newRoomFrame = true;
         this->timeWhenEnteredRoom = Time::getTimeSinceStart();
@@ -73,6 +74,7 @@ void ServerGameMode::update(float dt)
         {
             addEvent({(int)GameEvent::CLOSE_NEW_DOORS});
             this->doorsClosed = true;
+            roomHandler.serverToggleCurrentPaths(false);
         }
     }
 
@@ -160,20 +162,21 @@ void ServerGameMode::update(float dt)
 
 	//DEBUG ONLY
 #ifdef ROOMDEBUG
-    for (int i = 0; i < roomHandler.rooms.size(); i++)
+    const auto& rooms = roomHandler.getRooms();
+    for (int i = 0; i <rooms.size(); i++)
     {
         for (int d = 0; d < 4; d++)
         {
-            if (roomHandler.rooms[i].doors[d] != -1)
+            if (rooms[i].doors[d] != -1)
             {
-                glm::vec3 dp = this->getComponent<Transform>(roomHandler.rooms[i].doors[d]).position;
+                glm::vec3 dp = this->getComponent<Transform>(rooms[i].doors[d]).position;
                  addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {dp.x, dp.y, dp.z, 0.f, 0.f, 0.f, 10.f, 10.f, 10.f});
             }    
         }
 
-        for (auto ent : roomHandler.rooms[i].objects)
+        for (auto ent : rooms[i].objects)
         {
-            if (hasComponents<Collider>(ent))
+            if (hasComponents<Collider>(ent) && isActive(ent))
             {
                 glm::vec3 dp = this->getComponent<Transform>(ent).position;
                 auto& col = getComponent<Collider>(ent);
@@ -192,7 +195,7 @@ void ServerGameMode::update(float dt)
             }
         }
 
-        for (auto ent : spawnHandler.allEntityIDs)
+        /*for (auto ent : spawnHandler.allEntityIDs)
         {
             if (hasComponents<Collider>(ent))
             {
@@ -211,7 +214,7 @@ void ServerGameMode::update(float dt)
                     break;
                 }
             }
-        }
+        }*/
     }
     for (int i = 0; i < this->getPlayerSize(); i++)
     {

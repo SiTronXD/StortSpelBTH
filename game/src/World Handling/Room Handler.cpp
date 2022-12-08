@@ -182,6 +182,11 @@ void RoomHandler::serverActivateCurrentRoom()
 	}
 }
 
+void RoomHandler::serverToggleCurrentPaths(bool active)
+{
+	this->togglePaths(this->activeIndex, active);
+}
+
 void RoomHandler::roomCompleted()
 {	
 	Room& curRoom = this->rooms[this->activeIndex];
@@ -255,10 +260,10 @@ bool RoomHandler::playerNewRoom(Entity player)
 						if (curRoom.connectingIndex[j] != -1 && curRoom.connectingIndex[j] != this->activeIndex)
 						{
 							this->deactivateRoom(curRoom.connectingIndex[j]);
-							if (newRoom.connectingIndex[j] == this->oldIndex)
-							{
-								this->respawnDoorIdx = j;
-							}
+						}
+						if (newRoom.connectingIndex[j] == this->oldIndex)
+						{
+							this->respawnDoorIdx = j;
 						}
 					}
 
@@ -372,7 +377,7 @@ void RoomHandler::startOver()
 		}
 	}
 	this->activateRoom(this->oldIndex);
-
+	this->togglePaths(this->oldIndex, true);
 	this->activeIndex = this->oldIndex;
 	this->oldIndex = -1;
 }
@@ -391,15 +396,15 @@ glm::vec3 RoomHandler::getRespawnPos() const
 		glm::vec3(0.f, 0.f, -TILE_WIDTH)
 	};
 
-	Entity door = this->rooms[this->activeIndex].doors[this->oldIndex];
-	glm::vec3 pos = this->scene->getComponent<Transform>(door).position + respawnOffset[this->oldIndex];
+	Entity door = this->rooms[this->activeIndex].doors[this->respawnDoorIdx];
+	glm::vec3 pos = this->scene->getComponent<Transform>(door).position + respawnOffset[this->respawnDoorIdx];
 	pos.y = 12.f;
 	return pos;
 }
 
 glm::vec3 RoomHandler::getRespawnRot() const
 {
-	if (this->oldIndex == -1)
+	if (this->respawnDoorIdx == -1)
 	{
 		return glm::vec3(0.0f);
 	}
@@ -410,7 +415,7 @@ glm::vec3 RoomHandler::getRespawnRot() const
 		180.f,
 		0.f
 	};
-	return glm::vec3(0.f, respawnYRot[this->oldIndex], 0.f);
+	return glm::vec3(0.f, respawnYRot[this->respawnDoorIdx], 0.f);
 }
 
 void RoomHandler::generate(uint32_t seed)
@@ -1429,6 +1434,9 @@ void RoomHandler::reset()
 
 	this->activeIndex = 0;
 	this->serverNextIndex = -1;
+	this->prevRoomIndex = -1;
+	this->oldIndex = -1;
+	this->respawnDoorIdx = -1;
 }
 
 void RoomHandler::toggleDoors(int index, bool open, int ignore)
@@ -1647,6 +1655,10 @@ void RoomHandler::imgui(DebugRenderer* dr)
 		}
 	}
 	ImGui::End();
+}
+const std::vector<RoomHandler::Room>& RoomHandler::getRooms() const
+{
+	return this->rooms;
 }
 #endif // _CONSOLE
 

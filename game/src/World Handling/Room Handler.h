@@ -174,7 +174,7 @@ private:
 	int lampMeshId;
 	int lampDiffuseId;
 	int lampGlowId;
-
+	// TODO: FIX ROCK COLLIDER + COMPONENT FOR LOWE
 	// Other
 	void createFloor();
 	void reset();
@@ -193,6 +193,7 @@ public:
 
 #ifdef _CONSOLE
 	void imgui(DebugRenderer* dr);
+	const std::vector<Room>& getRooms() const;
 #endif //  _CONSOLE
 
 	void roomCompleted();
@@ -204,6 +205,7 @@ public:
 	void multiplayerToggleCurrentDoors(int nextRoom);
 	void mutliplayerCloseDoors();
 	void serverActivateCurrentRoom();
+	void serverToggleCurrentPaths(bool active);
 
 	bool playerNewRoom(Entity player);
 
