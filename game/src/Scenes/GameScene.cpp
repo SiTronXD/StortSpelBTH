@@ -447,8 +447,9 @@ void GameScene::update()
         {
             this->newRoomFrame = true;
         }
-        if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+        if (!this->spawnPortal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
         {
+            spawnPortal = true;
             this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
 
             // Particle effects
