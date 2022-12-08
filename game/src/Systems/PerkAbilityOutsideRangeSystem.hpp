@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma once
-
 #include <vengine.h>
 #include <vector>
 #include <unordered_map>
@@ -34,8 +32,6 @@ public:
 
 	bool update(entt::registry& reg, float deltaTime) final
 	{
-		uint32_t numActivePointLights = 0;
-
 		// Loop through all active point lights
 		auto deactivateView = reg.view<Transform, MeshComponent, PointLight>(entt::exclude<Inactive>);
 		auto deactivateFunc = [&](const auto entity, Transform& transform, const MeshComponent& meshComp, PointLight& pointLight)
