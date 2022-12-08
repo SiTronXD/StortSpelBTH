@@ -807,31 +807,24 @@ BTStatus LichBT::selfHeal(Entity entityID)
     if(lichComp.life < lichComp.FULL_HEALTH)
     {
 
-
-        //Testing particle system
-        /* ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
-
-        if (serverScene != nullptr)
+        Scene* scene = getTheScene();
+        NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+        if (s == nullptr)
         {
-
+            // Spawn particle system when grounded
+		    if (!scene->hasComponents<ParticleSystem>(entityID))
+		    {
+		    	scene->setComponent<ParticleSystem>(entityID);
+		    	ParticleSystem& partSys = scene->getComponent<ParticleSystem>(entityID);
+		    	partSys = ((NetworkHandlerGame*)scene->getNetworkHandler())->getLichHealParticleSystem();
+		    	partSys.spawn = true;
+		    }
         }
         else
         {
-            NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
-            // Particle system transform
-		    Entity bloodParticleSystemEntity = getTheScene()->createEntity();
-		    Transform& bloodTransform =  getTheScene()->getComponent<Transform>(bloodParticleSystemEntity);
-		    bloodTransform = getTheScene()->getComponent<Transform>(entityID);
-
-
-		    // Particle system spawn
-		    getTheScene()->setComponent<ParticleSystem>(bloodParticleSystemEntity);
-		    ParticleSystem& bloodPS = getTheScene()->getComponent<ParticleSystem>(bloodParticleSystemEntity);
-		    bloodPS = network->getBloodParticleSystem();
-		    bloodPS.spawn = true;
-
-        }*/
-
+            s->addEvent({(int)GameEvent::PLAY_PARTICLE, (int)ParticleTypes::LICH_HEAL, (int)entityID});
+		
+        }
         lichComp.life_float += get_dt() * lichComp.healthRegenSpeed;
         if(lichComp.life_float > 1.0f)
         {

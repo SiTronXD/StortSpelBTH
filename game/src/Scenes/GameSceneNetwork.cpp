@@ -45,7 +45,7 @@ void GameSceneNetwork::init()
   );
 
   int swarm =
-      this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+      this->getResourceManager()->addMesh("assets/models/Swarm_RotTest.obj");
   int playerModel = this->getResourceManager()->addAnimations(
       std::vector<std::string>(
           {"assets/models/Character/CharIdle.fbx",
