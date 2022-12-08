@@ -12,7 +12,7 @@ private:
 	std::vector<Entity> toActivate;
 	std::vector<Entity> toDeactivate;
 
-	const float MAX_DIST = 50.0f;
+	const float MAX_DIST = 350.0f;
 
 	Scene* scene;
 	Transform* playerTransform;
@@ -61,8 +61,6 @@ public:
 			}
 		};
 		activateView.each(activateFunc);
-
-		Log::write("numActivePointLights: " + std::to_string(numActivePointLights));
 
 		// Deactivate
 		for (const auto& e : this->toDeactivate)
