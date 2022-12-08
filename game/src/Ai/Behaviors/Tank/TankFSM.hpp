@@ -24,6 +24,7 @@ struct TankComponent
 	inline static int s_move = -1;
 	inline static int s_shockwave = -1;
 	inline static int s_charge = -1;
+    bool s_activateCharge = true;
 
     inline static const uint32_t colliderRadius = 20;
 
