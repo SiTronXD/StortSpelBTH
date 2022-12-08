@@ -255,16 +255,17 @@ bool RoomHandler::playerNewRoom(Entity player)
 						if (curRoom.connectingIndex[j] != -1 && curRoom.connectingIndex[j] != this->activeIndex)
 						{
 							this->deactivateRoom(curRoom.connectingIndex[j]);
+							if (newRoom.connectingIndex[j] == this->oldIndex)
+							{
+								this->respawnDoorIdx = j;
+							}
 						}
 					}
 
 					NetworkHandler* network = this->scene->getNetworkHandler();
 					if (network)
 					{
-						if (network->isConnected()) // lol remove
-						{
-						}
-						else
+						if (!network->isConnected())
 						{
 							this->deactivateRoom(this->oldIndex);
 							this->toggleDoors(this->oldIndex, true);
@@ -291,13 +292,6 @@ bool RoomHandler::playerNewRoom(Entity player)
 					}
 				}
 				
-				NetworkHandler* network = this->scene->getNetworkHandler();
-				if (network)
-				{
-					if (!network->isConnected())
-					{
-					}
-				};
 				this->togglePaths(this->oldIndex, false);
 				this->togglePaths(this->activeIndex, true);
 
@@ -308,7 +302,7 @@ bool RoomHandler::playerNewRoom(Entity player)
 	
 	return false;
 }
-
+//respawn door closed
 bool RoomHandler::playersInPathway(const std::vector<Entity>& players)
 {
 	Room& curRoom = this->rooms[this->activeIndex];
@@ -358,12 +352,12 @@ bool RoomHandler::playersInsideNewRoom(const std::vector<Entity>& players)
 
 void RoomHandler::startOver()
 {
-	if (this->activeIndex == -1 || this->prevRoomIndex == -1)
+	if (this->activeIndex == -1 || this->oldIndex == -1)
 	{
 		return;
 	}
 	Room& failedRoom = this->rooms[this->activeIndex];
-	Room& prevRoom = this->rooms[this->prevRoomIndex];
+	Room& prevRoom = this->rooms[this->oldIndex];
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -377,15 +371,15 @@ void RoomHandler::startOver()
 			this->activateRoom(prevRoom.connectingIndex[i]);
 		}
 	}
-	this->activateRoom(this->prevRoomIndex);
+	this->activateRoom(this->oldIndex);
 
-	this->activeIndex = this->prevRoomIndex;
-	this->prevRoomIndex = -1;
+	this->activeIndex = this->oldIndex;
+	this->oldIndex = -1;
 }
 
 glm::vec3 RoomHandler::getRespawnPos() const
 {
-	if (this->respawnDoorIdx == -1)
+	if (this->oldIndex == -1)
 	{
 		return glm::vec3(0.0f);
 	}
@@ -397,15 +391,15 @@ glm::vec3 RoomHandler::getRespawnPos() const
 		glm::vec3(0.f, 0.f, -TILE_WIDTH)
 	};
 
-	Entity door = this->rooms[this->activeIndex].doors[this->respawnDoorIdx];
-	glm::vec3 pos = this->scene->getComponent<Transform>(door).position + respawnOffset[this->respawnDoorIdx];
+	Entity door = this->rooms[this->activeIndex].doors[this->oldIndex];
+	glm::vec3 pos = this->scene->getComponent<Transform>(door).position + respawnOffset[this->oldIndex];
 	pos.y = 12.f;
 	return pos;
 }
 
 glm::vec3 RoomHandler::getRespawnRot() const
 {
-	if (this->respawnDoorIdx == -1)
+	if (this->oldIndex == -1)
 	{
 		return glm::vec3(0.0f);
 	}
@@ -416,7 +410,7 @@ glm::vec3 RoomHandler::getRespawnRot() const
 		180.f,
 		0.f
 	};
-	return glm::vec3(0.f, respawnYRot[this->respawnDoorIdx], 0.f);
+	return glm::vec3(0.f, respawnYRot[this->oldIndex], 0.f);
 }
 
 void RoomHandler::generate(uint32_t seed)
