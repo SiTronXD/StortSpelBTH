@@ -90,6 +90,8 @@ Entity NetworkHandlerGame::spawnEnemy(const int& type, const glm::vec3& pos) {
 void NetworkHandlerGame::initParticleSystems() {
     deletedParticleSystems = false;
 
+
+
     // Heal particle system
     ParticleSystem healPS{};
     healPS.maxlifeTime = 3.0f;
@@ -106,6 +108,11 @@ void NetworkHandlerGame::initParticleSystems() {
     healPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
     healPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, -0.5f, 0.0f);
     this->healParticleSystem.create(this->sceneHandler->getScene(), healPS, 1);
+
+	//Lich heal particle system
+	ParticleSystem lichHealPS = healPS;
+	lichHealPS.coneSpawnVolume.diskRadius = 10.0f;
+	this->lichHealParticleSystem.create(this->sceneHandler->getScene(), lichHealPS, 1);
 
     // Blood particle system
     ParticleSystem bloodPS{};
@@ -206,6 +213,7 @@ void NetworkHandlerGame::deleteInitialParticleSystems() {
     this->deletedParticleSystems = true;
 
     this->healParticleSystem.removeEntities(this->sceneHandler->getScene());
+	this->lichHealParticleSystem.removeEntities(this->sceneHandler->getScene());
     this->bloodParticleSystems.removeEntities(this->sceneHandler->getScene());
     this->swarmParticleSystems.removeEntities(this->sceneHandler->getScene());
     this->portalParticleSystemSide0.removeEntities(this->sceneHandler->getScene());
@@ -1261,6 +1269,9 @@ void NetworkHandlerGame::playParticle(const ParticleTypes& particleType, Entity&
 		{
 		case ParticleTypes::HEAL:
 			partSys = this->getHealParticleSystem();
+			break;
+		case ParticleTypes::LICH_HEAL:
+			partSys = this->getLichHealParticleSystem();
 			break;
 		case ParticleTypes::SWARM:
 			partSys = this->getSwarmParticleSystem();
