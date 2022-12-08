@@ -193,8 +193,10 @@ struct LichComponent
     glm::vec3 origScale         = glm::vec3(0.0f, 0.0f, 0.0f);
 
     // Anim
+    LichAnim activeAnim;
     int currentAnim;
     float attackAnimTimer;
+    bool hasBegunAttackAnim = false;
 
     // Orbs
     std::array<Entity, LichComponent::NR_FIRE_ORBS>  fireOrbs;
