@@ -63,6 +63,7 @@ private:
   Material origMat;
 
   float levelTimer;
+  float portalTimer;
   float fadeTimer;
   float deathTimer;
   bool isDead;
