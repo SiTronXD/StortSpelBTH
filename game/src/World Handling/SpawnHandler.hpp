@@ -57,17 +57,19 @@ class SpawnHandler
 {
 public:
     inline static const int MAX_NR_OF_ENEMIES = 100;
-    inline static const float PERCENTAGE_TANKS   = 0.10f;
-    inline static const float PERCENTAGE_LICHS   = 0.25f;
-    inline static const float PERCENTAGE_SWARMS  = 0.75f;
-
-    const float enemiesPerTiles = 0.25f;//0.05f;//0.10f
-
     inline static const int NR_BLOBS_IN_GROUP = 3;
+
+
+    inline static const float PERCENTAGE_TANKS   = 0.35f;
+    inline static const float PERCENTAGE_LICHS   = 0.50f;
+    inline static const float PERCENTAGE_SWARMS  = 0.80f * NR_BLOBS_IN_GROUP;
+
+    const float MAX_ENEMIES_PER_TILES = 0.25f;
+    const float MIN_ENEMIES_PER_TILES = 0.05f;
 
     inline static const int MAX_NR_TANKS        = (int)(MAX_NR_OF_ENEMIES * PERCENTAGE_TANKS);
     inline static const int MAX_NR_LICHS        = (int)(MAX_NR_OF_ENEMIES * PERCENTAGE_LICHS);
-    inline static const int MAX_NR_SWARMGROUPS  = (int)((MAX_NR_OF_ENEMIES * PERCENTAGE_SWARMS)/NR_BLOBS_IN_GROUP);
+    inline static const int MAX_NR_SWARMGROUPS  = (int)((MAX_NR_OF_ENEMIES * PERCENTAGE_SWARMS)/NR_BLOBS_IN_GROUP/NR_BLOBS_IN_GROUP);
 
     inline static const bool USE_DEBUG = false;
     inline static const int NR_TANK_DBG         = 0;
@@ -149,7 +151,7 @@ public:
         this->createEntities();
     }
 
-    void spawnEnemiesIntoRoom();
+    void spawnEnemiesIntoRoom(int level);
     void resetEnemies();
 
     void createEntities();

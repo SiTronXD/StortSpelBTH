@@ -66,7 +66,8 @@ enum class ParticleTypes
 {
 	HEAL,
 	BLOOD,
-	SWARM
+	SWARM,
+	LICH_HEAL
 };
 
 class NetworkHandlerGame : public NetworkHandler
@@ -135,6 +136,7 @@ private:
 	// Particles
     bool deletedParticleSystems;
     ParticleSystemInstance healParticleSystem;
+    ParticleSystemInstance lichHealParticleSystem;
     ParticleSystemInstance bloodParticleSystems;
     ParticleSystemInstance swarmParticleSystems;
     ParticleSystemInstance footstepParticleSystems;
@@ -190,6 +192,7 @@ private:
 	void interpolatePositions();
 
 	inline const ParticleSystem& getHealParticleSystem() { return this->healParticleSystem.getParticleSystem(); }
+	inline const ParticleSystem& getLichHealParticleSystem() { return this->lichHealParticleSystem.getParticleSystem(); }
 	inline const ParticleSystem& getBloodParticleSystem() { return this->bloodParticleSystems.getParticleSystem(); }
 	inline const ParticleSystem& getSwarmParticleSystem() { return this->swarmParticleSystems.getParticleSystem(); }
 	inline const ParticleSystem& getPortalParticleSystem0() { return this->portalParticleSystemSide0.getParticleSystem(); }
