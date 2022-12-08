@@ -1,5 +1,4 @@
 #include "LoadScene.h"
-#define COUNT_OF(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 
 void LoadScene::loadData() 
 {
@@ -34,10 +33,39 @@ void LoadScene::loadData()
     std::vector<std::string> loadTexture = {
         
     };
-    int thingsToLoad = loadAnimations.size() + loadMesh.size() + loadCollisions.size() + 
+    int thingsToLoad = 
+        loadAnimations.size() + 
+        loadCollisions.size() + 
+        //loadMaterial.size() + 
+        loadMesh.size() + 
+        loadSounds.size() + 
+        loadTexture.size();
+    float oneLoadPercent = 100.f/thingsToLoad;
+
     for (int i = 0; i < loadAnimations.size(); i++)
     {
         this->getResourceManager()->addAnimations(loadAnimations[i], loadAnimationsTexture[i].c_str());
+        this->howMuchDone += oneLoadPercent;
+    }
+    for (int i = 0; i < loadCollisions.size(); i++)
+    {
+        this->getResourceManager()->addCollisionShapeFromMesh(loadCollisions[i].c_str());
+        this->howMuchDone += oneLoadPercent;
+    }
+    for (int i = 0; i < loadMesh.size(); i++)
+    {
+        this->getResourceManager()->addMesh(loadMesh[i].c_str());
+        this->howMuchDone += oneLoadPercent;
+    }
+    for (int i = 0; i < loadSounds.size(); i++)
+    {
+        this->getResourceManager()->addSound(loadSounds[i].c_str());
+        this->howMuchDone += oneLoadPercent;
+    }
+    for (int i = 0; i < loadTexture.size(); i++)
+    {
+        this->getResourceManager()->addTexture(loadTexture[i].c_str());
+        this->howMuchDone += oneLoadPercent;
     }
     
 }
@@ -57,10 +85,6 @@ void LoadScene::init() {
     this->background = this->getResourceManager()->addTexture("assets/textures/UI/hpBarBackground.png");
     this->loadThread = std::thread(&LoadScene::loadData, this);
 
-    if (howMuchDone >= 100)
-    {
-        this->switchScene(new MainMenu());    
-    }
 }
 
 void LoadScene::update() {
@@ -69,6 +93,11 @@ void LoadScene::update() {
     }
     else if (Input::isKeyDown(Keys::A)) {
         howMuchDone -= Time::getDT() * 10;
+    }
+
+    if (howMuchDone >= 100)
+    {
+        this->switchScene(new MainMenu());    
     }
 
     this->getUIRenderer()->setTexture(background);
