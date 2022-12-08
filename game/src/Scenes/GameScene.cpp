@@ -9,6 +9,7 @@
 #include "../Systems/MovementSystem.hpp"
 #include "../Systems/ParticleRemoveEntity.hpp"
 #include "../Systems/ParticleRemoveComponent.hpp"
+#include "../Systems/PerkAbilityOutsideRangeSystem.hpp"
 #include "../Network/NetworkHandlerGame.h"
 #include "vengine/application/Time.hpp"
 #include "GameOverScene.h"
@@ -200,15 +201,16 @@ void GameScene::start()
         );
     this->createSystem<ParticleRemoveEntity>(this);
     this->createSystem<ParticleRemoveComponent>(this);
+    this->createSystem<PerkAbilityOutsideRangeSystem>(this, &this->getComponent<Transform>(this->playerID));
 
     if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {
-        this->networkHandler->spawnItemRequest(knockbackAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        /*this->networkHandler->spawnItemRequest(knockbackAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         this->networkHandler->spawnItemRequest(hpUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         this->networkHandler->spawnItemRequest(movementUpPerk, 1.0f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));*/
     }
 
     this->levelString = "level " + std::to_string(currentLevel.level);
