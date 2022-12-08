@@ -460,7 +460,7 @@ void SpawnHandler::createLich()
     this->currScene->setComponent<Collider>(graveID, Collider::createBox(
         glm::vec3{LichComponent::graveWidth,LichComponent::graveHeight,LichComponent::graveDepth},
         glm::vec3(0.f,LichComponent::graveHeight/2.f, 0.f))
-        );
+        );    
 
     this->currScene->getComponent<LichComponent>(this->lichIDs.back()).graveID = graveID;
     this->currScene->setInactive(graveID);
@@ -508,7 +508,7 @@ void SpawnHandler::createLich()
         for(size_t i = 0; i < LichComponent::NR_FIRE_ORBS;i++)
         {
             lichComp.fireOrbs[i] = this->currScene->createEntity();
-            this->currScene->setComponent<Collider>(lichComp.fireOrbs[i], Collider::createSphere(LichComponent::orbRadius));
+            this->currScene->setComponent<Collider>(lichComp.fireOrbs[i], Collider::createSphere(LichComponent::orbRadius,glm::vec3(0.0f),true));
             this->currScene->setComponent<Orb>(lichComp.fireOrbs[i]);
             this->currScene->setInactive(lichComp.fireOrbs[i]);
             this->currScene->setComponent<Rigidbody>(lichComp.fireOrbs[i]);
@@ -521,7 +521,7 @@ void SpawnHandler::createLich()
         for(size_t i = 0; i < LichComponent::NR_ICE_ORBS;i++)
         {
             lichComp.iceOrbs[i] = this->currScene->createEntity();
-            this->currScene->setComponent<Collider>(lichComp.iceOrbs[i], Collider::createSphere(LichComponent::orbRadius));
+            this->currScene->setComponent<Collider>(lichComp.iceOrbs[i], Collider::createSphere(LichComponent::orbRadius,glm::vec3(0.0f),true));
             this->currScene->setComponent<Orb>(lichComp.iceOrbs[i]);
             this->currScene->setInactive(lichComp.iceOrbs[i]);
             this->currScene->setComponent<Rigidbody>(lichComp.iceOrbs[i]);
@@ -534,7 +534,7 @@ void SpawnHandler::createLich()
         for(size_t i = 0; i < LichComponent::NR_LIGHT_ORBS;i++)
         {
             lichComp.lightOrbs[i] = this->currScene->createEntity();
-            this->currScene->setComponent<Collider>(lichComp.lightOrbs[i], Collider::createSphere(LichComponent::orbRadius));
+            this->currScene->setComponent<Collider>(lichComp.lightOrbs[i], Collider::createSphere(LichComponent::orbRadius,glm::vec3(0.0f),true));
             this->currScene->setComponent<Orb>(lichComp.lightOrbs[i]);
             this->currScene->setInactive(lichComp.lightOrbs[i]);
             this->currScene->setComponent<Rigidbody>(lichComp.lightOrbs[i]);

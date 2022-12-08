@@ -1197,7 +1197,7 @@ Entity NetworkHandlerGame::spawnOrbs(int orbType)
     {
         this->sceneHandler->getScene()->setComponent<MeshComponent>(orb, fireOrb_mesh);
         this->sceneHandler->getScene()->setComponent<Collider>(
-            orb, Collider::createSphere(LichComponent::orbRadius)
+            orb, Collider::createSphere(LichComponent::orbRadius,glm::vec3(0.0f),true)
         );
         this->sceneHandler->getScene()->setComponent<Orb>(orb);
         this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
@@ -1213,7 +1213,7 @@ Entity NetworkHandlerGame::spawnOrbs(int orbType)
     {
         this->sceneHandler->getScene()->setComponent<MeshComponent>(orb, iceOrb_mesh);
         this->sceneHandler->getScene()->setComponent<Collider>(
-            orb, Collider::createSphere(LichComponent::orbRadius)
+            orb, Collider::createSphere(LichComponent::orbRadius,glm::vec3(0.0f),true)
         );
         this->sceneHandler->getScene()->setComponent<Orb>(orb);
         this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
@@ -1229,7 +1229,7 @@ Entity NetworkHandlerGame::spawnOrbs(int orbType)
     {
         this->sceneHandler->getScene()->setComponent<MeshComponent>(orb, lightOrb_mesh);
         this->sceneHandler->getScene()->setComponent<Collider>(
-            orb, Collider::createSphere(LichComponent::orbRadius)
+            orb, Collider::createSphere(LichComponent::orbRadius,glm::vec3(0.0f),true)
         );
         this->sceneHandler->getScene()->setComponent<Orb>(orb);
         this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
