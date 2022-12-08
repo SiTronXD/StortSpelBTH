@@ -251,7 +251,7 @@ void NetworkHandlerGame::init()
 {
     this->cleanUp();
     this->deletedParticleSystems = false;
-    this->moveSound = this->resourceManger->addSound("assets/Sounds/RunningSound.ogg");
+    this->moveSound = this->resourceManger->addSound("assets/Sounds/PlayerSounds/RunningSound.ogg");
 	this->perkMeshes[0] = this->resourceManger->addMesh("assets/models/Perk_Hp.obj");
 	this->perkMeshes[1] = this->resourceManger->addMesh("assets/models/Perk_Dmg.obj");
 	this->perkMeshes[2] = this->resourceManger->addMesh("assets/models/Perk_AtkSpeed.obj");
