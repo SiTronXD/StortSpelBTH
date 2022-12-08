@@ -724,6 +724,25 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.chargeTimer -= get_dt();
 		return ret;
 	}
+	if (tankComp.chargeTimer < 1.f)
+	{
+		ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+
+		if (netScene && tankComp.s_activateCharge)
+		{
+			netScene->addEvent(
+				{ (int)GameEvent::PLAY_ENEMY_SOUND, entityID, 0, 1, 0 }
+			);
+			tankComp.s_activateCharge = false;
+		}
+		else if (!netScene && tankComp.s_activateCharge)
+		{
+			sceneHandler->getAudioHandler()->playSound(
+				entityID, TankComponent::s_charge, 30.f
+			);
+			tankComp.s_activateCharge = false;
+		}
+	}
 	//Set target
 	if(!tankComp.hasRunTarget)
 	{
@@ -740,22 +759,6 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.runTimer > 0.0f)
 	{
 		rb.velocity = tankComp.runDir * tankComp.cahargeSpeed;
-        ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
-
-        if (netScene && tankComp.s_activateCharge)
-        {
-            netScene->addEvent(
-                {(int)GameEvent::PLAY_ENEMY_SOUND, entityID, 0, 1, 0}
-            );
-            tankComp.s_activateCharge = false;
-        }
-        else if (!netScene && tankComp.s_activateCharge)
-        {
-            sceneHandler->getAudioHandler()->playSound(
-                entityID, TankComponent::s_charge, 30.f
-            );
-            tankComp.s_activateCharge = false;
-        }
 	}
 	else
 	{

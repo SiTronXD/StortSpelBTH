@@ -219,9 +219,9 @@ void GameScene::start()
     this->resumeButton.dimension = glm::vec2(500.0f, 100.0f);
     this->exitButton.dimension = glm::vec2(500.0f, 100.0f);
 
-    this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
+    this->getAudioHandler()->setMusic("assets/Sounds/GameMusic/AmbiensMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
-    this->getAudioHandler()->setMusicVolume(0.0f);
+    this->getAudioHandler()->setMusicVolume(1.0f);
     this->getAudioHandler()->playMusic();
 	
     // If we are not multiplayer we do this by ourself
