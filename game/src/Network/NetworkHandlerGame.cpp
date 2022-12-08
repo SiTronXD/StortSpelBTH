@@ -261,19 +261,23 @@ void NetworkHandlerGame::init()
 	if (!TankComponent::s_initialized)
 	{
 		TankComponent::s_takeDmg =
-			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
+			this->resourceManger->addSound("assets/Sounds/Enemysounds/Golem/GolemTakeDmg.ogg");
+		TankComponent::s_shockwave =
+			this->resourceManger->addSound("assets/Sounds/Enemysounds/Golem/Shockwave.ogg");
+		TankComponent::s_charge =
+			this->resourceManger->addSound("assets/Sounds/Enemysounds/Golem/GolemCharge.ogg");
 		TankComponent::s_initialized = true;
 	}
 	if (!LichComponent::s_initialized)
 	{
 		LichComponent::s_takeDmg =
-			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Lich/LichTakeDmg.ogg");
 		LichComponent::s_lightning =
-			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Lich/ChargeLightning.ogg");
 		LichComponent::s_fire =
-			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Lich/ChargeFire.ogg");
 		LichComponent::s_ice =
-			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Lich/ChargeIce.ogg");
 		LichComponent::s_initialized = true;
 	}
 	if (!SwarmComponent::s_initialized)
@@ -281,7 +285,7 @@ void NetworkHandlerGame::init()
 		SwarmComponent::s_takeDmg =
 			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
 		SwarmComponent::s_move =
-			this->resourceManger->addSound("assets/Sounds/RunningSound.ogg");
+			this->resourceManger->addSound("assets/Sounds/PlayerSounds/RunningSound.ogg");
 		SwarmComponent::s_attack =
 			this->resourceManger->addSound("assets/Sounds/SwishSound.ogg");
 		SwarmComponent::s_initialized = true;
@@ -339,12 +343,18 @@ int NetworkHandlerGame::getSeed()
 
 void NetworkHandlerGame::setCombatSystem(CombatSystem* system)
 {
-	combatSystem = system;
+	this->combatSystem = system;
+}
+
+void NetworkHandlerGame::setGhostMat(Material* ghostMat)
+{
+	this->ghostMat = ghostMat;
 }
 
 void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 {
 	sf::Packet packet;
+	Scene* scene = this->sceneHandler->getScene();
 	switch ((GameEvent)event)
 	{
 	case GameEvent::SEED:
@@ -523,11 +533,10 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		break;
     case GameEvent::PLAYER_SETHP:
         tcpPacket >> i0 >> i1;
-        if (i0 == ID)
+        if (i0 == this->ID)
         {
 			this->sceneHandler->getScene()->getComponent<HealthComp>(player).health = i1;   
 		}
-		// Else give hp to other players visually
 		break;
     case GameEvent::SPAWN_ORB:
         tcpPacket >> i0 >> i1;
@@ -571,6 +580,15 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
         roomHandler->roomCompleted();
         this->numRoomsCleared++;
 		std::cout << "GameScene: number of rooms cleared:" << this->numRoomsCleared << std::endl;  
+		
+		dynamic_cast<GameScene*>(scene)->revivePlayer();
+		for (int i = 0; i < (int)this->playerEntities.size(); i++)
+		{
+			MeshComponent& mesh = scene->getComponent<MeshComponent>(this->playerEntities[i]);
+			mesh.overrideMaterials[0] = this->origMat;
+			mesh.overrideMaterials[0].tintColor = this->playerColors[i + 1];
+			scene->setActive(this->swords[i]);
+		}
         break;
     case GameEvent::NEXT_LEVEL:
         this->cleanUp();
@@ -653,6 +671,26 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 			}
 		}
 		break;
+	case GameEvent::PLAYER_SET_GHOST:
+		tcpPacket >> i0;
+		i1 = -1;
+		for (int i = 0; i < this->otherPlayersServerId.size(); i++)
+		{
+			if (this->otherPlayersServerId[i] == i0)
+			{
+				i1 = i;
+				break;
+			}
+		}
+		if (i1 != -1)
+		{
+			this->sceneHandler->getScene()->getComponent<MeshComponent>(this->playerEntities[i1]).overrideMaterials[0] = *this->ghostMat;
+			this->sceneHandler->getScene()->setInactive(this->swords[i1]);
+		}
+		break;
+	case GameEvent::END_GAME:
+		((GameScene*)this->sceneHandler->getScene())->endGame();
+		break;
 	default:
 		break;
 	}
@@ -725,11 +763,6 @@ void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 			entityToPosScale[i1].second = v2;
             
             sceneHandler->getScene()->getComponent<Transform>(serverEntities.find(i1)->second).rotation = v1;
-
-			// Get and set animation // don't know how this should be made
-			//anim = &this->sceneHandler->getScene()->getComponent<AnimationComponent>(serverEnteties.find(i1)->second);
-			//udpPacket >> i2 >> anim->timer >> anim->timeScale;
-			//anim->animationIndex = (uint32_t)i2;
 		}
 		break;
 	default:
@@ -737,7 +770,7 @@ void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 	}
 }
 
-void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::Packet& tcpPacket, int event)
+void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientIndex, sf::Packet& tcpPacket, int event)
 {
 	sf::Packet packet;
 	ServerGameMode* serverScene;
@@ -764,7 +797,7 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 	case GameEvent::PICKUP_ITEM:
 		serverScene = server->getScene<ServerGameMode>();
 		tcpPacket >> si0 >> si1 >> si2 >> sf0;
-		serverScene->deleteItem(clientID, si0, (ItemType)si1, si2, sf0);
+		serverScene->deleteItem(clientIndex, si0, (ItemType)si1, si2, sf0);
 		break;
 
 	case GameEvent::USE_HEAL:
@@ -801,7 +834,7 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
         if (serverScene->hasComponents<Rigidbody>(si0))
         {
 			sv1 = serverScene->getComponent<Transform>(si0).position;
-			sv2 = serverScene->getComponent<Transform>(serverScene->getPlayer(clientID)).position;
+			sv2 = serverScene->getComponent<Transform>(serverScene->getPlayer(clientIndex)).position;
 			sv0 = safeNormalize(sv2 - sv1);
             serverScene->getComponent<Rigidbody>(si0).velocity = glm::vec3(-sv0.x, 0.f, -sv0.z) * sf0;
         }
@@ -809,6 +842,10 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 		packet << (int)GameEvent::PLAY_ENEMY_SOUND << si0 << si3 << si4 << si5;
 		server->sendToAllClientsTCP(packet);
         
+		break;
+	case GameEvent::PLAYER_SET_GHOST:
+		packet << (int)GameEvent::PLAYER_SET_GHOST << server->getClientID(clientIndex);
+		server->sendToAllOtherClientsTCP(packet, clientIndex);
 		break;
     case GameEvent::ROOM_CLEAR:
         this->newRoomFrame = false;
@@ -829,20 +866,19 @@ void NetworkHandlerGame::setRoomHandler(RoomHandler& roomHandler, int& numRoomsC
     newRoomFrame = false;
 }
 
-void NetworkHandlerGame::handleUDPEventServer(Server* server, int clientID, sf::Packet& udpPacket, int event)
+void NetworkHandlerGame::handleUDPEventServer(Server* server, int clientIndex, sf::Packet& udpPacket, int event)
 {
 	sf::Packet packet;
 	ServerGameMode* serverScene;
-	NetworkScene* scene;
 	switch ((GameEvent)event)
 	{
 	case GameEvent::UPDATE_PLAYER:
-        scene = server->getScene<NetworkScene>();
-		packet << (int)GameEvent::UPDATE_PLAYER << clientID;
+		serverScene = server->getScene<ServerGameMode>();
+		packet << (int)GameEvent::UPDATE_PLAYER << server->getClientID(clientIndex);
 		sv0 = this->getVec(udpPacket);
 		this->sendVec(packet, sv0);
         
-        scene->getComponent<Transform>(scene->getPlayer(clientID)).position = sv0;
+		serverScene->getComponent<Transform>(serverScene->getPlayer(clientIndex)).position = sv0;
 		sv0 = this->getVec(udpPacket);
 		this->sendVec(packet, sv0);
 
@@ -851,7 +887,10 @@ void NetworkHandlerGame::handleUDPEventServer(Server* server, int clientID, sf::
 		udpPacket >> si0 >> sf0 >> sf1;
 		packet << si0 << sf0 << sf1;
 
-		server->sendToAllOtherClientsUDP(packet, clientID);
+		udpPacket >> si0;
+		serverScene->updatePlayerHp(clientIndex, si0);
+
+		server->sendToAllOtherClientsUDP(packet, clientIndex);
 		break;
 	default:
 		packet << event;
@@ -912,9 +951,6 @@ void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
             isEnemy = true;
             std::cout << "LichWas HIT\n";
 		}
-		//if (sceneHandler->getScene()->hasComponents<LichComponent>(entityID)) {
-		//
-		//}
 		if (isEnemy)
         {
             Rigidbody& enemyRB = sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
@@ -929,6 +965,9 @@ void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
 void NetworkHandlerGame::setPlayerEntity(Entity player)
 {
 	this->player = player;
+	MeshComponent& mesh = this->sceneHandler->getScene()->getComponent<MeshComponent>(this->player);
+	this->resourceManger->makeUniqueMaterials(mesh);
+	this->origMat = mesh.overrideMaterials[0];
 }
 
 void NetworkHandlerGame::createOtherPlayers(int playerMesh)
@@ -942,7 +981,7 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 
 	Scene* scene = this->sceneHandler->getScene();
 	Transform& playerTrans = scene->getComponent<Transform>(this->player);
-	playerTrans.position = SMath::rotateVector(glm::vec3(0.0f, angle * this->ID, 0.0f), glm::vec3(10.0f, 12.0f, 0.0f));
+	playerTrans.position = SMath::rotateVector(glm::vec3(0.0f, angle * (this->ID % (size + 1)), 0.0f), glm::vec3(15.0f, 12.0f, 0.0f));
 	for (int i = 0; i < size; i++)
 	{
 		this->playerEntities[i] = scene->createEntity();
@@ -956,19 +995,12 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 
 		// Set Position
 		Transform& t = scene->getComponent<Transform>(this->playerEntities[i]);
-		t.position = playerTrans.position = SMath::rotateVector(glm::vec3(0.0f, angle * this->otherPlayersServerId[i], 0.0f), glm::vec3(10.0f, 12.0f, 0.0f));
+		t.position = playerTrans.position = SMath::rotateVector(glm::vec3(0.0f, angle * (this->otherPlayersServerId[i] % (size + 1)), 0.0f), glm::vec3(10.0f, 12.0f, 0.0f));
 
 		// Set tint color
 		MeshComponent& mesh = scene->getComponent<MeshComponent>(this->playerEntities[i]);
 		this->resourceManger->makeUniqueMaterials(mesh);
 		mesh.overrideMaterials[0].tintColor = this->playerColors[i + 1];
-
-		/*scene->setComponent<Rigidbody>(this->playerEntities[i]);
-
-		Rigidbody& rb = scene->getComponent<Rigidbody>(this->playerEntities[i]);
-		rb.gravityMult = 5;
-		rb.friction = 0.1f;
-		rb.rotFactor = glm::vec3(0);*/
 	}
 }
 
@@ -979,12 +1011,14 @@ void NetworkHandlerGame::updatePlayer()
 		sf::Packet packet;
 		Transform& t = this->sceneHandler->getScene()->getComponent<Transform>(this->player);
 		AnimationComponent& anim = this->sceneHandler->getScene()->getComponent<AnimationComponent>(this->player);
+		HealthComp& healthComp = this->sceneHandler->getScene()->getComponent<HealthComp>(this->player);
 
 		packet << (int)GameEvent::UPDATE_PLAYER <<
 			t.position.x << t.position.y << t.position.z <<
 			t.rotation.x << t.rotation.y << t.rotation.z <<
 			(int)anim.aniSlots[0].animationIndex << anim.aniSlots[0].timer << anim.aniSlots[0].timeScale <<
-			(int)anim.aniSlots[1].animationIndex << anim.aniSlots[1].timer << anim.aniSlots[1].timeScale;
+			(int)anim.aniSlots[1].animationIndex << anim.aniSlots[1].timer << anim.aniSlots[1].timeScale <<
+			(int)healthComp.health;
 		this->sendDataToServerUDP(packet);
 	}
 }
@@ -1113,36 +1147,43 @@ void NetworkHandlerGame::useHealAbilityRequest(glm::vec3 position)
 	}
 }
 
+void NetworkHandlerGame::setGhost()
+{
+	sf::Packet packet;
+	packet << (int)GameEvent::PLAYER_SET_GHOST;
+	this->sendDataToServerTCP(packet);
+}
+
 void NetworkHandlerGame::setPerks(const Perks perk[])
 {
     
     Combat& combat = sceneHandler->getScene()->getComponent<Combat>(player);
 	HealthComp& healthComp = sceneHandler->getScene()->getComponent<HealthComp>(player);
 	for (size_t j = 0; j < 4; j++)
+	{
+		if (combat.perks[j].perkType == emptyPerk)
+		{
+			combat.perks[j] = perk[j];
+			switch (combat.perks[j].perkType)
 			{
-				if (combat.perks[j].perkType == emptyPerk)
-				{
-					combat.perks[j] = perk[j];
-					switch (combat.perks[j].perkType)
-					{
-					case hpUpPerk:
-						this->combatSystem->updateHealth(combat, healthComp, combat.perks[j]);
-						break;
-					case dmgUpPerk:
-						this->combatSystem->updateDmg(combat, combat.perks[j]);
-						break;
-					case attackSpeedUpPerk:
-						this->combatSystem->updateAttackSpeed(combat, combat.perks[j]);
-						break;
-					case movementUpPerk:
-						this->combatSystem->updateMovementSpeed(combat, combat.perks[j]);
-						break;
-					case staminaUpPerk:
-						this->combatSystem->updateStamina(combat, combat.perks[j]);
-						break;
-					}
-				}
+			case hpUpPerk:
+				this->combatSystem->updateHealth(combat, healthComp, combat.perks[j]);
+				break;
+			case dmgUpPerk:
+				this->combatSystem->updateDmg(combat, combat.perks[j]);
+				break;
+			case attackSpeedUpPerk:
+				this->combatSystem->updateAttackSpeed(combat, combat.perks[j]);
+				break;
+			case movementUpPerk:
+				this->combatSystem->updateMovementSpeed(combat, combat.perks[j]);
+				break;
+			case staminaUpPerk:
+				this->combatSystem->updateStamina(combat, combat.perks[j]);
+				break;
 			}
+		}
+	}
 }
 
 Entity NetworkHandlerGame::spawnOrbs(int orbType)

@@ -138,6 +138,8 @@ private:
 	Entity doorLamps[4];
 
 	// Room Updating
+	int respawnDoorIdx = -1;
+	int prevRoomIndex = -1;
 	int activeIndex = 0;
 	void showPaths(bool show);
 	void closeDoors(int index);
@@ -180,6 +182,9 @@ public:
 
 	void roomCompleted();
 	bool playerNewRoom(Entity player, PhysicsEngine* physicsEngine);
+	void startOver();
+	glm::vec3 getRespawnPos() const;
+	glm::vec3 getRespawnRot() const;
 
 	const std::vector<glm::vec3>& getFreeTiles();
 	const std::vector<TileInfo>& getFreeTileInfos();

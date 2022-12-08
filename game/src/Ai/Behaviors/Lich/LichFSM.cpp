@@ -1,5 +1,6 @@
 #include "LichFSM.hpp"
 #include "../../../Components/Combat.h"
+#include "../../../Network/ServerGameMode.h"
 
 
 
@@ -7,7 +8,7 @@ int	LichFSM::getPlayerID(Entity entityID)
 {
     int playerID = -1;
     // if network exist take player from there
-    NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+    ServerGameMode* s = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
     if (s != nullptr)
     {   
         float nearset = 99999999.0f;
