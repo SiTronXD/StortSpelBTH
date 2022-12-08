@@ -174,9 +174,9 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
     RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, maxDist);
     RayPayload rp1 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_right, maxDist);
     RayPayload rp2 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_left, maxDist);
-	drawRaySimple(rayToPlayer, maxDist);
-	drawRaySimple(rayToPlayer_right, maxDist);
-	drawRaySimple(rayToPlayer_left, maxDist);
+	//drawRaySimple(rayToPlayer, maxDist);
+	//drawRaySimple(rayToPlayer_right, maxDist);
+	//drawRaySimple(rayToPlayer_left, maxDist);
 	if(rp.hit || rp1.hit || rp2.hit)
 	{
 		bool one = (rp.entity != -1 && sceneHandler->getScene()->hasComponents<Collider>(rp.entity) && !getTheScene()->getComponent<Collider>(rp.entity).isTrigger && rp.entity != entityID);
@@ -191,9 +191,9 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 			RayPayload r_right= BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayRight, left_right_maxDist);
 			RayPayload r_left = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayLeft, left_right_maxDist);
 			RayPayload r_forward = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, left_right_maxDist);
-			drawRaySimple(rayToPlayer, left_right_maxDist);
-			drawRaySimple(rayRight, left_right_maxDist);
-			drawRaySimple(rayLeft, left_right_maxDist);
+			//drawRaySimple(rayToPlayer, left_right_maxDist);
+			//drawRaySimple(rayRight, left_right_maxDist);
+			//drawRaySimple(rayLeft, left_right_maxDist);
 
 			if(r_forward.hit && !getTheScene()->getComponent<Collider>(r_forward.entity).isTrigger)
 			{
