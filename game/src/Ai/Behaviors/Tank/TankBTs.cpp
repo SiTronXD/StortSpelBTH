@@ -97,7 +97,7 @@ void TankBT::groundHumpShortcut(Entity entityID)
 		        uint32_t newHump = activateHump(entityID);
 		        Transform& hTrans = getTheScene()->getComponent<Transform>(newHump);
 		        hTrans.position = getTheScene()->getComponent<Transform>(entityID).position;
-		        hTrans.position.y = 0.0f;
+		        hTrans.position.y = 0.5f;
 		        tankComp.humps.insert({newHump, 1.0f});
 		        tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
 				

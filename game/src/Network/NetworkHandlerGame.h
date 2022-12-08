@@ -15,7 +15,8 @@ enum class GameEvent
 	SEED, // Client -> Server: Request seed, Server -> Client: Seed to use
 	UPDATE_PLAYER, // Positions and animations (and health to server)
 	UPDATE_MONSTER, // How many enemies, What enemy, Position, rotation and animation udp
-	PLAY_PARTICLE, // What type, entity
+	PLAY_PARTICLE, //What type, entity
+	PLAY_PARTICLE_P, //What type, player
 	SPAWN_ITEM, // Client -> Server: Want to spawn item. Server -> Client: Spawn item in scene
 	DELETE_ITEM, // Server -> Client: Remove item from scene
 	PICKUP_ITEM, // Client -> Server: Want to pick up item. Server -> Client: Pick up the item
@@ -136,8 +137,10 @@ private:
     ParticleSystemInstance healParticleSystem;
     ParticleSystemInstance bloodParticleSystems;
     ParticleSystemInstance swarmParticleSystems;
+    ParticleSystemInstance footstepParticleSystems;
     ParticleSystemInstance portalParticleSystemSide0;
     ParticleSystemInstance portalParticleSystemSide1;
+    void playParticle(const ParticleTypes& particleType, Entity& entity);
 
 	// RoomHandler
     bool newRoomFrame;

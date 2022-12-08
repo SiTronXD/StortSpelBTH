@@ -127,7 +127,17 @@ void SpawnHandler::spawnTank(const int tankIdx, const glm::vec3& pos, bool elite
 
     if(elite)
     {
-        tankComp.applyEliteStats(defaultEliteComp, currScene, this->tankIDs[tankIdx]);
+        if(!tankComp.isElite)
+        {
+            tankComp.applyEliteStats(defaultEliteComp, currScene, this->tankIDs[tankIdx]);
+        }
+    }
+    else
+    {
+        if(tankComp.isElite)
+        {
+            tankComp.removeEliteStats(currScene, this->tankIDs[tankIdx]);
+        }
     }
 
     tankComp.life = tankComp.FULL_HEALTH;
@@ -166,7 +176,17 @@ uint32_t SpawnHandler::spawnLich(int lichIdx, std::vector<const TileInfo*> tileI
         defaultEliteComp.sizeMultiplier = 2.0f;
         if(elite)
         {
-            lichComp.applyEliteStats(defaultEliteComp, currScene, this->lichIDs[lichIdx]);
+            if(!lichComp.isElite)
+            {
+                lichComp.applyEliteStats(defaultEliteComp, currScene, this->lichIDs[lichIdx]);
+            }
+        }
+        else
+        {
+            if(lichComp.isElite)
+            {
+                lichComp.removeEliteStats(currScene, this->lichIDs[lichIdx]);
+            }
         }
         //Reset
         lichComp.life = lichComp.FULL_HEALTH;
@@ -233,8 +253,19 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos, bool elite)
     defaultEliteComp.sizeMultiplier = 2.0f;
     if(elite)
     {
-        swarmComp.applyEliteStats(defaultEliteComp, currScene, this->swarmIDs[swarmIdx]);
+        if(!swarmComp.isElite)
+        {
+            swarmComp.applyEliteStats(defaultEliteComp, currScene, this->swarmIDs[swarmIdx]);
+        }
     }
+    else
+    {
+        if(swarmComp.isElite)
+        {
+            swarmComp.removeEliteStats(currScene, this->swarmIDs[swarmIdx]);
+        }
+    }
+    
     transform.scale = swarmComp.origScale;
     swarmComp.origScaleY = transform.scale.y;
     swarmComp.life = swarmComp.FULL_HEALTH;

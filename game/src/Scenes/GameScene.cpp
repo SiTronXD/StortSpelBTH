@@ -224,7 +224,7 @@ void GameScene::start()
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic/AmbiensMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
     this->getAudioHandler()->setMusicVolume(0.2f);
-    this->getAudioHandler()->playMusic();
+   // this->getAudioHandler()->playMusic();
 	
     // If we are not multiplayer we do this by ourself
     if (!networkHandler->isConnected())
@@ -247,6 +247,12 @@ void GameScene::start()
 
 void GameScene::update()
 {
+    static float musicCounter = 0;
+    if (++musicCounter == 20)
+    {
+        this->getAudioHandler()->playMusic();
+    }
+
     // Ghost overlay
     if (this->isGhost && this->ghostTransitionTimer >= 1.0f || this->hasRespawned)
     {
@@ -625,7 +631,8 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
     else 
     { // Collision between two things that isnt player
         
-        if(this->hasComponents<Orb>(e1) || this->hasComponents<Orb>(e2))
+        if((this->hasComponents<Orb>(e1) || this->hasComponents<Orb>(e2))&&
+            !(this->hasComponents<LichComponent>(e1) || this->hasComponents<LichComponent>(e2)))
         {
             Entity collidingOrb = this->hasComponents<Orb>(e1) ? e1 : e2; 
             
@@ -730,7 +737,6 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
         {
           swarmComp.inAttack = false;
           swarmComp.touchedPlayer = true;
-          //aiCombat.timer = aiCombat.lightAttackTime;
           HealthComp& playerHealth = this->getComponent<HealthComp>(player);
           playerHealth.health -=
               (int)swarmComp.lightHit;
