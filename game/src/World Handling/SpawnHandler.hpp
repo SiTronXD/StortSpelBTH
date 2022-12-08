@@ -71,8 +71,8 @@ public:
 
     inline static const bool USE_DEBUG = false;
     inline static const int NR_TANK_DBG         = 0;
-    inline static const int NR_LICH_DBG         = 2;
-    inline static const int NR_SWARM_GROUPS_DBG = 5;
+    inline static const int NR_LICH_DBG         = 0;
+    inline static const int NR_SWARM_GROUPS_DBG = 2;
 
 private:
     RoomHandler*     roomHandler      = nullptr;
