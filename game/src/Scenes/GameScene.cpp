@@ -98,7 +98,7 @@ void GameScene::init()
         glm::uvec2(50, 50));
 
     int swarm =
-        this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+        this->getResourceManager()->addMesh("assets/models/Swarm_RotTest.obj");
 
     roomHandler.init(
         this,
