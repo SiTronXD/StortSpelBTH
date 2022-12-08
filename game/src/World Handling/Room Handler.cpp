@@ -191,7 +191,7 @@ void RoomHandler::roomCompleted()
 {	
 	Room& curRoom = this->rooms[this->activeIndex];
 	curRoom.finished = true;
-	if (curRoom.type != RoomData::EXIT_ROOM)
+	if (curRoom.type != RoomData::START_ROOM && curRoom.type != RoomData::EXIT_ROOM)
 	{
 		glm::vec3 pos = scene->getComponent<Transform>(this->rooms[this->activeIndex].rock).position;
 		this->scene->setScriptComponent(this->rooms[this->activeIndex].rock, "scripts/moveRock.lua");
