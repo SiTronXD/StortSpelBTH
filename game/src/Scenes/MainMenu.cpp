@@ -6,11 +6,13 @@
 #include "logInScene.h"
 #include "../ServerGameModes/NetworkLobbyScene.h"
 #include "../Network/ServerGameMode.h"
+#include "../Settings/Settings.h"
 
 void MainMenu::init()
 {
 	this->state = State::Menu;
 	this->startGame = false;
+	Settings::sceneHandler = this->getSceneHandler();
 
 	TextureSamplerSettings samplerSettings{};
 	samplerSettings.filterMode = vk::Filter::eNearest;
@@ -51,13 +53,9 @@ void MainMenu::init()
 	firefliesPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 
 
-	this->settingsBackgroundId =
-		this->getResourceManager()->addTexture(
-			"assets/textures/UI/settings.png"
-		);
-	this->howToPlayBackgroundId =
-		this->getResourceManager()->addTexture("assets/textures/UI/howToPlay.png"
-		);
+	this->settingsBackgroundId = this->getResourceManager()->addTexture("assets/textures/UI/settings.png");
+	this->howToPlayBackgroundId = this->getResourceManager()->addTexture("assets/textures/UI/howToPlay.png");
+	this->buttonTexture = this->getResourceManager()->addTexture("assets/textures/UI/button.png");
 
 	Transform& tS = this->getComponent<Transform>(signpost);
 	tS.position = glm::vec3(18.3f, -6.2f, -12.4f);
@@ -87,6 +85,10 @@ void MainMenu::init()
 		fontTextureId,
 		glm::uvec2(50, 50)
 	);
+
+	this->settingsEntity = this->createEntity();
+	this->setScriptComponent(this->settingsEntity, "scripts/settings.lua");
+	Settings::setEntity(this->settingsEntity);
 }
 
 void MainMenu::start()
@@ -112,43 +114,37 @@ void MainMenu::start()
 	this->settingsButton = this->createEntity();
 	this->quitButton = this->createEntity();
 	this->backButton = this->createEntity();
-	this->fullscreenButton = this->createEntity();
 	this->howToPlayButton = this->createEntity();
 	this->levelEditButton = this->createEntity();
 
 	UIArea area{};
 	area.position = glm::vec2(-430.f, 415.f);
-	area.dimension = glm::vec2(60 * 10, 100.f);
+	area.dimension = glm::vec2(600.0f, 100.f);
 	this->setComponent<UIArea>(this->playButton, area);
 
-
 	area.position = glm::vec2(-450.f, 230.f);
-	area.dimension = glm::vec2(60 * 10, 100.f);
+	area.dimension = glm::vec2(600.0f, 100.f);
 	this->setComponent<UIArea>(this->joinGameButton, area);
 
 	area.position = glm::vec2(-440.f, 50.f);
-	area.dimension = glm::vec2(60 * 10, 100.f);
+	area.dimension = glm::vec2(600.0f, 100.f);
 	this->setComponent<UIArea>(this->levelEditButton, area);
 
 	area.position = glm::vec2(-450.f, -80.f);
-	area.dimension = glm::vec2(60 * 10, 100.f);
+	area.dimension = glm::vec2(600.0f, 100.f);
 	this->setComponent<UIArea>(this->settingsButton, area);
 
 	area.position = glm::vec2(-450.f, -220.f);
-	area.dimension = glm::vec2(60 * 10, 100.f);
+	area.dimension = glm::vec2(600.0f, 100.f);
 	this->setComponent<UIArea>(this->howToPlayButton, area);
 
 	area.position = glm::vec2(-490.f, -390.f);
-	area.dimension = glm::vec2(60 * 10, 100.f);
+	area.dimension = glm::vec2(600.0f, 100.f);
 	this->setComponent<UIArea>(this->quitButton, area);
 
 	area.position = glm::vec2(-745.f, -360.f);
-	area.dimension = glm::vec2(38 * 5, 65);
+	area.dimension = glm::vec2(190.0f, 65.0f);
 	this->setComponent<UIArea>(this->backButton, area);
-
-	area.position = glm::vec2(0.f, 195.f);
-	area.dimension = glm::vec2(50 * 10, 55);
-	this->setComponent<UIArea>(this->fullscreenButton, area);
 
 	if (this->getNetworkHandler()->hasServer())
     {
@@ -164,6 +160,7 @@ void MainMenu::start()
 
 void MainMenu::update()
 {
+	this->setInactive(this->settingsEntity);
 	switch (this->state)
 	{
 	default:
@@ -227,7 +224,19 @@ void MainMenu::update()
 
 void MainMenu::settings()
 {
+	this->setActive(this->settingsEntity);
 	UIRenderer* uiRenderer = this->getUIRenderer();
+
+	uiRenderer->setTexture(this->settingsBackgroundId);
+	uiRenderer->renderTexture(glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f));
+
+	if (this->getComponent<UIArea>(backButton).isClicking())
+	{
+		this->state = State::Menu;
+	}
+	Settings::updateValues();
+
+	/*UIRenderer* uiRenderer = this->getUIRenderer();
 
 	uiRenderer->setTexture(this->settingsBackgroundId);
 	uiRenderer->renderTexture(glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f));
@@ -260,7 +269,7 @@ void MainMenu::settings()
 		std::to_string((int)this->getAudioHandler()->getMasterVolume()),
 		glm::vec2(0.f, 100.f),
 		glm::vec2(50.0f)
-	);
+	);*/
 }
 
 void MainMenu::howToPlay()
@@ -269,6 +278,11 @@ void MainMenu::howToPlay()
 	this->getUIRenderer()->renderTexture(
 		glm::vec2(0.0f), glm::vec2(1920.0f, 1080.0f)
 	);
+
+	this->getUIRenderer()->setTexture(this->buttonTexture);
+	this->getUIRenderer()->renderTexture(glm::vec2(-745.0f, -360.0f), glm::vec2(190.0f, 65.0f), glm::uvec4(0, 0, 1, 1),
+		glm::vec4(1.0f, 1.0f, 1.0f, 0.85f + this->getComponent<UIArea>(backButton).isHovering() * 0.15f));
+	this->getUIRenderer()->renderString("back", glm::vec2(-745.0f, -355.0f), glm::vec2(40.0f));
 
 	if (this->getComponent<UIArea>(backButton).isClicking())
 	{

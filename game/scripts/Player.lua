@@ -11,7 +11,6 @@ script.perkProperties =
 function script:init()
 	print("init with ID: " .. self.ID)
 
-    
 	self.moveDir = vector()
 	self.currentSpeed = vector()
 	self.maxSpeed = 30

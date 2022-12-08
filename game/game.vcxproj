@@ -361,7 +361,6 @@ SET ERRORLEVEL=0</Command>
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
-    <None Include="scripts\levelEditor.lua" />
     <None Include="scripts\moveRock.lua">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">true</ExcludedFromBuild>

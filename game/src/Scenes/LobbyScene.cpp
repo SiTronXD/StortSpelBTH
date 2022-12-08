@@ -37,34 +37,6 @@ void LobbyScene::init()
              "dead"}
         )
     );
-
-    int tank = this->getResourceManager()->addAnimations({
-            "assets/models/Tank/TankWalk.fbx",
-            "assets/models/Tank/TankCharge.fbx",
-            "assets/models/Tank/TankGroundHump.fbx",
-            "assets/models/Tank/TankRaiseShield.fbx"
-        },
-        "assets/textures/"
-    );
-    this->getResourceManager()->mapAnimations(tank, {
-        "Walk",
-        "Charge",
-        "GroundHump",
-        "RaiseShield",
-        });
-    this->getResourceManager()->createAnimationSlot(tank, "LowerBody", "Character1_Hips");
-    this->getResourceManager()->createAnimationSlot(tank, "UpperBody", "Character1_Spine");
-
-    int lich = this->getResourceManager()->addAnimations({
-            "assets/models/Lich/Lich_Walk.fbx",
-            "assets/models/Lich/Lich_Attack.fbx",
-        },
-        "assets/textures/Lich/"
-    );
-    this->getResourceManager()->mapAnimations(lich, {
-        "Walk",
-        "Attack"
-    });
    
   TextureSamplerSettings samplerSettings{};
   samplerSettings.filterMode = vk::Filter::eNearest;

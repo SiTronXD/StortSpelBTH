@@ -21,8 +21,6 @@ function script:init()
 end
 
 function script:update(dt)
-    --self.shaking = input.isKeyDown(Keys.Q)
-
     -- Change camera distance
     self.distAcc = (self.distAcc - input.getScrollWheelDelta() * 0.5) * 0.01 ^ dt
     self.camDist = self.camDist + self.distAcc

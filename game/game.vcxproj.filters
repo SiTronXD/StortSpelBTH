@@ -90,7 +90,6 @@
     <None Include=".clang-format" />
     <None Include="src\Scripts\Prefab.lua" />
     <None Include="src\Scripts\Prefabs.lua" />
-    <None Include="scripts\levelEditor.lua" />
     <None Include="scripts\moveRock.lua" />
   </ItemGroup>
 </Project>

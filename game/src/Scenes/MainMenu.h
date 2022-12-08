@@ -20,11 +20,13 @@ private:
     Entity camera;
     Entity signpost;
     Entity light;
+    Entity settingsEntity;
 
     State state;
     uint32_t fontTextureId;
     uint32_t settingsBackgroundId;
     uint32_t howToPlayBackgroundId;
+    uint32_t buttonTexture;
     bool startGame;
 
     void howToPlay();

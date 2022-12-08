@@ -46,11 +46,14 @@ private:
   std::string levelString;
 
   // Timer that "stops" if paused
+  Entity settingsEntity;
   float timer = 0.0f;
   bool paused = false;
   bool combatDisabled = false;
   UIArea resumeButton;
+  UIArea settingsButton;
   UIArea exitButton;
+  UIArea backButton;
 
   bool isGhost = false;
   bool hasRespawned = false;
