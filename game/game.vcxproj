@@ -338,6 +338,7 @@ SET ERRORLEVEL=0</Command>
     <ClInclude Include="src\Systems\AiCombatSystem.hpp" />
     <ClInclude Include="src\Systems\AiMovementSystem.hpp" />
     <ClInclude Include="src\ServerGameModes\TheServerGame.h" />
+    <ClInclude Include="src\Systems\FollowEntitySystem.hpp" />
     <ClInclude Include="src\Systems\ParticleRemoveComponent.hpp" />
     <ClInclude Include="src\Systems\ParticleRemoveEntity.hpp" />
     <ClInclude Include="src\Systems\CameraMovementSystem.hpp" />

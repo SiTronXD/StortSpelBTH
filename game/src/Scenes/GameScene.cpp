@@ -10,6 +10,7 @@
 #include "../Systems/ParticleRemoveEntity.hpp"
 #include "../Systems/ParticleRemoveComponent.hpp"
 #include "../Systems/PerkAbilityOutsideRangeSystem.hpp"
+#include "../Systems/FollowEntitySystem.hpp"
 #include "../Network/NetworkHandlerGame.h"
 #include "vengine/application/Time.hpp"
 #include "GameOverScene.h"
@@ -153,27 +154,6 @@ void GameScene::init()
     this->ghostMat->glowMapTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhostGlow.png");
     this->ghostMat->emissionColor = glm::vec3(0.0f, 1.0f, 0.35f);
     this->ghostMat->emissionIntensity = 0.75f;
-
-    // Orb particle system
-    ParticleSystem orbPS{};
-    orbPS.maxlifeTime = 3.0f;
-    orbPS.numParticles = 32;
-    orbPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/UI/HealingAbilityParticle.png");
-    orbPS.startSize = glm::vec2(1.7f);
-    orbPS.endSize = glm::vec2(0.3f);
-    orbPS.startColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    orbPS.endColor = glm::vec4(0.2f, 0.2f, 0.2f, 0.0f);
-    orbPS.velocityStrength = 10.0f;
-    orbPS.acceleration = glm::vec3(0.0f, -3.0f, 0.0f);
-    orbPS.coneSpawnVolume.diskRadius = 25.0f;
-    orbPS.coneSpawnVolume.coneAngle = 0.0f;
-    orbPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
-    orbPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, -0.5f, 0.0f);
-
-    // TODO: remove
-    this->orbEntityPS = this->createEntity();
-    this->setComponent<ParticleSystem>(orbEntityPS);
-    this->getComponent<ParticleSystem>(orbEntityPS) = orbPS;
 }
 
 void GameScene::start()
@@ -223,6 +203,7 @@ void GameScene::start()
     this->createSystem<ParticleRemoveEntity>(this);
     this->createSystem<ParticleRemoveComponent>(this);
     this->createSystem<PerkAbilityOutsideRangeSystem>(this, &this->getComponent<Transform>(this->playerID));
+    this->createSystem<FollowEntitySystem>(this);
 
     if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {
@@ -268,27 +249,6 @@ void GameScene::start()
 
 void GameScene::update()
 {
-    ImGui::Begin("Particle System");
-    {
-        Transform& partSysTran = this->getComponent<Transform>(this->orbEntityPS);
-        ParticleSystem& partSys = this->getComponent<ParticleSystem>(this->orbEntityPS);
-        ImGui::SliderFloat3("Entity position: ", &partSysTran.position[0], -100.0f, 100.0f);
-        ImGui::SliderFloat3("Entity rotation: ", &partSysTran.rotation[0], -180.0f, 180.0f);
-        ImGui::SliderFloat3("Cone pos: ", &partSys.coneSpawnVolume.localPosition[0], -5.0f, 5.0f);
-        ImGui::SliderFloat3("Cone dir: ", &partSys.coneSpawnVolume.localDirection[0], -1.0f, 1.0f);
-        ImGui::SliderFloat("Disk radius: ", &partSys.coneSpawnVolume.diskRadius, 0.0f, 10.0f);
-        ImGui::SliderFloat("Cone angle: ", &partSys.coneSpawnVolume.coneAngle, 0.0f, 180.0f);
-        ImGui::SliderFloat("Velocity strength: ", &partSys.velocityStrength, 0.0f, 20.0f);
-        ImGui::SliderFloat("Spawn rate: ", &partSys.spawnRate, 0.0f, 1.0f);
-        ImGui::Checkbox("Spawn: ", &partSys.spawn);
-
-        static bool renderPS = true;
-        ImGui::Checkbox("Render cone: ", &renderPS);
-        if (renderPS)
-            this->getDebugRenderer()->renderParticleSystemCone(this->orbEntityPS);
-    }
-    ImGui::End();
-
     // Ghost overlay
     if (this->isGhost && this->ghostTransitionTimer >= 1.0f || this->hasRespawned)
     {

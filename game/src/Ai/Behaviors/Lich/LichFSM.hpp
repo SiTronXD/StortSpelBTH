@@ -4,7 +4,6 @@
 #include <string>
 #include "../../../Components/AiElite.hpp"
 
-
 struct LichAttack
 {
     ATTACK_STRATEGY type;
@@ -56,12 +55,7 @@ struct Orb {
         rb.velocity = glm::vec3(0.f,0.f,0.f);
         sceneHandler->getScene()->setInactive(static_cast<int>(entityID));
     }
-    inline void onCollision(Entity entityID, SceneHandler* sceneHandler)
-    {
-        //TODO: Some effect? 
-        this->setInactive(entityID, sceneHandler);
-
-    }
+    void onCollision(Entity entityID, SceneHandler* sceneHandler);
 };
 
 class OrbSystem : public System 

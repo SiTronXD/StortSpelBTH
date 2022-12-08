@@ -1,8 +1,14 @@
 #include "LichFSM.hpp"
 #include "../../../Components/Combat.h"
 #include "../../../Network/ServerGameMode.h"
+//#include "../../../Network/NetworkHandlerGame.h"
 
+void Orb::onCollision(Entity entityID, SceneHandler* sceneHandler)
+{
+    this->setInactive(entityID, sceneHandler);
 
+    ((NetworkHandlerGame*)sceneHandler->getScene()->getNetworkHandler())->stopFollowingEntity(entityID);
+}
 
 int	LichFSM::getPlayerID(Entity entityID)
 {

@@ -836,6 +836,34 @@ BTStatus LichBT::attack(Entity entityID)
             }
 
             orb.timeAtCast = Time::getTimeSinceStart();
+
+            // Put particle system on orb
+            NetworkHandlerGame* networkHandlerGame =
+                (NetworkHandlerGame*)getTheScene()->getNetworkHandler();
+
+            switch (lichComp.curAttack->type)
+            {
+            case ATTACK_STRATEGY::FIRE:
+                networkHandlerGame->createProjectileParticleSystem(
+                    projectileID,
+                    glm::vec4(0.8f, 0.3f, 0.2f, 1.0f) * 4.0f
+                );
+                break;
+
+            case ATTACK_STRATEGY::LIGHT:
+                networkHandlerGame->createProjectileParticleSystem(
+                    projectileID,
+                    glm::vec4(0.90f, 0.8f, 0.2f, 1.0f) * 4.0f
+                );
+                break;
+
+            case ATTACK_STRATEGY::ICE:
+                networkHandlerGame->createProjectileParticleSystem(
+                    projectileID,
+                    glm::vec4(0.2f, 0.2f, 0.8f, 1.0f) * 4.0f
+                );
+                break;
+            }
         }
 
         //Remove current strat

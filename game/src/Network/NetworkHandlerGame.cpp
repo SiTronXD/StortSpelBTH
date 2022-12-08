@@ -1,5 +1,6 @@
 #include "NetworkHandlerGame.h"
 #include "../Systems/CombatSystem.hpp"
+#include "../Systems/FollowEntitySystem.hpp"
 #include "ServerGameMode.h"
 #include "../Scenes/GameScene.h"
 #include "vengine/network/ServerEngine/Timer.h"
@@ -183,10 +184,29 @@ void NetworkHandlerGame::initParticleSystems()
     portalPS1.coneSpawnVolume.localPosition.z *= -1.0f;
     this->portalParticleSystemSide0.create(this->sceneHandler->getScene(), portalPS0, 1);
     this->portalParticleSystemSide1.create(this->sceneHandler->getScene(), portalPS1, 1);
+
+	// Orb particle system
+	ParticleSystem orbPS{};
+	std::strcpy(orbPS.name, "RmvEntity");
+	orbPS.maxlifeTime = 0.9f;
+	orbPS.numParticles = 32;
+	orbPS.textureIndex = this->resourceManger->addTexture("assets/textures/orbParticle.png");
+	orbPS.startSize = glm::vec2(0.9f);
+	orbPS.endSize = glm::vec2(0.3f);
+	orbPS.startColor = glm::vec4(0.2f, 0.2f, 0.8f, 1.0f) * 4.0f;
+	orbPS.endColor = orbPS.startColor * 0.0f;
+	orbPS.velocityStrength = 10.0f;
+	orbPS.acceleration = glm::vec3(0.0f, -3.0f, 0.0f);
+	orbPS.coneSpawnVolume.diskRadius = 3.5f;
+	orbPS.coneSpawnVolume.coneAngle = 142.0f;
+	orbPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
+	orbPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, -0.5f, 0.0f);
+	this->orbParticleSystems.create(this->sceneHandler->getScene(), orbPS, 3);
 }
 
-void NetworkHandlerGame::deleteInitialParticleSystems() {
-	    // Only delete particle systems once
+void NetworkHandlerGame::deleteInitialParticleSystems() 
+{
+	// Only delete particle systems once
     if (this->deletedParticleSystems)
     {
         return;
@@ -198,6 +218,7 @@ void NetworkHandlerGame::deleteInitialParticleSystems() {
     this->swarmParticleSystems.removeEntities(this->sceneHandler->getScene());
     this->portalParticleSystemSide0.removeEntities(this->sceneHandler->getScene());
     this->portalParticleSystemSide1.removeEntities(this->sceneHandler->getScene());
+	this->orbParticleSystems.removeEntities(this->sceneHandler->getScene());
 
     // Find all particle entities
     std::vector<Entity> particleEntities;
@@ -1314,4 +1335,45 @@ Entity NetworkHandlerGame::createHump(){
     sceneHandler->getScene()->setInactive(e);
 
     return e;
+}
+
+void NetworkHandlerGame::createProjectileParticleSystem(
+	const Entity& projectile,
+	const glm::vec4& startColor)
+{
+	Scene* scene = this->sceneHandler->getScene();
+
+	// Create entity
+	Entity followProjectileEntity = scene->createEntity();
+
+	// Follow orb
+	scene->setComponent<FollowEntity>(followProjectileEntity);
+	scene->getComponent<FollowEntity>(followProjectileEntity).entityToFollow = projectile;
+
+	// Particle system
+	scene->setComponent<ParticleSystem>(followProjectileEntity);
+	ParticleSystem& partSys = 
+		scene->getComponent<ParticleSystem>(followProjectileEntity);
+	partSys = this->getOrbParticleSystem();
+
+	partSys.startColor = startColor;
+}
+
+void NetworkHandlerGame::stopFollowingEntity(const Entity& followedEntity)
+{
+	auto followView = 
+		this->sceneHandler->getScene()->getSceneReg().view<Transform, FollowEntity, ParticleSystem>();
+	auto followFunc = [&](
+		const auto entity,
+		Transform& transform,
+		const FollowEntity& followEntityComponent,
+		ParticleSystem& particleSystem)
+	{
+		// Found entity
+		if (followEntityComponent.entityToFollow == followedEntity)
+		{
+			particleSystem.spawn = false;
+		}
+	};
+	followView.each(followFunc);
 }
