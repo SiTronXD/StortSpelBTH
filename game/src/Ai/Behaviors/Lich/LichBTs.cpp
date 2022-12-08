@@ -747,7 +747,34 @@ BTStatus LichBT::attack(Entity entityID)
                 {
                     sceneHandler->getAudioHandler()->playSound(entityID, LichComponent::s_ice, 0.4f);
                 }
-                            
+                      
+                // Put particle system on orb
+                NetworkHandlerGame* networkHandlerGame =
+                    (NetworkHandlerGame*)getTheScene()->getNetworkHandler();
+
+                switch (lichComp.curAttack->type)
+                {
+                case ATTACK_STRATEGY::FIRE:
+                    networkHandlerGame->createProjectileParticleSystem(
+                        projectileID,
+                        glm::vec4(0.8f, 0.3f, 0.2f, 1.0f) * 4.0f
+                    );
+                    break;
+
+                case ATTACK_STRATEGY::LIGHT:
+                    networkHandlerGame->createProjectileParticleSystem(
+                        projectileID,
+                        glm::vec4(0.90f, 0.8f, 0.2f, 1.0f) * 4.0f
+                    );
+                    break;
+
+                case ATTACK_STRATEGY::ICE:
+                    networkHandlerGame->createProjectileParticleSystem(
+                        projectileID,
+                        glm::vec4(0.2f, 0.2f, 0.8f, 1.0f) * 4.0f
+                    );
+                    break;
+                }
             }
             else
             {
@@ -807,31 +834,24 @@ BTStatus LichBT::selfHeal(Entity entityID)
     if(lichComp.life < lichComp.FULL_HEALTH)
     {
 
-
-        //Testing particle system
-        /* ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
-
-        if (serverScene != nullptr)
+        Scene* scene = getTheScene();
+        NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
+        if (s == nullptr)
         {
-
+            // Spawn particle system when grounded
+		    if (!scene->hasComponents<ParticleSystem>(entityID))
+		    {
+		    	scene->setComponent<ParticleSystem>(entityID);
+		    	ParticleSystem& partSys = scene->getComponent<ParticleSystem>(entityID);
+		    	partSys = ((NetworkHandlerGame*)scene->getNetworkHandler())->getLichHealParticleSystem();
+		    	partSys.spawn = true;
+		    }
         }
         else
         {
-            NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
-            // Particle system transform
-		    Entity bloodParticleSystemEntity = getTheScene()->createEntity();
-		    Transform& bloodTransform =  getTheScene()->getComponent<Transform>(bloodParticleSystemEntity);
-		    bloodTransform = getTheScene()->getComponent<Transform>(entityID);
-
-
-		    // Particle system spawn
-		    getTheScene()->setComponent<ParticleSystem>(bloodParticleSystemEntity);
-		    ParticleSystem& bloodPS = getTheScene()->getComponent<ParticleSystem>(bloodParticleSystemEntity);
-		    bloodPS = network->getBloodParticleSystem();
-		    bloodPS.spawn = true;
-
-        }*/
-
+            s->addEvent({(int)GameEvent::PLAY_PARTICLE, (int)ParticleTypes::LICH_HEAL, (int)entityID});
+		
+        }
         lichComp.life_float += get_dt() * lichComp.healthRegenSpeed;
         if(lichComp.life_float > 1.0f)
         {

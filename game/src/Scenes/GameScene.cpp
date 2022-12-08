@@ -10,6 +10,7 @@
 #include "../Systems/ParticleRemoveEntity.hpp"
 #include "../Systems/ParticleRemoveComponent.hpp"
 #include "../Systems/PerkAbilityOutsideRangeSystem.hpp"
+#include "../Systems/FollowEntitySystem.hpp"
 #include "../Network/NetworkHandlerGame.h"
 #include "vengine/application/Time.hpp"
 #include "GameOverScene.h"
@@ -70,7 +71,7 @@ GameSceneLevel GameScene::setNewLevel() {
 GameScene::GameScene(GameSceneLevel gameSceneLevel) :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
     perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1), 
-    deathTimer(0.0f), isDead(false), fadeTimer(3.0f)
+    deathTimer(0.0f), isDead(false), fadeTimer(1.0f)
 {
     Input::setHideCursor(true);
     currentLevel = gameSceneLevel;
@@ -98,7 +99,8 @@ void GameScene::init()
         fontTextureId,
         glm::uvec2(50, 50));
 
-    int swarm = this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+    int swarm =
+        this->getResourceManager()->addMesh("assets/models/Swarm_RotTest.obj");
 
     int tank = this->getResourceManager()->addAnimations({
             "assets/models/Tank/TankWalk.fbx",
@@ -238,6 +240,7 @@ void GameScene::start()
     this->createSystem<ParticleRemoveEntity>(this);
     this->createSystem<ParticleRemoveComponent>(this);
     this->createSystem<PerkAbilityOutsideRangeSystem>(this, &this->getComponent<Transform>(this->playerID));
+    this->createSystem<FollowEntitySystem>(this);
 
     if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {
@@ -249,7 +252,7 @@ void GameScene::start()
         //this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
     }
 
-    this->levelString = "level " + std::to_string(currentLevel.level);
+    this->levelString = "level: " + std::to_string(currentLevel.level);
 
     // Pause menu
     this->resumeButton.position = glm::vec2(0.0f, 150.0f);
@@ -262,7 +265,7 @@ void GameScene::start()
     this->backButton.dimension = glm::vec2(190.0f, 65.0f);
 
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic/AmbiensMusic.ogg");
-    this->getAudioHandler()->playMusic();
+    //this->getAudioHandler()->playMusic();
     Settings::updateValues();
 	
     // If we are not multiplayer we do this by ourself
@@ -286,10 +289,17 @@ void GameScene::start()
 
 void GameScene::update()
 {
-    static float musicCounter = 0;
-    if (++musicCounter == 20)
+    if (++this->musicCounter == 20)
     {
         this->getAudioHandler()->playMusic();
+    }
+
+    // Level text
+    if (this->levelTimer < 4.0f)
+    {
+        this->getUIRenderer()->renderString(levelString, glm::vec2(0.0f, 50.0f), glm::vec2(100.0f), 0.0f, StringAlignment::CENTER,
+            glm::vec4(1.0f, 1.0f, 1.0f, sin(0.5f + this->levelTimer * 0.75f)));
+        this->levelTimer += Time::getDT();
     }
 
     // Ghost overlay
@@ -312,7 +322,7 @@ void GameScene::update()
             this->timeWhenEnteredRoom = Time::getTimeSinceStart();
             this->safetyCleanDone = false;
 
-            this->spawnHandler.spawnEnemiesIntoRoom();
+            this->spawnHandler.spawnEnemiesIntoRoom(this->currentLevel.level);
         }
         if(!this->safetyCleanDone)
         {
@@ -547,11 +557,14 @@ void GameScene::update()
         );
     }
     // Render Level
-    this->getUIRenderer()->renderString(this->levelString, glm::vec2(-750, 500), glm::vec2(60,60));
+    if (this->levelTimer >= 4.0f)
+    {
+        this->getUIRenderer()->renderString(this->levelString, glm::vec2(-940.0f, 500.0f), glm::vec2(75.0f), 0.0f, StringAlignment::LEFT);
+    }
 
     // Render HP bar UI
     HealthComp& playerHealth = this->getComponent<HealthComp>(this->playerID);
-    float hpPercent = playerHealth.health * 0.01f;
+    float hpPercent = std::max(playerHealth.health * 0.01f, 0.0f);
     float maxHpPercent = playerHealth.maxHealth * 0.01f;
     float xPos = -600.f;
     float yPos = -472.f;
@@ -652,6 +665,16 @@ void GameScene::update()
             (int)playerPos.z
         );
         ImGui::Separator();
+    }
+    ImGui::End();
+
+    if (ImGui::Begin("nextLevel"))
+    {
+        if (ImGui::Button("Next Level"))
+        {
+            networkHandler->cleanUp();
+            this->switchScene(new GameScene(this->setNewLevel()), "scripts/gamescene.lua");
+        }        
     }
     ImGui::End();
 

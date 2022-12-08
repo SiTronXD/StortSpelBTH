@@ -32,7 +32,7 @@ public:
 				// Entity was recently created
 				if (this->entityTimers.count((Entity) entity) <= 0)
 				{
-					this->entityTimers[(Entity) entity] = particleSystem.maxlifeTime;
+					this->entityTimers[(Entity) entity] = particleSystem.maxlifeTime * 2.0f;
 				}
 
 				// Decrease timer

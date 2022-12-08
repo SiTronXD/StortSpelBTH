@@ -1,5 +1,6 @@
 #include "NetworkHandlerGame.h"
 #include "../Systems/CombatSystem.hpp"
+#include "../Systems/FollowEntitySystem.hpp"
 #include "ServerGameMode.h"
 #include "../Scenes/GameScene.h"
 #include "vengine/network/ServerEngine/Timer.h"
@@ -87,8 +88,11 @@ Entity NetworkHandlerGame::spawnEnemy(const int& type, const glm::vec3& pos) {
     return e;
 }
 
-void NetworkHandlerGame::initParticleSystems() {
+void NetworkHandlerGame::initParticleSystems() 
+{
     deletedParticleSystems = false;
+
+
 
     // Heal particle system
     ParticleSystem healPS{};
@@ -106,6 +110,11 @@ void NetworkHandlerGame::initParticleSystems() {
     healPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
     healPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, -0.5f, 0.0f);
     this->healParticleSystem.create(this->sceneHandler->getScene(), healPS, 1);
+
+	//Lich heal particle system
+	ParticleSystem lichHealPS = healPS;
+	lichHealPS.coneSpawnVolume.diskRadius = 10.0f;
+	this->lichHealParticleSystem.create(this->sceneHandler->getScene(), lichHealPS, 1);
 
     // Blood particle system
     ParticleSystem bloodPS{};
@@ -195,10 +204,29 @@ void NetworkHandlerGame::initParticleSystems() {
     portalPS1.coneSpawnVolume.localPosition.z *= -1.0f;
     this->portalParticleSystemSide0.create(this->sceneHandler->getScene(), portalPS0, 1);
     this->portalParticleSystemSide1.create(this->sceneHandler->getScene(), portalPS1, 1);
+
+	// Orb particle system
+	ParticleSystem orbPS{};
+	std::strcpy(orbPS.name, "RmvEntity");
+	orbPS.maxlifeTime = 0.9f;
+	orbPS.numParticles = 64;
+	orbPS.textureIndex = this->resourceManger->addTexture("assets/textures/orbParticle.png");
+	orbPS.startSize = glm::vec2(0.8f);
+	orbPS.endSize = glm::vec2(0.3f);
+	orbPS.startColor = glm::vec4(0.2f, 0.2f, 0.8f, 1.0f) * 4.0f;
+	orbPS.endColor = orbPS.startColor * 0.0f;
+	orbPS.velocityStrength = 10.0f;
+	orbPS.acceleration = glm::vec3(0.0f, -3.0f, 0.0f);
+	orbPS.coneSpawnVolume.diskRadius = 3.5f;
+	orbPS.coneSpawnVolume.coneAngle = 142.0f;
+	orbPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
+	orbPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, -0.5f, 0.0f);
+	this->orbParticleSystems.create(this->sceneHandler->getScene(), orbPS, 3);
 }
 
-void NetworkHandlerGame::deleteInitialParticleSystems() {
-	    // Only delete particle systems once
+void NetworkHandlerGame::deleteInitialParticleSystems() 
+{
+	// Only delete particle systems once
     if (this->deletedParticleSystems)
     {
         return;
@@ -206,10 +234,12 @@ void NetworkHandlerGame::deleteInitialParticleSystems() {
     this->deletedParticleSystems = true;
 
     this->healParticleSystem.removeEntities(this->sceneHandler->getScene());
+	this->lichHealParticleSystem.removeEntities(this->sceneHandler->getScene());
     this->bloodParticleSystems.removeEntities(this->sceneHandler->getScene());
     this->swarmParticleSystems.removeEntities(this->sceneHandler->getScene());
     this->portalParticleSystemSide0.removeEntities(this->sceneHandler->getScene());
     this->portalParticleSystemSide1.removeEntities(this->sceneHandler->getScene());
+	this->orbParticleSystems.removeEntities(this->sceneHandler->getScene());
 
     // Find all particle entities
     std::vector<Entity> particleEntities;
@@ -574,6 +604,29 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
             this->sceneHandler->getScene()->getComponent<Transform>(serverEntities[i0]).position = v0;
             this->sceneHandler->getScene()->getComponent<Rigidbody>(serverEntities[i0]).velocity = v1;
             this->sceneHandler->getScene()->getComponent<Orb>(serverEntities[i0]).timeAtCast = Time::getTimeSinceStart();
+
+			// Orb particle effect color
+			glm::vec4 projectileColor = glm::vec4(0.8f, 0.2f, 0.8f, 1.0f) * 4.0f;
+			switch (this->sceneHandler->getScene()->getComponent<Orb>(serverEntities[i0]).orbPower->type)
+			{
+			case ATTACK_STRATEGY::FIRE:
+				projectileColor = glm::vec4(0.8f, 0.3f, 0.2f, 1.0f) * 4.0f;
+				break;
+
+			case ATTACK_STRATEGY::LIGHT:
+				projectileColor = glm::vec4(0.90f, 0.8f, 0.2f, 1.0f) * 4.0f;
+				break;
+
+			case ATTACK_STRATEGY::ICE:
+				projectileColor = glm::vec4(0.2f, 0.2f, 0.8f, 1.0f) * 4.0f;
+				break;
+			}
+
+			// Spawn particle effect on orb
+			this->createProjectileParticleSystem(
+				serverEntities[i0], 
+				projectileColor
+			);
         }
 
         
@@ -1261,6 +1314,9 @@ void NetworkHandlerGame::playParticle(const ParticleTypes& particleType, Entity&
 		case ParticleTypes::HEAL:
 			partSys = this->getHealParticleSystem();
 			break;
+		case ParticleTypes::LICH_HEAL:
+			partSys = this->getLichHealParticleSystem();
+			break;
 		case ParticleTypes::SWARM:
 			partSys = this->getSwarmParticleSystem();
 			break;
@@ -1388,4 +1444,45 @@ Entity NetworkHandlerGame::createHump(){
     sceneHandler->getScene()->setInactive(e);
 
     return e;
+}
+
+void NetworkHandlerGame::createProjectileParticleSystem(
+	const Entity& projectile,
+	const glm::vec4& startColor)
+{
+	Scene* scene = this->sceneHandler->getScene();
+
+	// Create entity
+	Entity followProjectileEntity = scene->createEntity();
+
+	// Follow orb
+	scene->setComponent<FollowEntity>(followProjectileEntity);
+	scene->getComponent<FollowEntity>(followProjectileEntity).entityToFollow = projectile;
+
+	// Particle system
+	scene->setComponent<ParticleSystem>(followProjectileEntity);
+	ParticleSystem& partSys = 
+		scene->getComponent<ParticleSystem>(followProjectileEntity);
+	partSys = this->getOrbParticleSystem();
+
+	partSys.startColor = startColor;
+}
+
+void NetworkHandlerGame::stopFollowingEntity(const Entity& followedEntity)
+{
+	auto followView = 
+		this->sceneHandler->getScene()->getSceneReg().view<Transform, FollowEntity, ParticleSystem>();
+	auto followFunc = [&](
+		const auto entity,
+		Transform& transform,
+		const FollowEntity& followEntityComponent,
+		ParticleSystem& particleSystem)
+	{
+		// Found entity
+		if (followEntityComponent.entityToFollow == followedEntity)
+		{
+			particleSystem.spawn = false;
+		}
+	};
+	followView.each(followFunc);
 }

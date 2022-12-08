@@ -50,6 +50,7 @@ private:
   float timer = 0.0f;
   bool paused = false;
   bool combatDisabled = false;
+  float musicCounter = 0;
   UIArea resumeButton;
   UIArea settingsButton;
   UIArea exitButton;
@@ -61,6 +62,7 @@ private:
   Material* ghostMat;
   Material origMat;
 
+  float levelTimer;
   float fadeTimer;
   float deathTimer;
   bool isDead;

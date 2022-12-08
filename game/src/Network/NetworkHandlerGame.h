@@ -66,7 +66,8 @@ enum class ParticleTypes
 {
 	HEAL,
 	BLOOD,
-	SWARM
+	SWARM,
+	LICH_HEAL
 };
 
 class NetworkHandlerGame : public NetworkHandler
@@ -135,11 +136,14 @@ private:
 	// Particles
     bool deletedParticleSystems;
     ParticleSystemInstance healParticleSystem;
+    ParticleSystemInstance lichHealParticleSystem;
     ParticleSystemInstance bloodParticleSystems;
     ParticleSystemInstance swarmParticleSystems;
     ParticleSystemInstance footstepParticleSystems;
     ParticleSystemInstance portalParticleSystemSide0;
     ParticleSystemInstance portalParticleSystemSide1;
+	ParticleSystemInstance orbParticleSystems;
+	
     void playParticle(const ParticleTypes& particleType, Entity& entity);
 
 	// RoomHandler
@@ -190,10 +194,12 @@ private:
 	void interpolatePositions();
 
 	inline const ParticleSystem& getHealParticleSystem() { return this->healParticleSystem.getParticleSystem(); }
+	inline const ParticleSystem& getLichHealParticleSystem() { return this->lichHealParticleSystem.getParticleSystem(); }
 	inline const ParticleSystem& getBloodParticleSystem() { return this->bloodParticleSystems.getParticleSystem(); }
 	inline const ParticleSystem& getSwarmParticleSystem() { return this->swarmParticleSystems.getParticleSystem(); }
 	inline const ParticleSystem& getPortalParticleSystem0() { return this->portalParticleSystemSide0.getParticleSystem(); }
 	inline const ParticleSystem& getPortalParticleSystem1() { return this->portalParticleSystemSide1.getParticleSystem(); }
+	inline const ParticleSystem& getOrbParticleSystem() { return this->orbParticleSystems.getParticleSystem(); }
 
 	void spawnItemRequest(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
 	void spawnItemRequest(AbilityType type, glm::vec3 pos, glm::vec3 shootDir = glm::vec3(0.0f));
@@ -201,5 +207,9 @@ private:
 	void useHealAbilityRequest(glm::vec3 position);
 	void setGhost();
     void setPerks(const Perks perk[]);
+	void createProjectileParticleSystem(
+		const Entity& projectile,
+		const glm::vec4& startColor);
+	void stopFollowingEntity(const Entity& followedEntity);
 };
 
