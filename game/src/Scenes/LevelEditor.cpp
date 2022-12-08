@@ -15,7 +15,6 @@ void LevelEditor::init()
   roomHandler.init(
       this,
       this->getResourceManager(),
-      this->getPhysicsEngine(),
       true
   );
   roomHandler.generate(rand());

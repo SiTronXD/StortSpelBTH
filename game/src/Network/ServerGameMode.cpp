@@ -1,7 +1,7 @@
 #include "ServerGameMode.h"
 #include "../Components/HealthComp.h"
 
-//#define ROOMDEBUG
+//#define ROOMDEBUG false
 
 ServerGameMode::ServerGameMode(int level) {
     this->level = level;
@@ -25,7 +25,8 @@ void ServerGameMode::init()
 
     aiHandler.init(this->getSceneHandler());
     this->getSceneHandler()->setAIHandler(&aiHandler);
-    roomHandler.init(this, this->getResourceManager(), this->getPhysicsEngine(), false);
+
+    roomHandler.init(this, this->getResourceManager(), false);
     roomHandler.generate(this->roomSeed);
     createPortal();
     spawnHandler.init(
@@ -56,30 +57,20 @@ void ServerGameMode::init()
 
 void ServerGameMode::update(float dt)
 {
-    if (!this->newRoomFrame && roomHandler.playersInPathway(this->players))
+    aiHandler.update(dt);
+
+    // For now we only look at player 0
+    if (this->roomHandler.playerNewRoom(this->getPlayer(0), this->getPhysicsEngine()))
     {
-        addEvent({(int)GameEvent::CLOSE_OLD_DOORS}, {roomHandler.serverGetNextRoomIndex()});
-        printf("Server Active: %d\n", roomHandler.getActiveIndex());
-        this->spawnHandler.spawnEnemiesIntoRoom();
-        roomHandler.serverActivateCurrentRoom();
         std::cout << "Server: player in new room" << std::endl;
         this->newRoomFrame = true;
         this->timeWhenEnteredRoom = Time::getTimeSinceStart();
         this->safetyCleanDone = false; 
+        spawnHandler.spawnEnemiesIntoRoom();
     }
-    else if (this->newRoomFrame)
-    {
-        if (!this->doorsClosed && roomHandler.playersInsideNewRoom(this->players))
-        {
-            addEvent({(int)GameEvent::CLOSE_NEW_DOORS});
-            this->doorsClosed = true;
-        }
-    }
-
-    aiHandler.update(dt);
-
     if(!this->safetyCleanDone)
     {
+        
         if(this->timeWhenEnteredRoom + delayToSafetyDelete < Time::getTimeSinceStart())
         {
             this->spawnHandler.killAllEnemiesOutsideRoom();
@@ -90,12 +81,12 @@ void ServerGameMode::update(float dt)
     if (this->spawnHandler.allDead() && this->newRoomFrame)
     {
         this->newRoomFrame = false;
-        doorsClosed = false;
         std::cout << "Server" << ": all dead" << std::endl;
         this->addEvent({(int)GameEvent::ROOM_CLEAR});
         // Call when a room is cleared
         roomHandler.roomCompleted();
         this->numRoomsCleared++;
+        
         if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
         {
             std::cout << "Server: Spawn portal" << std::endl;
@@ -169,48 +160,6 @@ void ServerGameMode::update(float dt)
                 glm::vec3 dp = this->getComponent<Transform>(roomHandler.rooms[i].doors[d]).position;
                  addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {dp.x, dp.y, dp.z, 0.f, 0.f, 0.f, 10.f, 10.f, 10.f});
             }    
-        }
-
-        for (auto ent : roomHandler.rooms[i].objects)
-        {
-            if (hasComponents<Collider>(ent))
-            {
-                glm::vec3 dp = this->getComponent<Transform>(ent).position;
-                auto& col = getComponent<Collider>(ent);
-                auto ex = col.extents * 2.f;
-                switch (col.type)
-                {
-                default:
-                    break;
-                case ColType::BOX:
-                    addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {dp.x, dp.y, dp.z, 0.f, 0.f, 0.f, ex.x, ex.y, ex.z});
-                    break;
-                case ColType::SPHERE:
-                    addEvent({(int)NetworkEvent::DEBUG_DRAW_SPHERE}, {dp.x, dp.y, dp.z, col.radius});
-                    break;
-                }
-            }
-        }
-
-        for (auto ent : spawnHandler.allEntityIDs)
-        {
-            if (hasComponents<Collider>(ent))
-            {
-                glm::vec3 dp = this->getComponent<Transform>(ent).position;
-                auto& col = getComponent<Collider>(ent);
-                auto ex = col.extents * 2.f;
-                switch (col.type)
-                {
-                default:
-                    break;
-                case ColType::BOX:
-                    addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {dp.x, dp.y, dp.z, 0.f, 0.f, 0.f, ex.x, ex.y, ex.z});
-                    break;
-                case ColType::SPHERE:
-                    addEvent({(int)NetworkEvent::DEBUG_DRAW_SPHERE}, {dp.x, dp.y, dp.z, col.radius});
-                    break;
-                }
-            }
         }
     }
     for (int i = 0; i < this->getPlayerSize(); i++)
