@@ -79,6 +79,8 @@ void MainMenu::init()
 	this->howToPlayBackgroundId =
 		this->getResourceManager()->addTexture("assets/textures/UI/howToPlay.png"
 		);
+	this->qrCodeID = 
+		this->getResourceManager()->addTexture("assets/textures/UI/Presumed Dead QR.png");
 
 	Transform& tS = this->getComponent<Transform>(signpost);
 	tS.position = glm::vec3(18.3f, -6.2f, -12.4f);
@@ -144,7 +146,6 @@ void MainMenu::start()
 	area.dimension = glm::vec2(60 * 10, 100.f);
 	this->setComponent<UIArea>(this->hostButton, area);
 
-
 	area.position = glm::vec2(-450.f, 230.f);
 	area.dimension = glm::vec2(60 * 10, 100.f);
 	this->setComponent<UIArea>(this->joinGameButton, area);
@@ -192,6 +193,13 @@ void MainMenu::start()
 
 void MainMenu::update()
 {
+	float qrXSize = 341.f;
+	float qrYSize = 272.f;
+	float qrTextSize = 30.f;
+	this->getUIRenderer()->setTexture(this->qrCodeID);
+	this->getUIRenderer()->renderTexture(glm::vec2(730.f, 350.f), glm::vec2(qrXSize, qrYSize));
+	this->getUIRenderer()->renderString("scan this cute fellow", glm::vec2(720.f, 200.f), glm::vec2(qrTextSize, qrTextSize));
+	this->getUIRenderer()->renderString("to give feedback", glm::vec2(720.f, 150.f), glm::vec2(qrTextSize, qrTextSize));
 	switch (this->state)
 	{
 	default:
