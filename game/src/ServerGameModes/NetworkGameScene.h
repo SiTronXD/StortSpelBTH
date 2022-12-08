@@ -1,7 +1,6 @@
 #pragma once
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../World Handling/Room Handler.h"
-#include "../vengine/vengine/ai/PathFinding.h"
 #include "vengine/ai/AIHandler.hpp"
 #include "../World Handling/SpawnHandler.hpp"
 #include "vengine/network/ServerEngine/NetworkScene.h"

@@ -73,6 +73,7 @@
     <ClInclude Include="src\Ai\Behaviors\Tank\TankBTs.hpp" />
     <ClInclude Include="src\Network\NetworkDataFetcher.hpp" />
     <ClInclude Include="src\World Handling\SpawnHandler.hpp" />
+    <ClInclude Include="src\Components\AiElite.hpp" />
     <ClInclude Include="src\ServerGameModes\NetworkLobbyScene.h" />
     <ClInclude Include="src\ServerGameModes\NetworkGameScene.h" />
     <ClInclude Include="src\World Handling\SpawnHandler.hpp" />
@@ -82,6 +83,7 @@
     <ClInclude Include="src\Systems\ParticleRemoveEntity.hpp" />
     <ClInclude Include="src\Systems\ParticleRemoveComponent.hpp" />
     <ClInclude Include="src\World Handling\ParticleSystemGenerator.hpp" />
+    <ClInclude Include="src\Systems\PerkAbilityOutsideRangeSystem.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />

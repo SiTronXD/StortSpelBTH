@@ -28,6 +28,7 @@ private:
 	Entity swordCollID;
 	Entity knockbackCollID;
 	const bool* paused;
+	const bool* disabled;
 
 	int lostHealth;
 	std::vector<uint32_t> attackSounds;
@@ -45,10 +46,9 @@ private:
 	bool canHit = true;
 
 public:
-
 	CombatSystem(SceneHandler* sceneHandler, Entity playerID, 
-		const bool* paused, NetworkHandlerGame* networkHandler)
-		: sceneHandler(sceneHandler), playerID(playerID), paused(paused), 
+		const bool* paused, const bool* disabled, NetworkHandlerGame* networkHandler)
+		: sceneHandler(sceneHandler), playerID(playerID), paused(paused), disabled(disabled),
 		swordID(-1), swordCollID(-1), knockbackCollID(-1), networkHandler(networkHandler)
 	{
 		this->resourceMng = this->sceneHandler->getResourceManager();
@@ -65,9 +65,9 @@ public:
 			combat.combos.emplace_back("Light Heavy Light ");
 			combat.combos.emplace_back("Heavy Light Heavy ");
 
-			this->takeDmgSound = this->resourceMng->addSound("assets/Sounds/OufSound.ogg");
-			this->moveSound = this->resourceMng->addSound("assets/Sounds/RunningSound.ogg");
-			this->attackSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/SwishSound.ogg"));
+			this->takeDmgSound = this->resourceMng->addSound("assets/Sounds/PlayerSounds/hurt-2.ogg");
+			this->moveSound = this->resourceMng->addSound("assets/Sounds/PlayerSounds/RunningSound.ogg");
+			this->attackSounds.emplace_back(this->resourceMng->addSound("assets/Sounds/PlayerSounds/sword-swing-1.ogg"));
 
 			this->swordCollID = this->scene->createEntity();
 			this->knockbackCollID = this->scene->createEntity();
@@ -100,7 +100,21 @@ public:
 			checkPerkCollision(combat);
 			checkAbilityCollision(combat);
 			decreaseTimers(combat, deltaTime);
-			updateSwordPos();
+			if (!*this->disabled)
+			{
+				this->scene->setActive(this->swordID);
+				updateSwordPos();
+			}
+			else
+			{
+				this->scene->setInactive(this->swordID);
+			}
+
+			// Return if paused of disabled
+			if (*this->paused || *this->disabled)
+			{
+				return;
+			}
 
 			if (checkActiveAttack(combat) != noActive)
 			{
@@ -120,6 +134,17 @@ public:
             {
 				useAbility(combat);
             }
+
+			AnimationStatus status = this->scene->getAnimationStatus(this->playerID, "UpperBody");
+			if (combat.normalAttack)
+			{
+				if ((status.timer / status.endTime) > 0.1f && status.animationName == "lightAttack" ||
+					(status.timer / status.endTime) > 0.3f && status.animationName == "heavyAttack")
+				{
+					this->scene->setComponent<Collider>(this->swordCollID, Collider::createCapsule(3.f, 18.f, glm::vec3(0), true));
+					combat.normalAttack = false;
+				}
+			}
 
             // Check if player wants to drop a perk
             if (Input::isKeyPressed(Keys::ONE))
@@ -175,43 +200,44 @@ public:
 				healthComp.srcDmgEntity = -1;
 			}
 
-#ifdef _CONSOLE
-			float animMultis[6] = { combat.animationMultiplier[0], combat.animationMultiplier[1], combat.animationMultiplier[2],
-			combat.animationMultiplier[3], combat.animationMultiplier[4], combat.animationMultiplier[5] };
-
-			ImGui::Begin("AnimationMultipliers");
-			ImGui::SliderFloat("Light Anim", &animMultis[0], 0.f, 10.f);
-			ImGui::SliderFloat("Heavy Anim", &animMultis[1], 0.f, 10.f);
-			ImGui::SliderFloat("Combo1 Anim", &animMultis[2], 0.f, 10.f);
-			ImGui::SliderFloat("Combo2 Anim", &animMultis[3], 0.f, 10.f);
-			ImGui::SliderFloat("Combo3 Anim", &animMultis[4], 0.f, 10.f);
-			ImGui::SliderFloat("Knockback Anim", &animMultis[5], 0.f, 10.f);
-			ImGui::End();
-			for (size_t i = 0; i < 6; i++)
-			{
-				combat.animationMultiplier[i] = animMultis[i];
-			}
-
-			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-			float runAnim = 0.f;
-            this->script->getScriptComponentValue(
-                playerScript, runAnim, "runAnimTime"
-            );
-			float sprintAnim = 0.f;
-            this->script->getScriptComponentValue(
-                playerScript, sprintAnim, "sprintAnimTime"
-            );
-			ImGui::Begin("Running Animation");
-            ImGui::SliderFloat("Running Anim", &runAnim, 0.f, 10.f);
-            ImGui::SliderFloat("Running Anim", &sprintAnim, 0.f, 10.f);
-            ImGui::End();
-            this->script->setScriptComponentValue(
-                playerScript, runAnim, "runAnimTime"
-            );
-            this->script->setScriptComponentValue(
-                playerScript, sprintAnim, "sprintAnimTime"
-            );
-#endif
+//#ifdef _CONSOLE
+//			float animMultis[6] = { combat.animationMultiplier[0], combat.animationMultiplier[1], combat.animationMultiplier[2],
+//			combat.animationMultiplier[3], combat.animationMultiplier[4], combat.animationMultiplier[5] };
+//
+//			ImGui::Begin("AnimationMultipliers");
+//			ImGui::SliderFloat("Light Anim", &this->walkTime, 0.f, 10.f);
+//			ImGui::SliderFloat("Light Anim", &animMultis[0], 0.f, 10.f);
+//			ImGui::SliderFloat("Heavy Anim", &animMultis[1], 0.f, 10.f);
+//			ImGui::SliderFloat("Combo1 Anim", &animMultis[2], 0.f, 10.f);
+//			ImGui::SliderFloat("Combo2 Anim", &animMultis[3], 0.f, 10.f);
+//			ImGui::SliderFloat("Combo3 Anim", &animMultis[4], 0.f, 10.f);
+//			ImGui::SliderFloat("Knockback Anim", &animMultis[5], 0.f, 10.f);
+//			ImGui::End();
+//			for (size_t i = 0; i < 6; i++)
+//			{
+//				combat.animationMultiplier[i] = animMultis[i];
+//			}
+//
+//			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+//			float runAnim = 0.f;
+//            this->script->getScriptComponentValue(
+//                playerScript, runAnim, "runAnimTime"
+//            );
+//			float sprintAnim = 0.f;
+//            this->script->getScriptComponentValue(
+//                playerScript, sprintAnim, "sprintAnimTime"
+//            );
+//			ImGui::Begin("Running Animation");
+//            ImGui::SliderFloat("Running Anim", &runAnim, 0.f, 10.f);
+//            ImGui::SliderFloat("Running Anim", &sprintAnim, 0.f, 10.f);
+//            ImGui::End();
+//            this->script->setScriptComponentValue(
+//                playerScript, runAnim, "runAnimTime"
+//            );
+//            this->script->setScriptComponentValue(
+//                playerScript, sprintAnim, "sprintAnimTime"
+//            );
+//#endif
 		};
 		view.each(foo);
 
@@ -239,39 +265,85 @@ public:
 		case lightActive:
 			if (combat.attackTimer <= 0.f)
 			{
-				// combat.activeAttack = combat.nextAttack;
-				// combat.nextAttack = noActive;
-				combat.activeAttack = noActive;
+				combat.activeAttack = combat.nextAttack;
+				combat.nextAttack = noActive;
+				if (combat.activeAttack != noActive)
+				{
+					if (combat.activeAttack == lightActive)
+					{
+						this->scene->removeComponent<Collider>(this->swordCollID);
+						this->hitEnemies.clear();
+						this->canHit = true;
+						this->scene->setAnimation(this->playerID, "idle", "UpperBody", 1.f);
+						combat.activeAttack = noActive;
+						lightAttack(combat);
+					}
+					else if (combat.activeAttack == heavyActive)
+					{
+						this->scene->removeComponent<Collider>(this->swordCollID);
+						this->hitEnemies.clear();
+						this->canHit = true;
+						this->scene->setAnimation(this->playerID, "idle", "UpperBody", 1.f);
+						combat.activeAttack = noActive;
+						heavyAttack(combat);
+					}
+				}
 			}
 			return combat.activeAttack;
 		case heavyActive:
 			if (combat.attackTimer <= 0.f)
 			{
-				combat.activeAttack = noActive;
+				combat.activeAttack = combat.nextAttack;
+				combat.nextAttack = noActive;
+				if (combat.activeAttack != noActive)
+				{
+					if (combat.activeAttack == lightActive)
+					{
+						this->scene->removeComponent<Collider>(this->swordCollID);
+						this->hitEnemies.clear();
+						this->canHit = true;
+						this->scene->setAnimation(this->playerID, "idle", "UpperBody", 1.f);
+						combat.activeAttack = noActive;
+						lightAttack(combat);
+					}
+					else if (combat.activeAttack == heavyActive)
+					{
+						this->scene->removeComponent<Collider>(this->swordCollID);
+						this->hitEnemies.clear();
+						this->canHit = true;
+						this->scene->setAnimation(this->playerID, "idle", "UpperBody", 1.f);
+						combat.activeAttack = noActive;
+						heavyAttack(combat);
+					}
+				}
 			}
 			return combat.activeAttack;
 		case comboActive1:
 			if (combat.attackTimer <= 0.f)
 			{
-				combat.activeAttack = noActive;
+				combat.activeAttack = combat.nextAttack;
+				combat.nextAttack = noActive;
 			}
 			return combat.activeAttack;
 		case comboActive2:
 			if (combat.attackTimer <= 0.f)
 			{
-				combat.activeAttack = noActive;
+				combat.activeAttack = combat.nextAttack;
+				combat.nextAttack = noActive;
 			}
 			return combat.activeAttack;
 		case comboActive3:
 			if (combat.attackTimer <= 0.f)
 			{
-				combat.activeAttack = noActive;
+				combat.activeAttack = combat.nextAttack;
+				combat.nextAttack = noActive;
 			}
 			return combat.activeAttack;
 		case knockbackActive:
 			if (combat.knockbackTimer < 0.f)
 			{
-				combat.activeAttack = noActive;
+				combat.activeAttack = combat.nextAttack;
+				combat.nextAttack = noActive;
 			}
 			return combat.activeAttack;
 		}
@@ -403,17 +475,21 @@ public:
 			}
 			else
 			{
-				Transform& swordTrans = this->scene->getComponent<Transform>(this->swordCollID);
-				swordTrans.updateMatrix();
-				this->scene->setComponent<Collider>(this->swordCollID, Collider::createCapsule(3.f, 18.f, glm::vec3(0), true));
+				if (animName == "lightAttack" || animName == "heavyAttack")
+				{
+					this->scene->getComponent<Combat>(this->playerID).normalAttack = true;
+				}
+				else
+				{
+					this->scene->setComponent<Collider>(this->swordCollID, Collider::createCapsule(3.f, 18.f, glm::vec3(0), true));
+					this->scene->getComponent<Combat>(this->playerID).normalAttack = false;
+				}
 			}
 		}
 	}
 
 	bool lightAttack(Combat& combat)
 	{
-		// if(0.5f sec left)
-		// nextAttack = lightAttack
 		if (checkActiveAttack(combat) == noActive)
 		{
 			combat.attackTimer = combat.lightAttackCd;
@@ -438,6 +514,11 @@ public:
 				return true;
 			}
 		}
+		else if (combat.attackTimer <= 0.5f)
+		{
+			combat.nextAttack = lightActive;
+		}
+
 		return false;
 	};
 
@@ -464,6 +545,11 @@ public:
 				return true;
 			}
 		}
+		else if (combat.attackTimer <= 0.5f)
+		{
+			combat.nextAttack = heavyActive;
+		}
+
 		return false;
 	};
 
@@ -526,6 +612,10 @@ public:
 	{
 		if (idx == 0)
 		{
+			if (this->scene->hasComponents<Collider>(this->swordCollID))
+			{
+				this->scene->removeComponent<Collider>(this->swordCollID);
+			}
 			combat.attackTimer = combat.comboLightCd;
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive1;
@@ -533,6 +623,10 @@ public:
 		}
 		else if (idx == 1)
 		{
+			if (this->scene->hasComponents<Collider>(this->swordCollID))
+			{
+				this->scene->removeComponent<Collider>(this->swordCollID);
+			}
 			combat.attackTimer = combat.comboMixCd;
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive2;
@@ -540,6 +634,10 @@ public:
 		}
 		else if (idx == 2)
 		{
+			if (this->scene->hasComponents<Collider>(this->swordCollID))
+			{
+				this->scene->removeComponent<Collider>(this->swordCollID);
+			}
 			combat.attackTimer = combat.comboHeavyCd;
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive3;

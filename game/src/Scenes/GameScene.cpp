@@ -9,6 +9,7 @@
 #include "../Systems/MovementSystem.hpp"
 #include "../Systems/ParticleRemoveEntity.hpp"
 #include "../Systems/ParticleRemoveComponent.hpp"
+#include "../Systems/PerkAbilityOutsideRangeSystem.hpp"
 #include "../Network/NetworkHandlerGame.h"
 #include "vengine/application/Time.hpp"
 #include "GameOverScene.h"
@@ -52,7 +53,7 @@ void GameScene::setCurrentLevel(const GameSceneLevel& lvl) {
 GameSceneLevel GameScene::setNewLevel() {
     GameSceneLevel theReturn;
 
-    theReturn.level = currentLevel.level++;
+    theReturn.level = currentLevel.level + 1;
     theReturn.hp = this->getComponent<HealthComp>(playerID).health;
     Combat &c = this->getComponent<Combat>(playerID);
     for (int i = 0; i < 4; i++)
@@ -68,7 +69,7 @@ GameSceneLevel GameScene::setNewLevel() {
 GameScene::GameScene(GameSceneLevel gameSceneLevel) :
     playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
     perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1), 
-    deathTimer(2.f), isDead(false)
+    deathTimer(0.0f), isDead(false), fadeTimer(3.0f)
 {
     Input::setHideCursor(true);
     currentLevel = gameSceneLevel;
@@ -123,6 +124,8 @@ void GameScene::init()
     this->perkTextures[5] = resourceMng->addTexture("assets/textures/UI/empty.png");
     this->hpBarBackgroundTextureID = resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
     this->hpBarTextureID = resourceMng->addTexture("assets/textures/UI/hpBar.png");
+    this->blackTextureIndex = resourceMng->addTexture("vengine_assets/textures/Black.png");
+    this->ghostOverlayIndex = resourceMng->addTexture("assets/textures/UI/GhostUI.png");
 
     // Temporary light
     this->dirLightEntity = this->createEntity();
@@ -134,10 +137,22 @@ void GameScene::init()
     DirectionalLight& dirLight = this->getComponent<DirectionalLight>(this->dirLightEntity);
     dirLight.cascadeSizes[0] = 45.0f;
     dirLight.cascadeSizes[1] = 120.0f;
-    dirLight.cascadeSizes[2] = 693.0f;
+    dirLight.cascadeSizes[2] = 356.0f;
     dirLight.cascadeDepthScale = 36.952f;
     dirLight.shadowMapMinBias = 0.00001f;
     dirLight.shadowMapAngleBias = 0.0004f;
+	
+    // Non active Entity with ghostMat
+    Entity ghost = this->createEntity();
+    this->setInactive(ghost);
+    this->setComponent<MeshComponent>(ghost);
+    MeshComponent& ghostMesh = this->getComponent<MeshComponent>(ghost);
+    this->getResourceManager()->makeUniqueMaterials(ghostMesh);
+    this->ghostMat = &ghostMesh.overrideMaterials[0];
+    this->ghostMat->diffuseTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhost.png");
+    this->ghostMat->glowMapTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhostGlow.png");
+    this->ghostMat->emissionColor = glm::vec3(0.0f, 1.0f, 0.35f);
+    this->ghostMat->emissionIntensity = 0.75f;
 }
 
 void GameScene::start()
@@ -148,6 +163,8 @@ void GameScene::start()
     this->networkHandler->init();
     this->networkHandler->setPlayerEntity(playerID);
     this->networkHandler->createOtherPlayers(this->getComponent<MeshComponent>(playerID).meshID);
+    this->networkHandler->setGhostMat(this->ghostMat);
+    this->origMat = this->getResourceManager()->getMaterial(this->getComponent<MeshComponent>(this->playerID), 0);
 
     if (networkHandler->isConnected())
     {
@@ -169,6 +186,7 @@ void GameScene::start()
         this->getSceneHandler(),
         this->playerID,
         &this->paused,
+        &this->combatDisabled,
         this->networkHandler
     );
     this->createSystem<HealSystem>(
@@ -183,16 +201,19 @@ void GameScene::start()
         );
     this->createSystem<ParticleRemoveEntity>(this);
     this->createSystem<ParticleRemoveComponent>(this);
+    this->createSystem<PerkAbilityOutsideRangeSystem>(this, &this->getComponent<Transform>(this->playerID));
 
     if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {
-        this->networkHandler->spawnItemRequest(knockbackAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        /*this->networkHandler->spawnItemRequest(knockbackAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         this->networkHandler->spawnItemRequest(hpUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         this->networkHandler->spawnItemRequest(movementUpPerk, 1.0f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));*/
     }
+
+    this->levelString = "level " + std::to_string(currentLevel.level);
 
     // Pause menu
     this->resumeButton.position = glm::vec2(0.0f, 100.0f);
@@ -200,9 +221,9 @@ void GameScene::start()
     this->resumeButton.dimension = glm::vec2(500.0f, 100.0f);
     this->exitButton.dimension = glm::vec2(500.0f, 100.0f);
 
-    this->getAudioHandler()->setMusic("assets/Sounds/GameMusic.ogg");
+    this->getAudioHandler()->setMusic("assets/Sounds/GameMusic/AmbiensMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
-    this->getAudioHandler()->setMusicVolume(0.0f);
+    this->getAudioHandler()->setMusicVolume(1.0f);
     this->getAudioHandler()->playMusic();
 	
     // If we are not multiplayer we do this by ourself
@@ -220,14 +241,21 @@ void GameScene::start()
     this->createSystem<OrbSystem>(this->getSceneHandler());
 	
     // Create particle systems for this scene
-    ((NetworkHandlerGame*)this->getNetworkHandler())->initParticleSystems();
-
+    networkHandler->initParticleSystems();
     this->setCurrentLevel(currentLevel);
 }
 
 void GameScene::update()
 {
-    ((NetworkHandlerGame*)this->getNetworkHandler())->deleteInitialParticleSystems();
+    // Ghost overlay
+    if (this->isGhost && this->ghostTransitionTimer >= 1.0f || this->hasRespawned)
+    {
+        this->getUIRenderer()->setTexture(this->ghostOverlayIndex);
+        this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
+            glm::vec4(1.0f, 1.0f, 1.0f, 0.4f + sin(this->timer * 2.0f) * 0.15f));
+    }
+
+    networkHandler->deleteInitialParticleSystems();
 
     if (!networkHandler->isConnected() && networkHandler->getStatus() == ServerStatus::WAITING)
     {   
@@ -243,7 +271,6 @@ void GameScene::update()
         }
         if(!this->safetyCleanDone)
         {
-            
             if(this->timeWhenEnteredRoom + delayToSafetyDelete < Time::getTimeSinceStart())
             {
                 this->spawnHandler.killAllEnemiesOutsideRoom();
@@ -273,13 +300,15 @@ void GameScene::update()
             }
         }
         // Switch scene if the player is dead
-        if (this->hasComponents<Combat>(this->playerID))
+        if (this->hasComponents<HealthComp>(this->playerID))
         {
-            Script& playerScript = this->getComponent<Script>(this->playerID);
+			Script& playerScript = this->getComponent<Script>(this->playerID);
             int tempHealth = this->getComponent<HealthComp>(this->playerID).health;
-            if (tempHealth <= 0.0f && !this->isDead)
+            if (tempHealth <= 0 && !this->isDead)
             {
                 this->isDead = true;
+                this->deathTimer = 1.5f;
+                this->ghostTransitionTimer = 0.0f;
                 this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
             }
             else if (this->isDead)
@@ -287,6 +316,11 @@ void GameScene::update()
                 if (this->deathTimer >= 0.f)
                 {
                     this->deathTimer -= Time::getDT();
+                    if (this->deathTimer <= 0.0f)
+                    {
+                        this->fadeTimer = 0.0f;
+                    }
+
                     int currentAnim = -1;
                     this->getScriptHandler()->getScriptComponentValue(playerScript, currentAnim, "currentAnimation");
                     if (currentAnim != 7)
@@ -294,10 +328,50 @@ void GameScene::update()
                         this->getScriptHandler()->setScriptComponentValue(playerScript, tempHealth, "currentHealth");
                     }
                 }
-                else
+                else if (!this->isGhost)
+                {
+                    this->isGhost = true;
+                    this->hasRespawned = false;
+                }
+                else if (this->isGhost && this->hasRespawned && this->ghostTransitionTimer >= 1.0f)
                 {
                     this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
                 }
+			}
+        }
+
+        if (this->isGhost && this->ghostTransitionTimer < 5.0f && this->deathTimer < 0.0f)
+        {
+            this->ghostTransitionTimer += Time::getDT();
+
+            // Respawn player
+            if (this->ghostTransitionTimer > 1.0f && !this->hasRespawned)
+            {
+                this->hasRespawned = true;
+                this->isDead = false;
+
+                HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
+                healthComp.health = healthComp.maxHealth;
+                
+                Script& playerScript = this->getComponent<Script>(this->playerID);
+                this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
+                this->getScriptHandler()->setScriptComponentValue(playerScript, healthComp.health, "currentHealth");
+
+                this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = *this->ghostMat;
+                this->getComponent<Transform>(this->playerID).position = this->roomHandler.getRespawnPos();
+                this->getComponent<Transform>(this->playerID).rotation = this->roomHandler.getRespawnRot();
+                this->getComponent<Rigidbody>(this->playerID).assigned = false; // For some reason this is needed, otherwise the position isn't changed
+                this->getComponent<Transform>(this->getMainCameraID()).rotation = this->roomHandler.getRespawnRot();
+
+                this->roomHandler.startOver();
+                this->spawnHandler.resetEnemies();
+                this->newRoomFrame = false;
+            }
+
+            if (this->ghostTransitionTimer > 1.0f && !this->isDead)
+            {
+                this->getUIRenderer()->renderString("one more chance...", glm::vec2(0.0f, 250.0f), glm::vec2(50.0f), 0.0f, StringAlignment::CENTER,
+                    glm::vec4(1.0f, 1.0f, 1.0f, sin(this->ghostTransitionTimer * 0.75f) * 2.0f - 1.0f));
             }
         }
         this->spawnHandler.updateImgui();
@@ -310,22 +384,60 @@ void GameScene::update()
             this->newRoomFrame = true;
         }
 
-         // Server is diconnected
-        if (this->networkHandler->getStatus() == ServerStatus::DISCONNECTED)
-        {
-            this->networkHandler->disconnectClient();
-            this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
-        }
-
-        // If player is dead make the player not able to move
-        // and server shall say if we shall switch scene
+        // If player is dead make the player a ghost with no combat
         if (this->hasComponents<HealthComp>(this->playerID))
         {
-            if (this->getComponent<HealthComp>(this->playerID).health <= 0.0f)
+            Script& playerScript = this->getComponent<Script>(this->playerID);
+            int tempHealth = this->getComponent<HealthComp>(this->playerID).health;
+            if (tempHealth <= 0 && !this->isDead && !this->isGhost)
             {
-                this->networkHandler->disconnectClient(); // TEMP: probably will be in game over scene later
-                this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+                this->isDead = true;
+                this->combatDisabled = true;
+                this->deathTimer = 1.5f;
+                this->ghostTransitionTimer = 0.0f;
+                this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
+                HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
+                healthComp.health = 0;
             }
+            else if (this->isDead && this->deathTimer >= 0.f)
+            {
+                this->deathTimer -= Time::getDT();
+                if (this->deathTimer <= 0.0f)
+                {
+                    this->fadeTimer = 0.0f;
+                    this->isGhost = true;
+                    this->hasRespawned = false;
+                }
+
+                int currentAnim = -1;
+                this->getScriptHandler()->getScriptComponentValue(playerScript, currentAnim, "currentAnimation");
+                if (currentAnim != 7)
+                {
+                    this->getScriptHandler()->setScriptComponentValue(playerScript, tempHealth, "currentHealth");
+                }
+            }
+        }
+
+        if (this->isGhost && this->ghostTransitionTimer < 5.0f)
+        {
+            this->ghostTransitionTimer += Time::getDT();
+        }
+        // "Respawned" Basically only applying ghost material after some time
+        if (this->ghostTransitionTimer > 1.0f && !this->hasRespawned)
+        {
+            this->hasRespawned = true;
+            this->isDead = false;
+
+            this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = *this->ghostMat;
+            Script& playerScript = this->getComponent<Script>(this->playerID);
+            this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
+            this->getScriptHandler()->setScriptComponentValue(playerScript, 1, "currentHealth");
+
+            this->networkHandler->setGhost();
+        }
+        if (this->isGhost && this->ghostTransitionTimer > 1.0f)
+        {
+            this->getUIRenderer()->renderString("you are dead", glm::vec2(0.0f, 250.0f), glm::vec2(50.0f));
         }
         if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
         {
@@ -335,6 +447,30 @@ void GameScene::update()
         // Network
         this->networkHandler->updatePlayer();
         this->networkHandler->interpolatePositions();
+
+        if (this->fadeTimer >= 1.0f && this->end)
+        {
+            this->switchScene(new GameOverScene(), "scripts/GameOverScene.lua");
+        }
+
+        // Server is diconnected
+        if (this->networkHandler->getStatus() == ServerStatus::DISCONNECTED && !this->end)
+        {
+            this->networkHandler->disconnectClient();
+            this->networkHandler->deleteServer();
+            this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
+        }
+
+        this->imguiUpdate();
+    }
+
+    // Fade in/out to black
+    if (this->fadeTimer < 2.75f)
+    {
+        this->getUIRenderer()->setTexture(this->blackTextureIndex);
+        this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
+            glm::vec4(1.0f, 1.0f, 1.0f, sin(this->fadeTimer * 2.0f - glm::half_pi<float>() + 1.25f) * 0.5f + 0.5f));
+        this->fadeTimer += Time::getDT();
     }
 
     Combat& playerCombat = this->getComponent<Combat>(this->playerID);
@@ -357,6 +493,8 @@ void GameScene::update()
             glm::vec2(76.0f)
         );
     }
+    // Render Level
+    this->getUIRenderer()->renderString(this->levelString, glm::vec2(-750, 500), glm::vec2(60,60));
 
     // Render HP bar UI
     HealthComp& playerHealth = this->getComponent<HealthComp>(this->playerID);
@@ -400,6 +538,10 @@ void GameScene::update()
             this->networkHandler->deleteServer();
             this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
         }
+    }
+    else
+    {
+        this->timer += Time::getDT();
     }
 
 #ifdef _CONSOLE
@@ -554,13 +696,12 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
       auto& swarmComp = this->getComponent<SwarmComponent>(other);
       if (swarmComp.inAttack)
         {
-          auto& aiCombat = this->getComponent<AiCombatSwarm>(other);
           swarmComp.inAttack = false;
           swarmComp.touchedPlayer = true;
           //aiCombat.timer = aiCombat.lightAttackTime;
           HealthComp& playerHealth = this->getComponent<HealthComp>(player);
           playerHealth.health -=
-              (int)aiCombat.lightHit;
+              (int)swarmComp.lightHit;
           playerHealth.srcDmgEntity = other;
             
           Log::write("WAS HIT", BT_FILTER);
@@ -624,8 +765,34 @@ void GameScene::onCollisionExit(Entity e1, Entity e2)
 
 }
 
+void GameScene::revivePlayer()
+{
+    if (this->isGhost)
+    {
+        // Get back half hp
+        this->getComponent<HealthComp>(this->playerID).health = this->getComponent<HealthComp>(this->playerID).maxHealth / 2;
+
+        this->isGhost = false;
+        this->combatDisabled = false;
+        this->hasRespawned = false;
+        this->ghostTransitionTimer = 0.0f;
+        this->fadeTimer = 0.0f;
+        this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = this->origMat;
+    }
+}
+
+void GameScene::endGame()
+{
+    if (!this->end)
+    {
+        this->fadeTimer = 0.0f;
+        this->end = true;
+    }
+}
+
 void GameScene::imguiUpdate()
 {
+#ifdef _CONSOLE
     ImGui::Begin("Game Scene");
     std::string playerString = "playerID";
     int playerID;
@@ -639,21 +806,23 @@ void GameScene::imguiUpdate()
     }
 
     ImGui::End();
+#endif
 }
 
 void GameScene::createPortal()
 {
-    glm::vec3 portalTriggerDims(6.f, 18.f, 1.f);
-    glm::vec3 portalBlockDims(3.f, 18.f, 3.f);
+    glm::vec3 portalTriggerDims(11.f, 27.f, 1.f);
 
-    portalOffMesh =
-        this->getResourceManager()->addMesh("assets/models/PortalOff.obj");
-    portalOnMesh =
-        this->getResourceManager()->addMesh("assets/models/PortalOn.obj");
+    portalOffMesh = this->getResourceManager()->addMesh("assets/models/PortalOff.obj");
+    portalOnMesh = this->getResourceManager()->addMesh("assets/models/PortalOn.obj");
+
+    int colliderID = (int)this->getResourceManager()->addCollisionShapeFromMesh("assets/models/portal.fbx");
+    std::vector<ColliderDataRes> colliders = this->getResourceManager()->getCollisionShapeFromMesh(colliderID);
+
 
     portal = this->createEntity();
-    this->getComponent<Transform>(portal).position =
-        this->roomHandler.getExitRoom().position;
+    Transform& portalTransform = this->getComponent<Transform>(portal);
+    portalTransform.position = this->roomHandler.getExitRoom().position;
     this->setComponent<Collider>(
         portal, Collider::createBox(portalTriggerDims, glm::vec3(0, 0, 0), true)
         );
@@ -661,19 +830,16 @@ void GameScene::createPortal()
     this->setComponent<MeshComponent>(portal);
     this->getComponent<MeshComponent>(portal).meshID = portalOffMesh;
 
-    Entity collider1 = this->createEntity();
-    this->getComponent<Transform>(collider1).position =
-        this->getComponent<Transform>(portal).position;
-    this->getComponent<Transform>(collider1).position.x += 9.f;
-    this->getComponent<Transform>(collider1).position.y += 9.f;
-    this->setComponent<Collider>(collider1, Collider::createBox(portalBlockDims));
+        Entity collisionEntity;
 
-    Entity collider2 = this->createEntity();
-    this->getComponent<Transform>(collider2).position =
-        this->getComponent<Transform>(portal).position;
-    this->getComponent<Transform>(collider2).position.x -= 9.f;
-    this->getComponent<Transform>(collider2).position.y += 9.f;
-    this->setComponent<Collider>(collider2, Collider::createBox(portalBlockDims));
+    for (size_t i = 0; i < colliders.size(); i++)
+    {
+        collisionEntity = this->createEntity();
+        this->setComponent<Collider>(collisionEntity, colliders[i].col);
+        Transform& t = this->getComponent<Transform>(collisionEntity);
+        t.position = portalTransform.position + colliders[i].position;
+        t.rotation = portalTransform.rotation + colliders[i].rotation;
+    }
 }
 
 #ifdef _CONSOLE
