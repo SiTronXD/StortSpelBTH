@@ -335,7 +335,6 @@ void GameScene::update()
 
                 // Particle effects
                 this->setComponent<ParticleSystem>(this->portal);
-                //this->getComponent<ParticleSystem>(this->portal) = this->portalParticleSystemSide0.getParticleSystem();
                 this->getComponent<ParticleSystem>(this->portal) = ((NetworkHandlerGame*)this->getNetworkHandler())->getPortalParticleSystem0();
 
                 Entity side1Entity = this->createEntity();
@@ -428,6 +427,19 @@ void GameScene::update()
         {
             this->newRoomFrame = true;
         }
+        if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+        {
+            this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
+
+            // Particle effects
+            this->setComponent<ParticleSystem>(this->portal);
+            this->getComponent<ParticleSystem>(this->portal) = ((NetworkHandlerGame*)this->getNetworkHandler())->getPortalParticleSystem0();
+
+            Entity side1Entity = this->createEntity();
+            this->getComponent<Transform>(side1Entity) = this->getComponent<Transform>(this->portal);
+            this->setComponent<ParticleSystem>(side1Entity);
+            this->getComponent<ParticleSystem>(side1Entity) = ((NetworkHandlerGame*)this->getNetworkHandler())->getPortalParticleSystem1();
+        }
 
         // If player is dead make the player a ghost with no combat
         if (this->hasComponents<HealthComp>(this->playerID))
@@ -483,10 +495,6 @@ void GameScene::update()
         if (this->isGhost && this->ghostTransitionTimer > 1.0f)
         {
             this->getUIRenderer()->renderString("you are dead", glm::vec2(0.0f, 250.0f), glm::vec2(50.0f));
-        }
-        if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
-        {
-            this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
         }
 
         // Network
