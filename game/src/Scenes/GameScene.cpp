@@ -9,6 +9,7 @@
 #include "../Systems/MovementSystem.hpp"
 #include "../Systems/ParticleRemoveEntity.hpp"
 #include "../Systems/ParticleRemoveComponent.hpp"
+#include "../Systems/PerkAbilityOutsideRangeSystem.hpp"
 #include "../Network/NetworkHandlerGame.h"
 #include "vengine/application/Time.hpp"
 #include "GameOverScene.h"
@@ -200,6 +201,7 @@ void GameScene::start()
         );
     this->createSystem<ParticleRemoveEntity>(this);
     this->createSystem<ParticleRemoveComponent>(this);
+    this->createSystem<PerkAbilityOutsideRangeSystem>(this, &this->getComponent<Transform>(this->playerID));
 
     if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {

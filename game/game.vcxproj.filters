@@ -83,6 +83,7 @@
     <ClInclude Include="src\Systems\ParticleRemoveEntity.hpp" />
     <ClInclude Include="src\Systems\ParticleRemoveComponent.hpp" />
     <ClInclude Include="src\World Handling\ParticleSystemGenerator.hpp" />
+    <ClInclude Include="src\Systems\PerkAbilityOutsideRangeSystem.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
