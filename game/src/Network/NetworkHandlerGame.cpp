@@ -125,7 +125,7 @@ void NetworkHandlerGame::initParticleSystems() {
     bloodPS.coneSpawnVolume.coneAngle = 70.0f;
     bloodPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 0.0f, 1.0f);
     bloodPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, 10.0f, 0.0f);
-    this->bloodParticleSystems.create(this->sceneHandler->getScene(), bloodPS, 3);
+    this->bloodParticleSystems.create(this->sceneHandler->getScene(), bloodPS, 3 * 2); // 3 for each player
 
     // Swarm particle system
     ParticleSystem swarmPS{};
@@ -146,10 +146,8 @@ void NetworkHandlerGame::initParticleSystems() {
     swarmPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
     swarmPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, 0.0f, 0.0f);
     this->swarmParticleSystems.create(this->sceneHandler->getScene(), swarmPS, 5);
-
-    // Fotstep particle system
-    this->sceneHandler->getScene()->setComponent<ParticleSystem>(this->player);
-    ParticleSystem& footstepPS = this->sceneHandler->getScene()->getComponent<ParticleSystem>(this->player);
+	 
+    ParticleSystem footstepPS{};
     footstepPS.maxlifeTime = 1.2f;
     footstepPS.numParticles = 12;
     footstepPS.textureIndex = resourceManger->addTexture("assets/textures/grassDustParticle.png");
@@ -164,6 +162,17 @@ void NetworkHandlerGame::initParticleSystems() {
     footstepPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
     footstepPS.coneSpawnVolume.localPosition = glm::vec3(0.0f);
     footstepPS.spawn = false;
+
+	
+	this->sceneHandler->getScene()->setComponent<ParticleSystem>(this->player);
+    ParticleSystem& footSteepPPS = this->sceneHandler->getScene()->getComponent<ParticleSystem>(this->player);
+    footSteepPPS = footstepPS;
+    for (int i = 0; i < this->playerEntities.size(); i++)
+    {
+        this->sceneHandler->getScene()->setComponent<ParticleSystem>(playerEntities[i]);
+		ParticleSystem& footSteepOPPS = this->sceneHandler->getScene()->getComponent<ParticleSystem>(playerEntities[i]);
+        footSteepOPPS = footstepPS;
+	}
 
     // Portal particle system
     ParticleSystem portalPS0{};
@@ -508,22 +517,22 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		{
 			if (i2 == 0)
 			{
-				this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_takeDmg, 30.f);
+				this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_takeDmg, 0.4f);
 			}
 			else if (i2 == 1)
 			{
 				// DEAL DAMAGE SOUND
 				if (i3 == 0)
 				{
-					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_fire, 30.f);
+					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_fire, 0.4f);
 				}
 				else if (i3 == 1)
 				{
-					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_lightning, 30.f);
+					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_lightning, 0.4f);
 				}
 				else if (i3 == 2)
 				{
-					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_ice, 30.f);
+					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_ice, 0.4f);
 				}
 			}
 			else if (i2 == 3)
@@ -615,12 +624,17 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
     case GameEvent::PLAY_PARTICLE:
         tcpPacket >> i0 >> i1;
         if (serverEntities.find(i1) != serverEntities.end()){
-			if (!this->sceneHandler->getScene()->hasComponents<ParticleSystem>(serverEntities[i1]))
+            this->playParticle((ParticleTypes)i0, serverEntities[i1]);
+		}
+		break;
+	case GameEvent::PLAY_PARTICLE_P:
+        tcpPacket >> i0 >> i1;
+        for (int i = 0; i < this->otherPlayersServerId.size(); i++)
+		{
+			if (this->otherPlayersServerId[i] == i1)
 			{
-				this->sceneHandler->getScene()->setComponent<ParticleSystem>(serverEntities[i1]);
-				ParticleSystem& partSys = this->sceneHandler->getScene()->getComponent<ParticleSystem>(serverEntities[i1]);
-				partSys = getSwarmParticleSystem();
-				partSys.spawn = true;
+                playParticle((ParticleTypes)i0, otherPlayers[i].first);
+				break;
 			}
 		}
 		break;
@@ -1052,6 +1066,7 @@ void NetworkHandlerGame::updatePlayer()
 
 void NetworkHandlerGame::interpolatePositions()
 {
+    
 	Scene* scene = this->sceneHandler->getScene();
 	UIRenderer* UI = this->sceneHandler->getUIRenderer();
 	this->timer += Time::getDT();
@@ -1063,7 +1078,10 @@ void NetworkHandlerGame::interpolatePositions()
 		glm::vec3 newPosition = this->playerPosLast[i] + percent * (this->playerPosCurrent[i] - this->playerPosLast[i]);
         if (newPosition.y < 3)//3 seems to be an ok value
         {    
-            currDistToStepSound[i] -= glm::length(newPosition - t.position);
+			float moveLenght = glm::length(newPosition - t.position);
+            currDistToStepSound[i] -= moveLenght;
+			ParticleSystem& footstepPS = scene->getComponent<ParticleSystem>(this->otherPlayers[i].first);
+            footstepPS.spawn = moveLenght > 0.01f;
 		}
         t.position = newPosition;
 		UI->renderString(this->otherPlayers[i].second, t.position + glm::vec3(0.0f, 20.0f, 0.0f) + t.forward(), glm::vec2(150.0f));
@@ -1220,6 +1238,39 @@ void NetworkHandlerGame::setPerks(const Perks perk[])
 			}
 		}
 	}
+}
+
+void NetworkHandlerGame::playParticle(const ParticleTypes& particleType, Entity& entity)
+{
+    Scene* scene = sceneHandler->getScene();
+	if (particleType == ParticleTypes::BLOOD) {
+		int bloodEntity = scene->createEntity();
+		scene->getComponent<Transform>(bloodEntity).position = scene->getComponent<Transform>(entity).position;
+
+		scene->setComponent<ParticleSystem>(bloodEntity);
+		ParticleSystem& partSys = scene->getComponent<ParticleSystem>(bloodEntity);
+        partSys = this->getBloodParticleSystem();
+		partSys.spawn = true;
+	}
+    else if (!scene->hasComponents<ParticleSystem>(entity))
+    {
+    	scene->setComponent<ParticleSystem>(entity);
+    	
+		ParticleSystem& partSys = scene->getComponent<ParticleSystem>(entity);
+		switch (particleType)
+		{
+		case ParticleTypes::HEAL:
+			partSys = this->getHealParticleSystem();
+			break;
+		case ParticleTypes::SWARM:
+			partSys = this->getSwarmParticleSystem();
+			break;
+		default:
+			return;
+			break;
+		}
+		partSys.spawn = true;
+    }
 }
 
 Entity NetworkHandlerGame::spawnOrbs(int orbType)

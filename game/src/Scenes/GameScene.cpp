@@ -224,7 +224,7 @@ void GameScene::start()
     this->getAudioHandler()->setMusic("assets/Sounds/GameMusic/AmbiensMusic.ogg");
     this->getAudioHandler()->setMasterVolume(0.5f);
     this->getAudioHandler()->setMusicVolume(0.2f);
-    this->getAudioHandler()->playMusic();
+   // this->getAudioHandler()->playMusic();
 	
     // If we are not multiplayer we do this by ourself
     if (!networkHandler->isConnected())
@@ -247,6 +247,12 @@ void GameScene::start()
 
 void GameScene::update()
 {
+    static float musicCounter = 0;
+    if (++musicCounter == 20)
+    {
+        this->getAudioHandler()->playMusic();
+    }
+
     // Ghost overlay
     if (this->isGhost && this->ghostTransitionTimer >= 1.0f || this->hasRespawned)
     {

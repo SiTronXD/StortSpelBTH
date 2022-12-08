@@ -737,15 +737,15 @@ BTStatus LichBT::attack(Entity entityID)
 
                 if (lichComp.curAttack->type == ATTACK_STRATEGY::FIRE)
                 {
-                    sceneHandler->getAudioHandler()->playSound(entityID, LichComponent::s_fire, 30.f);
+                    sceneHandler->getAudioHandler()->playSound(entityID, LichComponent::s_fire, 0.4f);
                 }
                 else if (lichComp.curAttack->type == ATTACK_STRATEGY::LIGHT)
                 {
-                    sceneHandler->getAudioHandler()->playSound(entityID, LichComponent::s_lightning, 30.f);
+                    sceneHandler->getAudioHandler()->playSound(entityID, LichComponent::s_lightning, 0.4f);
                 }
                 else if (lichComp.curAttack->type == ATTACK_STRATEGY::ICE)
                 {
-                    sceneHandler->getAudioHandler()->playSound(entityID, LichComponent::s_ice, 30.f);
+                    sceneHandler->getAudioHandler()->playSound(entityID, LichComponent::s_ice, 0.4f);
                 }
                             
             }
