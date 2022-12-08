@@ -121,7 +121,7 @@ void NetworkHandlerGame::initParticleSystems() {
     bloodPS.coneSpawnVolume.coneAngle = 70.0f;
     bloodPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 0.0f, 1.0f);
     bloodPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, 10.0f, 0.0f);
-    this->bloodParticleSystems.create(this->sceneHandler->getScene(), bloodPS, 3);
+    this->bloodParticleSystems.create(this->sceneHandler->getScene(), bloodPS, 3 * 2); // 3 for each player
 
     // Swarm particle system
     ParticleSystem swarmPS{};
@@ -1165,31 +1165,33 @@ void NetworkHandlerGame::setPerks(const Perks perk[])
 			}
 }
 
-void NetworkHandlerGame::playParticle(const ParticleTypes& particleType, const Entity& entity)
+void NetworkHandlerGame::playParticle(const ParticleTypes& particleType, Entity& entity)
 {
     if (!this->sceneHandler->getScene()->hasComponents<ParticleSystem>(entity))
     {
     	this->sceneHandler->getScene()->setComponent<ParticleSystem>(entity);
     	
-    	
+		ParticleSystem& partSys = this->sceneHandler->getScene()->getComponent<ParticleSystem>(entity);
+		switch (particleType)
+		{
+		case ParticleTypes::HEAL:
+			partSys = this->getHealParticleSystem();
+			break;
+		case ParticleTypes::BLOOD:
+			partSys = this->getBloodParticleSystem();
+			break;
+		case ParticleTypes::SWARM:
+			partSys = this->getSwarmParticleSystem();
+			break;
+		default:
+			return;
+			break;
+		}
+		partSys.spawn = true;
+
+		// Mark to remove component when particle system is done
+		std::strcpy(partSys.name, "RmvComponent");
     }
-	ParticleSystem& partSys = this->sceneHandler->getScene()->getComponent<ParticleSystem>(entity);
-        switch (particleType)
-        {
-			case ParticleTypes::HEAL:
-                partSys = this->getHealParticleSystem();
-                break;
-            case ParticleTypes::BLOOD:
-                partSys = this->getBloodParticleSystem();
-                break;
-            case ParticleTypes::SWARM:
-                partSys = this->getSwarmParticleSystem();
-                break;
-            default:
-                return;
-                break;
-        }
-        partSys.spawn = true;
 }
 
 Entity NetworkHandlerGame::spawnOrbs(int orbType)

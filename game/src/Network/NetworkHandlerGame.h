@@ -130,7 +130,7 @@ private:
     ParticleSystemInstance swarmParticleSystems;
     ParticleSystemInstance portalParticleSystemSide0;
     ParticleSystemInstance portalParticleSystemSide1;
-    void playParticle(const ParticleTypes& particleType, const Entity& entity);
+    void playParticle(const ParticleTypes& particleType, Entity& entity);
 
 
 	//RoomHandler
