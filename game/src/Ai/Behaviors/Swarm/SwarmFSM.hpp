@@ -14,12 +14,14 @@ struct SwarmComponent
     inline static const uint32_t colliderRadius = 4;
     inline static const uint32_t GROUP_RAD_MULTIPLER = 4;
 
+    inline static const uint32_t aimAtPlayerYOffset = 7;
+
 	//Ints
 	int LOW_HEALTH				= 30;
 	int FULL_HEALTH				= 100;
 	int life					= FULL_HEALTH;
 	//Floats
-	float speed					= 17.0f;
+    float speed					= 17.0f;
 	float jumpForce				= 70.0f;
 	float idleSpeed				= 10.0f;
 	float jumpY					= 10.0f;
@@ -34,10 +36,11 @@ struct SwarmComponent
 	float attackRange			= 40.0f;
     float alert_top;
 	float idleRotSpeed			= 100.0f;
+	float attackRotSpeed		= 200.0f;
 	float tempRotAngle			= 0.0f;//Dont touch!
-	float lightHit = 15.f;
-	float lightAttackTime = 2.0f;
-	float timer = 0.f;
+	float lightHit              = 15.f;
+	float lightAttackTime       = 2.0f;
+	float timer                 = 0.f;
 	//Bools
     bool alert_go_up			= true;
 	bool alertAtTop				= false;
@@ -89,7 +92,9 @@ struct SwarmComponent
         this->sightRadius               *= eliteComp.radiusMultiplier;
 		this->attackRange				*= eliteComp.radiusMultiplier;
 
-		scene->getComponent<Collider>(entityID).radius *= eliteComp.sizeMultiplier;
+		Collider col = scene->getComponent<Collider>(entityID);
+		col.radius *= eliteComp.sizeMultiplier;
+		scene->setComponent<Collider>(entityID, col);
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale * eliteComp.sizeMultiplier;
 		this->origScale = trans.scale;
@@ -107,9 +112,10 @@ struct SwarmComponent
         this->FULL_HEALTH               /= this->eliteStats.healthMultiplier;
         this->sightRadius               /= this->eliteStats.radiusMultiplier;
 		this->attackRange				/= this->eliteStats.radiusMultiplier;
-										
-		scene->getComponent<Collider>(entityID).radius /= this->eliteStats.sizeMultiplier;
-		scene->getComponent<Transform>(entityID).scale /= this->eliteStats.sizeMultiplier;
+				
+		Collider col = scene->getComponent<Collider>(entityID);
+		col.radius /= this->eliteStats.sizeMultiplier;
+		scene->setComponent<Collider>(entityID, col);
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale / this->eliteStats.sizeMultiplier;
 		this->origScale = trans.scale;

@@ -5,6 +5,7 @@
 #include <limits>
 #include "../../../Network/ServerGameMode.h"
 
+ExtraBlendAnimationArgs LichBT::junkArg;
 
 Scene* LichBT::getTheScene()
 {
@@ -461,19 +462,8 @@ BTStatus LichBT::creepyLook(Entity entityID)
 BTStatus LichBT::huntingPlayer(Entity entityID)
 {
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-    if (lichComp.currentAnim != 0) // Walk
-    {
-        lichComp.currentAnim = 0;
-        if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
-        {
-            ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
-            netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 1, 0, -1 });
-        }
-        else
-        {
-            getTheScene()->blendToAnimation(entityID, "Walk");
-        }
-    }
+    LichBT::setAnimation(entityID, LichAnim::Walking, LichBT::huntingPlayer);
+
     BTStatus ret = BTStatus::Running;
     
     int playerID = getPlayerID(entityID);
@@ -518,19 +508,7 @@ BTStatus LichBT::playerInNoNoZone(Entity entityID)
 BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
 {
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-    if (lichComp.currentAnim != 0) // Walk
-    {
-        lichComp.currentAnim = 0;
-        if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
-        {
-            ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
-            netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 1, 0, -1 });
-        }
-        else
-        {
-            getTheScene()->blendToAnimation(entityID, "Walk");
-        }
-    }
+    LichBT::setAnimation(entityID, LichAnim::Walking,LichBT::moveAwayFromPlayer);
 
     BTStatus ret = BTStatus::Running;
     int playerID = getPlayerID(entityID);
@@ -541,13 +519,9 @@ BTStatus LichBT::moveAwayFromPlayer(Entity entityID)
     glm::vec3 moveDir		= getDir(lichTrans.position, playerTrans.position);
     avoidStuffBackwards(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, playerTrans.position, moveDir);
 	moveDir = safeNormalize(moveDir);
-    lichRb.velocity = moveDir * lichComp.speed;
+    lichRb.velocity = moveDir * lichComp.combatSpeed;
 
     rotateTowards(entityID, playerTrans.position, lichComp.huntRotSpeed);
-
-    /*glm::vec3 player_to_lich = safeNormalize(lichTrans.position - playerTrans.position);
-    glm::vec3 lookAtPos = lichTrans.position + player_to_lich * 2.0f;
-    rotateTowards(entityID, lookAtPos, lichComp.huntRotSpeed);*/
 
     return ret;
 }
@@ -587,6 +561,7 @@ BTStatus LichBT::regenerateMana(Entity entityID)
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     if(lichComp.mana <= lichComp.maxMana)
     {
+        LichBT::setAnimation(entityID, LichAnim::Walking,LichBT::regenerateMana);
         lichComp.mana+=lichComp.manaRegenSpeed*get_dt();
     }
     else
@@ -691,24 +666,7 @@ BTStatus LichBT::pickRandomStrategy(Entity entityID)
 BTStatus LichBT::attack(Entity entityID)
 {
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-    if (lichComp.attackAnimTimer <= 0.0f && lichComp.currentAnim != 0) // Switch back to walk
-    {
-        lichComp.currentAnim = 0;
-        lichComp.attackAnimTimer = 0.0f;
-        if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
-        {
-            ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
-            netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 1, 0, -1 });
-        }
-        else
-        {
-            getTheScene()->blendToAnimation(entityID, "Walk");
-        }
-    }
-    else
-    {
-        lichComp.attackAnimTimer -= get_dt();
-    }
+    setAnimation(entityID, LichAnim::Walking, LichBT::attack);
 
     BTStatus ret = BTStatus::Failure;
     int playerID = getPlayerID(entityID);
@@ -718,24 +676,17 @@ BTStatus LichBT::attack(Entity entityID)
 
     if(lichComp.curAttack == nullptr){return ret;}
 
+
+    if(lichComp.curAttack->castTimeTimer < 0.3f && !lichComp.hasBegunAttackAnim)
+    {
+        
+        setAnimation(entityID, LichAnim::Attacking, LichBT::attack);
+    }
+
     //Tick down cast time for current strategy
     if(lichComp.curAttack->castTimeTimer > 0.0f)
     {
         lichComp.curAttack->castTimeTimer -= get_dt();
-    }
-    else if (lichComp.currentAnim != 1 && lichComp.curAttack->castTimeTimer < 1.5f) // Attack
-    {
-        lichComp.currentAnim = 1;
-        lichComp.attackAnimTimer = 0.3f;
-        if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
-        {
-            ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
-            netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 1, 1, -1 });
-        }
-        else
-        {
-            getTheScene()->blendToAnimation(entityID, "Attack", "", 0.18f, 2.0f);
-        }
     }
     else
     {
@@ -835,6 +786,7 @@ BTStatus LichBT::attack(Entity entityID)
                 }
             }
 
+            lichComp.hasBegunAttackAnim = false;
             orb.timeAtCast = Time::getTimeSinceStart();
         }
 
@@ -854,6 +806,32 @@ BTStatus LichBT::selfHeal(Entity entityID)
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     if(lichComp.life < lichComp.FULL_HEALTH)
     {
+
+
+        //Testing particle system
+        /* ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
+
+        if (serverScene != nullptr)
+        {
+
+        }
+        else
+        {
+            NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
+            // Particle system transform
+		    Entity bloodParticleSystemEntity = getTheScene()->createEntity();
+		    Transform& bloodTransform =  getTheScene()->getComponent<Transform>(bloodParticleSystemEntity);
+		    bloodTransform = getTheScene()->getComponent<Transform>(entityID);
+
+
+		    // Particle system spawn
+		    getTheScene()->setComponent<ParticleSystem>(bloodParticleSystemEntity);
+		    ParticleSystem& bloodPS = getTheScene()->getComponent<ParticleSystem>(bloodParticleSystemEntity);
+		    bloodPS = network->getBloodParticleSystem();
+		    bloodPS.spawn = true;
+
+        }*/
+
         lichComp.life_float += get_dt() * lichComp.healthRegenSpeed;
         if(lichComp.life_float > 1.0f)
         {
@@ -894,19 +872,6 @@ BTStatus LichBT::playerNotVisible(Entity entityID)
 BTStatus LichBT::runAwayFromPlayer(Entity entityID)
 {
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
-    if (lichComp.currentAnim != 0) // Walk
-    {
-        lichComp.currentAnim = 0;
-        if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
-        {
-            ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
-            netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 1, 0, -1 });
-        }
-        else
-        {
-            getTheScene()->blendToAnimation(entityID, "Walk");
-        }
-    }
 
     BTStatus ret = BTStatus::Running;
     int playerID = getPlayerID(entityID);
@@ -1185,4 +1150,64 @@ void Lich_dead::start()
     animateThenDie->addLeafs({deathAnim, die});
 
     this->setRoot(animateThenDie);
+}
+
+
+
+void LichBT::activateAnim(Entity entityID, LichAnim anim, const std::string& blendTo, ExtraBlendAnimationArgs& extra)
+{
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    lichComp.activeAnim = anim;
+    if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+    {
+        ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+        netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 1, (int)anim, -1 });
+    }
+    else
+    {
+        if(extra.use == false){
+            getTheScene()->blendToAnimation(entityID, blendTo);
+        }
+        else
+        {
+            getTheScene()->blendToAnimation(entityID, blendTo, extra.slotName,extra.transitionTime,extra.nextAniTimeScale);
+            //AnimationStatus status = getTheScene()->getAnimationStatus(entityID);
+            //printf("Current: %s\n", status.animationName);
+        }
+        
+    }
+}
+
+void LichBT::setAnimation(Entity entityID, LichAnim anim, BTStatus(*callee)(Entity) )
+{
+    LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+
+    if(callee != LichBT::attack)
+    {
+        lichComp.hasBegunAttackAnim = false;
+    }
+    
+    // Activate Walk animation IF it is not already runnng! 
+    if (anim == LichAnim::Walking && 
+        lichComp.activeAnim != LichAnim::Walking &&
+        lichComp.hasBegunAttackAnim == false) 
+    {
+        
+        LichBT::activateAnim(entityID, LichAnim::Walking, "Walk");
+    }
+
+    if (anim == LichAnim::Attacking &&
+        lichComp.attackAnimTimer <= 0.0f) // Switch back to walk
+    {
+        static ExtraBlendAnimationArgs attackArgs {true, "", 0.18f, 2.0f};
+        LichBT::activateAnim(entityID, LichAnim::Attacking, "Attack", attackArgs);
+        lichComp.currentAnim = 0;
+        lichComp.attackAnimTimer = 0.3f;
+        lichComp.hasBegunAttackAnim = true;        
+    }
+    else
+    {
+        lichComp.attackAnimTimer -= get_dt();
+    }    
+
 }

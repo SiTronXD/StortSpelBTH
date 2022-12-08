@@ -5,6 +5,10 @@
 #include "vengine/network/ServerEngine/Timer.h"
 
 const float NetworkHandlerGame::UPDATE_RATE = ServerUpdateRate;
+LichAttack NetworkHandlerGame::lich_fire;
+LichAttack NetworkHandlerGame::lich_ice;
+LichAttack NetworkHandlerGame::lich_light;
+
 
 Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir)
 {
@@ -241,18 +245,7 @@ Entity NetworkHandlerGame::spawnHealArea(glm::vec3 pos)
 }
 
 NetworkHandlerGame::~NetworkHandlerGame() {
-    if (lich_fire != nullptr)
-    {
-		delete lich_fire;    
-	}
-    if (lich_ice != nullptr)
-    {
-        delete lich_ice;
-    }
-    if (lich_light != nullptr)
-    {
-		delete lich_light;    
-	}
+
     this->cleanUp();
 }
 
@@ -307,14 +300,10 @@ void NetworkHandlerGame::init()
 			this->resourceManger->addSound("assets/Sounds/SwishSound.ogg");
 		SwarmComponent::s_initialized = true;
 	}
-	
-	lich_fire = new LichAttack();
-    lich_ice = new LichAttack();
-    lich_light = new LichAttack();
 
-    this->lich_fire->setStats(ATTACK_STRATEGY::FIRE);
-    this->lich_ice->setStats(ATTACK_STRATEGY::ICE);
-    this->lich_light->setStats(ATTACK_STRATEGY::LIGHT);
+    this->lich_fire.setStats(ATTACK_STRATEGY::FIRE);
+    this->lich_ice.setStats(ATTACK_STRATEGY::ICE);
+    this->lich_light.setStats(ATTACK_STRATEGY::LIGHT);
 }
 
 void NetworkHandlerGame::cleanUp()
@@ -1295,11 +1284,11 @@ Entity NetworkHandlerGame::spawnOrbs(int orbType)
     {
         this->sceneHandler->getScene()->setComponent<MeshComponent>(orb, fireOrb_mesh);
         this->sceneHandler->getScene()->setComponent<Collider>(
-            orb, Collider::createSphere(LichComponent::orbRadius)
+            orb, Collider::createSphere(LichComponent::orbRadius,glm::vec3(0.0f),true)
         );
         this->sceneHandler->getScene()->setComponent<Orb>(orb);
         this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
-        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = NetworkHandlerGame::lich_fire;
+        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = &NetworkHandlerGame::lich_fire;
         Rigidbody& rb =
             this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
         rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -1311,11 +1300,11 @@ Entity NetworkHandlerGame::spawnOrbs(int orbType)
     {
         this->sceneHandler->getScene()->setComponent<MeshComponent>(orb, iceOrb_mesh);
         this->sceneHandler->getScene()->setComponent<Collider>(
-            orb, Collider::createSphere(LichComponent::orbRadius)
+            orb, Collider::createSphere(LichComponent::orbRadius,glm::vec3(0.0f),true)
         );
         this->sceneHandler->getScene()->setComponent<Orb>(orb);
         this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
-        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = NetworkHandlerGame::lich_ice;
+        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = &NetworkHandlerGame::lich_ice;
         Rigidbody& rb =
             this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
         rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -1327,11 +1316,11 @@ Entity NetworkHandlerGame::spawnOrbs(int orbType)
     {
         this->sceneHandler->getScene()->setComponent<MeshComponent>(orb, lightOrb_mesh);
         this->sceneHandler->getScene()->setComponent<Collider>(
-            orb, Collider::createSphere(LichComponent::orbRadius)
+            orb, Collider::createSphere(LichComponent::orbRadius,glm::vec3(0.0f),true)
         );
         this->sceneHandler->getScene()->setComponent<Orb>(orb);
         this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
-        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = NetworkHandlerGame::lich_light;
+        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = &NetworkHandlerGame::lich_light;
         Rigidbody& rb =
             this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
         rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);

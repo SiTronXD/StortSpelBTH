@@ -78,42 +78,46 @@ void avoidStuff(Entity entityID, SceneHandler* sceneHandler, bool& attackGoRight
 	float left_right_maxDist = entityCollider.radius + 6.0f;
 
 	//Payloads
-	RayPayload r_0		        = sceneHandler->getPhysicsEngine()->raycast(ray0	, left_right_maxDist); //Right
-	RayPayload r_30			    = sceneHandler->getPhysicsEngine()->raycast(ray30	, left_right_maxDist);	//Right
-	RayPayload r_60 		    = sceneHandler->getPhysicsEngine()->raycast(ray60	, left_right_maxDist);	//Right
-	RayPayload r_90		        = sceneHandler->getPhysicsEngine()->raycast(ray90	, left_right_maxDist);	//Forward
-	RayPayload r_120    		= sceneHandler->getPhysicsEngine()->raycast(ray120	, left_right_maxDist);	//Left
-	RayPayload r_150			= sceneHandler->getPhysicsEngine()->raycast(ray150	, left_right_maxDist);	//Left
-	RayPayload r_180			= sceneHandler->getPhysicsEngine()->raycast(ray180	, left_right_maxDist);	//Left
+	RayPayload r_0		= sceneHandler->getPhysicsEngine()->raycast(ray0	, left_right_maxDist); //Right
+	RayPayload r_30		= sceneHandler->getPhysicsEngine()->raycast(ray30	, left_right_maxDist); //Right
+	RayPayload r_60 	= sceneHandler->getPhysicsEngine()->raycast(ray60	, left_right_maxDist); //Right
+	RayPayload r_90		= sceneHandler->getPhysicsEngine()->raycast(ray90	, left_right_maxDist); //Forward
+	RayPayload r_120    = sceneHandler->getPhysicsEngine()->raycast(ray120	, left_right_maxDist); //Left
+	RayPayload r_150	= sceneHandler->getPhysicsEngine()->raycast(ray150	, left_right_maxDist); //Left
+	RayPayload r_180	= sceneHandler->getPhysicsEngine()->raycast(ray180	, left_right_maxDist); //Left
 
+	int numHitRight = 0;
+	int numHitLeft	= 0;
         
-	if(drawRays)
-	{
-        if(sceneHandler->getScene()->getNetworkHandler() != nullptr)
-        {
-      
-            //Storing rays for drawing
-            std::unordered_map<Ray*, RayPayload*>rays;
-            rays.insert({&ray0,		&r_0});		
-            rays.insert({&ray30,	&r_30});
-            rays.insert({&ray60,	&r_60});
-            rays.insert({&ray90,	&r_90});
-            rays.insert({&ray120,	&r_120});
-            rays.insert({&ray150,	&r_150});
-            rays.insert({&ray180,	&r_180});
+	if(r_0.hit   && sceneHandler->getScene()->hasComponents<Collider>(r_0.entity)	&& !sceneHandler->getScene()->getComponent<Collider>(r_0.entity).isTrigger)		{numHitRight++;}
+	if(r_30.hit  && sceneHandler->getScene()->hasComponents<Collider>(r_30.entity)	&& !sceneHandler->getScene()->getComponent<Collider>(r_30.entity).isTrigger)	{numHitRight++;}
+	if(r_60.hit  && sceneHandler->getScene()->hasComponents<Collider>(r_60.entity)	&& !sceneHandler->getScene()->getComponent<Collider>(r_60.entity).isTrigger)	{numHitRight++;}
+	if(r_120.hit && sceneHandler->getScene()->hasComponents<Collider>(r_120.entity)	&& !sceneHandler->getScene()->getComponent<Collider>(r_120.entity).isTrigger)	{numHitLeft++;}
+	if(r_150.hit && sceneHandler->getScene()->hasComponents<Collider>(r_150.entity)	&& !sceneHandler->getScene()->getComponent<Collider>(r_150.entity).isTrigger)	{numHitLeft++;}
+	if(r_180.hit && sceneHandler->getScene()->hasComponents<Collider>(r_180.entity)	&& !sceneHandler->getScene()->getComponent<Collider>(r_180.entity).isTrigger)	{numHitLeft++;}
 
-            for(auto r: rays)
-            {
-                if(r.second->hit)
-                {
-                    drawRaySimple(sceneHandler, *r.first	, left_right_maxDist, glm::vec3(0.0f, 1.0f, 0.0f));	
-                }
-                else
-                {
-                    drawRaySimple(sceneHandler, *r.first	, left_right_maxDist, glm::vec3(1.0f, 0.0f, 0.0f));	
-                }
-            }
-        }
+	if(drawRays && sceneHandler->getScene()->getNetworkHandler() != nullptr)
+	{
+		//Storing rays for drawing
+		std::unordered_map<Ray*, RayPayload*>rays;
+		rays.insert({&ray0,		&r_0});		
+		rays.insert({&ray30,	&r_30});
+		rays.insert({&ray60,	&r_60});
+		rays.insert({&ray90,	&r_90});
+		rays.insert({&ray120,	&r_120});
+		rays.insert({&ray150,	&r_150});
+		rays.insert({&ray180,	&r_180});
+		for(auto r: rays)
+		{
+		    if(r.second->hit)
+		    {
+		        drawRaySimple(sceneHandler, *r.first	, left_right_maxDist, glm::vec3(0.0f, 1.0f, 0.0f));	
+		    }
+		    else
+		    {
+		        drawRaySimple(sceneHandler, *r.first	, left_right_maxDist, glm::vec3(1.0f, 0.0f, 0.0f));	
+		    }
+		}
 	}
 	
 	
@@ -121,58 +125,49 @@ void avoidStuff(Entity entityID, SceneHandler* sceneHandler, bool& attackGoRight
 	{
 		canGoForward = false;
 	}
-	if((r_0.hit && sceneHandler->getScene()->hasComponents<Collider>(r_0.entity) && !sceneHandler->getScene()->getComponent<Collider>(r_0.entity).isTrigger) ||
-		(r_30.hit && sceneHandler->getScene()->hasComponents<Collider>(r_30.entity) && !sceneHandler->getScene()->getComponent<Collider>(r_30.entity).isTrigger)||
-		(r_60.hit && sceneHandler->getScene()->hasComponents<Collider>(r_60.entity) && !sceneHandler->getScene()->getComponent<Collider>(r_60.entity).isTrigger))
+	if(numHitRight > numHitLeft)
 	{
 		canGoRight = false;
 		attackGoRight = false;
 	}
-	if((r_120.hit && sceneHandler->getScene()->hasComponents<Collider>(r_120.entity) && !sceneHandler->getScene()->getComponent<Collider>(r_120.entity).isTrigger) ||
-		(r_150.hit && sceneHandler->getScene()->hasComponents<Collider>(r_150.entity) && !sceneHandler->getScene()->getComponent<Collider>(r_150.entity).isTrigger)||
-		(r_180.hit && sceneHandler->getScene()->hasComponents<Collider>(r_180.entity) && !sceneHandler->getScene()->getComponent<Collider>(r_180.entity).isTrigger))
+	if(numHitLeft > numHitRight)
 	{
 		canGoLeft = false;
 		attackGoRight = true;
 	}
 
-	somethingInTheWay = true;
 	entityTransform.updateMatrix();
-
 	dir = glm::vec3(0.0f, 0.0f, 0.0f);
-	if(somethingInTheWay)
-	{
 		
-		entityTransform.updateMatrix();
 
-		if(canGoForward)
-		{
-			dir += dirToTarget;
-		}
-		if(canGoLeft && canGoRight && !canGoForward)
-		{
-			if(attackGoRight)
-			{
-				dir += entityTransform.right();
-			}
-			else
-			{
-				dir -= entityTransform.right();
-			}
-		}
-		else if(canGoLeft && canGoRight)
-		{
-			dir = dir;
-		}
-		else if(canGoRight && attackGoRight)
+	if(canGoForward)
+	{
+		dir += dirToTarget;
+	}
+	if(canGoLeft && canGoRight && !canGoForward)
+	{
+		if(attackGoRight)
 		{
 			dir += entityTransform.right();
 		}
-		else if(canGoLeft && !attackGoRight)
+		else
 		{
 			dir -= entityTransform.right();
 		}
 	}
+	else if(canGoLeft && canGoRight)
+	{
+		dir = dir;
+	}
+	else if(canGoRight && attackGoRight)
+	{
+		dir += entityTransform.right();
+	}
+	else if(canGoLeft && !attackGoRight)
+	{
+		dir -= entityTransform.right();
+	}
+	
 
 	if(dir == glm::vec3(0.0f, 0.0f, 0.0f))
 	{

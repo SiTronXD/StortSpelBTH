@@ -607,7 +607,30 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 		    	this->switchScene(new GameScene(this->setNewLevel()), "scripts/gamescene.lua");
 		    }
         }
+        
+        if (this->hasComponents<Orb>(other)) 
+        {
+            auto& orb = this->getComponent<Orb>(other);
+            HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+            playerHealth.health -=
+                orb.orbPower->damage;
+            playerHealth.srcDmgEntity = other;
+            orb.onCollision(other, this->getSceneHandler());
+        }
 	}
+    else 
+    { // Collision between two things that isnt player
+        
+        if((this->hasComponents<Orb>(e1) || this->hasComponents<Orb>(e2))&&
+            !(this->hasComponents<LichComponent>(e1) || this->hasComponents<LichComponent>(e2)))
+        {
+            Entity collidingOrb = this->hasComponents<Orb>(e1) ? e1 : e2; 
+            
+            auto& orb = this->getComponent<Orb>(collidingOrb);        
+            orb.onCollision(collidingOrb, this->getSceneHandler());
+            
+        }
+    }
 }
 
 void GameScene::onTriggerEnter(Entity e1, Entity e2)
@@ -704,7 +727,6 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
         {
           swarmComp.inAttack = false;
           swarmComp.touchedPlayer = true;
-          //aiCombat.timer = aiCombat.lightAttackTime;
           HealthComp& playerHealth = this->getComponent<HealthComp>(player);
           playerHealth.health -=
               (int)swarmComp.lightHit;
