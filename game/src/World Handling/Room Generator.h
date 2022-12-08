@@ -42,10 +42,10 @@ class RoomGenerator
 {
 public:
     static const uint32_t TWO_X_TWO_CHANCE = 20u; // Percentage
-    static const uint32_t MAX_TWO_X_TWO = 5u;//3u;
+    static const uint32_t MAX_TWO_X_TWO = 6u;//3u;
     
     static const uint32_t ONE_X_TWO_CHANCE = 20u; // Percentage
-    static const uint32_t MAX_ONE_X_TWO = 5u;//4u;
+    static const uint32_t MAX_ONE_X_TWO = 6u;//4u;
     
     static const uint32_t BIG_TILE_MIN_DIST = 1u;
 

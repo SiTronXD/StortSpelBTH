@@ -368,29 +368,29 @@ void ServerGameMode::makeDataSendToClient()
 
 void ServerGameMode::createPortal() 
 {
-    glm::vec3 portalTriggerDims(6.f, 18.f, 1.f);
-    glm::vec3 portalBlockDims(3.f, 18.f, 3.f);
+    glm::vec3 portalTriggerDims(11.f, 27.f, 6.f);
+
+    int colliderID = (int)this->getResourceManager()->addCollisionShapeFromMesh("assets/models/portal.fbx");
+    std::vector<ColliderDataRes> colliders = this->getResourceManager()->getCollisionShapeFromMesh(colliderID);
+
 
     portal = this->createEntity();
-    this->getComponent<Transform>(portal).position =
-        this->roomHandler.getExitRoom().position;
+    Transform& portalTransform = this->getComponent<Transform>(portal);
+    portalTransform.position = this->roomHandler.getExitRoom().position;
     this->setComponent<Collider>(
         portal, Collider::createBox(portalTriggerDims, glm::vec3(0, 0, 0), true)
         );
 
-    Entity collider1 = this->createEntity();
-    this->getComponent<Transform>(collider1).position =
-        this->getComponent<Transform>(portal).position;
-    this->getComponent<Transform>(collider1).position.x += 9.f;
-    this->getComponent<Transform>(collider1).position.y += 9.f;
-    this->setComponent<Collider>(collider1, Collider::createBox(portalBlockDims));
+        Entity collisionEntity;
 
-    Entity collider2 = this->createEntity();
-    this->getComponent<Transform>(collider2).position =
-        this->getComponent<Transform>(portal).position;
-    this->getComponent<Transform>(collider2).position.x -= 9.f;
-    this->getComponent<Transform>(collider2).position.y += 9.f;
-    this->setComponent<Collider>(collider2, Collider::createBox(portalBlockDims));
+    for (size_t i = 0; i < colliders.size(); i++)
+    {
+        collisionEntity = this->createEntity();
+        this->setComponent<Collider>(collisionEntity, colliders[i].col);
+        Transform& t = this->getComponent<Transform>(collisionEntity);
+        t.position = portalTransform.position + colliders[i].position;
+        t.rotation = portalTransform.rotation + colliders[i].rotation;
+    }
 }
 
 void ServerGameMode::onDisconnect(int index)
