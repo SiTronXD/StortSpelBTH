@@ -21,6 +21,8 @@ private:
     Entity signpost;
     Entity light;
 
+    Entity leaves;
+
     State state;
     uint32_t fontTextureId;
     uint32_t settingsBackgroundId;
@@ -32,10 +34,11 @@ private:
 
     //buttons
     //menu buttons
-    int playButton;
+    int hostButton;
     int joinGameButton;
     int settingsButton;
     int levelEditButton;
+    int singlePlayerButton;
     int quitButton;
     int howToPlayButton;
 
