@@ -291,11 +291,9 @@ void NetworkHandlerGame::init()
 	if (!SwarmComponent::s_initialized)
 	{
 		SwarmComponent::s_takeDmg =
-			this->resourceManger->addSound("assets/Sounds/OufSound.ogg");
-		SwarmComponent::s_move =
-			this->resourceManger->addSound("assets/Sounds/PlayerSounds/RunningSound.ogg");
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Swarm/SwarmTakeDmg.ogg");
 		SwarmComponent::s_attack =
-			this->resourceManger->addSound("assets/Sounds/SwishSound.ogg");
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Swarm/SwarmAttack.ogg");
 		SwarmComponent::s_initialized = true;
 	}
 	
@@ -480,12 +478,12 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 			if (i2 == 0)
 			{
 				
-				this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<SwarmComponent>(serverEntities[i0]).s_takeDmg, 30.f);
+				this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<SwarmComponent>(serverEntities[i0]).s_takeDmg, 20.f);
 			}
 			else if (i2 == 1)
 			{
 				// DEAL DAMAGE SOUND
-				this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<SwarmComponent>(serverEntities[i0]).s_attack, 30.f);
+				this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<SwarmComponent>(serverEntities[i0]).s_attack, 70.f);
 			}
 			else if (i2 == 3)
 			{
@@ -526,15 +524,15 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 				// DEAL DAMAGE SOUND
 				if (i3 == 0)
 				{
-					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_fire, 30.f);
+					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_fire, 0.4f);
 				}
 				else if (i3 == 1)
 				{
-					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_lightning, 30.f);
+					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_lightning, 0.4f);
 				}
 				else if (i3 == 2)
 				{
-					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_ice, 30.f);
+					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_ice, 0.4f);
 				}
 			}
 			else if (i2 == 3)
