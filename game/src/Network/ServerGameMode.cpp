@@ -70,7 +70,7 @@ void ServerGameMode::update(float dt)
         
         roomHandler.serverActivateCurrentRoom();
         roomHandler.serverToggleCurrentPaths(true);
-        spawnHandler.spawnEnemiesIntoRoom();
+        spawnHandler.spawnEnemiesIntoRoom(this->level);
 
         this->newRoomFrame = true;
         this->timeWhenEnteredRoom = Time::getTimeSinceStart();

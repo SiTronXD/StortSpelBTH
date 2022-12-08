@@ -7,7 +7,7 @@
 #include <random>
 #include <algorithm>
 
-void SpawnHandler::spawnEnemiesIntoRoom()
+void SpawnHandler::spawnEnemiesIntoRoom(int level)
 {
     this->aiHandler->resetEventSystemLastReturn();
 
@@ -15,16 +15,23 @@ void SpawnHandler::spawnEnemiesIntoRoom()
     int lichIdx         = 0;
     int tankIdx         = 0;
     int counter         = 0;
-    this->nrOfEnemiesPerRoom  = enemiesPerTiles;
+    level++; //Skip level 0...
+    float levelMultipler = std::clamp(MIN_ENEMIES_PER_TILES*(float)level,MIN_ENEMIES_PER_TILES,MAX_ENEMIES_PER_TILES);
 
     this->tilePicker.init(this->roomHandler->getFreeTileInfos());
     
     this->nrOfEnemiesPerRoom *= this->tilePicker.size();
     this->nrOfEnemiesPerRoom = std::clamp((int)this->nrOfEnemiesPerRoom, 0 , SpawnHandler::MAX_NR_OF_ENEMIES);
 
-    this->nrOfTanks_inRoom  = std::clamp((int)(this->tilePicker.size() * enemiesPerTiles *PERCENTAGE_TANKS), 0, MAX_NR_TANKS);
-    this->nrOfLichs_inRoom  = std::clamp((int)(this->tilePicker.size() * enemiesPerTiles *PERCENTAGE_LICHS), 0, MAX_NR_LICHS);
-    int tempNrOfSwarms      = std::clamp((int)(this->tilePicker.size() * enemiesPerTiles *PERCENTAGE_SWARMS),0, NR_BLOBS_IN_GROUP*MAX_NR_SWARMGROUPS);
+    float a  = this->tilePicker.size() * MAX_ENEMIES_PER_TILES *PERCENTAGE_TANKS  * levelMultipler;
+    float a2 = this->tilePicker.size() * MAX_ENEMIES_PER_TILES *PERCENTAGE_LICHS  * levelMultipler;
+    float a3 = this->tilePicker.size() * MAX_ENEMIES_PER_TILES *PERCENTAGE_SWARMS * levelMultipler;
+
+    float clampedTileAmount = std::clamp((float)this->tilePicker.size(),(float)MAX_NR_OF_ENEMIES, (float)MAX_NR_OF_ENEMIES * 3);
+
+    this->nrOfTanks_inRoom  = std::clamp((int)(clampedTileAmount * MAX_ENEMIES_PER_TILES *PERCENTAGE_TANKS  * levelMultipler ) , 0, MAX_NR_TANKS);
+    this->nrOfLichs_inRoom  = std::clamp((int)(clampedTileAmount * MAX_ENEMIES_PER_TILES *PERCENTAGE_LICHS  * levelMultipler ) , 0, MAX_NR_LICHS);
+    int tempNrOfSwarms      = std::clamp((int)(clampedTileAmount * MAX_ENEMIES_PER_TILES *PERCENTAGE_SWARMS * levelMultipler ) , 0, NR_BLOBS_IN_GROUP*MAX_NR_SWARMGROUPS);
     this->nrOfGroups_inRoom = tempNrOfSwarms / SpawnHandler::NR_BLOBS_IN_GROUP;
     this->nrOfSwarms_inRoom = nrOfGroups_inRoom * SpawnHandler::NR_BLOBS_IN_GROUP;
     this->nrOfEnemiesPerRoom = (float)(this->nrOfSwarms_inRoom+this->nrOfLichs_inRoom+this->nrOfTanks_inRoom);
@@ -54,9 +61,20 @@ void SpawnHandler::spawnEnemiesIntoRoom()
     }
     else if(this->roomHandler->inExitRoom())
     {
-        this->spawnTank(tankIdx, this->tilePicker.getRandomEmptyTile()->getPos(), true);
-        this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2), true);
-        this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP), true);
+
+        if(level == 1 || level == 4 || level >= 5)
+        {
+            this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP), true);
+        }
+        if(level == 2 || level == 4 || level >= 6)
+        {
+            this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2), true);
+        }
+        if(level == 3 || level == 5 || level >= 6)
+        {
+            this->spawnTank(tankIdx, this->tilePicker.getRandomEmptyTile()->getPos(), true);
+        }
+        
     }
     else 
     {
