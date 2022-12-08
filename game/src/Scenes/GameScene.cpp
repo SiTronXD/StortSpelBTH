@@ -273,7 +273,7 @@ void GameScene::update()
             this->timeWhenEnteredRoom = Time::getTimeSinceStart();
             this->safetyCleanDone = false;
 
-            this->spawnHandler.spawnEnemiesIntoRoom();
+            this->spawnHandler.spawnEnemiesIntoRoom(this->currentLevel.level);
         }
         if(!this->safetyCleanDone)
         {
@@ -581,6 +581,16 @@ void GameScene::update()
             (int)playerPos.z
         );
         ImGui::Separator();
+    }
+    ImGui::End();
+
+    if (ImGui::Begin("nextLevel"))
+    {
+        if (ImGui::Button("Next Level"))
+        {
+            networkHandler->cleanUp();
+            this->switchScene(new GameScene(this->setNewLevel()), "scripts/gamescene.lua");
+        }        
     }
     ImGui::End();
 
