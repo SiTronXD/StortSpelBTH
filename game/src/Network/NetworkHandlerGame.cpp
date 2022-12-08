@@ -1140,7 +1140,7 @@ void NetworkHandlerGame::interpolatePositions()
         if (currDistToStepSound[i] <= 0)
         {
 			currDistToStepSound[i] = distToStepSound;
-            this->sceneHandler->getAudioHandler()->playSound(this->otherPlayers[i].first, moveSound, 15.f);
+            this->sceneHandler->getAudioHandler()->playSound(this->otherPlayers[i].first, moveSound, 7.f);
 		}
 		// Put sword in characters hand and keep updating it
 		scene->getComponent<Transform>(this->swords[i]).setMatrix(

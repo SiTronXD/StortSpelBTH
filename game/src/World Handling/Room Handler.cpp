@@ -13,7 +13,7 @@ const uint32_t RoomHandler::DECO_ENTITY_CHANCE = 30;
 const uint32_t RoomHandler::NUM_BORDER = 1;
 const uint32_t RoomHandler::NUM_ONE_X_ONE = 5;
 const uint32_t RoomHandler::NUM_ONE_X_TWO = 2;
-const uint32_t RoomHandler::NUM_TWO_X_TWO = 1;
+const uint32_t RoomHandler::NUM_TWO_X_TWO = 2;
 
 const glm::vec3 RoomHandler::DOOR_LAMP_OFFSET = glm::vec3(-12.f, 21.5f, 30.5f);
 const glm::vec3 RoomHandler::DOOR_LAMP_COLOUR = glm::vec3(0.94f, 0.28f, 0.05f);
@@ -88,7 +88,7 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan,PhysicsEngine*
 		this->rockMeshId = (int)resourceMan->addMesh("assets/models/tempRock.obj");
 		this->rockFenceMeshId = (int)resourceMan->addMesh("assets/models/rockFence.obj");
 		this->tileFloorMeshId = (int)resourceMan->addMesh("assets/models/Tiles/Floor.obj");
-		this->lampMeshId = (int)resourceMan->addMesh("assets/models/Tiles/OneXTwo/2.obj");
+		this->lampMeshId = (int)resourceMan->addMesh("assets/models/Tiles/OneXTwo/lamp.obj");
 
 		this->lampDiffuseId = (int)resourceMan->addTexture("assets/textures/lampTex.png");
 		this->lampGlowId = (int)resourceMan->addTexture("assets/textures/Perk_HpTex.png");

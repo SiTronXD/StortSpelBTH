@@ -27,7 +27,7 @@ function script:init()
     self.currentHealth = 100
     self.maxStamina = 100
     self.currentStamina = 100
-    self.sprintStamDrain = 20.0
+    self.sprintStamDrain = 10.0
     self.staminaRegen = 20.0
     self.staminaRegenCd = 2.0
     self.staminaTimer = 0.0
