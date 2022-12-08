@@ -350,7 +350,6 @@ void SpawnHandler::createTank()
     if (netScene == nullptr)
     {
         this->tankIDs.push_back(this->currScene->createEntity());
-        this->allEntityIDs.push_back(this->tankIDs.back());
         static int tank = -1;
         if (tank == -1)
         {
@@ -377,8 +376,8 @@ void SpawnHandler::createTank()
     else
     {
         this->tankIDs.push_back(netScene->spawnEnemy(2));
-        this->allEntityIDs.push_back(this->tankIDs.back());
     }
+    this->allEntityIDs.push_back(this->tankIDs.back());
 
     this->currScene->setComponent<AiCombatTank>(this->tankIDs.back());
     this->currScene->setComponent<Rigidbody>(this->tankIDs.back());
@@ -430,13 +429,13 @@ void SpawnHandler::createLich()
     if(netScene == nullptr)
     {        
         this->lichIDs.push_back(this->currScene->createEntity());
-        this->allEntityIDs.push_back(this->lichIDs.back());
         //TODO :  Move createEntities stuff in here
     }
     else
     {
         this->lichIDs.push_back(netScene->spawnEnemy(1));
     }
+    this->allEntityIDs.push_back(this->lichIDs.back());
 
     this->currScene->setComponent<Rigidbody>(this->lichIDs.back());
     Rigidbody& rb = this->currScene->getComponent<Rigidbody>(this->lichIDs.back());
