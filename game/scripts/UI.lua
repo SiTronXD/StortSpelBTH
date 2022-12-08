@@ -1,30 +1,25 @@
 local script = {}
 
 function script:init()
-	print("init with ID: " .. self.ID)
-
-	self.timer = 0.0
+	scene.setComponent(self.ID, CompType.UIArea, { position = vector(), dimension = vector() })
+	self.resumeButton = scene.getComponent(self.ID, CompType.UIArea)
+	self.resumeButton.position = vector(0, 150)
+	self.resumeButton.dimension = vector(500, 100)
+	self.settingsButton = scene.getComponent(self.ID, CompType.UIArea)
+	self.settingsButton.position = vector(0, 0)
+	self.settingsButton.dimension = vector(500, 100)
+	self.exitButton = scene.getComponent(self.ID, CompType.UIArea)
+	self.exitButton.position = vector(0, -150)
+	self.exitButton.dimension = vector(500, 100)
+	scene.removeComponent(self.ID, CompType.UIArea)
 end
 
 function script:update(dt)
-
-	self.timer = self.timer + dt
 
 	local xPos = -648
 	local yPos = -465
 	local xSize = 960 * 0.35
 	local ySize = 40 * 0.35
-
-	local resumePosX = 0.0
-	local resumePosY = 100.0
-	local resumeWidth = 500.0
-	local resumeHeigth = 100.0
-
-	local exitPosX = 0.0
-	local exitPosY = -100.0
-	local exitWidth = 500.0
-	local exitHeigth = 100.0
-
 
 	-- Clamped percentage for HP
 	local staminaPercent = self.playerScript.currentStamina * 0.01
@@ -42,8 +37,8 @@ function script:update(dt)
 	-- Health UI Border Bar
 	local borderHpXPos = -600.0
 	local borderHpYPos = -452.0
-	local borderHpXSize = 764 * 0.56
-	local borderHpYSize = 104 * 0.34
+	local borderHpXSize = 427.84
+	local borderHpYSize = 35.36
 
 	uiRenderer.setTexture(self.uiHpMidTexID)
 	uiRenderer.renderTexture(vector(borderHpXPos - (1.0 - healthMaxPercent) * borderHpXSize * 0.5, borderHpYPos), 
@@ -71,16 +66,21 @@ function script:update(dt)
 	uiRenderer.setTexture(self.uiBorderTexID)
 	uiRenderer.renderTexture(vector(0.0, 0.0), vector(1920.0, 1080.0))
 
-	
 	if paused then
 		uiRenderer.setTexture(self.pauseBackgroundTexID)
 		uiRenderer.renderTexture(vector(0.0, 0.0), vector(1920.0, 1080.0))
-		uiRenderer.renderString("game paused", vector(0.0, 400), vector(80, 80));
-		uiRenderer.setTexture(self.buttonTexID)
-		uiRenderer.renderTexture(vector(resumePosX, resumePosY), vector(resumeWidth, resumeHeigth))
-		uiRenderer.renderTexture(vector(exitPosX, exitPosY), vector(exitWidth, exitHeigth))
-		uiRenderer.renderString("resume", vector(resumePosX, resumePosY), vector(50, 50));
-		uiRenderer.renderString("exit", vector(exitPosX, exitPosY), vector(50, 50));
+		if not settings then
+			uiRenderer.renderString("game paused", vector(0.0, 400), vector(80, 80))
+			uiRenderer.setTexture(self.buttonTexID)
+			uiRenderer.renderTexture(self.resumeButton.position, self.resumeButton.dimension, vector.fill(1), 0.85 + core.btoi(self.resumeButton:isHovering()) * 0.15)
+			uiRenderer.renderTexture(self.settingsButton.position, self.settingsButton.dimension, vector.fill(1), 0.85 + core.btoi(self.settingsButton:isHovering()) * 0.15)
+			uiRenderer.renderTexture(self.exitButton.position, self.exitButton.dimension, vector.fill(1), 0.85 + core.btoi(self.exitButton:isHovering()) * 0.15)
+			uiRenderer.renderString("resume", self.resumeButton.position, vector(50, 50))
+			uiRenderer.renderString("settings", self.settingsButton.position, vector(50, 50))
+			uiRenderer.renderString("exit", self.exitButton.position, vector(50, 50))
+		else
+			uiRenderer.renderString("settings", vector(0.0, 400), vector(80, 80))
+		end
 	end
 end
 

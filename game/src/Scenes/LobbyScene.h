@@ -12,6 +12,7 @@ private:
 	uint32_t fontTextureId;
 	uint32_t backgroundId;
 	uint32_t buttonId;
+	uint32_t buttonSound;
 	std::string serverIP;
 
 	uint32_t activePlayers = 0;

@@ -37,34 +37,6 @@ void LobbyScene::init()
              "dead"}
         )
     );
-
-    int tank = this->getResourceManager()->addAnimations({
-            "assets/models/Tank/TankWalk.fbx",
-            "assets/models/Tank/TankCharge.fbx",
-            "assets/models/Tank/TankGroundHump.fbx",
-            "assets/models/Tank/TankRaiseShield.fbx"
-        },
-        "assets/textures/"
-    );
-    this->getResourceManager()->mapAnimations(tank, {
-        "Walk",
-        "Charge",
-        "GroundHump",
-        "RaiseShield",
-        });
-    this->getResourceManager()->createAnimationSlot(tank, "LowerBody", "Character1_Hips");
-    this->getResourceManager()->createAnimationSlot(tank, "UpperBody", "Character1_Spine");
-
-    int lich = this->getResourceManager()->addAnimations({
-            "assets/models/Lich/Lich_Walk.fbx",
-            "assets/models/Lich/Lich_Attack.fbx",
-        },
-        "assets/textures/Lich/"
-    );
-    this->getResourceManager()->mapAnimations(lich, {
-        "Walk",
-        "Attack"
-    });
    
   TextureSamplerSettings samplerSettings{};
   samplerSettings.filterMode = vk::Filter::eNearest;
@@ -76,6 +48,8 @@ void LobbyScene::init()
         );
     this->buttonId =
         this->getResourceManager()->addTexture("assets/textures/UI/button.png");
+
+    this->buttonSound = this->getResourceManager()->addSound("assets/Sounds/buttonClick.ogg");
 
     this->fontTextureId = Scene::getResourceManager()->addTexture(
         "assets/textures/UI/font.png", {samplerSettings, true}
@@ -211,7 +185,7 @@ void LobbyScene::update()
         }
     }
 
-    // Button backtgrounds
+    // Button backgrounds
     this->getUIRenderer()->setTexture(this->buttonId);
     this->getUIRenderer()->renderTexture(
         this->disconnectButton.position, this->disconnectButton.dimension,
@@ -259,6 +233,7 @@ void LobbyScene::update()
         );
         if (this->startButton.isClicking())
         {
+            this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
             // Start singleplayer
             if (this->activePlayers == 1 && !Input::isKeyDown(Keys::M))
             {
@@ -287,6 +262,7 @@ void LobbyScene::update()
         "disconnect", this->disconnectButton.position, glm::vec2(25.0f), 0.0f, StringAlignment::CENTER
     );
     if (this->disconnectButton.isClicking()) {
+        this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
         this->getNetworkHandler()->disconnectClient();
         this->getNetworkHandler()->deleteServer();
         this->getSceneHandler()->setScene(new MainMenu, "scripts/MainMenu.lua");
