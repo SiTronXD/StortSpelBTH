@@ -41,8 +41,6 @@ public:
 			{
 				this->toDeactivate.push_back((Entity) entity);
 			}
-
-			numActivePointLights++;
 		};
 		deactivateView.each(deactivateFunc);
 
