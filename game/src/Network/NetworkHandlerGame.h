@@ -105,6 +105,9 @@ private:
 	std::vector<glm::vec3> playerPosCurrent;
     std::map<int, std::pair<glm::vec3, glm::vec3>> entityToPosScale;
     std::map<int, std::pair<glm::vec3, glm::vec3>> entityLastPosScale;
+    std::vector<float> currDistToStepSound;
+    inline static const float distToStepSound = 5.f;
+    uint32_t moveSound;
 
 	// Client helpers
 	std::string str;

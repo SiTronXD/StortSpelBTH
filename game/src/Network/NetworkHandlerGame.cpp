@@ -251,6 +251,7 @@ void NetworkHandlerGame::init()
 {
     this->cleanUp();
     this->deletedParticleSystems = false;
+    this->moveSound = this->resourceManger->addSound("assets/Sounds/RunningSound.ogg");
 	this->perkMeshes[0] = this->resourceManger->addMesh("assets/models/Perk_Hp.obj");
 	this->perkMeshes[1] = this->resourceManger->addMesh("assets/models/Perk_Dmg.obj");
 	this->perkMeshes[2] = this->resourceManger->addMesh("assets/models/Perk_AtkSpeed.obj");
@@ -1000,6 +1001,7 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 	this->playerEntities.resize(size);
 	this->swords.resize(size);
 	this->playerPosLast.resize(size);
+    this->currDistToStepSound.resize(size, 0);
 	this->playerPosCurrent.resize(size);
 	float angle = 360.0f / (size + 1);
 
@@ -1058,9 +1060,19 @@ void NetworkHandlerGame::interpolatePositions()
 	for (int i = 0; i < this->playerEntities.size(); i++)
 	{
 		Transform& t = scene->getComponent<Transform>(this->playerEntities[i]);
-		t.position = this->playerPosLast[i] + percent * (this->playerPosCurrent[i] - this->playerPosLast[i]);
+		glm::vec3 newPosition = this->playerPosLast[i] + percent * (this->playerPosCurrent[i] - this->playerPosLast[i]);
+        std::cout << "other player pos.y: " << newPosition.y << std::endl;
+        if (newPosition.y < 3)//check if 3 is a ok value
+        {    
+            currDistToStepSound[i] -= glm::length(newPosition - t.position);
+		}
+        t.position = newPosition;
 		UI->renderString(this->otherPlayers[i].second, t.position + glm::vec3(0.0f, 20.0f, 0.0f) + t.forward(), glm::vec2(150.0f));
-
+        if (currDistToStepSound[i] <= 0)
+        {
+			currDistToStepSound[i] = distToStepSound;
+            this->sceneHandler->getAudioHandler()->playSound(entityID, CombatSyste, 10.f);
+		}
 		// Put sword in characters hand and keep updating it
 		scene->getComponent<Transform>(this->swords[i]).setMatrix(
 			this->resourceManger->getJointTransform(
