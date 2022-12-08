@@ -103,7 +103,7 @@ struct LichComponent
     inline static const float    handPosition       = 12;
     inline static const float    handPositionElite  = 25;
 
-    inline static const float    aimAtPlayerYOffset  = 5;
+    inline static const float    aimAtPlayerYOffset  = 7;
 
     inline static const uint32_t graveHeight = 8;
     inline static const uint32_t graveWidth = 6;
@@ -172,6 +172,7 @@ struct LichComponent
     float healthRegenSpeed      = 2.0f;
     float deathAnimSpeed        = 3.0f;
     float huntSpeed             = 60.0f;
+    float combatSpeed	        = 20.0f;
     float speed                 = 30.0f ; // Too close, I will back away from you! (while shooting) 
 
     //ATTACK_STRATEGY strat       = ATTACK_STRATEGY::NONE;
@@ -192,8 +193,10 @@ struct LichComponent
     glm::vec3 origScale         = glm::vec3(0.0f, 0.0f, 0.0f);
 
     // Anim
+    LichAnim activeAnim;
     int currentAnim;
     float attackAnimTimer;
+    bool hasBegunAttackAnim = false;
 
     // Orbs
     std::array<Entity, LichComponent::NR_FIRE_ORBS>  fireOrbs;
