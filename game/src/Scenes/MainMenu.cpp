@@ -36,9 +36,9 @@ void MainMenu::init()
 	this->setComponent<ParticleSystem>(fireflies);
 	ParticleSystem& firefliesPS = this->getComponent<ParticleSystem>(fireflies);
 	firefliesPS.maxlifeTime = 2.0f;
-	firefliesPS.numParticles = 8;
+	firefliesPS.numParticles = 6;
 	firefliesPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/firefliesParticle.png");
-	firefliesPS.startSize = glm::vec2(0.7f);
+	firefliesPS.startSize = glm::vec2(1.5f);
 	firefliesPS.endSize = glm::vec2(0.0f);
 	firefliesPS.startColor = glm::vec4(0.0f);
 	firefliesPS.endColor = glm::vec4(1.0f);
@@ -50,6 +50,27 @@ void MainMenu::init()
 	firefliesPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, -1.0f, 0.0f);
 	firefliesPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 
+	// Leaves particle system
+	this->leaves = this->createEntity();
+	Transform& leavesTransform = this->getComponent<Transform>(leaves);
+	leavesTransform.position = glm::vec3(-20.0f, 20.0f, 7.0f);
+
+	this->setComponent<ParticleSystem>(leaves);
+	ParticleSystem& leavesPS = this->getComponent<ParticleSystem>(leaves);
+	leavesPS.maxlifeTime = 12.0f;
+	leavesPS.numParticles = 128;
+	leavesPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/leafParticle.png");
+	leavesPS.startSize = glm::vec2(0.0f);
+	leavesPS.endSize = glm::vec2(0.7f);
+	leavesPS.startColor = glm::vec4(1.0f);
+	leavesPS.endColor = glm::vec4(0.3f);
+	leavesPS.velocityStrength = 5.0f;
+	leavesPS.acceleration = glm::vec3(0.0f, 0.0f, 0.0f);
+	leavesPS.spawnRate = 1.0f;
+	leavesPS.coneSpawnVolume.diskRadius = 10.5f;
+	leavesPS.coneSpawnVolume.coneAngle = 140.0f;
+	leavesPS.coneSpawnVolume.localDirection = glm::vec3(1.0f, -1.0f, 0.2f);
+	leavesPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 
 	this->settingsBackgroundId =
 		this->getResourceManager()->addTexture(
@@ -73,6 +94,7 @@ void MainMenu::init()
 	);
 	DirectionalLight& dirLight =
 		this->getComponent<DirectionalLight>(light);
+	dirLight.shadowMapAngleBias = 0.003f;
 
 	this->fontTextureId = Scene::getResourceManager()->addTexture("assets/textures/UI/font.png", { samplerSettings, true });
 	Scene::getUIRenderer()->setBitmapFont(
