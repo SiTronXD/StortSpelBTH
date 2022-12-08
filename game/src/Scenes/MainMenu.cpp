@@ -102,7 +102,7 @@ void MainMenu::start()
 	Transform& t = this->getComponent<Transform>(character);
 	t.rotation = glm::vec3(0, 108, 0);
 
-	this->getAudioHandler()->setMusic("assets/Sounds/BackgroundMusic.ogg");
+	this->getAudioHandler()->setMusic("assets/Sounds/GameMusic/MenuMusic.ogg");
 	this->getAudioHandler()->setMasterVolume(0.5f);
 	this->getAudioHandler()->setMusicVolume(1.f);
 	this->getAudioHandler()->playMusic();
