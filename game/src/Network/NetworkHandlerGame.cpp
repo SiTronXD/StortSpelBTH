@@ -626,7 +626,7 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
     case GameEvent::PLAY_PARTICLE:
         tcpPacket >> i0 >> i1;
         if (serverEntities.find(i1) != serverEntities.end()){
-            //this->playParticle((ParticleTypes)i0, serverEntities[i1]);
+            this->playParticle((ParticleTypes)i0, serverEntities[i1]);
 		}
 		break;
 	case GameEvent::PLAY_PARTICLE_P:
@@ -1249,18 +1249,25 @@ void NetworkHandlerGame::setPerks(const Perks perk[])
 
 void NetworkHandlerGame::playParticle(const ParticleTypes& particleType, Entity& entity)
 {
-    if (!this->sceneHandler->getScene()->hasComponents<ParticleSystem>(entity))
+    Scene* scene = sceneHandler->getScene();
+	if (particleType == ParticleTypes::BLOOD) {
+		int bloodEntity = scene->createEntity();
+		scene->getComponent<Transform>(bloodEntity).position = scene->getComponent<Transform>(entity).position;
+
+		scene->setComponent<ParticleSystem>(bloodEntity);
+		ParticleSystem& partSys = scene->getComponent<ParticleSystem>(bloodEntity);
+        partSys = this->getBloodParticleSystem();
+		partSys.spawn = true;
+	}
+    else if (!scene->hasComponents<ParticleSystem>(entity))
     {
-    	this->sceneHandler->getScene()->setComponent<ParticleSystem>(entity);
+    	scene->setComponent<ParticleSystem>(entity);
     	
-		ParticleSystem& partSys = this->sceneHandler->getScene()->getComponent<ParticleSystem>(entity);
+		ParticleSystem& partSys = scene->getComponent<ParticleSystem>(entity);
 		switch (particleType)
 		{
 		case ParticleTypes::HEAL:
 			partSys = this->getHealParticleSystem();
-			break;
-		case ParticleTypes::BLOOD:
-			partSys = this->getBloodParticleSystem();
 			break;
 		case ParticleTypes::SWARM:
 			partSys = this->getSwarmParticleSystem();
@@ -1270,9 +1277,6 @@ void NetworkHandlerGame::playParticle(const ParticleTypes& particleType, Entity&
 			break;
 		}
 		partSys.spawn = true;
-
-		// Mark to remove component when particle system is done
-		std::strcpy(partSys.name, "RmvComponent");
     }
 }
 
