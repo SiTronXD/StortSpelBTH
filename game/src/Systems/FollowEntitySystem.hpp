@@ -30,7 +30,7 @@ public:
 			const FollowEntity& followEntityComponent)
 		{
 			// Make sure entity still is valid
-			if (scene->entityValid(followEntityComponent.entityToFollow))
+			if (this->scene->entityValid(followEntityComponent.entityToFollow))
 			{
 				// Follow
 				transform.position =
