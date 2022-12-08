@@ -244,6 +244,7 @@ void NetworkHandlerGame::init()
 {
     this->cleanUp();
     this->deletedParticleSystems = false;
+    this->moveSound = this->resourceManger->addSound("assets/Sounds/PlayerSounds/RunningSound.ogg");
 	this->perkMeshes[0] = this->resourceManger->addMesh("assets/models/Perk_Hp.obj");
 	this->perkMeshes[1] = this->resourceManger->addMesh("assets/models/Perk_Dmg.obj");
 	this->perkMeshes[2] = this->resourceManger->addMesh("assets/models/Perk_AtkSpeed.obj");
@@ -531,6 +532,18 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 			}
 		}
 		break;
+    case GameEvent::PLAY_PLAYER_SOUND:
+        tcpPacket >> i0 >> i1 >> f0;
+        for (int i = 0; i < otherPlayersServerId.size(); i++)
+        {
+			if (otherPlayersServerId[i] == i0) 
+			{
+				//what shall be the id
+				this->sceneHandler->getAudioHandler()->playSound(otherPlayers[i].first, i1, f0);
+				break;
+			}
+		}
+		break;
     case GameEvent::PLAYER_SETHP:
         tcpPacket >> i0 >> i1;
         if (i0 == this->ID)
@@ -691,6 +704,13 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 	case GameEvent::END_GAME:
 		((GameScene*)this->sceneHandler->getScene())->endGame();
 		break;
+	case GameEvent::CLOSE_OLD_DOORS:
+		tcpPacket >> i0;
+		roomHandler->multiplayerToggleCurrentDoors(i0);
+		break;
+	case GameEvent::CLOSE_NEW_DOORS:
+		roomHandler->mutliplayerCloseDoors();
+		break;
 	default:
 		break;
 	}
@@ -843,6 +863,11 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientIndex, s
 		server->sendToAllClientsTCP(packet);
         
 		break;
+    case GameEvent::PLAY_PLAYER_SOUND:
+            tcpPacket >> i0 >> f0;
+			packet << (int)GameEvent::PLAY_PLAYER_SOUND << server->getClientID(clientIndex) << i0 << f0;
+            server->sendToAllOtherClientsTCP(packet, clientIndex);
+		break;
 	case GameEvent::PLAYER_SET_GHOST:
 		packet << (int)GameEvent::PLAYER_SET_GHOST << server->getClientID(clientIndex);
 		server->sendToAllOtherClientsTCP(packet, clientIndex);
@@ -976,6 +1001,7 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 	this->playerEntities.resize(size);
 	this->swords.resize(size);
 	this->playerPosLast.resize(size);
+    this->currDistToStepSound.resize(size, 0);
 	this->playerPosCurrent.resize(size);
 	float angle = 360.0f / (size + 1);
 
@@ -985,6 +1011,7 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 	for (int i = 0; i < size; i++)
 	{
 		this->playerEntities[i] = scene->createEntity();
+        this->otherPlayers[i].first = this->playerEntities[i];
 		scene->setComponent<MeshComponent>(this->playerEntities[i], playerMesh);
 		scene->setComponent<AnimationComponent>(this->playerEntities[i]);
 		scene->setComponent<Collider>(this->playerEntities[i], Collider::createCapsule(2, 10, glm::vec3(0, 7.3, 0)));
@@ -1033,9 +1060,18 @@ void NetworkHandlerGame::interpolatePositions()
 	for (int i = 0; i < this->playerEntities.size(); i++)
 	{
 		Transform& t = scene->getComponent<Transform>(this->playerEntities[i]);
-		t.position = this->playerPosLast[i] + percent * (this->playerPosCurrent[i] - this->playerPosLast[i]);
+		glm::vec3 newPosition = this->playerPosLast[i] + percent * (this->playerPosCurrent[i] - this->playerPosLast[i]);
+        if (newPosition.y < 3)//3 seems to be an ok value
+        {    
+            currDistToStepSound[i] -= glm::length(newPosition - t.position);
+		}
+        t.position = newPosition;
 		UI->renderString(this->otherPlayers[i].second, t.position + glm::vec3(0.0f, 20.0f, 0.0f) + t.forward(), glm::vec2(150.0f));
-
+        if (currDistToStepSound[i] <= 0)
+        {
+			currDistToStepSound[i] = distToStepSound;
+            this->sceneHandler->getAudioHandler()->playSound(this->otherPlayers[i].first, moveSound, 15.f);
+		}
 		// Put sword in characters hand and keep updating it
 		scene->getComponent<Transform>(this->swords[i]).setMatrix(
 			this->resourceManger->getJointTransform(

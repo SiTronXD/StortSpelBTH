@@ -143,6 +143,7 @@ public:
 				{
 					this->scene->setComponent<Collider>(this->swordCollID, Collider::createCapsule(3.f, 18.f, glm::vec3(0), true));
 					combat.normalAttack = false;
+					playerEffectSound(this->attackSounds[swing], 10.f);
 				}
 			}
 
@@ -173,10 +174,10 @@ public:
 			
 			if (isPlayingRunAnim)
 			{
-				if (this->walkTimer < 0.f)
+				if (this->walkTimer <= 0.f)
 				{
 					this->walkTimer = this->walkTime;
-					playerEffectSound(this->moveSound, 10.f);
+					playerEffectSound(this->moveSound, 15.f);
 				}
 			}
 
@@ -447,8 +448,6 @@ public:
 		this->script->getScriptComponentValue(playerScript, cannotAttack, "isDodging");
 		if (!cannotAttack)
 		{
-			playerEffectSound(this->attackSounds[swing], 10.f);
-
 			int currentAnimation = 0;
 			this->script->getScriptComponentValue(playerScript, currentAnimation, "currentAnimation");
 
@@ -620,6 +619,7 @@ public:
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive1;
 			setupAttack("spinAttack", 6, combat.comboLightCd, combat.animationMultiplier[comboActive1]);
+			playerEffectSound(this->attackSounds[swing], 10.f);
 		}
 		else if (idx == 1)
 		{
@@ -631,6 +631,7 @@ public:
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive2;
 			setupAttack("mixAttack", 5, combat.comboMixCd, combat.animationMultiplier[comboActive2]);
+			playerEffectSound(this->attackSounds[swing], 10.f);
 		}
 		else if (idx == 2)
 		{
@@ -642,6 +643,7 @@ public:
 			combat.comboOrder.clear();
 			combat.activeAttack = comboActive3;
 			setupAttack("slashAttack", 5, combat.comboHeavyCd, combat.animationMultiplier[comboActive3]);
+			playerEffectSound(this->attackSounds[swing], 10.f);
 		}
 	};
 
@@ -770,6 +772,23 @@ public:
 		this->script->setScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
 		this->script->setScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
 
+		std::cout << maxSpeed << " C++ MaxSpeed" << std::endl << std::endl;
+		if (maxSpeed > 58)
+		{
+			this->walkTime = 0.3f;
+			std::cout << "ABOVE 60" << std::endl << std::endl;
+		}
+		else if (maxSpeed > 46)
+		{
+			this->walkTime = 0.35f;
+			std::cout << "ABOVE 44" << std::endl << std::endl;
+		}
+		else if (maxSpeed >= 36)
+		{
+			this->walkTime = 0.45f;
+			std::cout << "ABOVE 36" << std::endl << std::endl;
+		}
+
 		if (currentAnimation == 2)
 		{
 			this->script->setScriptComponentValue(playerScript, 3, "currentAnimation");
@@ -854,6 +873,7 @@ public:
 		this->script->setScriptComponentValue(playerScript, 1.8f, "runAnimTime"); // 0.7f
 		this->script->setScriptComponentValue(playerScript, 2.8f, "sprintAnimTime"); // 1.2f
 		this->script->setScriptComponentValue(playerScript, 3.f, "dodgeAnimTime");
+		this->walkTime = 0.5f;
 	}
 
 	void setDefaultStamina(Combat& combat)
@@ -1108,6 +1128,12 @@ public:
 	void playerEffectSound(int soundIdx, float volume)
 	{
 		this->audio->playSound(this->playerID, soundIdx, volume);
+        if (soundIdx != this->moveSound && networkHandler->isConnected())
+        {
+			sf::Packet p;
+            p << (int)GameEvent::PLAY_PLAYER_SOUND << soundIdx << volume;
+            networkHandler->sendDataToServerTCP(p);
+		}
 	}
 	
 	void pickUpAbility(Entity entity)
