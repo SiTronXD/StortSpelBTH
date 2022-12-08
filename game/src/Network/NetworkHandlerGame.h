@@ -44,6 +44,8 @@ enum class GameEvent
 	SPAWN_PORTAL,
 	NEXT_LEVEL,// CurrentLevel difficulty, 
 	END_GAME, // All players dead
+	CLOSE_OLD_DOORS,// Index of next room
+	CLOSE_NEW_DOORS,// :)
 };
 
 enum class ItemType
