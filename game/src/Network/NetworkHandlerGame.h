@@ -106,7 +106,7 @@ private:
     std::map<int, std::pair<glm::vec3, glm::vec3>> entityToPosScale;
     std::map<int, std::pair<glm::vec3, glm::vec3>> entityLastPosScale;
     std::vector<float> currDistToStepSound;
-    inline static const float distToStepSound = 5.f;
+    inline static const float distToStepSound = 20.f;
     uint32_t moveSound;
 
 	// Client helpers
