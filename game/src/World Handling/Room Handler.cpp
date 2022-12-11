@@ -588,7 +588,7 @@ void RoomHandler::generate(uint32_t seed)
 			}
 
 			entity = this->scene->createEntity();
-			this->scene->setComponent<Collider>(entity, Collider::createCapsule(24.f, 200.f));
+			this->scene->setComponent<Collider>(entity, Collider::createCapsule(8.f, 200.f));
 			Transform& rockTra = this->scene->getComponent<Transform>(entity);
 			rockTra.position = glm::vec3(8.15f, -36.5f, -7.2f);
 			rockTra.position += glm::vec3(TILE_WIDTH * 0.5f, 0.f, TILE_WIDTH * 0.5f);
@@ -668,7 +668,7 @@ void RoomHandler::generate(uint32_t seed)
 		light.color = DOOR_LAMP_COLOUR * DOOR_LAMP_INTENSITY;
 		light.positionOffset = DOOR_LAMP_OFFSET;
 	}
-
+	
 	for (int i = 1; i < numTotRooms; i++)
 	{
 		this->deactivateRoom(i);	
@@ -1056,11 +1056,13 @@ void RoomHandler::setConnections(int numMainRooms, const std::vector<glm::ivec2>
 		this->paths[i].colliderPos.z -= TILE_WIDTH * 0.5f;
 		if (this->verticalConnection[i])
 		{ 
-			this->paths[i].box.extents.z -= TILE_WIDTH * 0.8f;
+			this->paths[i].box.extents.z -= TILE_WIDTH * 0.5f;
+			this->paths[i].colliderPos.z += TILE_WIDTH * 0.4f;
 		}
 		else
 		{ 
-			this->paths[i].box.extents.x -= TILE_WIDTH * 0.8f;
+			this->paths[i].box.extents.x -= TILE_WIDTH * 0.5f;
+			this->paths[i].colliderPos.x += TILE_WIDTH * 0.4f * (this->paths[i].colliderPos.x > 0.f ? 1.f : -1.f);
 		}
 	}
 }
