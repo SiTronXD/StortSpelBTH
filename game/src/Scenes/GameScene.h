@@ -68,7 +68,7 @@ private:
   float deathTimer;
   bool isDead;
   bool end = false; // End game in multiplayer
-  bool spawnPortal = false; //spawn portal in multiplayer
+  bool spawnPortal = false; // Spawn portal in multiplayer
   
   bool safetyCleanDone = false;
   uint32_t timeWhenEnteredRoom = 0;

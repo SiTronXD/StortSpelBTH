@@ -320,6 +320,9 @@ void GameScene::update()
 
     networkHandler->deleteInitialParticleSystems();
 
+    Script& playerScript = this->getComponent<Script>(this->playerID);
+    this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
+
     if (!networkHandler->isConnected() && networkHandler->getStatus() == ServerStatus::WAITING)
     {   
         this->aiHandler->update(Time::getDT());
@@ -366,14 +369,12 @@ void GameScene::update()
         // Switch scene if the player is dead
         if (this->hasComponents<HealthComp>(this->playerID))
         {
-			Script& playerScript = this->getComponent<Script>(this->playerID);
             int tempHealth = this->getComponent<HealthComp>(this->playerID).health;
             if (tempHealth <= 0 && !this->isDead)
             {
                 this->isDead = true;
                 this->deathTimer = 1.5f;
                 this->ghostTransitionTimer = 0.0f;
-                this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
             }
             else if (this->isDead)
             {
@@ -383,13 +384,6 @@ void GameScene::update()
                     if (this->deathTimer <= 0.0f)
                     {
                         this->fadeTimer = 0.0f;
-                    }
-
-                    int currentAnim = -1;
-                    this->getScriptHandler()->getScriptComponentValue(playerScript, currentAnim, "currentAnimation");
-                    if (currentAnim != 7)
-                    {
-                        this->getScriptHandler()->setScriptComponentValue(playerScript, tempHealth, "currentHealth");
                     }
                 }
                 else if (!this->isGhost)
@@ -416,10 +410,6 @@ void GameScene::update()
 
                 HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
                 healthComp.health = healthComp.maxHealth;
-                
-                Script& playerScript = this->getComponent<Script>(this->playerID);
-                this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
-                this->getScriptHandler()->setScriptComponentValue(playerScript, healthComp.health, "currentHealth");
 
                 this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = *this->ghostMat;
                 this->getComponent<Transform>(this->playerID).position = this->roomHandler.getRespawnPos();
@@ -467,7 +457,7 @@ void GameScene::update()
         // If player is dead make the player a ghost with no combat
         if (this->hasComponents<HealthComp>(this->playerID))
         {
-            Script& playerScript = this->getComponent<Script>(this->playerID);
+            //Script& playerScript = this->getComponent<Script>(this->playerID);
             int tempHealth = this->getComponent<HealthComp>(this->playerID).health;
             if (tempHealth <= 0 && !this->isDead && !this->isGhost)
             {
@@ -475,7 +465,6 @@ void GameScene::update()
                 this->combatDisabled = true;
                 this->deathTimer = 1.5f;
                 this->ghostTransitionTimer = 0.0f;
-                this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
                 HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
                 healthComp.health = 0;
             }
@@ -487,13 +476,6 @@ void GameScene::update()
                     this->fadeTimer = 0.0f;
                     this->isGhost = true;
                     this->hasRespawned = false;
-                }
-
-                int currentAnim = -1;
-                this->getScriptHandler()->getScriptComponentValue(playerScript, currentAnim, "currentAnimation");
-                if (currentAnim != 7)
-                {
-                    this->getScriptHandler()->setScriptComponentValue(playerScript, tempHealth, "currentHealth");
                 }
             }
         }
@@ -509,10 +491,6 @@ void GameScene::update()
             this->isDead = false;
 
             this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = *this->ghostMat;
-            Script& playerScript = this->getComponent<Script>(this->playerID);
-            this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
-            this->getScriptHandler()->setScriptComponentValue(playerScript, 1, "currentHealth");
-
             this->networkHandler->setGhost();
         }
         if (this->isGhost && this->ghostTransitionTimer > 1.0f)
@@ -902,7 +880,7 @@ void GameScene::onCollisionExit(Entity e1, Entity e2)
 
 void GameScene::revivePlayer()
 {
-    if (this->isGhost)
+    if (this->isGhost || this->isDead)
     {
         // Get back half hp
         this->getComponent<HealthComp>(this->playerID).health = this->getComponent<HealthComp>(this->playerID).maxHealth / 2;
