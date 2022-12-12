@@ -23,6 +23,8 @@ void decreaseFps();
 double heavyFunction(double value);
 #endif
 
+const float GameScene::FADE_TIMER_DONE = 2.75f;
+
 void GameScene::testParticleSystem(const Entity& particleSystemEntity)
 {
     // Used for testing particle systems
@@ -519,7 +521,7 @@ void GameScene::update()
     }
 
     // Fade in/out to black
-    if (this->fadeTimer < 2.75f)
+    if (this->fadeTimer < FADE_TIMER_DONE)
     {
         this->getUIRenderer()->setTexture(this->blackTextureIndex);
         this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
@@ -890,7 +892,7 @@ void GameScene::revivePlayer()
         this->combatDisabled = false;
         this->hasRespawned = false;
         this->ghostTransitionTimer = 0.0f;
-        if (fadeTimer >= 2.75f)
+        if (fadeTimer >= FADE_TIMER_DONE)
         {
             this->fadeTimer = 0.0f;
         }
@@ -902,7 +904,7 @@ void GameScene::endGame()
 {
     if (!this->end)
     {
-        if (fadeTimer >= 2.75f)
+        if (fadeTimer >= FADE_TIMER_DONE)
         {
             this->fadeTimer = 0.0f;
         }

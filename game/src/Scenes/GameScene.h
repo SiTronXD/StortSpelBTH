@@ -45,6 +45,8 @@ private:
   NetworkHandlerGame* networkHandler;
   std::string levelString;
 
+  const static float FADE_TIMER_DONE;
+
   // Timer that "stops" if paused
   Entity settingsEntity;
   float timer = 0.0f;
