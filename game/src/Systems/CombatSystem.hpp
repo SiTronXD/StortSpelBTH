@@ -372,7 +372,7 @@ public:
 				}
 				if (this->canHit)
 				{
-					this->networkHandler->sendHitOn(hitID[i], (int)combat.dmgArr[combat.activeAttack], combat.knockbackArr[combat.activeAttack]);
+					this->networkHandler->sendHitOn(hitID[i], (int)combat.dmgArr[combat.activeAttack] * 20, combat.knockbackArr[combat.activeAttack]);
 					this->hitEnemies.emplace_back(hitID[i]);
 				}
 			}
