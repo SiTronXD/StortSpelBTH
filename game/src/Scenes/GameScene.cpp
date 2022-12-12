@@ -886,6 +886,7 @@ void GameScene::revivePlayer()
         this->getComponent<HealthComp>(this->playerID).health = this->getComponent<HealthComp>(this->playerID).maxHealth / 2;
 
         this->isGhost = false;
+        this->isDead = false;
         this->combatDisabled = false;
         this->hasRespawned = false;
         this->ghostTransitionTimer = 0.0f;
