@@ -73,7 +73,7 @@ void ServerGameMode::update(float dt)
         spawnHandler.spawnEnemiesIntoRoom(this->level);
 
         this->newRoomFrame = true;
-        this->timeWhenEnteredRoom = Time::getTimeSinceStart();
+        this->timeWhenEnteredRoom = (uint32_t)Time::getTimeSinceStart();
         this->safetyCleanDone = false; 
     }
     else if (this->newRoomFrame)
@@ -248,7 +248,7 @@ void ServerGameMode::makeDataSendToClient()
     int nrOfMonsters = 0;
     for (auto& it : aiHandler.FSMsEntities)
     {
-        nrOfMonsters += it.second.size();
+        nrOfMonsters += (int)it.second.size();
     }
     this->addEventUdp({(int)GameEvent::UPDATE_MONSTER});
     this->addEventUdp({(int)nrOfMonsters});
@@ -278,7 +278,7 @@ void ServerGameMode::makeDataSendToClient()
                     this->addEvent(
                         {(int)GameEvent::ENTITY_SET_HP,
                         (int)it.second[i],
-                         this->getComponent<SwarmComponent>(it.second[i]).life}
+                        (int)this->getComponent<SwarmComponent>(it.second[i]).life}
                      );
                     lastSwarmHp[i].health = this->getComponent<SwarmComponent>(it.second[i]).life;
                 }
@@ -290,7 +290,7 @@ void ServerGameMode::makeDataSendToClient()
                     this->addEvent(
                         {(int)GameEvent::ENTITY_SET_HP,
                         (int)it.second[i],
-                        this->getComponent<LichComponent>(it.second[i]).life}
+                        (int)this->getComponent<LichComponent>(it.second[i]).life}
                      );
                     lastLichHp[i].health = this->getComponent<LichComponent>(it.second[i]).life;
                 }
@@ -302,7 +302,7 @@ void ServerGameMode::makeDataSendToClient()
                     this->addEvent(
                         {(int)GameEvent::ENTITY_SET_HP,
                         (int)it.second[i],
-                         this->getComponent<TankComponent>(it.second[i]).life}
+                        (int)this->getComponent<TankComponent>(it.second[i]).life}
                      );
                     lastTankHp[i].health = this->getComponent<TankComponent>(it.second[i]).life;
                 }
@@ -321,7 +321,7 @@ void ServerGameMode::makeDataSendToClient()
             this->addEvent(
                 {(int)GameEvent::PLAYER_SETHP,
                  getPlayer(i),
-                 this->getComponent<HealthComp>(getPlayer(i)).health}
+                (int)this->getComponent<HealthComp>(getPlayer(i)).health}
             );
             if (this->getComponent<HealthComp>(getPlayer(i)).health < lastPlayerHps[i].health) 
             {
@@ -547,20 +547,20 @@ void ServerGameMode::updatePlayerHp(int id, int health)
     HealthComp& healthComp = this->getComponent<HealthComp>(getPlayer(id));
     if (healthComp.health == this->lastPlayerHps[id].health) // No current change
     {
-        healthComp.health = health;
-        this->lastPlayerHps[id].health = health;
+        healthComp.health = (float)health;
+        this->lastPlayerHps[id].health = (float)health;
     }
 }
 
 int ServerGameMode::spawnItem(ItemType type, int otherType, float multiplier)
 {
 	this->curItems.push_back({ type, otherType, multiplier });
-	return this->curItems.size() - 1;
+	return (int)this->curItems.size() - 1;
 }
 
 void ServerGameMode::deleteItem(int playerID, int index, ItemType type, int otherType, float multiplier)
 {
-    int size = this->curItems.size();
+    int size = (int)this->curItems.size();
     if (index >= size || index < 0)
     {
         return;

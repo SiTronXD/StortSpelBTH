@@ -21,7 +21,7 @@ void SpawnHandler::spawnEnemiesIntoRoom(int level)
     this->tilePicker.init(this->roomHandler->getFreeTileInfos());
     
     this->nrOfEnemiesPerRoom *= this->tilePicker.size();
-    this->nrOfEnemiesPerRoom = std::clamp((int)this->nrOfEnemiesPerRoom, 0 , SpawnHandler::MAX_NR_OF_ENEMIES);
+    this->nrOfEnemiesPerRoom = (float)std::clamp((int)this->nrOfEnemiesPerRoom, 0 , SpawnHandler::MAX_NR_OF_ENEMIES);
 
     float a  = this->tilePicker.size() * MAX_ENEMIES_PER_TILES *PERCENTAGE_TANKS  * levelMultipler;
     float a2 = this->tilePicker.size() * MAX_ENEMIES_PER_TILES *PERCENTAGE_LICHS  * levelMultipler;
@@ -786,7 +786,7 @@ ImguiLambda SpawnHandler::TankImgui()
             auto& entiyFSMAgentComp		= this->sceneHandler->getScene()->getComponent<FSMAgentComponent>(entityId);
             auto& entityRigidBody		= this->sceneHandler->getScene()->getComponent<Rigidbody>(entityId);
             const glm::vec3& tankPos    = this->sceneHandler->getScene()->getComponent<Transform>(entityId).position;
-            int& health					= entityTankComponent.life;
+            float& health				= entityTankComponent.life;
             std::string fis				= "Friends in sight: "+std::to_string(entityTankComponent.friendsInSight.size());
             std::string af				= "All friends alive: "+std::to_string(entityTankComponent.allFriends.size());
             float& gravity 				= entityRigidBody.gravityMult;
@@ -806,7 +806,7 @@ ImguiLambda SpawnHandler::TankImgui()
 
             ImGui::Text(fis.c_str());
             ImGui::Text(af.c_str());
-            ImGui::SliderInt("health",                  &health,               0,      entityTankComponent.FULL_HEALTH);
+            ImGui::SliderFloat("health",                &health,               0.0f,      entityTankComponent.FULL_HEALTH);
             ImGui::SliderFloat("humpForce",             &humpForce,            0.0f,   200.0f);
             ImGui::SliderFloat("humpYForce",            &humpYForce,           0.0f,   200.0f);
             ImGui::SliderFloat("humpShockwaveSpeed",    &humpShockwaveSpeed,   0.0f,   200.0f);
@@ -848,10 +848,10 @@ ImguiLambda SpawnHandler::LichImgui()
         auto& lichComponent     = this->sceneHandler->getScene()->getComponent<LichComponent>(entityId);
         auto& entiyFSMAgentComp = this->sceneHandler->getScene()->getComponent<FSMAgentComponent>(entityId);
         auto& entityRigidBody   = this->sceneHandler->getScene()->getComponent<Rigidbody>(entityId);
-        int& health             = lichComponent.life;
+        float& health           = lichComponent.life;
         float& mana             = lichComponent.mana;
         float& speed            = lichComponent.speed;
-        float& huntSpeed            = lichComponent.huntSpeed;
+        float& huntSpeed        = lichComponent.huntSpeed;
         float& sightRange       = lichComponent.sightRadius;
         float& personalspaceRad = lichComponent.peronalSpaceRadius;
         float& attackRange      = lichComponent.attackRadius;
@@ -877,7 +877,7 @@ ImguiLambda SpawnHandler::LichImgui()
         
         ImGui::Checkbox("Attack", &tempAttack);
         ImGui::SliderFloat("mana", &mana, 0, 100);
-        ImGui::SliderInt("health", &health, 0, lichComponent.FULL_HEALTH);
+        ImGui::SliderFloat("health", &health, 0.0f, lichComponent.FULL_HEALTH);
         ImGui::SliderFloat("speed", &speed, 0, 100);
         ImGui::SliderFloat("huntSpeed", &huntSpeed, 0, 100);
         ImGui::SliderFloat("gravity", &gravity, 0, 10);
@@ -902,18 +902,18 @@ ImguiLambda SpawnHandler::SwarmImgui()
             auto& entityTransform           = this->sceneHandler->getScene()->getComponent<Transform>(entityId);
             float& posY                     = entityTransform.position.y;
             float& rotSpeed                 = entitySwarmComponent.idleRotSpeed;
-            int& health             = entitySwarmComponent.life;
-            float& jumpForce	    = entitySwarmComponent.jumpForce;
-            float& jumpForceY	    = entitySwarmComponent.jumpY;
-            float& speed            = entitySwarmComponent.speed;
-            float& attackRange      = entitySwarmComponent.attackRange;
-            float& sightRange       = entitySwarmComponent.sightRadius;
-            bool& inCombat          = entitySwarmComponent.inCombat;
-            float& attackPerSec     = entitySwarmComponent.lightAttackTime;
-            float& lightAttackDmg   = entitySwarmComponent.lightHit;
-            float& gravity 		    = entityRigidBody.gravityMult;
-            std::string& status     = entiyFSMAgentComp.currentNode->status;   
-            const glm::vec3& blobPos = this->sceneHandler->getScene()->getComponent<Transform>(entityId).position;
+            float& health                   = entitySwarmComponent.life;
+            float& jumpForce	            = entitySwarmComponent.jumpForce;
+            float& jumpForceY	            = entitySwarmComponent.jumpY;
+            float& speed                    = entitySwarmComponent.speed;
+            float& attackRange              = entitySwarmComponent.attackRange;
+            float& sightRange               = entitySwarmComponent.sightRadius;
+            bool& inCombat                  = entitySwarmComponent.inCombat;
+            float& attackPerSec             = entitySwarmComponent.lightAttackTime;
+            float& lightAttackDmg           = entitySwarmComponent.lightHit;
+            float& gravity 		            = entityRigidBody.gravityMult;
+            std::string& status             = entiyFSMAgentComp.currentNode->status;   
+            const glm::vec3& blobPos        = this->sceneHandler->getScene()->getComponent<Transform>(entityId).position;
 
             ImGui::Text(status.c_str());            
             ImGui::Text(
@@ -923,7 +923,7 @@ ImguiLambda SpawnHandler::SwarmImgui()
                 (int)blobPos.z
             );
             ImGui::Separator();    
-            ImGui::SliderInt("health", &health, 0, 100);
+            ImGui::SliderFloat("health", &health, 0, 100);
             ImGui::SliderFloat("speed", &speed, 0, 100);
             ImGui::SliderFloat("pos y", &posY, 0, 15);
             ImGui::SliderFloat("rot speed", &rotSpeed, 0, 200);

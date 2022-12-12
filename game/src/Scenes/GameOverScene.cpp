@@ -45,7 +45,7 @@ void GameOverScene::init()
 		glm::uvec2(50, 50)
 	);
 
-	this->setBloomBufferLerpAlpha(0.340);
+	this->setBloomBufferLerpAlpha(0.340f);
 	this->setBloomNumMipLevels(7);
 
 	this->cam = this->createEntity();

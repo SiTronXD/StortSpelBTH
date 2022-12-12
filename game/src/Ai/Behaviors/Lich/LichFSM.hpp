@@ -8,7 +8,7 @@ struct LichAttack
 {
     ATTACK_STRATEGY type;
     float manaCost;
-    int damage;
+    float damage;
     float cooldownTimer;
     float cooldownTimerOrig;
     float castTimeTimer;
@@ -128,15 +128,15 @@ struct LichComponent
     };
 
     //Ints
-    int LOW_HEALTH              = 30;            
-    int FULL_HEALTH             = 300;  
-    int ESCAPE_HEALTH           = FULL_HEALTH / 4; 
-    int BACK_TO_FIGHT_HEALTH    = FULL_HEALTH / 2; 
     int numBones                = 0;
-    int life                    = FULL_HEALTH;    
 
 
     //Floats
+    float LOW_HEALTH            = 30.0f;            
+    float FULL_HEALTH           = 300.0f;  
+    float ESCAPE_HEALTH         = FULL_HEALTH / 4.0f; 
+    float BACK_TO_FIGHT_HEALTH  = FULL_HEALTH / 2.0f; 
+    float life                  = FULL_HEALTH;    
     float life_float            = 0.0f;//Dont touch!
     float tempRotAngle			= 0.0f;//Dont touch!
     float creepRotSpeed         = 60.0f;

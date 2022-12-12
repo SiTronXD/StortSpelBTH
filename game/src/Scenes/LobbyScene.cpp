@@ -169,7 +169,7 @@ void LobbyScene::update()
     if (netPlayers.size() != this->activePlayers - 1)
     {
         this->playersNames.clear();
-        this->activePlayers = netPlayers.size() + 1;
+        this->activePlayers = (int)netPlayers.size() + 1;
         this->getComponent<AnimationComponent>(this->players[0]).aniSlots[0].timer = 0.0f;
         for (int i = 0; i < netPlayers.size(); i++)
         {

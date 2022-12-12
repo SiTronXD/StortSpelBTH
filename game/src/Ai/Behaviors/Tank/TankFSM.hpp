@@ -56,12 +56,11 @@ struct TankComponent
         viewLich.each(lichLamda);
 	}
 
-	//Ints
-    int FULL_HEALTH					= 500;  
-    int life						= FULL_HEALTH;
-	int friendHealthRegen			= 15;
 
 	//Floats
+    float FULL_HEALTH				= 500.0f;  
+    float life						= FULL_HEALTH;
+	float friendHealthRegen			= 15.0f;
 	float idleSpeed					= 10.0f;
 	float shieldSpeed				= 5.0f;
 	float cahargeSpeed				= 200.0f;

@@ -173,7 +173,7 @@ void RoomHandler::mutliplayerCloseDoors()
 void RoomHandler::serverActivateCurrentRoom()
 {
 	this->activateRoom(this->activeIndex);
-	for (size_t i = 0; i < this->rooms.size(); i++)
+	for (int i = 0; i < (int)this->rooms.size(); i++)
 	{
 		if (i != this->activeIndex)
 		{
@@ -316,7 +316,7 @@ bool RoomHandler::playersInPathway(const std::vector<Entity>& players)
 	Collider& p1Col = this->scene->getComponent<Collider>(players[0]);
 	Transform& p1Tra = this->scene->getComponent<Transform>(players[0]);
 
-	for (size_t i = 0; i < this->rooms.size(); i++)
+	for (int i = 0; i < (int)this->rooms.size(); i++)
 	{
 		if (this->physicsEngine->testContactPair(
 			this->rooms[i].box, this->rooms[i].colliderPos, glm::vec3(0.f), p1Col, p1Tra.position, p1Tra.rotation))
@@ -686,7 +686,7 @@ void RoomHandler::generate(uint32_t seed)
 	{
 		if (network->isConnected())
 		{
-			for (size_t i = 1; i < this->rooms.size(); i++)
+			for (int i = 1; i < (int)this->rooms.size(); i++)
 			{
 				this->forceToggleDoors(i, false);
 				this->deactivateRoom(i);
@@ -842,7 +842,7 @@ bool RoomHandler::inExitRoom() const
 bool TileInfo::checkValidTileInfoVector(const std::vector<TileInfo>& tileInfos, int roomIndex)
 {
     bool tileInfosValid = true; 
-    for(size_t i = 0; i < tileInfos.size(); i++ )
+    for(int i = 0; i < (int)tileInfos.size(); i++ )
     {
         if(!tileInfos[i].amIMyNeighboursNeighbour(i, tileInfos))
         {
@@ -1027,8 +1027,8 @@ void RoomHandler::setConnections(int numMainRooms, const std::vector<glm::ivec2>
 			pair.first = this->roomExitPoints[curCon.y].positions[UPPER_P];
 			pair.second = this->roomExitPoints[curCon.x].positions[LOWER_P];	
 			
-			this->rooms[curCon.y].connPathIndex[UPPER_P] = i;
-			this->rooms[curCon.x].connPathIndex[LOWER_P] = i;
+			this->rooms[curCon.y].connPathIndex[UPPER_P] = (int)i;
+			this->rooms[curCon.x].connPathIndex[LOWER_P] = (int)i;
 		}
 		else
 		{
@@ -1038,8 +1038,8 @@ void RoomHandler::setConnections(int numMainRooms, const std::vector<glm::ivec2>
 			pair.first = this->roomExitPoints[curCon.y].positions[LEFT_P];
 			pair.second = this->roomExitPoints[curCon.x].positions[RIGHT_P];
 
-			this->rooms[curCon.y].connPathIndex[LEFT_P] = i;
-			this->rooms[curCon.x].connPathIndex[RIGHT_P] = i;
+			this->rooms[curCon.y].connPathIndex[LEFT_P] = (int)i;
+			this->rooms[curCon.x].connPathIndex[RIGHT_P] = (int)i;
 		}
 
 		glm::vec3 delta = glm::abs(pair.first - pair.second);

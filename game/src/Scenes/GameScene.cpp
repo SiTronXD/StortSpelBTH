@@ -327,7 +327,7 @@ void GameScene::update()
         if (this->roomHandler.playerNewRoom(this->playerID))
         {
             this->newRoomFrame = true;
-            this->timeWhenEnteredRoom = Time::getTimeSinceStart();
+            this->timeWhenEnteredRoom = (uint32_t)Time::getTimeSinceStart();
             this->safetyCleanDone = false;
 
             this->spawnHandler.spawnEnemiesIntoRoom(this->currentLevel.level);
@@ -367,8 +367,8 @@ void GameScene::update()
         if (this->hasComponents<HealthComp>(this->playerID))
         {
 			Script& playerScript = this->getComponent<Script>(this->playerID);
-            int tempHealth = this->getComponent<HealthComp>(this->playerID).health;
-            if (tempHealth <= 0 && !this->isDead)
+            float tempHealth = this->getComponent<HealthComp>(this->playerID).health;
+            if (tempHealth <= 0.0f && !this->isDead)
             {
                 this->isDead = true;
                 this->deathTimer = 1.5f;
@@ -468,8 +468,8 @@ void GameScene::update()
         if (this->hasComponents<HealthComp>(this->playerID))
         {
             Script& playerScript = this->getComponent<Script>(this->playerID);
-            int tempHealth = this->getComponent<HealthComp>(this->playerID).health;
-            if (tempHealth <= 0 && !this->isDead && !this->isGhost)
+            float tempHealth = this->getComponent<HealthComp>(this->playerID).health;
+            if (tempHealth <= 0.0f && !this->isDead && !this->isGhost)
             {
                 this->isDead = true;
                 this->combatDisabled = true;
@@ -934,7 +934,7 @@ void GameScene::imguiUpdate()
     getScriptHandler()->getGlobal(playerID, playerString);
     auto& playerHealthComp = getComponent<HealthComp>(playerID);
     if(ImGui::Button("INVINCIBLE Player")){
-        playerHealthComp.health = INT_MAX;
+        playerHealthComp.health = 9999999999.9f;
     }
     if(ImGui::Button("Kill Player")){
         playerHealthComp.health = 0; 

@@ -4,8 +4,8 @@
 
 struct HealthComp
 {
-    int health = 100;
-    int maxHealth = 100;
+    float health = 100.0f;
+    float maxHealth = 100.0f;
 
     Entity srcDmgEntity = (Entity) -1;
 };

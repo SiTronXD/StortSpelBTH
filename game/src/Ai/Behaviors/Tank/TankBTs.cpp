@@ -215,7 +215,7 @@ void TankBT::giveFriendsHealth(Entity entityID)
 		    {
 				SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(f.first);
 				swarmComp.shieldedByTank = true;
-				int toAdd = tankComp.friendHealthRegen;
+				float toAdd = tankComp.friendHealthRegen;
 				if((swarmComp.life + toAdd) > swarmComp.FULL_HEALTH)
 				{
 					swarmComp.life = swarmComp.FULL_HEALTH;
@@ -230,7 +230,7 @@ void TankBT::giveFriendsHealth(Entity entityID)
 		    {
 				LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(f.first);
 		        lichComp.shieldedByTank = true;
-				int toAdd = tankComp.friendHealthRegen;
+				float toAdd = tankComp.friendHealthRegen;
 				if((lichComp.life + toAdd) > lichComp.FULL_HEALTH)
 				{
 					lichComp.life = lichComp.FULL_HEALTH;

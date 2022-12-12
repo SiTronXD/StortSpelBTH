@@ -30,7 +30,7 @@ private:
 	const bool* paused;
 	const bool* disabled;
 
-	int lostHealth;
+	float lostHealth;
 	std::vector<uint32_t> attackSounds;
 	uint32_t moveSound;
 	uint32_t takeDmgSound;
@@ -668,8 +668,8 @@ public:
 			setDefaultHp(combat, healthComp);
 			combat.hpMultiplier += perk.multiplier;
 		}
-		float tempHp = (float)healthComp.maxHealth * combat.hpMultiplier;
-		healthComp.maxHealth = (int)tempHp;
+		float tempHp = healthComp.maxHealth * combat.hpMultiplier;
+		healthComp.maxHealth = tempHp;
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 		this->script->setScriptComponentValue(playerScript, healthComp.maxHealth, "maxHealth");
 		healthComp.health = std::min(healthComp.health, healthComp.maxHealth);
@@ -820,8 +820,8 @@ public:
 
 	void setDefaultHp(Combat& combat, HealthComp& healthComp)
 	{
-		float tempHp = (float)healthComp.maxHealth / combat.hpMultiplier;
-		healthComp.maxHealth = (int)(tempHp + 0.5f);
+		float tempHp = healthComp.maxHealth / combat.hpMultiplier;
+		healthComp.maxHealth = (tempHp + 0.5f);
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 		this->script->setScriptComponentValue(playerScript, healthComp.maxHealth, "maxHealth");
 	}

@@ -18,7 +18,7 @@ struct GameSceneLevel
     uint16_t level;
     Perks perks[4];
     Abilities ability;
-    int hp;
+    float hp;
 
     GameSceneLevel() {
         this->level = 0;
@@ -29,7 +29,7 @@ struct GameSceneLevel
         {
                 perks[i] = noPerk;
         }
-        hp = 100;
+        hp = 100.0f;
         ability.abilityType = AbilityType::emptyAbility;
     }
 };
