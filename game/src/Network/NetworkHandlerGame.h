@@ -149,6 +149,7 @@ private:
 	// RoomHandler
     bool newRoomFrame;
     int* numRoomsCleared;
+    bool gettingSeed;
     RoomHandler* roomHandler;
 
     static LichAttack lich_fire;

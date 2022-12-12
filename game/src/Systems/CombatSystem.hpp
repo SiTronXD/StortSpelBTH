@@ -110,8 +110,9 @@ public:
 				this->scene->setInactive(this->swordID);
 			}
 
+			bool isDead = this->scene->getAnimationStatus(this->playerID).animationName == "dead";
 			// Return if paused of disabled
-			if (*this->paused || *this->disabled)
+			if (*this->paused || *this->disabled || isDead)
 			{
 				return;
 			}
