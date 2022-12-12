@@ -12,9 +12,9 @@ void SpawnHandler::spawnEnemiesIntoRoom(int level)
     this->aiHandler->resetEventSystemLastReturn();
 
     int swarmIdx = 0;
-    int lichIdx = 0;
-    int tankIdx = 0;
-    int counter = 0;
+    int lichIdx  = 0;
+    int tankIdx  = 0;
+    int counter  = 0;
     level++;  //Skip level 0...
     float levelMultipler = std::clamp(
         MIN_ENEMIES_PER_TILES * (float)level,
@@ -29,12 +29,9 @@ void SpawnHandler::spawnEnemiesIntoRoom(int level)
         (int)this->nrOfEnemiesPerRoom, 0, SpawnHandler::MAX_NR_OF_ENEMIES
     );
 
-    float a = this->tilePicker.size() * MAX_ENEMIES_PER_TILES *
-              PERCENTAGE_TANKS * levelMultipler;
-    float a2 = this->tilePicker.size() * MAX_ENEMIES_PER_TILES *
-               PERCENTAGE_LICHS * levelMultipler;
-    float a3 = this->tilePicker.size() * MAX_ENEMIES_PER_TILES *
-               PERCENTAGE_SWARMS * levelMultipler;
+    float a = this->tilePicker.size() * MAX_ENEMIES_PER_TILES * PERCENTAGE_TANKS * levelMultipler;
+    float a2 = this->tilePicker.size() * MAX_ENEMIES_PER_TILES * PERCENTAGE_LICHS * levelMultipler;
+    float a3 = this->tilePicker.size() * MAX_ENEMIES_PER_TILES * PERCENTAGE_SWARMS * levelMultipler;
 
     float clampedTileAmount = std::clamp(
         (float)this->tilePicker.size(),
@@ -42,33 +39,13 @@ void SpawnHandler::spawnEnemiesIntoRoom(int level)
         (float)MAX_NR_OF_ENEMIES * 3
     );
 
-    this->nrOfTanks_inRoom = std::clamp(
-        (int
-        )(clampedTileAmount * MAX_ENEMIES_PER_TILES * PERCENTAGE_TANKS *
-          levelMultipler),
-        0,
-        MAX_NR_TANKS
+    this->nrOfTanks_inRoom = std::clamp((int)(clampedTileAmount * MAX_ENEMIES_PER_TILES * PERCENTAGE_TANKS * levelMultipler), 0, MAX_NR_TANKS);
+    this->nrOfLichs_inRoom = std::clamp((int)(clampedTileAmount * MAX_ENEMIES_PER_TILES * PERCENTAGE_LICHS *levelMultipler), 0, MAX_NR_LICHS);
+    int tempNrOfSwarms = std::clamp((int)(clampedTileAmount * MAX_ENEMIES_PER_TILES * PERCENTAGE_SWARMS *levelMultipler), 0, NR_BLOBS_IN_GROUP * MAX_NR_SWARMGROUPS
     );
-    this->nrOfLichs_inRoom = std::clamp(
-        (int
-        )(clampedTileAmount * MAX_ENEMIES_PER_TILES * PERCENTAGE_LICHS *
-          levelMultipler),
-        0,
-        MAX_NR_LICHS
-    );
-    int tempNrOfSwarms = std::clamp(
-        (int
-        )(clampedTileAmount * MAX_ENEMIES_PER_TILES * PERCENTAGE_SWARMS *
-          levelMultipler),
-        0,
-        NR_BLOBS_IN_GROUP * MAX_NR_SWARMGROUPS
-    );
-    this->nrOfGroups_inRoom = tempNrOfSwarms / SpawnHandler::NR_BLOBS_IN_GROUP;
-    this->nrOfSwarms_inRoom =
-        nrOfGroups_inRoom * SpawnHandler::NR_BLOBS_IN_GROUP;
-    this->nrOfEnemiesPerRoom = (float
-    )(this->nrOfSwarms_inRoom + this->nrOfLichs_inRoom + this->nrOfTanks_inRoom
-    );
+    this->nrOfGroups_inRoom  = tempNrOfSwarms / SpawnHandler::NR_BLOBS_IN_GROUP;
+    this->nrOfSwarms_inRoom  = nrOfGroups_inRoom * SpawnHandler::NR_BLOBS_IN_GROUP;
+    this->nrOfEnemiesPerRoom = (float)(this->nrOfSwarms_inRoom + this->nrOfLichs_inRoom + this->nrOfTanks_inRoom);
 
     // Imgui data...
     this->nrOfTilesInRoom = (int)this->tilePicker.size();
@@ -77,63 +54,38 @@ void SpawnHandler::spawnEnemiesIntoRoom(int level)
         {
             // Spawn Tanks
             for (size_t i = 0; i < NR_TANK_DBG; i++)
-                {
-                    this->spawnTank(
-                        tankIdx, this->tilePicker.getRandomEmptyTile()->getPos()
-                    );
-                    tankIdx++;
-                }
+            {
+                this->spawnTank(tankIdx, this->tilePicker.getRandomEmptyTile()->getPos());
+                tankIdx++;
+            }
 
             // Spawn Lichs
             for (size_t i = 0; i < NR_LICH_DBG; i++)
-                {
-
-                    lichIdx += this->spawnLich(
-                        lichIdx,
-                        this->tilePicker.getRandomEmptyNeighbouringTiles(2)
-                    );
-                }
+            {
+                lichIdx += this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2));
+            }
 
             // Spawn Swarms
             for (size_t i = 0; i < NR_SWARM_GROUPS_DBG; i++)
-                {
-                    swarmIdx += this->spawnSwarmGroup(
-                        swarmIdx,
-                        this->tilePicker.getRandomEmptyNeighbouringTiles(
-                            SpawnHandler::NR_BLOBS_IN_GROUP
-                        )
-                    );
-                }
+            {
+                swarmIdx += this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP));
+            }
         }
     else if (this->roomHandler->inExitRoom())
         {
 
             if (level == 1 || level == 4 || level >= 5)
-                {
-                    this->spawnSwarmGroup(
-                        swarmIdx,
-                        this->tilePicker.getRandomEmptyNeighbouringTiles(
-                            SpawnHandler::NR_BLOBS_IN_GROUP
-                        ),
-                        true
-                    );
-                }
+            {
+                this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP), true);
+            }
             if (level == 2 || level == 4 || level >= 6)
-                {
-                    this->spawnLich(
-                        lichIdx,
-                        this->tilePicker.getRandomEmptyNeighbouringTiles(2),
-                        true
-                    );
-                }
+            {
+                this->spawnLich(lichIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(2), true);
+            }
             if (level == 3 || level == 5 || level >= 6)
-                {
-                    this->spawnTank(
-                        tankIdx,
-                        this->tilePicker.getRandomEmptyTile()->getPos(),
-                        true
-                    );
-                }
+            {
+                this->spawnTank(tankIdx,this->tilePicker.getRandomEmptyTile()->getPos(),true);
+            }
         }
     else
         {
