@@ -139,29 +139,6 @@ void ServerGameMode::update(float dt)
                 addEvent({(int)GameEvent::NEXT_LEVEL});
                 ((NetworkSceneHandler*)this->getSceneHandler())->sendPacketNow();
                 ((NetworkSceneHandler*)this->getSceneHandler())->setScene(new ServerGameMode(++this->level));
-                //addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {
-                //    this->getComponent<Transform>(portal).position.x,
-                //    this->getComponent<Transform>(portal).position.y,
-                //    this->getComponent<Transform>(portal).position.z,
-                //    this->getComponent<Transform>(portal).rotation.x,
-                //    this->getComponent<Transform>(portal).rotation.y,
-                //    this->getComponent<Transform>(portal).rotation.z,
-                //    this->getComponent<Collider>(portal).extents.x,
-                //    this->getComponent<Collider>(portal).extents.y,
-                //    this->getComponent<Collider>(portal).extents.z,
-                //    }
-                //);
-                //addEvent({(int)NetworkEvent::DEBUG_DRAW_CYLINDER}, {
-                //    (float)this->getComponent<Transform>(getPlayer(0)).position.x,
-                //    (float)this->getComponent<Transform>(getPlayer(0)).position.y,
-                //    (float)this->getComponent<Transform>(getPlayer(0)).position.z,
-                //    (float)this->getComponent<Transform>(getPlayer(0)).rotation.x,
-                //    (float)this->getComponent<Transform>(getPlayer(0)).rotation.y,
-                //    (float)this->getComponent<Transform>(getPlayer(0)).rotation.z,
-                //    (float)this->getComponent<Collider>(getPlayer( 0)).height,
-                //    (float)this->getComponent<Collider>(getPlayer( 0)).radius,
-                //    }
-                //);
             }
         }
     }
@@ -246,70 +223,72 @@ void ServerGameMode::update(float dt)
 void ServerGameMode::makeDataSendToClient() 
 {
     int nrOfMonsters = 0;
-    for (auto& it : aiHandler.FSMsEntities)
+    auto& reg = getSceneReg();
+
+    reg.view<FSMAgentComponent>(entt::exclude<Inactive>).each([&](const auto& entity, FSMAgentComponent& t) 
     {
-        nrOfMonsters += it.second.size();
-    }
+        nrOfMonsters++;
+    });
     this->addEventUdp({(int)GameEvent::UPDATE_MONSTER});
     this->addEventUdp({(int)nrOfMonsters});
     
     // Get the position and rotation of monsters
-    for (auto& it : aiHandler.FSMsEntities)
+    int i = 0;
+    reg.view<FSMAgentComponent>(entt::exclude<Inactive>).each([&](const auto& entity, FSMAgentComponent& FSMAC) 
     {
-        for (int i = 0; i < it.second.size(); ++i)
+        const Transform &t = this->getComponent<Transform>(static_cast<int>(entity));
+        this->addEventUdp({static_cast<int>(entity)} ,{
+            t.position.x,
+            t.position.y,
+            t.position.z,
+            t.rotation.x,
+            t.rotation.y,
+            t.rotation.z,
+            t.scale.x,
+            t.scale.y,
+            t.scale.z
+            });
+        //update hp if needed
+        if (this->hasComponents<SwarmComponent>(static_cast<int>(entity)))
         {
-            const Transform &t = this->getComponent<Transform>(it.second[i]);
-            this->addEventUdp({(int)it.second[i]} ,{
-                t.position.x,
-                t.position.y,
-                t.position.z,
-                t.rotation.x,
-                t.rotation.y,
-                t.rotation.z,
-                t.scale.x,
-                t.scale.y,
-                t.scale.z
-                });
-            //update hp if needed
-            if (this->hasComponents<SwarmComponent>(it.second[i]))
+            if (lastSwarmHp[i].health != this->getComponent<SwarmComponent>(static_cast<int>(entity)).life)
             {
-                if (lastSwarmHp[i].health != this->getComponent<SwarmComponent>(it.second[i]).life)
-                {
-                    this->addEvent(
-                        {(int)GameEvent::ENTITY_SET_HP,
-                        (int)it.second[i],
-                         this->getComponent<SwarmComponent>(it.second[i]).life}
-                     );
-                    lastSwarmHp[i].health = this->getComponent<SwarmComponent>(it.second[i]).life;
-                }
+                this->addEvent(
+                    {(int)GameEvent::ENTITY_SET_HP,
+                     (int)static_cast<int>(entity),
+                     this->getComponent<SwarmComponent>(static_cast<int>(entity)).life}
+                 );
+                lastSwarmHp[i].health = this->getComponent<SwarmComponent>(static_cast<int>(entity)).life;
             }
-            else if (this->hasComponents<LichComponent>(it.second[i]))
-            {
-                if (lastLichHp[i].health != this->getComponent<LichComponent>(it.second[i]).life)
-                {
-                    this->addEvent(
-                        {(int)GameEvent::ENTITY_SET_HP,
-                        (int)it.second[i],
-                        this->getComponent<LichComponent>(it.second[i]).life}
-                     );
-                    lastLichHp[i].health = this->getComponent<LichComponent>(it.second[i]).life;
-                }
-            }
-            else if (this->hasComponents<TankComponent>(it.second[i]))
-            {
-                if (lastTankHp[i].health != this->getComponent<TankComponent>(it.second[i]).life)
-                {
-                    this->addEvent(
-                        {(int)GameEvent::ENTITY_SET_HP,
-                        (int)it.second[i],
-                         this->getComponent<TankComponent>(it.second[i]).life}
-                     );
-                    lastTankHp[i].health = this->getComponent<TankComponent>(it.second[i]).life;
-                }
-            }
-            
         }
-    }
+        else if (this->hasComponents<LichComponent>(static_cast<int>(entity)))
+        {
+            if (lastLichHp[i].health != this->getComponent<LichComponent>(static_cast<int>(entity)).life)
+            {
+                this->addEvent(
+                    {(int)GameEvent::ENTITY_SET_HP,
+                    (int)static_cast<int>(entity),
+                    this->getComponent<LichComponent>(static_cast<int>(entity)).life}
+                 );
+                lastLichHp[i].health = this->getComponent<LichComponent>(static_cast<int>(entity)).life;
+            }
+        }
+        else if (this->hasComponents<TankComponent>(static_cast<int>(entity)))
+        {
+            if (lastTankHp[i].health != this->getComponent<TankComponent>(static_cast<int>(entity)).life)
+            {
+                this->addEvent(
+                    {(int)GameEvent::ENTITY_SET_HP,
+                    (int)static_cast<int>(entity),
+                     this->getComponent<TankComponent>(static_cast<int>(entity)).life}
+                 );
+                lastTankHp[i].health = this->getComponent<TankComponent>(static_cast<int>(entity)).life;
+            }
+        }
+        i++;
+            
+    });
+
     //Check for updates in player hp and change it it should
     bool allDead = true;
     for (int i = 0; i < getPlayerSize(); i++)
