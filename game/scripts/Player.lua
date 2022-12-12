@@ -28,7 +28,7 @@ function script:init()
     self.maxStamina = 100
     self.currentStamina = 100
     self.sprintStamDrain = 10.0
-    self.staminaRegen = 20.0
+    self.staminaRegen = 30.0
     self.staminaRegenCd = 2.0
     self.staminaTimer = 0.0
     self.useStamina = true
@@ -55,8 +55,8 @@ function script:init()
         dodge = 4, attack = 5, moveAttack = 6, dead = 7 }
     self.currentAnimation = 1
     self.idleAnimTime = 1.0
-    self.runAnimTime = 1.8 --0.7
-    self.sprintAnimTime = 2.8 --1.2
+    self.runAnimTime = 1.8
+    self.sprintAnimTime = 2.8
     self.dodgeAnimTime = 3.0
 end
 
@@ -67,7 +67,7 @@ function script:update(dt)
         scene.blendToAnimation(self.ID, "idle", "", 0.25, 1)
     end
     -- Dead change to death animation
-    if self.currentHealth <= 0
+    if self.isDead
     then
         if self.currentAnimation ~= self.activeAnimation.dead
         then
@@ -109,7 +109,7 @@ function script:update(dt)
     end
 
     -- Input vector
-    if not self.isDodging
+    if not self.isDodging and self.canMove
     then
         self.moveDir = vector(core.btoi(input.isKeyDown(Keys.A)) - core.btoi(input.isKeyDown(Keys.D)), core.btoi(input.isKeyDown(Keys.W)) - core.btoi(input.isKeyDown(Keys.S)), 0)
 
@@ -139,7 +139,7 @@ function script:update(dt)
     end
 
     -- Sprint
-    if (input.isKeyDown(Keys.SHIFT))
+    if (input.isKeyDown(Keys.SHIFT) and self.canMove)
     then
         if (self.currentStamina > 0 and self.useStamina == true and self.moveDir ~= vector(0))
         then
@@ -162,7 +162,7 @@ function script:update(dt)
     end
 
     -- Dodge
-    if (input.isKeyPressed(Keys.CTRL))
+    if (input.isKeyPressed(Keys.CTRL) and self.canMove)
     then
         self.currentMoveDir = self.moveDir:normalize()
         if (self.currentStamina > 20.0 and self.currentMoveDir ~= vector(0))
@@ -262,7 +262,7 @@ function script:update(dt)
         end
     end
 
-    if (not self.isSprinting and not self.isDodging and not self.isDead)
+    if not self.isSprinting and not self.isDodging and not self.isDead
     then
         if (self.animTimer < 0.0)
         then
@@ -281,24 +281,24 @@ function script:update(dt)
                 scene.blendToAnimation(self.ID, "idle", "", 0.2, self.idleAnimTime)
                 self.currentAnimation = self.activeAnimation.idle
             end
-        elseif (self.wholeBody == false)
-        then
-            if (self.isMoving and self.currentAnimation ~= self.activeAnimation.run)
-            then
-                if self.currentAnimation == self.activeAnimation.sprint
-                then
-                    scene.setAnimationTimeScale(self.ID, self.runAnimTime, "LowerBody")
-                    self.currentAnimation = self.activeAnimation.run
-                else
-                    scene.blendToAnimation(self.ID, "run", "LowerBody", 0.3, self.runAnimTime)
-                    self.currentAnimation = self.activeAnimation.run
-                end
-            elseif (not self.isMoving and self.currentAnimation ~= self.activeAnimation.idle)
-            then
-                scene.blendToAnimation(self.ID, "idle", "LowerBody", 0.2, self.idleAnimTime)
-                self.currentAnimation = self.activeAnimation.idle
-            end
         end
+    end
+
+    if self.isAttacking and self.moveDir ~= vector(0) and self.canMove
+    then
+        if self.currentAnimation ~= self.activeAnimation.run and not self.isSprinting
+        then
+            scene.blendToAnimation(self.ID, "run", "LowerBody", 0.3, self.runAnimTime)
+            self.currentAnimation = self.activeAnimation.run
+        elseif self.currentAnimation ~= self.activeAnimation.Sprint and self.isSprinting
+        then
+            scene.setAnimationTimeScale(self.ID, self.sprintAnimTime, "LowerBody")
+            self.currentAnimation = self.activeAnimation.sprint
+        end
+    elseif self.isAttacking and curMoveSum < 0.1 and self.currentAnimation ~= self.activeAnimation.idle
+    then
+        scene.blendToAnimation(self.ID, "idle", "LowerBody", 0.2, self.idleAnimTime)
+        self.currentAnimation = self.activeAnimation.idle
     end
 
     if (scene.getComponent(self.ID, CompType.Mesh).meshID == self.playerMesh)
