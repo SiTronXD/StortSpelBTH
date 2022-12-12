@@ -67,7 +67,7 @@ function script:update(dt)
         scene.blendToAnimation(self.ID, "idle", "", 0.25, 1)
     end
     -- Dead change to death animation
-    if self.currentHealth <= 0
+    if self.isDead
     then
         if self.currentAnimation ~= self.activeAnimation.dead
         then
