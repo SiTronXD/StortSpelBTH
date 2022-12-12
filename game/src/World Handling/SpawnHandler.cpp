@@ -1172,7 +1172,7 @@ const TileInfo* TilePicker::getSpreadTile()
 {
     calcEnemiesMidpoint(); 
 
-    std::vector<TileInfo*> possibleTiles{this->unusedTileInfos.begin(), this->unusedTileInfos.end()}; 
+    std::vector<const TileInfo*> possibleTiles{this->unusedTileInfos.begin(), this->unusedTileInfos.end()}; 
     std::shuffle(possibleTiles.begin(),possibleTiles.end(),this->randomDev);
     
     // pick furthest from 4 random tiles
@@ -1180,7 +1180,7 @@ const TileInfo* TilePicker::getSpreadTile()
     TileInfo* furthest = nullptr;
     if (possibleTiles.size() > 0)
     {
-        TileInfo* furthest = possibleTiles.front();
+        const TileInfo* furthest = possibleTiles.front();
         
         float prevFurthest = 0.f;
 
