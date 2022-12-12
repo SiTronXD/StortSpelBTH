@@ -557,8 +557,8 @@ void GameScene::update()
 
     // Render HP bar UI
     HealthComp& playerHealth = this->getComponent<HealthComp>(this->playerID);
-    float hpPercent = std::max(playerHealth.health * 0.01f, 0.0f);
     float maxHpPercent = playerHealth.maxHealth * 0.01f;
+    float hpPercent = std::max(std::min(playerHealth.health * 0.01f, maxHpPercent), 0.0f);
     float xPos = -600.f;
     float yPos = -472.f;
     float xSize = 420.0f;
