@@ -49,8 +49,9 @@ void SpawnHandler::spawnEnemiesIntoRoom(int level)
 
         // Spawn Lichs
         for(size_t i = 0; i < NR_LICH_DBG; i++){
-                 
-            lichIdx += this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2));        
+         
+            lichIdx += this->spawnLich(lichIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(2));
+                        
         }
 
         // Spawn Swarms
@@ -1055,32 +1056,40 @@ TilePicker::getRandomEmptyNeighbouringTiles(const int nr)
     std::unordered_map<const TileInfo*, bool> possibleNeigbhours;
     
     const TileInfo* currNeighbour = getSpreadTile();    
-    possibleNeigbhours[currNeighbour] = true;
-    neigbhourhood.push_back(currNeighbour);
-    unusedTileInfos.remove(currNeighbour);  
-
-    while (neigbhourhood.size() < nr)
+    if (currNeighbour != nullptr)
     {
-
-        newPossibleNeighbours =
-            getPossibleNeighbours(currNeighbour, possibleNeigbhours);
-
-        // abort if no possible neigbhour exists...
-        if (newPossibleNeighbours.size() == 0)
-        {
-            Log::warning("Could not retrieve required amount of tiles...");
-            break;
-        }
-
-        currNeighbour =
-            newPossibleNeighbours[rand() % newPossibleNeighbours.size()];
         possibleNeigbhours[currNeighbour] = true;
         neigbhourhood.push_back(currNeighbour);
-        unusedTileInfos.remove(currNeighbour);        
-    }
-    usedTiles.insert(usedTiles.end(), neigbhourhood.begin(),neigbhourhood.end());
+        unusedTileInfos.remove(currNeighbour);
 
-    this->updateFreeTiles();
+        while (neigbhourhood.size() < nr)
+            {
+
+                newPossibleNeighbours = getPossibleNeighbours(
+                    currNeighbour, possibleNeigbhours
+                );
+
+                // abort if no possible neigbhour exists...
+                if (newPossibleNeighbours.size() == 0)
+                    {
+                        Log::warning(
+                            "Could not retrieve required amount of tiles..."
+                        );
+                        break;
+                    }
+
+                currNeighbour = newPossibleNeighbours
+                    [rand() % newPossibleNeighbours.size()];
+                possibleNeigbhours[currNeighbour] = true;
+                neigbhourhood.push_back(currNeighbour);
+                unusedTileInfos.remove(currNeighbour);
+            }
+        usedTiles.insert(
+            usedTiles.end(), neigbhourhood.begin(), neigbhourhood.end()
+        );
+
+        this->updateFreeTiles();
+    }
 
     return neigbhourhood;
 }
@@ -1163,26 +1172,34 @@ const TileInfo* TilePicker::getSpreadTile()
 {
     calcEnemiesMidpoint(); 
 
-    std::vector<const TileInfo*> possibleTiles{this->unusedTileInfos.begin(), this->unusedTileInfos.end()}; 
+    std::vector<TileInfo*> possibleTiles{this->unusedTileInfos.begin(), this->unusedTileInfos.end()}; 
     std::shuffle(possibleTiles.begin(),possibleTiles.end(),this->randomDev);
     
     // pick furthest from 4 random tiles
     const uint32_t samples = 4;  
-
-    const TileInfo* furthest = possibleTiles.front();
-    float prevFurthest = 0.f;
-        
-    int c = 0; 
-    for(auto p : possibleTiles)
+    TileInfo* furthest = nullptr;
+    if (possibleTiles.size() > 0)
     {
-        float dist = glm::length(p->getPos() - this->enemiesMidpoint);
-        if( dist > prevFurthest)
-        {
-            prevFurthest = dist;
-            furthest = p;
-        }
-        if(samples < c){break;}
-        c++; 
+        TileInfo* furthest = possibleTiles.front();
+        
+        float prevFurthest = 0.f;
+
+        int c = 0;
+        for (auto p : possibleTiles)
+            {
+                float dist =
+                    glm::length(p->getPos() - this->enemiesMidpoint);
+                if (dist > prevFurthest)
+                    {
+                        prevFurthest = dist;
+                        furthest = p;
+                    }
+                if (samples < c)
+                    {
+                        break;
+                    }
+                c++;
+            }
     }
     return furthest;
 }
