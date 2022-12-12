@@ -1177,29 +1177,30 @@ const TileInfo* TilePicker::getSpreadTile()
     
     // pick furthest from 4 random tiles
     const uint32_t samples = 4;  
-    TileInfo* furthest = nullptr;
+    const TileInfo* furthest = nullptr;
     if (possibleTiles.size() > 0)
     {
-        const TileInfo* furthest = possibleTiles.front();
+        
+        furthest = possibleTiles.front();
         
         float prevFurthest = 0.f;
 
         int c = 0;
         for (auto p : possibleTiles)
-            {
-                float dist =
-                    glm::length(p->getPos() - this->enemiesMidpoint);
-                if (dist > prevFurthest)
-                    {
-                        prevFurthest = dist;
-                        furthest = p;
-                    }
-                if (samples < c)
-                    {
-                        break;
-                    }
-                c++;
-            }
+        {
+            float dist =
+                glm::length(p->getPos() - this->enemiesMidpoint);
+            if (dist > prevFurthest)
+                {
+                    prevFurthest = dist;
+                    furthest = p;
+                }
+            if (samples < c)
+                {
+                    break;
+                }
+            c++;
+        }
     }
     return furthest;
 }
