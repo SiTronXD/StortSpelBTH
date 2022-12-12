@@ -281,6 +281,7 @@ NetworkHandlerGame::~NetworkHandlerGame() {
 
 void NetworkHandlerGame::init()
 {
+    gettingSeed = false;
     this->cleanUp();
     this->deletedParticleSystems = false;
     this->moveSound = this->resourceManger->addSound("assets/Sounds/PlayerSounds/RunningSound.ogg");
@@ -348,6 +349,7 @@ void NetworkHandlerGame::cleanUp()
 
 int NetworkHandlerGame::getSeed()
 {
+    this->gettingSeed = true;
 	if (this->hasServer())
 	{
 		sf::Packet packet;
@@ -376,6 +378,7 @@ int NetworkHandlerGame::getSeed()
 		}
         timer.updateDeltaTime();
 	}
+    this->gettingSeed = false;
 	return this->seed;
 }
 
@@ -664,13 +667,13 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		}
         break;
     case GameEvent::NEXT_LEVEL:
-        this->cleanUp();
-        this->sceneHandler->setScene(
-            new GameScene(
-                ((GameScene*)this->sceneHandler->getScene())->setNewLevel()
-            ),
-            "scripts/gamescene.lua"
-        );
+		if (!this->gettingSeed) 
+		{
+			this->cleanUp();
+			this->sceneHandler->setScene(
+			    new GameScene(((GameScene*)this->sceneHandler->getScene())->setNewLevel()),"scripts/gamescene.lua");
+		}
+        
 		break;
     case GameEvent::PLAY_PARTICLE:
         tcpPacket >> i0 >> i1;
