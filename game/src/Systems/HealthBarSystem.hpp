@@ -38,20 +38,23 @@ public:
 		auto tankBackground = [&](Transform& transform, TankComponent& tank)
 		{
 			float dotDist = glm::dot(transform.position - camTransform.position, camTransform.forward());
-			float alpha = dotDist <= 50.0f ? 1.0f : 50.0f / dotDist;
-			uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 36.0f, 0.0f), glm::vec2(2000.0f, 150.0f), backgroundRects[counter++],
+			float alpha = dotDist <= 100.0f ? 1.0f : std::max(125.0f - dotDist, 0.0f) / 25.0f;
+			uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 42.0f, 0.0f), glm::vec2(2000.0f, 150.0f), backgroundRects[counter++],
 				glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, alpha));
 		};
 		tankView.each(tankBackground);
 		auto lichBackground = [&](Transform& transform, LichComponent& lich)
 		{
-			uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 28.0f, 0.0f), glm::vec2(1750.0f, 150.0f), backgroundRects[counter++]);
+			float dotDist = glm::dot(transform.position - camTransform.position, camTransform.forward());
+			float alpha = dotDist <= 100.0f ? 1.0f : std::max(125.0f - dotDist, 0.0f) / 25.0f;
+			uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 28.0f, 0.0f), glm::vec2(1750.0f, 150.0f), backgroundRects[counter++],
+				glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, alpha));
 		};
 		lichView.each(lichBackground);
 		auto swarmBackground = [&](Transform& transform, SwarmComponent& swarm)
 		{
 			float dotDist = glm::dot(transform.position - camTransform.position, camTransform.forward());
-			float alpha = dotDist <= 150.0f ? 1.0f : std::max(175.0f - dotDist, 0.0f) / 25.0f;
+			float alpha = dotDist <= 100.0f ? 1.0f : std::max(125.0f - dotDist, 0.0f) / 25.0f;
 			uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 10.0f, 0.0f), glm::vec2(1500.0f, 150.0f), backgroundRects[counter++],
 				glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, alpha));
 		};
@@ -63,22 +66,28 @@ public:
 		auto tankHealthBar = [&](Transform& transform, TankComponent& tank)
 		{
 			float percentage = std::max((float)tank.life / tank.FULL_HEALTH, 0.0f);
-			float margin = 250.0f / glm::dot(transform.position - camTransform.position, camTransform.forward());
+			float dotDist = glm::dot(transform.position - camTransform.position, camTransform.forward());
+			float alpha = dotDist <= 100.0f ? 1.0f : std::max(125.0f - dotDist, 0.0f) / 25.0f;
+			float margin = 250.0f / dotDist;
 			glm::vec2 pos = glm::vec2(backgroundRects[counter].x, backgroundRects[counter].y);
 			glm::vec2 size = glm::vec2(backgroundRects[counter].z, backgroundRects[counter].w) - glm::vec2(margin);
 
-			uiRenderer->renderTexture(glm::vec2(pos.x - size.x * 0.5f * (1.0f - percentage), pos.y), glm::vec2(size.x * percentage, size.y));
+			uiRenderer->renderTexture(glm::vec2(pos.x - size.x * 0.5f * (1.0f - percentage), pos.y), glm::vec2(size.x * percentage, size.y),
+				glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, alpha));
 			counter++;
 		};
 		tankView.each(tankHealthBar);
 		auto lichHealthBar = [&](Transform& transform, LichComponent& lich)
 		{
 			float percentage = std::max((float)lich.life / lich.FULL_HEALTH, 0.0f);
-			float margin = 250.0f / glm::dot(transform.position - camTransform.position, camTransform.forward());
+			float dotDist = glm::dot(transform.position - camTransform.position, camTransform.forward());
+			float alpha = dotDist <= 100.0f ? 1.0f : std::max(125.0f - dotDist, 0.0f) / 25.0f;
+			float margin = 250.0f / dotDist;
 			glm::vec2 pos = glm::vec2(backgroundRects[counter].x, backgroundRects[counter].y);
 			glm::vec2 size = glm::vec2(backgroundRects[counter].z, backgroundRects[counter].w) - glm::vec2(margin);
 
-			uiRenderer->renderTexture(glm::vec2(pos.x - size.x * 0.5f * (1.0f - percentage), pos.y), glm::vec2(size.x * percentage, size.y));
+			uiRenderer->renderTexture(glm::vec2(pos.x - size.x * 0.5f * (1.0f - percentage), pos.y), glm::vec2(size.x * percentage, size.y),
+				glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, alpha));
 			counter++;
 		};
 		lichView.each(lichHealthBar);
@@ -86,7 +95,7 @@ public:
 		{
 			float percentage = std::max((float)swarm.life / swarm.FULL_HEALTH, 0.0f);
 			float dotDist = glm::dot(transform.position - camTransform.position, camTransform.forward());
-			float alpha = dotDist <= 150.0f ? 1.0f : std::max(175.0f - dotDist, 0.0f) / 25.0f;
+			float alpha = dotDist <= 100.0f ? 1.0f : std::max(125.0f - dotDist, 0.0f) / 25.0f;
 			float margin = 250.0f / dotDist;
 			glm::vec2 pos = glm::vec2(backgroundRects[counter].x, backgroundRects[counter].y);
 			glm::vec2 size = glm::vec2(backgroundRects[counter].z, backgroundRects[counter].w) - glm::vec2(margin);

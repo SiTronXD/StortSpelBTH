@@ -10,6 +10,7 @@ resources.createAnimationSlot(playerMesh, "UpperBody", "mixamorig:Spine1")
 
 paused = false
 settings = false
+howToPlay = false
 
 -- Camera
 local cam = scene.createPrefab("scripts/prefabs/CameraPrefab.lua")
