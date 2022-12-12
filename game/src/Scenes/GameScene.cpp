@@ -890,7 +890,10 @@ void GameScene::revivePlayer()
         this->combatDisabled = false;
         this->hasRespawned = false;
         this->ghostTransitionTimer = 0.0f;
-        this->fadeTimer = 0.0f;
+        if (fadeTimer >= 2.75f)
+        {
+            this->fadeTimer = 0.0f;
+        }
         this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = this->origMat;
     }
 }
@@ -899,7 +902,10 @@ void GameScene::endGame()
 {
     if (!this->end)
     {
-        this->fadeTimer = 0.0f;
+        if (fadeTimer >= 2.75f)
+        {
+            this->fadeTimer = 0.0f;
+        }
         this->end = true;
     }
 }
