@@ -76,7 +76,7 @@ void MainMenu::init()
 
 	this->settingsBackgroundId = this->getResourceManager()->addTexture("assets/textures/UI/settings.png");
 	this->howToPlayBackgroundId = this->getResourceManager()->addTexture("assets/textures/UI/howToPlay.png");
-	this->buttonTexture = this->getResourceManager()->addTexture("assets/textures/UI/button.png");
+	this->buttonTexture = this->getResourceManager()->addTexture("assets/textures/UI/button.jpg");
 	this->buttonSound = this->getResourceManager()->addSound("assets/Sounds/buttonClick.ogg");
 	this->qrCodeID = this->getResourceManager()->addTexture("assets/textures/UI/Presumed Dead QR.png");
 
@@ -191,14 +191,6 @@ void MainMenu::start()
 void MainMenu::update()
 {
 	this->setInactive(this->settingsEntity);
-
-	float qrXSize = 341.f;
-	float qrYSize = 272.f;
-	float qrTextSize = 30.f;
-	this->getUIRenderer()->setTexture(this->qrCodeID);
-	this->getUIRenderer()->renderTexture(glm::vec2(730.f, 350.f), glm::vec2(qrXSize, qrYSize));
-	this->getUIRenderer()->renderString("scan this cute fellow", glm::vec2(720.f, 200.f), glm::vec2(qrTextSize, qrTextSize));
-	this->getUIRenderer()->renderString("to give feedback", glm::vec2(720.f, 150.f), glm::vec2(qrTextSize, qrTextSize));
 
 	switch (this->state)
 	{

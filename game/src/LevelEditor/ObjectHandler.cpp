@@ -17,7 +17,7 @@ void ObjectHandler::addNewMesh(Scene* scene, ResourceManager* resourceManager, c
     
     //create material representing maya default material lamber1
     Material mat;
-    mat.diffuseTextureIndex = resourceManager->addTexture("assets/textures/defaultMaterial.png");
+    mat.diffuseTextureIndex = resourceManager->addTexture("assets/textures/defaultMaterial.jpg");
     mat.specularTextureIndex = 0;
     mat.descriptorIndex = ~0u;
     uint32_t materialIndex = resourceManager->addMaterial("lambert1", mat);
