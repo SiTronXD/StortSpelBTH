@@ -14,10 +14,10 @@ void logInScene::start()
     samplerSettings.unnormalizedCoordinates = VK_TRUE;
 
     this->backgroundId =
-        this->getResourceManager()->addTexture("assets/textures/blackTex.png"
+        this->getResourceManager()->addTexture("assets/textures/blackTex.jpg"
         );
     this->buttonId =
-        this->getResourceManager()->addTexture("assets/textures/UI/button.png");
+        this->getResourceManager()->addTexture("assets/textures/UI/button.jpg");
 
     this->fontTextureId = Scene::getResourceManager()->addTexture(
         "assets/textures/UI/font.png", {samplerSettings, true}
