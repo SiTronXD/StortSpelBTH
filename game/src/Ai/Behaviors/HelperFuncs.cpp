@@ -38,12 +38,14 @@ float getAngleBetween(const glm::vec3 one, const glm::vec3 two)
 
 void drawRaySimple(SceneHandler* sceneHandler, Ray& ray, float dist, glm::vec3 color)
 {
-	
-	//Draw ray
-	sceneHandler->getDebugRenderer()->renderLine(
-	ray.pos,
-	ray.pos + ray.dir * dist,
-	color);
+	if(sceneHandler->getScene()->getNetworkHandler() != nullptr)
+	{
+		//Draw ray
+		sceneHandler->getDebugRenderer()->renderLine(
+		ray.pos,
+		ray.pos + ray.dir * dist,
+		color);
+	}
 
 }
 

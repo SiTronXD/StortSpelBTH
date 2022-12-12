@@ -133,15 +133,6 @@ void TankBT::groundHumpShortcut(Entity entityID)
 	updateCanBeHit(entityID);
 }
 
-void TankBT::drawRaySimple(Ray& ray, float dist, glm::vec3 color)
-{
-	//Draw ray
-	BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
-	ray.pos,
-	ray.pos + ray.dir * dist,
-	glm::vec3(1.0f, 0.0f, 0.0f));
-}
-
 bool TankBT::rayChecking(Entity entityID)
 {
 	bool ret = true;
@@ -174,9 +165,9 @@ bool TankBT::rayChecking(Entity entityID)
     RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, maxDist);
     RayPayload rp1 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_right, maxDist);
     RayPayload rp2 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_left, maxDist);
-	//drawRaySimple(rayToPlayer, maxDist);
-	//drawRaySimple(rayToPlayer_right, maxDist);
-	//drawRaySimple(rayToPlayer_left, maxDist);
+	drawRaySimple(BehaviorTree::sceneHandler, rayToPlayer,			maxDist);
+	drawRaySimple(BehaviorTree::sceneHandler, rayToPlayer_right,	maxDist);
+	drawRaySimple(BehaviorTree::sceneHandler, rayToPlayer_left,		maxDist);
 	if(rp.hit || rp1.hit || rp2.hit)
 	{
 		bool one = (rp.entity != -1 && 
@@ -679,7 +670,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	}
 
 	//Tick down charge
-	if(/*!tankComp.hasRunTarget && */(tankComp.chargeTimer > 0.0f || !rotationDone(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f)))
+	if(!tankComp.hasRunTarget && (tankComp.chargeTimer > 0.0f || !rotationDone(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f)))
 	{
 		rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
 		tankComp.chargeTimer -= get_dt();
