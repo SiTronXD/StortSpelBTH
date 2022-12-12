@@ -45,10 +45,10 @@ public:
     // Default values create larger rooms (higher levels) (same as extern-test)
     struct RoomDescription
     {
-        uint32_t twoXTwoChance = 20u;
+        uint32_t twoXTwoChance = 80u;
         uint32_t maxTwoXTwo = 6u;
 
-        uint32_t oneXTwoChance = 20u;
+        uint32_t oneXTwoChance = 80u;
         uint32_t maxOneXTwo = 6u;
 
         uint32_t bigTileMinDist = 1u;
