@@ -793,9 +793,9 @@ RoomGenerator::RoomDescription RoomHandler::getRoomDesc(uint16_t level)
 	case 0u:
 		desc.radius = 3u;
 		
+		desc.numBranches = 3u;
 		desc.branchDepth = 1u;
 		desc.branchDist = 3u;
-		desc.numBranches = 3u;
 
 		desc.twoXTwoChance = 0u;
 		desc.maxTwoXTwo = 0u;
@@ -808,22 +808,32 @@ RoomGenerator::RoomDescription RoomHandler::getRoomDesc(uint16_t level)
 
 	case 1u:
 		desc.radius = 3u;
-		desc.branchDepth = 3u;
+		
+		desc.numBranches = 3u;
+		desc.branchDepth = 2u;
+		desc.branchDist = 3u;
 
-		desc.twoXTwoChance = 15u;
-		desc.maxTwoXTwo = 4u;
-		desc.oneXTwoChance = 15u;
-		desc.maxOneXTwo = 4u;
+		desc.twoXTwoChance = 50u;
+		desc.maxTwoXTwo = 1u;
+		desc.oneXTwoChance = 50u;
+		desc.maxOneXTwo = 1u;
+
+		desc.maxAngle = 45u;
 		break;
 
 	case 2u:
-		desc.radius = 4u;
-		desc.branchDepth = 3u;
+		desc.radius = 3u;
+		
+		desc.numBranches = 5u;
+		desc.branchDepth = 2u;
+		desc.branchDist = 4u;
 
-		desc.twoXTwoChance = 20u;
+		desc.twoXTwoChance = 75u;
 		desc.maxTwoXTwo = 5u;
-		desc.oneXTwoChance = 20u;
+		desc.oneXTwoChance = 75u;
 		desc.maxOneXTwo = 5u;
+
+		desc.maxAngle = 45u;
 		break;
 	}
 
@@ -1749,7 +1759,9 @@ void RoomHandler::imgui(DebugRenderer* dr)
 					branchDist = desc.branchDist;
 					maxAngle = desc.maxAngle;
 				}
-				this->generate(rand(), level);
+				int seed = rand();
+				printf("Seed: %d\n", seed);
+				this->generate((uint32_t)seed, level);
 			}
 
 			if (ImGui::Button("Complete room"))

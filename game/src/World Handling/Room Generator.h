@@ -54,11 +54,11 @@ public:
         uint32_t bigTileMinDist = 1u;
         uint32_t radius = 4u;
 
-        uint32_t numBranches = 3u;
+        uint32_t numBranches = 6u;
         uint32_t branchDepth = 3u;
         uint32_t branchDist = 3u;
 
-        uint32_t maxAngle = 60u;
+        uint32_t maxAngle = 45u;
     };
 
     static const uint32_t WIDTH_HEIGHT = 50u;

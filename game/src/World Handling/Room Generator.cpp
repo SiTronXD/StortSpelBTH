@@ -131,12 +131,14 @@ void RoomGenerator::findMinMax()
 
 void RoomGenerator::setBigTiles()
 {
-	const uint32_t MAX_SEARCH = 1000u;
+	const uint32_t MAX_SEARCH = 5000u;
 	uint32_t searchCounter = 0;
 	glm::ivec2 pos(0);
 	bool vertical;
 
 	// First part of loops is for 2x2, second part is for 1x2/2x1
+	// Steps: Try finding a placeable position "MAX_SEARCH" times. 
+	// if position found, stop search and throw die
 	for (uint32_t i = 0; i < roomDesc.maxTwoXTwo + roomDesc.maxOneXTwo; i++)
 	{
 		searchCounter = 0;
@@ -149,19 +151,33 @@ void RoomGenerator::setBigTiles()
 			
 			if (i < roomDesc.maxTwoXTwo)
 			{
-				if (this->canPlaceTwoXTwo(pos) && this->random.rand() % 100 < roomDesc.maxTwoXTwo)
+				if (this->canPlaceTwoXTwo(pos))
 				{
-					this->placeTwoXTwo(pos);
 					searchCounter = MAX_SEARCH;
+					if (this->random.rand() % 100 < roomDesc.twoXTwoChance)
+					{
+						this->placeTwoXTwo(pos);
+					}
 				}
 			}
 			else
 			{
-				vertical = this->random.rand() % 2;
-				if (this->canPlaceOneXTwo(pos, vertical) && this->random.rand() % 100 < roomDesc.maxOneXTwo)
+				vertical = bool(this->random.rand() % 2);
+				if (this->canPlaceOneXTwo(pos, vertical))
 				{
-					this->placeOneXTwo(pos, vertical);
 					searchCounter = MAX_SEARCH;
+					if (this->random.rand() % 100 < roomDesc.oneXTwoChance)
+					{
+						this->placeOneXTwo(pos, vertical);
+					}
+				}
+				else if (this->canPlaceOneXTwo(pos, !vertical))
+				{
+					searchCounter = MAX_SEARCH;
+					if (this->random.rand() % 100 < roomDesc.oneXTwoChance)
+					{
+						this->placeOneXTwo(pos, !vertical);
+					}
 				}
 			}
 		}
@@ -260,7 +276,7 @@ void RoomGenerator::setExits(bool* doors)
 			doorsPos[i] += offsets[i];
 
 			const int length = i <= 1 ? std::abs(this->middle.x - doorsPos[i].x) : std::abs(this->middle.y - doorsPos[i].y);
-			for (int j = 0; j < length / 2; j++)
+			for (int j = 0; j < length; j++)
 			{
 				this->drawCircle(doorsPos[i] + -dirs[i] * j, roomDesc.radius, Tile::Unused, Tile::OneXOne);
 			}
