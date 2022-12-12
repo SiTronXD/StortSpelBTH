@@ -68,65 +68,83 @@ void avoidStuff(Entity entityID, SceneHandler* sceneHandler, bool& attackGoRight
 	glm::vec3 dir = safeNormalize(from - to);   
 
 
-	//Rays
-	Ray ray0			{from, entityTransform.right()};    
-	Ray ray30			{from, rotateVec(entityTransform.right(), AI_DEG_TO_RAD(30), glm::vec3(0.0f, 1.0f, 0.0f))};    
-	Ray ray60			{from, rotateVec(entityTransform.right(), AI_DEG_TO_RAD(60), glm::vec3(0.0f, 1.0f, 0.0f))};    
-	Ray ray90			{from, entityTransform.forward()};    
-	Ray ray120			{from, rotateVec(entityTransform.right(), AI_DEG_TO_RAD(120), glm::vec3(0.0f, 1.0f, 0.0f))};    
-	Ray ray150			{from, rotateVec(entityTransform.right(), AI_DEG_TO_RAD(150), glm::vec3(0.0f, 1.0f, 0.0f))};    
-	Ray ray180			{from, -entityTransform.right()};    
+	int numRaysPerSide = 6;
+	std::vector<Ray>rays;
+	for(int i = 0; i < numRaysPerSide; i++)
+	{
+		float angle = i*90/numRaysPerSide;
+		rays.push_back({from, rotateVec(entityTransform.right(), AI_DEG_TO_RAD(angle), glm::vec3(0.0f, 1.0f, 0.0f))});
+	}
+	rays.push_back({from, rotateVec(entityTransform.right(), AI_DEG_TO_RAD(90), glm::vec3(0.0f, 1.0f, 0.0f))});
+	for(int i = 0; i < numRaysPerSide; i++)
+	{
+		float angle = 90 + i*90/numRaysPerSide;
+		rays.push_back({from, rotateVec(entityTransform.right(), AI_DEG_TO_RAD(angle), glm::vec3(0.0f, 1.0f, 0.0f))});
+	}
 
-	float left_right_maxDist = entityCollider.radius + 6.0f;
 
-	//Payloads
-	RayPayload r_0		= sceneHandler->getPhysicsEngine()->raycast(ray0	, left_right_maxDist); //Right
-	RayPayload r_30		= sceneHandler->getPhysicsEngine()->raycast(ray30	, left_right_maxDist); //Right
-	RayPayload r_60 	= sceneHandler->getPhysicsEngine()->raycast(ray60	, left_right_maxDist); //Right
-	RayPayload r_90		= sceneHandler->getPhysicsEngine()->raycast(ray90	, left_right_maxDist); //Forward
-	RayPayload r_120    = sceneHandler->getPhysicsEngine()->raycast(ray120	, left_right_maxDist); //Left
-	RayPayload r_150	= sceneHandler->getPhysicsEngine()->raycast(ray150	, left_right_maxDist); //Left
-	RayPayload r_180	= sceneHandler->getPhysicsEngine()->raycast(ray180	, left_right_maxDist); //Left
+
+	float left_right_maxDist;
+	switch (entityCollider.type)
+	{
+	case ColType::BOX:
+		left_right_maxDist = sqrt((entityCollider.extents.x*entityCollider.extents.x)+(entityCollider.extents.z*entityCollider.extents.z))+ 10.0f;
+		break;
+	default:
+		left_right_maxDist = entityCollider.radius + 6.0f;
+		break;
+	}
+
+	std::vector<RayPayload> rps;
+	for(auto r: rays)
+	{
+		rps.push_back(sceneHandler->getPhysicsEngine()->raycast(r, left_right_maxDist));
+	}
 
 	int numHitRight = 0;
 	int numHitLeft	= 0;
-        
-	if(r_0.hit   && sceneHandler->getScene()->hasComponents<Collider>(r_0.entity)	&& !sceneHandler->getScene()->getComponent<Collider>(r_0.entity).isTrigger)		{numHitRight++;}
-	if(r_30.hit  && sceneHandler->getScene()->hasComponents<Collider>(r_30.entity)	&& !sceneHandler->getScene()->getComponent<Collider>(r_30.entity).isTrigger)	{numHitRight++;}
-	if(r_60.hit  && sceneHandler->getScene()->hasComponents<Collider>(r_60.entity)	&& !sceneHandler->getScene()->getComponent<Collider>(r_60.entity).isTrigger)	{numHitRight++;}
-	if(r_120.hit && sceneHandler->getScene()->hasComponents<Collider>(r_120.entity)	&& !sceneHandler->getScene()->getComponent<Collider>(r_120.entity).isTrigger)	{numHitLeft++;}
-	if(r_150.hit && sceneHandler->getScene()->hasComponents<Collider>(r_150.entity)	&& !sceneHandler->getScene()->getComponent<Collider>(r_150.entity).isTrigger)	{numHitLeft++;}
-	if(r_180.hit && sceneHandler->getScene()->hasComponents<Collider>(r_180.entity)	&& !sceneHandler->getScene()->getComponent<Collider>(r_180.entity).isTrigger)	{numHitLeft++;}
+
+	for(int i = 0; i < rps.size(); i++)
+	{
+		//Rays < 90 deg
+		if(i < numRaysPerSide)
+		{
+			numHitRight++;
+		}
+		//Rays > 90 deg
+		else if(i > numRaysPerSide)
+		{
+			numHitLeft++;
+		}
+	}
 
 	if(drawRays && sceneHandler->getScene()->getNetworkHandler() != nullptr)
 	{
-		//Storing rays for drawing
-		std::unordered_map<Ray*, RayPayload*>rays;
-		rays.insert({&ray0,		&r_0});		
-		rays.insert({&ray30,	&r_30});
-		rays.insert({&ray60,	&r_60});
-		rays.insert({&ray90,	&r_90});
-		rays.insert({&ray120,	&r_120});
-		rays.insert({&ray150,	&r_150});
-		rays.insert({&ray180,	&r_180});
-		for(auto r: rays)
+		for(int i = 0; i < rays.size(); i++)
 		{
-		    if(r.second->hit)
+		    if(rps[i].hit)
 		    {
-		        drawRaySimple(sceneHandler, *r.first	, left_right_maxDist, glm::vec3(0.0f, 1.0f, 0.0f));	
+		        drawRaySimple(sceneHandler, rays[i]	, left_right_maxDist, glm::vec3(0.0f, 1.0f, 0.0f));	
 		    }
 		    else
 		    {
-		        drawRaySimple(sceneHandler, *r.first	, left_right_maxDist, glm::vec3(1.0f, 0.0f, 0.0f));	
+		        drawRaySimple(sceneHandler, rays[i]	, left_right_maxDist, glm::vec3(1.0f, 0.0f, 0.0f));	
 		    }
 		}
 	}
 	
-	
-	if(r_90.hit && sceneHandler->getScene()->hasComponents<Collider>(r_90.entity) && !sceneHandler->getScene()->getComponent<Collider>(r_90.entity).isTrigger)
+	Scene* sc = sceneHandler->getScene();
+	if(	validHit(rps[numRaysPerSide-3],	sc)	||
+		validHit(rps[numRaysPerSide-2], sc)	||
+		validHit(rps[numRaysPerSide-1], sc)	||
+		validHit(rps[numRaysPerSide+0],	sc)	||
+		validHit(rps[numRaysPerSide+1], sc)	||
+		validHit(rps[numRaysPerSide+2], sc)	||
+		validHit(rps[numRaysPerSide+2], sc))
 	{
 		canGoForward = false;
 	}
+
 	if(numHitRight > numHitLeft)
 	{
 		canGoRight = false;
@@ -315,6 +333,11 @@ void avoidStuffBackwards(Entity entityID, SceneHandler* sceneHandler, bool& atta
 	glm::normalize(dir);
 	dir.y = 0;
 	wantedDir = dir;
+}
+
+bool validHit(RayPayload& rp, Scene* scene)
+{
+	return (rp.hit && scene->hasComponents<Collider>(rp.entity) && !scene->getComponent<Collider>(rp.entity).isTrigger);
 }
 
 glm::vec3 rotateVec(glm::vec3 rot, float deg, glm::vec3 axis)
