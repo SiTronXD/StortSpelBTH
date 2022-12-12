@@ -3,6 +3,6 @@ illum 4
 Kd 0.00 0.00 0.00
 Ka 0.00 0.00 0.00
 Tf 1.00 1.00 1.00
-map_Kd assets/textures/lobby_diffuse.png
-map_Ke assets/textures/lobby_glow.png
+map_Kd assets/textures/lobby_diffuse.jpg
+map_Ke assets/textures/lobby_glow.jpg
 Ni 1.00

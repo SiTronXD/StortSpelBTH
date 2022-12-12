@@ -152,9 +152,9 @@ void GameScene::init()
     this->perkTextures[3] = resourceMng->addTexture("assets/textures/UI/moveUp.png");
     this->perkTextures[4] = resourceMng->addTexture("assets/textures/UI/staminaUp.png");
     this->perkTextures[5] = resourceMng->addTexture("assets/textures/UI/empty.png");
-    this->hpBarBackgroundTextureID = resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
-    this->hpBarTextureID = resourceMng->addTexture("assets/textures/UI/hpBar.png");
-    this->blackTextureIndex = resourceMng->addTexture("vengine_assets/textures/Black.png");
+    this->hpBarBackgroundTextureID = resourceMng->addTexture("assets/textures/UI/hpBarBackground.jpg");
+    this->hpBarTextureID = resourceMng->addTexture("assets/textures/UI/hpBar.jpg");
+    this->blackTextureIndex = resourceMng->addTexture("vengine_assets/textures/Black.jpg");
     this->ghostOverlayIndex = resourceMng->addTexture("assets/textures/UI/GhostUI.png");
     this->buttonSound = resourceMng->addSound("assets/Sounds/buttonClick.ogg");
 
@@ -180,8 +180,8 @@ void GameScene::init()
     MeshComponent& ghostMesh = this->getComponent<MeshComponent>(ghost);
     this->getResourceManager()->makeUniqueMaterials(ghostMesh);
     this->ghostMat = &ghostMesh.overrideMaterials[0];
-    this->ghostMat->diffuseTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhost.png");
-    this->ghostMat->glowMapTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhostGlow.png");
+    this->ghostMat->diffuseTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhost.jpg");
+    this->ghostMat->glowMapTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhostGlow.jpg");
     this->ghostMat->emissionColor = glm::vec3(0.0f, 1.0f, 0.35f);
     this->ghostMat->emissionIntensity = 0.75f;
 
