@@ -9,7 +9,7 @@
 const float RoomHandler::TILE_WIDTH = 25.f;
 const float RoomHandler::BORDER_COLLIDER_HEIGHT = TILE_WIDTH * 6.f;
 const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 5;
-const uint32_t RoomHandler::DECO_ENTITY_CHANCE = 30;
+const uint32_t RoomHandler::DECO_ENTITY_CHANCE = 0;
 const uint32_t RoomHandler::NUM_BORDER = 1;
 const uint32_t RoomHandler::NUM_ONE_X_ONE = 5;
 const uint32_t RoomHandler::NUM_ONE_X_TWO = 2;
@@ -418,7 +418,7 @@ glm::vec3 RoomHandler::getRespawnRot() const
 	return glm::vec3(0.f, respawnYRot[this->respawnDoorIdx], 0.f);
 }
 
-void RoomHandler::generate(uint32_t seed)
+void RoomHandler::generate(uint32_t seed, uint16_t level)
 {
 	const glm::vec3 noDoorBoxOffset[] = 
 	{ 
@@ -433,6 +433,7 @@ void RoomHandler::generate(uint32_t seed)
 
 	RoomLayout roomLayout(*this->random);
 	RoomGenerator roomGen(*this->random);
+	roomGen.setDesc(this->getRoomDesc(level));
 
 	this->reset();
 
@@ -566,6 +567,22 @@ void RoomHandler::generate(uint32_t seed)
 					curRoom.objects.emplace_back(this->createFloorDecoEntity(tile.position, true));
 				}
 
+#if 1 // Show AI tiles
+				entity = scene->createEntity();
+				curRoom.objects.emplace_back(entity);
+				if (this->useMeshes)
+				{
+					this->scene->setComponent<MeshComponent>(entity, this->twoXTwoMeshIds[0].first);
+					MeshComponent& meshComp = this->scene->getComponent<MeshComponent>(entity);
+					this->resourceMan->makeUniqueMaterials(meshComp);
+					meshComp.overrideMaterials[0].tintColor = glm::vec4(1.f, 0.f, 0.f, 1.f);
+				}
+				Transform& tra = this->scene->getComponent<Transform>(entity);
+				tra.position.x = tile.position.x * TILE_WIDTH;
+				tra.position.z = tile.position.y * TILE_WIDTH;
+				tra.scale *= 0.25f;
+#endif
+
 				curRoom.mainTiles.emplace_back(tile.position.x, 0.f, tile.position.y);
 				curRoom.mainTiles.back() *= TILE_WIDTH;
 				break;
@@ -659,6 +676,7 @@ void RoomHandler::generate(uint32_t seed)
 	this->roomExitPoints.shrink_to_fit();
 	this->verticalConnection.shrink_to_fit();
 
+	return;
 	for (int i = 0; i < 4; i++)
 	{
 		this->doorLamps[i] = this->scene->createEntity();
@@ -668,7 +686,6 @@ void RoomHandler::generate(uint32_t seed)
 		light.color = DOOR_LAMP_COLOUR * DOOR_LAMP_INTENSITY;
 		light.positionOffset = DOOR_LAMP_OFFSET;
 	}
-
 	for (int i = 1; i < numTotRooms; i++)
 	{
 		this->deactivateRoom(i);	
@@ -755,6 +772,62 @@ void RoomHandler::moveRoom(int roomIndex, const glm::vec3& offset)
 	{
 		this->scene->getComponent<Transform>(entity).position += offset;
 	}
+}
+
+RoomGenerator::RoomDescription RoomHandler::getRoomDesc(uint16_t level)
+{
+	RoomGenerator::RoomDescription desc;
+
+#ifdef _CONSOLE
+	if (this->overrideLevel)
+	{
+		return this->desc;
+	}
+#endif
+
+	switch (level)
+	{
+	default:
+		break;
+
+	case 0u:
+		desc.radius = 3u;
+		
+		desc.branchDepth = 1u;
+		desc.branchDist = 3u;
+		desc.numBranches = 3u;
+
+		desc.twoXTwoChance = 0u;
+		desc.maxTwoXTwo = 0u;
+		desc.oneXTwoChance = 100u;
+		desc.maxOneXTwo = 1u;
+
+		desc.maxAngle = 45u;
+
+		break;
+
+	case 1u:
+		desc.radius = 3u;
+		desc.branchDepth = 3u;
+
+		desc.twoXTwoChance = 15u;
+		desc.maxTwoXTwo = 4u;
+		desc.oneXTwoChance = 15u;
+		desc.maxOneXTwo = 4u;
+		break;
+
+	case 2u:
+		desc.radius = 4u;
+		desc.branchDepth = 3u;
+
+		desc.twoXTwoChance = 20u;
+		desc.maxTwoXTwo = 5u;
+		desc.oneXTwoChance = 20u;
+		desc.maxOneXTwo = 5u;
+		break;
+	}
+
+	return desc;
 }
 
 void RoomHandler::placeBranch(int index, int left, int right)
@@ -1027,8 +1100,8 @@ void RoomHandler::setConnections(int numMainRooms, const std::vector<glm::ivec2>
 			pair.first = this->roomExitPoints[curCon.y].positions[UPPER_P];
 			pair.second = this->roomExitPoints[curCon.x].positions[LOWER_P];	
 			
-			this->rooms[curCon.y].connPathIndex[UPPER_P] = i;
-			this->rooms[curCon.x].connPathIndex[LOWER_P] = i;
+			this->rooms[curCon.y].connPathIndex[UPPER_P] = (int)i;
+			this->rooms[curCon.x].connPathIndex[LOWER_P] = (int)i;
 		}
 		else
 		{
@@ -1038,8 +1111,8 @@ void RoomHandler::setConnections(int numMainRooms, const std::vector<glm::ivec2>
 			pair.first = this->roomExitPoints[curCon.y].positions[LEFT_P];
 			pair.second = this->roomExitPoints[curCon.x].positions[RIGHT_P];
 
-			this->rooms[curCon.y].connPathIndex[LEFT_P] = i;
-			this->rooms[curCon.x].connPathIndex[RIGHT_P] = i;
+			this->rooms[curCon.y].connPathIndex[LEFT_P] = (int)i;
+			this->rooms[curCon.x].connPathIndex[RIGHT_P] = (int)i;
 		}
 
 		glm::vec3 delta = glm::abs(pair.first - pair.second);
@@ -1597,18 +1670,88 @@ void RoomHandler::placeDoorLamps()
 #ifdef _CONSOLE
 #include "../Scenes/RoomTesting.h"
 #include "vengine/graphics/DebugRenderer.hpp"
+
+#define IMGUI_INT_SLIDER(X)\
+ImGui::InputInt(#X, &X, 1, 4);\
+X = glm::clamp(X, 0, 1000);\
+this->desc.X = X
+
 void RoomHandler::imgui(DebugRenderer* dr)
 {
 	if (ImGui::Begin("Rooms"))
 	{
-		if (ImGui::Button("Reload rooms only"))
-		{
-			this->generate(rand());
-		}
-
-		// roomCompleted() won't kill AI so button is only used in RoomTesting
+		ImGui::PushItemWidth(-120.f);
 		if (dynamic_cast<RoomTesting*>(this->scene))
 		{
+			static int level = 0;
+
+			ImGui::Checkbox("Override level", &this->overrideLevel);
+
+			static int twoXTwoChance = 20u;
+			static int maxTwoXTwo = 6u;
+			static int oneXTwoChance = 20u;
+			static int maxOneXTwo = 6u;
+			static int bigTileMinDist = 1u;
+			static int radius = 4u;
+			static int numBranches = 3u;
+			static int branchDepth = 3u;
+			static int branchDist = 3u;
+			static int maxAngle = 60u;
+
+			if (this->overrideLevel)
+			{
+				
+				IMGUI_INT_SLIDER(twoXTwoChance);
+				IMGUI_INT_SLIDER(maxTwoXTwo);
+				IMGUI_INT_SLIDER(oneXTwoChance);
+				IMGUI_INT_SLIDER(maxOneXTwo);
+				IMGUI_INT_SLIDER(bigTileMinDist);
+				IMGUI_INT_SLIDER(radius);
+				IMGUI_INT_SLIDER(numBranches);
+				IMGUI_INT_SLIDER(branchDepth);
+				IMGUI_INT_SLIDER(branchDist);
+				IMGUI_INT_SLIDER(maxAngle);
+
+				if (ImGui::Button("Reset values"))
+				{
+					twoXTwoChance = 20u;
+					maxTwoXTwo = 6u;
+					oneXTwoChance = 20u;
+					maxOneXTwo = 6u;
+					bigTileMinDist = 1u;
+					radius = 4u;
+					numBranches = 3u;
+					branchDepth = 3u;
+					branchDist = 3u;
+					maxAngle = 60u;
+				}
+			}
+			else
+			{
+				ImGui::InputInt("Level", &level, 1, 1);
+				glm::clamp(level, 0, 100);
+			}
+
+
+			if (ImGui::Button("Reload rooms"))
+			{
+				if (!this->overrideLevel)
+				{
+					this->desc = getRoomDesc((uint16_t)level);
+					twoXTwoChance = desc.twoXTwoChance;
+					maxTwoXTwo = desc.maxTwoXTwo;
+					oneXTwoChance = desc.oneXTwoChance;
+					maxOneXTwo = desc.maxOneXTwo;
+					bigTileMinDist = desc.bigTileMinDist;
+					radius = desc.radius;
+					numBranches = desc.numBranches;
+					branchDepth = desc.branchDepth;
+					branchDist = desc.branchDist;
+					maxAngle = desc.maxAngle;
+				}
+				this->generate(rand(), level);
+			}
+
 			if (ImGui::Button("Complete room"))
 			{
 				this->roomCompleted();
@@ -1655,6 +1798,7 @@ void RoomHandler::imgui(DebugRenderer* dr)
 				dr->renderBox(path.colliderPos, glm::vec3(0.f), path.box.extents * 2.f, glm::vec3(0.6f, 0.f, 0.4f));
 			}
 		}
+		ImGui::PopItemWidth();
 	}
 	ImGui::End();
 }

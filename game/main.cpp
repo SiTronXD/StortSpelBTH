@@ -29,24 +29,26 @@ int main(int argc, char* argv[])
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif // _WIN32 && _DEBUG
 
-    uint32_t seed = (unsigned int)time(0);
 #ifdef _CONSOLE 
+    uint32_t seed = (unsigned int)time(0);
     if(argc > 1)
     {
         seed = (uint32_t)std::stoi(argv[1]);
     }
     Log::write("Seed was: " + std::to_string(seed));
+    srand(seed);
+#else
+    srand((unsigned int)time(0));
 #endif
 
-    srand(seed);
     {
         Engine engine;
         engine.setCustomNetworkHandler(new NetworkHandlerGame());
-        engine.run("Presumed Dead", "", new LobbyScene());
+        //engine.run("Presumed Dead", "", new LobbyScene());
         //engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
         //engine.run("Presumed Dead", "scripts/GameOverScene.lua", new GameOverScene());
         //engine.run("Presumed Dead", "scripts/gamescene.lua", new GameScene());
-        //engine.run("Presumed Dead", "", new RoomTesting());
+        engine.run("Presumed Dead", "", new RoomTesting());
         //engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
     }
 
