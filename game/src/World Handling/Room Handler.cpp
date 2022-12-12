@@ -9,7 +9,7 @@
 const float RoomHandler::TILE_WIDTH = 25.f;
 const float RoomHandler::BORDER_COLLIDER_HEIGHT = TILE_WIDTH * 6.f;
 const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 5;
-const uint32_t RoomHandler::DECO_ENTITY_CHANCE = 0;
+const uint32_t RoomHandler::DECO_ENTITY_CHANCE = 30u;
 const uint32_t RoomHandler::NUM_BORDER = 1;
 const uint32_t RoomHandler::NUM_ONE_X_ONE = 5;
 const uint32_t RoomHandler::NUM_ONE_X_TWO = 2;
@@ -567,7 +567,7 @@ void RoomHandler::generate(uint32_t seed, uint16_t level)
 					curRoom.objects.emplace_back(this->createFloorDecoEntity(tile.position, true));
 				}
 
-#if 1 // Show AI tiles
+#if 0 // Show AI tiles
 				entity = scene->createEntity();
 				curRoom.objects.emplace_back(entity);
 				if (this->useMeshes)
@@ -676,7 +676,6 @@ void RoomHandler::generate(uint32_t seed, uint16_t level)
 	this->roomExitPoints.shrink_to_fit();
 	this->verticalConnection.shrink_to_fit();
 
-	return;
 	for (int i = 0; i < 4; i++)
 	{
 		this->doorLamps[i] = this->scene->createEntity();
