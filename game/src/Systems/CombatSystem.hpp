@@ -463,7 +463,7 @@ public:
 				this->scene->blendToAnimation(this->playerID, animName, "UpperBody", 0.18f, animMultiplier);
 			}
 			this->script->setScriptComponentValue(playerScript, true, "isAttacking");
-			this->script->setScriptComponentValue(playerScript, animIdx, "currentAnimation");
+			//this->script->setScriptComponentValue(playerScript, animIdx, "currentAnimation");
 			this->script->setScriptComponentValue(playerScript, cdValue, "animTimer");
 
 			if (animName == "knockback")
@@ -697,12 +697,12 @@ public:
 			if (combat.totalAtkSpeedMulti < 0.3f)
 			{
 				combat.attackSpeedMultiplier = 0.3f;
-				combat.animationMultiplier[0] = 2.8f;
-				combat.animationMultiplier[1] = 2.4f;
-				combat.animationMultiplier[2] = 4.6f;
-				combat.animationMultiplier[3] = 4.6f;
-				combat.animationMultiplier[4] = 4.6f;
-				combat.animationMultiplier[5] = 2.4f;
+				combat.animationMultiplier[0] = 3.4f;
+				combat.animationMultiplier[1] = 2.6f;
+				combat.animationMultiplier[2] = 4.8f;
+				combat.animationMultiplier[3] = 4.8f;
+				combat.animationMultiplier[4] = 4.8f;
+				combat.animationMultiplier[5] = 2.6f;
 			}
 			else
 			{
@@ -836,15 +836,15 @@ public:
 
 	void setDefaultAtttackSpeed(Combat& combat)
 	{
-		combat.lightAttackCd /= combat.attackSpeedMultiplier;
-		combat.heavyAttackCd /= combat.attackSpeedMultiplier;
-		combat.comboLightCd /= combat.attackSpeedMultiplier;
-		combat.comboHeavyCd /= combat.attackSpeedMultiplier;
-		combat.comboMixCd /= combat.attackSpeedMultiplier;
-		combat.knockbackCd /= combat.attackSpeedMultiplier;
+		combat.lightAttackCd = 0.6f;
+		combat.heavyAttackCd = 1.5f;
+		combat.comboLightCd = 1.f;
+		combat.comboHeavyCd = 1.f;
+		combat.comboMixCd = 1.f;
+		combat.knockbackCd = 1.f;
 		combat.animationMultiplier[0] = 1.2f;
 		combat.animationMultiplier[1] = 1.f;
-		combat.animationMultiplier[2] = 2.1f;
+		combat.animationMultiplier[2] = 1.8f;
 		combat.animationMultiplier[3] = 2.1f;
 		combat.animationMultiplier[4] = 2.1f;
 		combat.animationMultiplier[5] = 1.f;
@@ -870,8 +870,8 @@ public:
 		this->script->setScriptComponentValue(playerScript, 100, "dodgeSpeed");
 
 		this->script->setScriptComponentValue(playerScript, 1.f, "idleAnimTime");
-		this->script->setScriptComponentValue(playerScript, 1.8f, "runAnimTime"); // 0.7f
-		this->script->setScriptComponentValue(playerScript, 2.8f, "sprintAnimTime"); // 1.2f
+		this->script->setScriptComponentValue(playerScript, 1.8f, "runAnimTime");
+		this->script->setScriptComponentValue(playerScript, 2.8f, "sprintAnimTime");
 		this->script->setScriptComponentValue(playerScript, 3.f, "dodgeAnimTime");
 		this->walkTime = 0.5f;
 	}
@@ -1158,8 +1158,34 @@ public:
 			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 			this->script->setScriptComponentValue(playerScript, true, "canMove");
 			this->script->setScriptComponentValue(playerScript, false, "isAttacking");
-			this->script->setScriptComponentValue(playerScript, 4, "currentAnimation");
-			this->scene->syncedBlendToAnimation(this->playerID, "LowerBody", "UpperBody", 0.3f);
+			std::string animName = this->scene->getAnimationStatus(this->playerID, "LowerBody").animationName;
+			if (animName != "run" && animName != "idle")
+			{
+				int currentAnimation = 0;
+				this->script->getScriptComponentValue(playerScript, currentAnimation, "currentAnimation");
+				if (currentAnimation == 1)
+				{
+					float idleScale = 0.f;
+					this->script->getScriptComponentValue(playerScript, idleScale, "idleAnimTime");
+					this->scene->blendToAnimation(this->playerID, "idle", "", 0.3f, idleScale);
+				}
+				else if (currentAnimation == 2)
+				{
+					float runScale = 0.f;
+					this->script->getScriptComponentValue(playerScript, runScale, "runAnimTime");
+					this->scene->blendToAnimation(this->playerID, "run", "", 0.3f, runScale);
+				}
+				else if (currentAnimation == 3)
+				{
+					float sprintScale = 0.f;
+					this->script->getScriptComponentValue(playerScript, sprintScale, "sprintAnimTime");
+					this->scene->blendToAnimation(this->playerID, "run", "", 0.3f, sprintScale);
+				}
+			}
+			else
+			{
+				this->scene->syncedBlendToAnimation(this->playerID, "LowerBody", "UpperBody");
+			}
 			combat.attackTimer = 0.f;
 		}
 		if (combat.knockbackTimer > 0.f)
