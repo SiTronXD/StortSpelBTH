@@ -1386,7 +1386,7 @@ void RoomHandler::createObjectEntities(const Tile& tile, Room& room)
 	}
 	else if (tile.type == Tile::TwoXTwo)
 	{
-		transform.rotation.y = float((int)this->random->rand() % 360);
+		transform.rotation.y = float((int)this->random->rand() % 40 + this->random->rand() % 4 * 90);
 	}
 
 	std::pair<int, int> pair(~0u, ~0u);
