@@ -60,7 +60,6 @@ public:
 		};
 		swarmView.each(swarmBackground);
 
-
 		counter = 0;
 		uiRenderer->setTexture(healthBarID);
 		auto tankHealthBar = [&](Transform& transform, TankComponent& tank)
@@ -70,7 +69,11 @@ public:
 			float alpha = dotDist <= 100.0f ? 1.0f : std::max(125.0f - dotDist, 0.0f) / 25.0f;
 			float margin = 250.0f / dotDist;
 			glm::vec2 pos = glm::vec2(backgroundRects[counter].x, backgroundRects[counter].y);
-			glm::vec2 size = glm::vec2(backgroundRects[counter].z, backgroundRects[counter].w) - glm::vec2(margin);
+			glm::vec2 size = glm::vec2(backgroundRects[counter].z, backgroundRects[counter].w);
+			if (size != glm::vec2(0.0f))
+			{
+				size -= glm::vec2(margin);
+			}
 
 			uiRenderer->renderTexture(glm::vec2(pos.x - size.x * 0.5f * (1.0f - percentage), pos.y), glm::vec2(size.x * percentage, size.y),
 				glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, alpha));
@@ -84,7 +87,11 @@ public:
 			float alpha = dotDist <= 100.0f ? 1.0f : std::max(125.0f - dotDist, 0.0f) / 25.0f;
 			float margin = 250.0f / dotDist;
 			glm::vec2 pos = glm::vec2(backgroundRects[counter].x, backgroundRects[counter].y);
-			glm::vec2 size = glm::vec2(backgroundRects[counter].z, backgroundRects[counter].w) - glm::vec2(margin);
+			glm::vec2 size = glm::vec2(backgroundRects[counter].z, backgroundRects[counter].w);
+			if (size != glm::vec2(0.0f))
+			{
+				size -= glm::vec2(margin);
+			}
 
 			uiRenderer->renderTexture(glm::vec2(pos.x - size.x * 0.5f * (1.0f - percentage), pos.y), glm::vec2(size.x * percentage, size.y),
 				glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, alpha));
@@ -98,7 +105,11 @@ public:
 			float alpha = dotDist <= 100.0f ? 1.0f : std::max(125.0f - dotDist, 0.0f) / 25.0f;
 			float margin = 250.0f / dotDist;
 			glm::vec2 pos = glm::vec2(backgroundRects[counter].x, backgroundRects[counter].y);
-			glm::vec2 size = glm::vec2(backgroundRects[counter].z, backgroundRects[counter].w) - glm::vec2(margin);
+			glm::vec2 size = glm::vec2(backgroundRects[counter].z, backgroundRects[counter].w);
+			if (size != glm::vec2(0.0f))
+			{
+				size -= glm::vec2(margin);
+			}
 
 			uiRenderer->renderTexture(glm::vec2(pos.x - size.x * 0.5f * (1.0f - percentage), pos.y), glm::vec2(size.x * percentage, size.y),
 				glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, alpha));
@@ -106,7 +117,7 @@ public:
 		};
 		swarmView.each(swarmHealthBar);
 
-		this->backgroundRects.clear();
+		backgroundRects.assign(counter, glm::vec4(0.0f));
 		return false;
 	}
 };
