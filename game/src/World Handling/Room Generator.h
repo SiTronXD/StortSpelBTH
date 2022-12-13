@@ -41,22 +41,31 @@ struct Tile
 class RoomGenerator
 {
 public:
-    static const uint32_t TWO_X_TWO_CHANCE = 20u; // Percentage
-    static const uint32_t MAX_TWO_X_TWO = 6u;//3u;
-    
-    static const uint32_t ONE_X_TWO_CHANCE = 20u; // Percentage
-    static const uint32_t MAX_ONE_X_TWO = 6u;//4u;
-    
-    static const uint32_t BIG_TILE_MIN_DIST = 1u;
+
+    // Default values create larger rooms (higher levels) (same as extern-test)
+    struct RoomDescription
+    {
+        uint32_t twoXTwoChance = 80u;
+        uint32_t maxTwoXTwo = 6u;
+
+        uint32_t oneXTwoChance = 80u;
+        uint32_t maxOneXTwo = 6u;
+
+        uint32_t bigTileMinDist = 1u;
+        uint32_t radius = 4u;
+
+        uint32_t numBranches = 6u;
+        uint32_t branchDepth = 3u;
+        uint32_t branchDist = 3u;
+
+        uint32_t maxAngle = 45u;
+    };
 
     static const uint32_t WIDTH_HEIGHT = 50u;
     static const uint32_t BORDER_SIZE = 3u;
-    static const uint32_t RADIUS = 4u;//3u;
-    static const uint32_t NUM_BRANCHES = 3u;
-    static const uint32_t BRANCH_DEPTH = 3u;
-    static const uint32_t BRANCH_DIST = 3u;
-    static const uint32_t MAX_ANGLE = 60u;
+
 private:
+    RoomDescription roomDesc;
     VRandom& random;
 
     Tile::Type** tiles2D;
@@ -89,6 +98,8 @@ private:
 public:
     RoomGenerator(VRandom& random);
     ~RoomGenerator();
+
+    void setDesc(const RoomDescription& roomDesc);
 
     void clear();
     void generate(bool* doors);

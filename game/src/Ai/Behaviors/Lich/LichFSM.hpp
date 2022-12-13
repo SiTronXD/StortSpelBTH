@@ -128,6 +128,7 @@ struct LichComponent
     };
 
     //Ints
+    int currentLevel            = 0;
     int numBones                = 0;
 
 

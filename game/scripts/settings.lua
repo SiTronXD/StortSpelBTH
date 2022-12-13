@@ -12,10 +12,11 @@ function script:init()
 	self.sensitivityLimits = vector(10, 50)
 	self.FOVLimits = vector(60, 120)
 
-	self.buttonTex = resources.addTexture("assets/textures/UI/button.png")
+	self.buttonTex = resources.addTexture("assets/textures/UI/button.jpg")
 	self.barMid = resources.addTexture("assets/textures/UI/UIBarMid.png")
 	self.barSide = resources.addTexture("assets/textures/UI/UIBarSide.png")
-	self.barFill = resources.addTexture("assets/textures/UI/UIBarFill.png")
+	self.barFill = resources.addTexture("assets/textures/UI/UIBarFill.jpg")
+	self.howToPlayTex = resources.addTexture("assets/textures/UI/howToPlay.png")
 	self.buttonSound = resources.addSound("assets/Sounds/buttonClick.ogg")
 
 	scene.setComponent(self.ID, CompType.UIArea, { position = vector(), dimension = vector() })
@@ -50,7 +51,17 @@ function script:init()
 end
 
 function script:update()
-	
+
+	if(howToPlay) then
+		uiRenderer.setTexture(self.howToPlayTex)
+		uiRenderer.renderTexture(vector(0, 0), vector(1920, 1080))
+
+		uiRenderer.setTexture(self.buttonTex)
+		uiRenderer.renderTexture(self.backButton.position, self.backButton.dimension, vector.fill(1), 0.85 + core.btoi(self.backButton:isHovering()) * 0.15)
+		uiRenderer.renderString("back", self.backButton.position + vector(0, 5), vector.fill(40))
+		return
+	end
+
 	local barLength = 800
 	local barLengthHalf = barLength / 2
 

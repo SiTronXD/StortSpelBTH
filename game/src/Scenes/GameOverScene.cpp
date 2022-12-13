@@ -104,7 +104,7 @@ void GameOverScene::init()
 
 	Material& crystalMat = this->getResourceManager()->getMaterial(this->getComponent<MeshComponent>(this->crystals[0]), 0);
 	crystalMat.emissionColor = glm::vec3(0.431f, 1.624f, 0.130f);
-	crystalMat.glowMapTextureIndex = this->getResourceManager()->addTexture("vengine_assets/textures/DefaultEmission.png");
+	crystalMat.glowMapTextureIndex = this->getResourceManager()->addTexture("vengine_assets/textures/DefaultEmission.jpg");
 
 	// GENERATE TREES
 	float treeOffset = 12.f;

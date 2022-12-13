@@ -56,6 +56,7 @@ struct TankComponent
         viewLich.each(lichLamda);
 	}
 
+	int currentLevel				= 0;
 
 	//Floats
     float FULL_HEALTH				= 500.0f;  

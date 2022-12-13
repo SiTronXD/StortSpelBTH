@@ -88,7 +88,7 @@ void GameSceneNetwork::init()
       this,
       this->getResourceManager(), this->getPhysicsEngine(), true
   );
-  roomHandler.generate(123);
+  roomHandler.generate(123, 0u);
   createPortal();
 
   ResourceManager* resourceMng = this->getResourceManager();
@@ -103,9 +103,9 @@ void GameSceneNetwork::init()
       resourceMng->addTexture("assets/textures/UI/atkSpeedUp.png");
   perkTextures[3] = resourceMng->addTexture("assets/textures/UI/empty.png");
   this->hpBarBackgroundTextureID =
-      resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
+      resourceMng->addTexture("assets/textures/UI/hpBarBackground.jpg");
   this->hpBarTextureID =
-      resourceMng->addTexture("assets/textures/UI/hpBar.png");
+      resourceMng->addTexture("assets/textures/UI/hpBar.jpg");
 
   // Temporary light
   Entity directionalLightEntity = this->createEntity();

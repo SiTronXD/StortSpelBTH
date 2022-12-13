@@ -44,10 +44,10 @@ void LobbyScene::init()
     this->networkHandler = dynamic_cast<NetworkHandlerGame*>(this->getNetworkHandler());
 
     this->backgroundId =
-        this->getResourceManager()->addTexture("assets/textures/blackTex.png"
+        this->getResourceManager()->addTexture("assets/textures/blackTex.jpg"
         );
     this->buttonId =
-        this->getResourceManager()->addTexture("assets/textures/UI/button.png");
+        this->getResourceManager()->addTexture("assets/textures/UI/button.jpg");
 
     this->buttonSound = this->getResourceManager()->addSound("assets/Sounds/buttonClick.ogg");
 
