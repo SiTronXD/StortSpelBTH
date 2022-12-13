@@ -831,7 +831,8 @@ BTStatus LichBT::selfHeal(Entity entityID)
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     if(lichComp.life < lichComp.FULL_HEALTH)
     {
-
+        //Self heal particles
+        /*
         Scene* scene = getTheScene();
         NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
         if (s == nullptr)
@@ -849,7 +850,7 @@ BTStatus LichBT::selfHeal(Entity entityID)
         {
             s->addEvent({(int)GameEvent::PLAY_PARTICLE, (int)ParticleTypes::LICH_HEAL, (int)entityID});
 		
-        }
+        }*/
         lichComp.life_float += get_dt() * lichComp.healthRegenSpeed;
         if(lichComp.life_float > 1.0f)
         {
