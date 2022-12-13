@@ -30,7 +30,7 @@ RoomGenerator::~RoomGenerator()
 
 void RoomGenerator::setDesc(const RoomDescription& roomDesc)
 {
-	this->roomDesc = this->roomDesc;
+	this->roomDesc = roomDesc;
 }
 
 void RoomGenerator::clear()
