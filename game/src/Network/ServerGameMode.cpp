@@ -256,7 +256,7 @@ void ServerGameMode::makeDataSendToClient()
                 this->addEvent(
                     {(int)GameEvent::ENTITY_SET_HP,
                      (int)static_cast<int>(entity),
-                     this->getComponent<SwarmComponent>(static_cast<int>(entity)).life}
+                     (int)this->getComponent<SwarmComponent>(static_cast<int>(entity)).life}
                  );
                 lastSwarmHp[i].health = this->getComponent<SwarmComponent>(static_cast<int>(entity)).life;
             }
@@ -268,7 +268,7 @@ void ServerGameMode::makeDataSendToClient()
                 this->addEvent(
                     {(int)GameEvent::ENTITY_SET_HP,
                     (int)static_cast<int>(entity),
-                    this->getComponent<LichComponent>(static_cast<int>(entity)).life}
+                    (int)this->getComponent<LichComponent>(static_cast<int>(entity)).life}
                  );
                 lastLichHp[i].health = this->getComponent<LichComponent>(static_cast<int>(entity)).life;
             }
@@ -280,7 +280,7 @@ void ServerGameMode::makeDataSendToClient()
                 this->addEvent(
                     {(int)GameEvent::ENTITY_SET_HP,
                     (int)static_cast<int>(entity),
-                     this->getComponent<TankComponent>(static_cast<int>(entity)).life}
+                     (int)this->getComponent<TankComponent>(static_cast<int>(entity)).life}
                  );
                 lastTankHp[i].health = this->getComponent<TankComponent>(static_cast<int>(entity)).life;
             }
