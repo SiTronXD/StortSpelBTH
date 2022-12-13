@@ -104,7 +104,6 @@ void ServerGameMode::update(float dt)
         this->addEvent({(int)GameEvent::ROOM_CLEAR});
         // Call when a room is cleared
         roomHandler.roomCompleted();
-        this->numRoomsCleared++;
         this->doorsClosed = false;
         if (this->roomHandler.isPortalRoomDone())
         {

@@ -654,8 +654,6 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
     case GameEvent::ROOM_CLEAR:
         this->newRoomFrame = false;
         roomHandler->roomCompleted();
-        *numRoomsCleared += 1;
-		std::cout << "GameScene: number of rooms cleared:" << *numRoomsCleared << std::endl;  
 		
 		dynamic_cast<GameScene*>(scene)->revivePlayer();
 		for (int i = 0; i < (int)this->playerEntities.size(); i++)
@@ -984,7 +982,6 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientIndex, s
         this->newRoomFrame = false;
         std::cout << "error room shall not be cleared here \n\n" << std::endl;
         roomHandler->roomCompleted();
-		this->numRoomsCleared += 1;
 		break;
 	default:
 		packet << event;
@@ -993,10 +990,9 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientIndex, s
 	}
 }
 
-void NetworkHandlerGame::setRoomHandler(RoomHandler& roomHandler, int& numRoomsCleared)
+void NetworkHandlerGame::setRoomHandler(RoomHandler& roomHandler)
 {
     this->roomHandler = &roomHandler;
-    this->numRoomsCleared = &numRoomsCleared;
     newRoomFrame = false;
 }
 

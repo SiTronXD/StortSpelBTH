@@ -71,7 +71,7 @@ GameSceneLevel GameScene::setNewLevel() {
 }
 
 GameScene::GameScene(GameSceneLevel gameSceneLevel) :
-    playerID(-1), portal(-1), numRoomsCleared(0), newRoomFrame(false), perk(-1),
+    playerID(-1), portal(-1), newRoomFrame(false), perk(-1),
     perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1), 
     deathTimer(0.0f), isDead(false), fadeTimer(1.0f), portalTimer(9.0f)
 {
@@ -211,7 +211,7 @@ void GameScene::start()
         int seed = this->networkHandler->getSeed();
         Log::write("Seed from server: " + std::to_string(seed));
         roomHandler.generate(seed);
-        networkHandler->setRoomHandler(roomHandler, this->numRoomsCleared);
+        networkHandler->setRoomHandler(roomHandler);
     }
     else
     {
