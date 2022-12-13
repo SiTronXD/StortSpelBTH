@@ -89,6 +89,7 @@ private:
   Entity dirLightEntity;
 
   bool newRoomFrame;
+  bool portalActivated = false;
 
   int abilityMeshes[2];
   int perkMeshes[5];

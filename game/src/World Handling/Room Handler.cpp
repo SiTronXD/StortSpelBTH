@@ -172,19 +172,48 @@ void RoomHandler::mutliplayerCloseDoors()
 
 void RoomHandler::serverActivateCurrentRoom()
 {
+	Room& room = this->rooms[this->activeIndex];
 	this->activateRoom(this->activeIndex);
 	for (size_t i = 0; i < this->rooms.size(); i++)
 	{
-		if (i != this->activeIndex)
+		if (i != this->activeIndex && i != room.connectingIndex[0] && i != room.connectingIndex[1] && 
+			i != room.connectingIndex[2] && i != room.connectingIndex[3])
 		{
 			this->deactivateRoom(i);
 		}
+		else
+		{
+			this->activateRoom(i);
+		}
+
 	}
 }
 
 void RoomHandler::serverToggleCurrentPaths(bool active)
 {
+	Room& curRoom = this->rooms[this->activeIndex];
 	this->togglePaths(this->activeIndex, active);
+	if (!active)
+	{
+		this->forceToggleDoors(this->activeIndex, false);
+		for (int i = 0; i < 4; i++)
+		{
+			if (curRoom.connectingIndex[i] != -1)
+			{
+				this->deactivateRoom(curRoom.connectingIndex[i]);
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			if (curRoom.connectingIndex[i] != -1)
+			{
+				this->forceToggleDoors(curRoom.connectingIndex[i], false);
+			}
+		}
+	}
 }
 
 void RoomHandler::roomCompleted()
@@ -1663,6 +1692,16 @@ void RoomHandler::placeDoorLamps()
 	}
 }
 
+const std::vector<RoomHandler::Room>& RoomHandler::getRooms() const
+{
+	return this->rooms;
+}
+
+const std::vector<RoomHandler::Pathway>& RoomHandler::getPaths() const
+{
+	return this->paths;
+}
+
 #ifdef _CONSOLE
 #include "../Scenes/RoomTesting.h"
 #include "vengine/graphics/DebugRenderer.hpp"
@@ -1799,10 +1838,6 @@ void RoomHandler::imgui(DebugRenderer* dr)
 		ImGui::PopItemWidth();
 	}
 	ImGui::End();
-}
-const std::vector<RoomHandler::Room>& RoomHandler::getRooms() const
-{
-	return this->rooms;
 }
 #endif // _CONSOLE
 

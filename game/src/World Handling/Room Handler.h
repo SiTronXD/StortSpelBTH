@@ -205,8 +205,10 @@ public:
 
 #ifdef _CONSOLE
 	void imgui(DebugRenderer* dr);
-	const std::vector<Room>& getRooms() const;
 #endif //  _CONSOLE
+
+	const std::vector<Room>& getRooms() const;
+	const std::vector<Pathway>& getPaths() const;
 
 	void roomCompleted();
 

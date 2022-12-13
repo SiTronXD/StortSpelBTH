@@ -351,8 +351,9 @@ void GameScene::update()
             // Call when a room is cleared
             this->roomHandler.roomCompleted();
 
-            if (this->roomHandler.isPortalRoomDone())
+            if (this->roomHandler.isPortalRoomDone() && !this->portalActivated)
             {
+                this->portalActivated = true;
                 this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
 
                 // Particle effects
