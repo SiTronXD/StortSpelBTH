@@ -37,6 +37,7 @@ private:
 
 	float walkTimer = -1.f;
 	float walkTime = 0.5f;
+    float pickupTimer = 4.f;
 
 	int swordMesh;
 	int perkMeshes[5];
@@ -44,6 +45,7 @@ private:
 
 	std::vector<Entity> hitEnemies;
 	bool canHit = true;
+    std::string pickupErrorText;
 
 public:
 	CombatSystem(SceneHandler* sceneHandler, Entity playerID, 
@@ -1044,6 +1046,11 @@ public:
 					{
 						this->networkHandler->pickUpItemRequest(hitID[i], ItemType::PERK);
 					}
+					else
+                    {
+						pickupErrorText = "you can't pick up any more perks";
+                        pickupTimer = 0.f;
+					}
 				}
 			}
 		}
@@ -1117,9 +1124,17 @@ public:
 					pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f), 1.0f);
 				this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 7.5f, 0.0f) - up * 2.5f, glm::vec2(100.0f), 1.0f);
 
-				if (Input::isKeyPressed(Keys::E) && combat.ability.abilityType == emptyAbility)
+				if (Input::isKeyPressed(Keys::E))
 				{
-					this->networkHandler->pickUpItemRequest(hitID[i], ItemType::ABILITY);
+                    if (combat.ability.abilityType == emptyAbility)
+                    {
+						this->networkHandler->pickUpItemRequest(hitID[i], ItemType::ABILITY);
+					}
+                    else
+                    {
+                        pickupErrorText = "you already have an ability";
+                        pickupTimer = 0.f;
+					}
 				}
 			}
 		}
@@ -1214,5 +1229,18 @@ public:
 		{
 			this->walkTimer -= deltaTime;
 		}
+
+        if (pickupTimer < 1.f)
+            {
+                this->uiRenderer->renderString(
+                    pickupErrorText,
+                    glm::vec2(0.0f, 50.0f),
+                    glm::vec2(30.0f),
+                    0.0f,
+                    StringAlignment::CENTER,
+                    glm::vec4(1.0f, 1.0f, 1.0f, cos(this->pickupTimer * 2))
+                );
+                pickupTimer += Time::getDT();
+            }
 	}
 };
