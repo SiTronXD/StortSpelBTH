@@ -380,6 +380,8 @@ void RoomHandler::startOver()
 	this->togglePaths(this->oldIndex, true);
 	this->activeIndex = this->oldIndex;
 	this->oldIndex = -1;
+
+	this->placeDoorLamps();
 }
 
 glm::vec3 RoomHandler::getRespawnPos() const
@@ -574,8 +576,6 @@ void RoomHandler::generate(uint32_t seed, uint16_t level)
 				{
 					this->scene->setComponent<MeshComponent>(entity, this->twoXTwoMeshIds[0].first);
 					MeshComponent& meshComp = this->scene->getComponent<MeshComponent>(entity);
-					this->resourceMan->makeUniqueMaterials(meshComp);
-					meshComp.overrideMaterials[0].tintColor = glm::vec4(1.f, 0.f, 0.f, 1.f);
 				}
 				Transform& tra = this->scene->getComponent<Transform>(entity);
 				tra.position.x = tile.position.x * TILE_WIDTH;
@@ -808,29 +808,14 @@ RoomGenerator::RoomDescription RoomHandler::getRoomDesc(uint16_t level)
 	case 1u:
 		desc.radius = 3u;
 		
-		desc.numBranches = 3u;
+		desc.numBranches = 4u;
 		desc.branchDepth = 2u;
 		desc.branchDist = 3u;
 
 		desc.twoXTwoChance = 50u;
 		desc.maxTwoXTwo = 1u;
 		desc.oneXTwoChance = 50u;
-		desc.maxOneXTwo = 1u;
-
-		desc.maxAngle = 45u;
-		break;
-
-	case 2u:
-		desc.radius = 3u;
-		
-		desc.numBranches = 5u;
-		desc.branchDepth = 2u;
-		desc.branchDist = 4u;
-
-		desc.twoXTwoChance = 75u;
-		desc.maxTwoXTwo = 5u;
-		desc.oneXTwoChance = 75u;
-		desc.maxOneXTwo = 5u;
+		desc.maxOneXTwo = 2u;
 
 		desc.maxAngle = 45u;
 		break;
