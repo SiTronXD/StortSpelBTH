@@ -104,16 +104,15 @@ void ServerGameMode::update(float dt)
         this->addEvent({(int)GameEvent::ROOM_CLEAR});
         // Call when a room is cleared
         roomHandler.roomCompleted();
-        this->numRoomsCleared++;
         this->doorsClosed = false;
-        if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+        if (this->roomHandler.isPortalRoomDone())
         {
             std::cout << "Server: Spawn portal" << std::endl;
             this->addEvent({(int)GameEvent::SPAWN_PORTAL});
         }
     }
     //check if all players are at portal
-    if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+    if (this->roomHandler.isPortalRoomDone())
     {
             
         std::vector<int> colWithPortal = this->getPhysicsEngine()->testContact(
