@@ -12,10 +12,10 @@ function script:init()
 	self.sensitivityLimits = vector(10, 50)
 	self.FOVLimits = vector(60, 120)
 
-	self.buttonTex = resources.addTexture("assets/textures/UI/button.png")
+	self.buttonTex = resources.addTexture("assets/textures/UI/button.jpg")
 	self.barMid = resources.addTexture("assets/textures/UI/UIBarMid.png")
 	self.barSide = resources.addTexture("assets/textures/UI/UIBarSide.png")
-	self.barFill = resources.addTexture("assets/textures/UI/UIBarFill.png")
+	self.barFill = resources.addTexture("assets/textures/UI/UIBarFill.jpg")
 	self.buttonSound = resources.addSound("assets/Sounds/buttonClick.ogg")
 
 	scene.setComponent(self.ID, CompType.UIArea, { position = vector(), dimension = vector() })

@@ -55,20 +55,20 @@ void SpawnHandler::spawnEnemiesIntoRoom(int level)
             // Spawn Tanks
             for (size_t i = 0; i < NR_TANK_DBG; i++)
             {
-                this->spawnTank(tankIdx, this->tilePicker.getRandomEmptyTile()->getPos());
+                this->spawnTank(tankIdx, this->tilePicker.getRandomEmptyTile()->getPos(), level-1);
                 tankIdx++;
             }
 
             // Spawn Lichs
             for (size_t i = 0; i < NR_LICH_DBG; i++)
             {
-                lichIdx += this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2));
+                lichIdx += this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2), level-1);
             }
 
             // Spawn Swarms
             for (size_t i = 0; i < NR_SWARM_GROUPS_DBG; i++)
             {
-                swarmIdx += this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP));
+                swarmIdx += this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP), level-1);
             }
         }
     else if (this->roomHandler->inExitRoom())
@@ -76,15 +76,15 @@ void SpawnHandler::spawnEnemiesIntoRoom(int level)
 
             if (level == 1 || level == 4 || level >= 5)
             {
-                this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP), true);
+                this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP), level-1, true);
             }
             if (level == 2 || level == 4 || level >= 6)
             {
-                this->spawnLich(lichIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(2), true);
+                this->spawnLich(lichIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(2), level-1, true);
             }
             if (level == 3 || level == 5 || level >= 6)
             {
-                this->spawnTank(tankIdx,this->tilePicker.getRandomEmptyTile()->getPos(),true);
+                this->spawnTank(tankIdx,this->tilePicker.getRandomEmptyTile()->getPos(), level-1, true);
             }
         }
     else
@@ -93,7 +93,7 @@ void SpawnHandler::spawnEnemiesIntoRoom(int level)
             for (size_t i = 0; i < nrOfTanks_inRoom; i++)
                 {
                     this->spawnTank(
-                        tankIdx, this->tilePicker.getRandomEmptyTile()->getPos()
+                        tankIdx, this->tilePicker.getRandomEmptyTile()->getPos(), level-1
                     );
                     tankIdx++;
                 }
@@ -104,7 +104,7 @@ void SpawnHandler::spawnEnemiesIntoRoom(int level)
 
                     lichIdx += this->spawnLich(
                         lichIdx,
-                        this->tilePicker.getRandomEmptyNeighbouringTiles(2)
+                        this->tilePicker.getRandomEmptyNeighbouringTiles(2), level-1
                     );
                 }
 
@@ -114,8 +114,7 @@ void SpawnHandler::spawnEnemiesIntoRoom(int level)
                     swarmIdx += this->spawnSwarmGroup(
                         swarmIdx,
                         this->tilePicker.getRandomEmptyNeighbouringTiles(
-                            SpawnHandler::NR_BLOBS_IN_GROUP
-                        )
+                            SpawnHandler::NR_BLOBS_IN_GROUP), level-1
                     );
                 }
         }
@@ -133,7 +132,7 @@ void SpawnHandler::resetEnemies()
 }
 
 void SpawnHandler::spawnTank(
-    const int tankIdx, const glm::vec3& pos, bool elite
+    const int tankIdx, const glm::vec3& pos, int level, bool elite
 )
 {
     currScene->setActive(this->tankIDs[tankIdx]);
@@ -170,6 +169,7 @@ void SpawnHandler::spawnTank(
                 }
         }
 
+    tankComp.currentLevel = level;
     tankComp.life = tankComp.FULL_HEALTH;
     transform.scale = tankComp.origScale;
     tankComp.origScaleY = transform.scale.y;
@@ -182,7 +182,7 @@ void SpawnHandler::spawnTank(
 }
 
 uint32_t SpawnHandler::spawnLich(
-    int lichIdx, std::vector<const TileInfo*> tileInfos, bool elite
+    int lichIdx, std::vector<const TileInfo*> tileInfos, int level, bool elite
 )
 {
     //Make sure we only try to create Lich if we have one tile for Lich, and one for alter
@@ -232,6 +232,7 @@ uint32_t SpawnHandler::spawnLich(
                         }
                 }
             //Reset
+            lichComp.currentLevel = level;
             lichComp.life = lichComp.FULL_HEALTH;
             transform.scale = lichComp.origScale;
             lichComp.origScaleY = transform.scale.y;
@@ -287,20 +288,20 @@ uint32_t SpawnHandler::spawnLich(
 }
 
 uint32_t SpawnHandler::spawnSwarmGroup(
-    const int swarmStartIdx, std::vector<const TileInfo*> tileInfos, bool elite
+    const int swarmStartIdx, std::vector<const TileInfo*> tileInfos, int level, bool elite
 )
 {
     int swarmIdx = swarmStartIdx;
 
     for (auto tile : tileInfos)
         {
-            spawnSwarm(swarmIdx, tile->getPos(), elite);
+            spawnSwarm(swarmIdx, tile->getPos(), level, elite);
             swarmIdx++;
         }
     return (uint32_t)tileInfos.size();
 }
 
-void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos, bool elite)
+void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos, int level, bool elite)
 {
     currScene->setActive(this->swarmIDs[swarmIdx]);
 
@@ -339,6 +340,7 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos, bool elite)
 
     transform.scale = swarmComp.origScale;
     swarmComp.origScaleY = transform.scale.y;
+    swarmComp.currentLevel = level;
     swarmComp.life = swarmComp.FULL_HEALTH;
     swarmComp.group->inCombat = false;
 

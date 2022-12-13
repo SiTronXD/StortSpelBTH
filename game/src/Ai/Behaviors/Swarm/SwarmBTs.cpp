@@ -678,7 +678,7 @@ BTStatus SwarmBT::die(Entity entityID)
 {
     BTStatus ret = BTStatus::Success;
     static int chanceToSpawnPerk = 2;
-    static int chanceToSpawnability = 1;
+    static int chanceToSpawnability = 1 ;
 	int playerID = getPlayerID(entityID);
 	if(playerID == -1){return ret;}
     HealthComp& playerHealth = sceneHandler->getScene()->getComponent<HealthComp>(playerID);
