@@ -155,6 +155,7 @@ private:
 	Entity doorLamps[4];
 
 	// Room Updating
+	int portalRoomIndex = 0;
 	int respawnDoorIdx = -1;
 	int prevRoomIndex = -1;
 	int activeIndex = 0;
@@ -227,6 +228,7 @@ public:
 	const std::vector<glm::vec3>& getFreeTiles();
 	const std::vector<TileInfo>& getFreeTileInfos();
 	const Room& getExitRoom() const;
+	bool isPortalRoomDone() const;
 	int getNumRooms() const;
 	bool inExitRoom() const;
 

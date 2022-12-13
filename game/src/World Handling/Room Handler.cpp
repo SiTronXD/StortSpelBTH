@@ -615,7 +615,10 @@ void RoomHandler::generate(uint32_t seed, uint16_t level)
 			{
 				this->scene->setComponent<MeshComponent>(entity, (int)rockMeshId);
 			}
-
+		}
+		else if (curRoom.type == RoomData::EXIT_ROOM)
+		{
+			this->portalRoomIndex = i;
 		}
 
         this->createTileInfos(i);
@@ -859,8 +862,8 @@ Entity RoomHandler::createFloorDecoEntity(const glm::vec2& pos, bool scalePos)
 {
 	Entity entity = scene->createEntity();
 	Transform& transform = scene->getComponent<Transform>(entity);
-	transform.position.x = pos.x * (scalePos ? TILE_WIDTH : 1.f) + float((int)this->random->rand() % 12 - 6);
-	transform.position.z = pos.y * (scalePos ? TILE_WIDTH : 1.f) + float((int)this->random->rand() % 12 - 6);
+	transform.position.x = pos.x * (scalePos ? TILE_WIDTH : 1.f) + float((int)this->random->rand() % 8 - 4);
+	transform.position.z = pos.y * (scalePos ? TILE_WIDTH : 1.f) + float((int)this->random->rand() % 8 - 4);
 	transform.rotation.y = float(this->random->rand() % 360);
 	if (this->useMeshes)
 	{
@@ -885,15 +888,12 @@ const std::vector<TileInfo>& RoomHandler::getFreeTileInfos()
 
 const RoomHandler::Room& RoomHandler::getExitRoom() const
 {
-	for (const RoomHandler::Room& room : this->rooms)
-	{
-		if (room.type == RoomData::Type::EXIT_ROOM)
-		{
-			return room;
-		}
-	}
+	return this->rooms[this->portalRoomIndex];
+}
 
-	return this->rooms[0];
+bool RoomHandler::isPortalRoomDone() const
+{
+	return this->rooms[this->portalRoomIndex].finished;
 }
 
 int RoomHandler::getNumRooms() const

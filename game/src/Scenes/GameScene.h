@@ -89,7 +89,6 @@ private:
 
     Entity dirLightEntity;
 
-    int numRoomsCleared;
     bool newRoomFrame;
 
     int abilityMeshes[2];
