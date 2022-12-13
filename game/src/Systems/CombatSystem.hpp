@@ -737,8 +737,8 @@ public:
 			{
 				combat.movementMultiplier = 2.f;
 				moveTimers[0] = 2.f;
-                moveTimers[1] = 2.8f;  //1.4f;
-				moveTimers[2] = 5.6f; // 2.4f;
+                moveTimers[1] = 2.8f;
+				moveTimers[2] = 5.6f;
 				this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
