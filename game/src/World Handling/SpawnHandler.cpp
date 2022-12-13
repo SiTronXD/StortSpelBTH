@@ -172,6 +172,9 @@ void SpawnHandler::spawnTank(
     transform.scale = tankComp.origScale;
     tankComp.origScaleY = transform.scale.y;
 
+    transform.position.y = currScene->getComponent<Collider>(this->tankIDs[tankIdx]).extents.y;
+
+
     if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
         {
             ((NetworkScene*)currScene)
@@ -234,6 +237,8 @@ uint32_t SpawnHandler::spawnLich(
             lichComp.life = lichComp.FULL_HEALTH;
             transform.scale = lichComp.origScale;
             lichComp.origScaleY = transform.scale.y;
+
+            //transform.position.y = currScene->getComponent<Collider>(this->lichIDs[lichIdx]).height/2;
 
             // Place Alter
             Transform& alterTransform =
@@ -336,6 +341,8 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos, int level, boo
                 }
         }
 
+
+    transform.position.y = currScene->getComponent<Collider>(this->swarmIDs[swarmIdx]).radius;
     transform.scale = swarmComp.origScale;
     swarmComp.origScaleY = transform.scale.y;
     swarmComp.currentLevel = level;
@@ -355,6 +362,12 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos, int level, boo
             ((NetworkScene*)currScene)
                 ->addEvent({(int)GameEvent::ACTIVATE, this->swarmIDs[swarmIdx]}
                 );
+            ((NetworkScene*)currScene)
+                ->addEvent(
+                { (int)GameEvent::ENTITY_SET_HP,
+                 (int)static_cast<int>(this->swarmIDs[swarmIdx]),
+                 (int)swarmComp.life }
+            );
         }
 }
 
@@ -446,6 +459,7 @@ void SpawnHandler::killAllEnemiesOutsideRoom()
 
                 if (enemyUnderFloor || enemyOverRoof || enemyOutsideRoom)
                     {
+                        //std::cout<<"Under floor: "<<enemyUnderFloor<<"\nOver roof: "<<enemyOverRoof<<"\n"<<"Outside room: "<<enemyOutsideRoom<<std::endl;
                         int id = static_cast<int>(entity);
 
                         if (this->sceneHandler->getScene()

@@ -86,7 +86,7 @@ void TankBT::groundHumpShortcut(Entity entityID)
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	tankComp.chargeTimer = tankComp.chargeTimerOrig;
 	tankComp.hasRunTarget = false;
-	bool grounded = (tankTrans.position.y - tankCol.radius) <= 3.0f;
+	bool grounded = (tankTrans.position.y - tankCol.extents.y) <= 3.0f;
 	if(glm::length(tankRb.velocity) <= 0.1f && grounded)
 	{
 		if(tankComp.groundHumpTimer <= 0)
@@ -516,7 +516,7 @@ BTStatus TankBT::MoveAround(Entity entityID)
 	float distToCheck = 0.0f;
 	if(tankComp.allFriends[tankComp.firendTarget.id].type == "Swarm")
 	{
-		distToCheck = getTheScene()->getComponent<SwarmComponent>(tankComp.firendTarget.id).group->idleRadius + (tankCol.radius*2) + (friendCol.radius*2) + 2.0f;
+		distToCheck = getTheScene()->getComponent<SwarmComponent>(tankComp.firendTarget.id).group->idleRadius + (tankCol.extents.x*2) + (friendCol.extents.x*2) + 2.0f;
 	}
 	else
 	{
@@ -896,7 +896,7 @@ BTStatus TankBT::playAlertAnim(Entity entityID)
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 	Transform& tankTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Collider& tankCol = sceneHandler->getScene()->getComponent<Collider>(entityID);
-	float toMove = (tankCol.radius*2) * (1.0f - tankComp.origScaleY + tankComp.alertScale);
+	float toMove = (tankCol.extents.x*2) * (1.0f - tankComp.origScaleY + tankComp.alertScale);
 	
 	tankTrans.rotation.y = lookAtY(tankTrans, playerTransform);
 	tankTrans.updateMatrix();
