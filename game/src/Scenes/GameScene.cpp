@@ -97,7 +97,7 @@ void GameScene::init()
          "uvwxyz+-.'",
          "0123456789",
          "!?,<>:()#^",
-         "@%        " },
+         "@%/       " },
         fontTextureId,
         glm::uvec2(50, 50));
 
@@ -700,13 +700,19 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 	{
 		Entity other = e1 == player ? e2 : e1;
     
-        if (!networkHandler->isConnected())
+        if (other == this->portal && this->roomHandler.isPortalRoomDone())
         {
-		    if (other == this->portal && this->roomHandler.isPortalRoomDone())       
-		    {
+            if (!networkHandler->isConnected())
+            {
                 networkHandler->cleanUp();
-		    	this->switchScene(new GameScene(this->setNewLevel()), "scripts/gamescene.lua");
-		    }
+                this->switchScene(new GameScene(this->setNewLevel()), "scripts/gamescene.lua");
+            }
+            else
+            {
+                int num = this->networkHandler->checkOtherPlayersCollision(this->getComponent<Transform>(other), this->getComponent<Collider>(other)) + 1;
+                this->getUIRenderer()->renderString(std::to_string(num) + "/" + std::to_string(this->networkHandler->getPlayers().size() + 1),
+                    glm::vec2(0.0f), glm::vec2(100.0f));
+            }
         }
         
         if (this->hasComponents<Orb>(other)) 

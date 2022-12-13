@@ -30,7 +30,7 @@ void logInScene::start()
         "uvwxyz+-.'",
         "0123456789",
         "!?,<>:()#^",
-        "@%        "},
+        "@%/       "},
         this->fontTextureId,
         glm::vec2(50,50)
     );

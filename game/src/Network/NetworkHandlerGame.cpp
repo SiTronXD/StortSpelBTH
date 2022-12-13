@@ -1135,6 +1135,20 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 	}
 }
 
+int NetworkHandlerGame::checkOtherPlayersCollision(Transform& transform, Collider& col)
+{
+	int count = 0;
+
+	for (const auto& player : this->playerEntities)
+	{
+		Collider& playerCol = this->sceneHandler->getScene()->getComponent<Collider>(player);
+		Transform& playerTransform = this->sceneHandler->getScene()->getComponent<Transform>(player);
+		count += this->sceneHandler->getPhysicsEngine()->testContactPair(col, transform.position, transform.rotation, playerCol, playerTransform.position, playerTransform.rotation);
+	}
+
+	return count;
+}
+
 void NetworkHandlerGame::updatePlayer()
 {
 	if (this->getClient()->getAccumulatedTime() + Time::getDT() >= UPDATE_RATE)

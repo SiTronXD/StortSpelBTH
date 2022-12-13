@@ -104,7 +104,7 @@ void MainMenu::init()
 			"uvwxyz+-.'",
 			"0123456789",
 			"!?,<>:()#^",
-			"@%        "
+			"@%/       "
 		},
 		fontTextureId,
 		glm::uvec2(50, 50)
