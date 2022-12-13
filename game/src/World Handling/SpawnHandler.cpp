@@ -355,6 +355,12 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos, int level, boo
             ((NetworkScene*)currScene)
                 ->addEvent({(int)GameEvent::ACTIVATE, this->swarmIDs[swarmIdx]}
                 );
+            ((NetworkScene*)currScene)
+                ->addEvent(
+                { (int)GameEvent::ENTITY_SET_HP,
+                 (int)static_cast<int>(this->swarmIDs[swarmIdx]),
+                 (int)swarmComp.life }
+            );
         }
 }
 
