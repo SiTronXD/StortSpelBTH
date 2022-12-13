@@ -17,7 +17,7 @@ void LevelEditor::init()
       this->getResourceManager(), this->getPhysicsEngine(),
       true
   );
-  roomHandler.generate(rand());
+  roomHandler.generate(rand(), 2u);
 
   sun = this->createEntity();
   this->setComponent<DirectionalLight>(sun);

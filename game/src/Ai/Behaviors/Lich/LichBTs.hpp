@@ -33,7 +33,7 @@ struct ExtraBlendAnimationArgs
 
 class LichBT : public BehaviorTree
 {
-    friend class Orb;
+    friend struct Orb;
    protected:
 	// static int perkMeshes[3];
 	virtual void start() = 0;
