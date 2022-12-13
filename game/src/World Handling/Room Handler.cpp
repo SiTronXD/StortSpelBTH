@@ -538,7 +538,7 @@ void RoomHandler::generate(uint32_t seed, uint16_t level)
 				break;
 			}
 			case Tile::OneXOne:
-				if (this->random->rand() % 100 < DECO_ENTITY_CHANCE)
+				if (std::abs(int(this->random->rand())) % 100 < DECO_ENTITY_CHANCE)
 				{
 					curRoom.objects.emplace_back(this->createFloorDecoEntity(tile.position, true));
 				}
@@ -557,14 +557,14 @@ void RoomHandler::generate(uint32_t seed, uint16_t level)
 				break;
 
 			case Tile::Exit:
-				if (this->random->rand() % 100 < DECO_ENTITY_CHANCE)
+				if (std::abs(int(this->random->rand())) % 100 < DECO_ENTITY_CHANCE)
 				{
 					curRoom.objects.emplace_back(this->createFloorDecoEntity(tile.position, true));
 				}
 				break;
 
 			case Tile::AI:
-				if (this->random->rand() % 100 < DECO_ENTITY_CHANCE)
+				if (std::abs(int(this->random->rand())) % 100 < DECO_ENTITY_CHANCE)
 				{
 					curRoom.objects.emplace_back(this->createFloorDecoEntity(tile.position, true));
 				}
@@ -862,12 +862,12 @@ Entity RoomHandler::createFloorDecoEntity(const glm::vec2& pos, bool scalePos)
 {
 	Entity entity = scene->createEntity();
 	Transform& transform = scene->getComponent<Transform>(entity);
-	transform.position.x = pos.x * (scalePos ? TILE_WIDTH : 1.f) + float((int)this->random->rand() % 8 - 4);
-	transform.position.z = pos.y * (scalePos ? TILE_WIDTH : 1.f) + float((int)this->random->rand() % 8 - 4);
-	transform.rotation.y = float(this->random->rand() % 360);
+	transform.position.x = pos.x * (scalePos ? TILE_WIDTH : 1.f) + float(std::abs(int(this->random->rand())) % 8 - 4);
+	transform.position.z = pos.y * (scalePos ? TILE_WIDTH : 1.f) + float(std::abs(int(this->random->rand())) % 8 - 4);
+	transform.rotation.y = float(std::abs(int(this->random->rand())) % 360);
 	if (this->useMeshes)
 	{
-		this->scene->setComponent<MeshComponent>(entity, (int)this->oneXOneMeshIds[this->random->rand() % NUM_ONE_X_ONE]);
+		this->scene->setComponent<MeshComponent>(entity, (int)this->oneXOneMeshIds[std::abs(int(this->random->rand())) % NUM_ONE_X_ONE]);
 	}
 	else
 	{
@@ -1203,7 +1203,7 @@ void RoomHandler::generatePathways()
 
 		for (const glm::vec3& pos : pathPositions)
 		{
-			if (this->random->rand() % 100 < DECO_ENTITY_CHANCE)
+			if (std::abs(int(this->random->rand())) % 100 < DECO_ENTITY_CHANCE)
 			{
 				this->paths[i].entities.emplace_back(createFloorDecoEntity(glm::vec2(pos.x, pos.z), false));
 			}
@@ -1347,11 +1347,11 @@ Entity RoomHandler::createBorderEntity(const glm::vec2& position, bool scalePos)
 	Transform& transform = this->scene->getComponent<Transform>(entity);
 	transform.position.x = position.x * (scalePos ? TILE_WIDTH : 1.f);
 	transform.position.z = position.y * (scalePos ? TILE_WIDTH : 1.f);
-	transform.rotation.y = 90.f * float(this->random->rand() % 4);
+	transform.rotation.y = 90.f * float(std::abs(int(this->random->rand())) % 4);
 	
 	if (this->useMeshes)
 	{
-        this->scene->setComponent<MeshComponent>(entity, (int)this->borderMeshIds[this->random->rand() % NUM_BORDER]);
+        this->scene->setComponent<MeshComponent>(entity, (int)this->borderMeshIds[std::abs(int(this->random->rand())) % NUM_BORDER]);
 	}
 	else
 	{
@@ -1371,8 +1371,8 @@ void RoomHandler::createObjectEntities(const Tile& tile, Room& room)
 	transform.position *= TILE_WIDTH;
 
 	// Offset removed for now due to AI possible spawning too close and flying away
-	//transform.position.x += float((int)this->random->rand() % 10 - 5); 
-	//transform.position.z += float((int)this->random->rand() % 10 - 5);
+	//transform.position.x += float(std::abs(int(this->random->rand())) % 10 - 5); 
+	//transform.position.z += float(std::abs(int(this->random->rand())) % 10 - 5);
 
 	if (tile.type == Tile::TwoXOne || tile.type == Tile::OneXTwo)
 	{
@@ -1381,19 +1381,19 @@ void RoomHandler::createObjectEntities(const Tile& tile, Room& room)
 			transform.rotation.y = 90.f;
 		}
 
-		transform.rotation.y += this->random->rand() % 2 ? 180.f : 0.f;
-		transform.rotation.y += float((int)this->random->rand() % 10 - 5);
+		transform.rotation.y += std::abs(int(this->random->rand())) % 2 ? 180.f : 0.f;
+		transform.rotation.y += float(std::abs(int(this->random->rand())) % 10 - 5);
 	}
 	else if (tile.type == Tile::TwoXTwo)
 	{
-		transform.rotation.y = float((int)this->random->rand() % 40 + this->random->rand() % 4 * 90);
+		transform.rotation.y = float(std::abs(int(this->random->rand())) % 30 + (std::abs(int(this->random->rand())) % 4) * 90);
 	}
 
 	std::pair<int, int> pair(~0u, ~0u);
 
-	if		(tile.type == Tile::TwoXTwo) { pair = this->twoXTwoMeshIds[this->random->rand() % NUM_TWO_X_TWO]; }
-	else if (tile.type == Tile::TwoXOne) { pair = this->oneXTwoMeshIds[this->random->rand() % NUM_ONE_X_TWO]; }
-	else if (tile.type == Tile::OneXTwo) { pair = this->oneXTwoMeshIds[this->random->rand() % NUM_ONE_X_TWO]; }
+	if		(tile.type == Tile::TwoXTwo) { pair = this->twoXTwoMeshIds[std::abs(int(this->random->rand())) % NUM_TWO_X_TWO]; }
+	else if (tile.type == Tile::TwoXOne) { pair = this->oneXTwoMeshIds[std::abs(int(this->random->rand())) % NUM_ONE_X_TWO]; }
+	else if (tile.type == Tile::OneXTwo) { pair = this->oneXTwoMeshIds[std::abs(int(this->random->rand())) % NUM_ONE_X_TWO]; }
 
 	if (this->useMeshes)
 	{

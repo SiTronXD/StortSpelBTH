@@ -932,8 +932,6 @@ void GameScene::imguiUpdate()
 
 void GameScene::createPortal()
 {
-    glm::vec3 portalTriggerDims(11.f, 27.f, 6.f);
-
     portalOffMesh = this->getResourceManager()->addMesh("assets/models/PortalOff.obj");
     portalOnMesh = this->getResourceManager()->addMesh("assets/models/PortalOn.obj");
 
@@ -945,13 +943,13 @@ void GameScene::createPortal()
     Transform& portalTransform = this->getComponent<Transform>(portal);
     portalTransform.position = this->roomHandler.getExitRoom().position;
     this->setComponent<Collider>(
-        portal, Collider::createBox(portalTriggerDims, glm::vec3(0, 0, 0), true)
+        portal, Collider::createSphere(18.f, glm::vec3(0.f, 15.f, 0.f), true)
         );
 
     this->setComponent<MeshComponent>(portal);
     this->getComponent<MeshComponent>(portal).meshID = portalOffMesh;
 
-        Entity collisionEntity;
+    Entity collisionEntity;
 
     for (size_t i = 0; i < colliders.size(); i++)
     {
