@@ -155,19 +155,19 @@ bool TankBT::rayChecking(Entity entityID)
 	glm::vec3 to = entityTransform.position;
 	float maxDist = glm::length(to - from);
 	glm::vec3 dir = safeNormalize(from - to);
-	glm::vec3 offset = entityTransform.right() * (entityCollider.radius +1.0f);
+	glm::vec3 offset = entityTransform.right() * (entityCollider.extents.x);
 	Ray rayToPlayer{from, -dir};  
 	Ray rayToPlayer_right{from + offset, -dir};    
 	Ray rayToPlayer_left{from - offset, -dir};    
 	Ray rayRight{to, entityTransform.right()};    
 	Ray rayLeft{to, -entityTransform.right()};    
-	float left_right_maxDist = entityCollider.radius + 3.0f;
+	//float left_right_maxDist = entityCollider.radius + 3.0f;
     RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, maxDist);
     RayPayload rp1 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_right, maxDist);
     RayPayload rp2 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_left, maxDist);
-	drawRaySimple(BehaviorTree::sceneHandler, rayToPlayer,			maxDist);
+	/*drawRaySimple(BehaviorTree::sceneHandler, rayToPlayer,			maxDist);
 	drawRaySimple(BehaviorTree::sceneHandler, rayToPlayer_right,	maxDist);
-	drawRaySimple(BehaviorTree::sceneHandler, rayToPlayer_left,		maxDist);
+	drawRaySimple(BehaviorTree::sceneHandler, rayToPlayer_left,		maxDist);*/
 	if(rp.hit || rp1.hit || rp2.hit)
 	{
 		bool one = (rp.entity != -1 && 
