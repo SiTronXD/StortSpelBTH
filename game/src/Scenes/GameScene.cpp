@@ -210,12 +210,12 @@ void GameScene::start()
     {
         int seed = this->networkHandler->getSeed();
         Log::write("Seed from server: " + std::to_string(seed));
-        roomHandler.generate(seed);
+		roomHandler.generate(seed, this->currentLevel.level);
         networkHandler->setRoomHandler(roomHandler);
     }
     else
     {
-        roomHandler.generate(rand());
+        roomHandler.generate(rand(), this->currentLevel.level);
     }
     
     createPortal();
