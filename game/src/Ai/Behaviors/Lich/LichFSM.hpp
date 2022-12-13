@@ -128,6 +128,7 @@ struct LichComponent
     };
 
     //Ints
+    int currentLevel            = 0;
     int LOW_HEALTH              = 30;            
     int FULL_HEALTH             = 300;  
     int ESCAPE_HEALTH           = FULL_HEALTH / 4; 

@@ -16,6 +16,7 @@ struct SwarmComponent
     inline static const uint32_t aimAtPlayerYOffset = 7;
 
 	//Ints
+	int currentLevel            = 0;
 	int LOW_HEALTH				= 30;
 	int FULL_HEALTH				= 100;
 	int life					= FULL_HEALTH;
