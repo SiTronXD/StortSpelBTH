@@ -227,7 +227,7 @@ struct LichComponent
 		col.radius *= eliteComp.sizeMultiplier;
 		col.height *= eliteComp.sizeMultiplier;
 		col.offset.y = LichComponent::colliderYOffsetElite;
-		scene->setComponent<Collider>(entityID, col);
+		scene->setComponent<Collider>(entityID, Collider::createCapsule(col.radius, col.height, col.offset));
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale * eliteComp.sizeMultiplier;
 		this->origScale = trans.scale;
@@ -261,7 +261,7 @@ struct LichComponent
 		col.radius /= this->eliteStats.sizeMultiplier;
 		col.height /= this->eliteStats.sizeMultiplier;
         col.offset.y = LichComponent::colliderYOffset;
-		scene->setComponent<Collider>(entityID, col);
+		scene->setComponent<Collider>(entityID, Collider::createCapsule(col.radius, col.height, col.offset));
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale / this->eliteStats.sizeMultiplier;
 		this->origScale = trans.scale;

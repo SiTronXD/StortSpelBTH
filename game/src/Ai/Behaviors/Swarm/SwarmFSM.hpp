@@ -94,7 +94,7 @@ struct SwarmComponent
 
 		Collider col = scene->getComponent<Collider>(entityID);
 		col.radius *= eliteComp.sizeMultiplier;
-		scene->setComponent<Collider>(entityID, col);
+		scene->setComponent<Collider>(entityID, Collider::createSphere(col.radius));
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale * eliteComp.sizeMultiplier;
 		this->origScale = trans.scale;
@@ -115,7 +115,7 @@ struct SwarmComponent
 				
 		Collider col = scene->getComponent<Collider>(entityID);
 		col.radius /= this->eliteStats.sizeMultiplier;
-		scene->setComponent<Collider>(entityID, col);
+		scene->setComponent<Collider>(entityID, Collider::createSphere(col.radius));
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale / this->eliteStats.sizeMultiplier;
 		this->origScale = trans.scale;

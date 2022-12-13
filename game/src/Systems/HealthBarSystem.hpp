@@ -103,7 +103,8 @@ public:
 		};
 		swarmView.each(swarmHealthBar);
 
-		backgroundRects.assign(counter, glm::vec4(0.0f));
+		//backgroundRects.assign(counter, glm::vec4(0.0f));
+		std::fill(backgroundRects.begin(),backgroundRects.end(), glm::vec4(0.0f));
 		return false;
 	}
 };
