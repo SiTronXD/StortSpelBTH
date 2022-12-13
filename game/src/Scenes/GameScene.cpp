@@ -717,12 +717,15 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
         
         if (this->hasComponents<Orb>(other)) 
         {
-            auto& orb = this->getComponent<Orb>(other);
-            HealthComp& playerHealth = this->getComponent<HealthComp>(player);
-            playerHealth.health -=
-                orb.orbPower->damage;
-            playerHealth.srcDmgEntity = other;
-            orb.onCollision(other, this->getSceneHandler());
+            if(this->isActive(other))
+            {
+                auto& orb = this->getComponent<Orb>(other);
+                HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+                playerHealth.health -=
+                    orb.orbPower->damage;
+                playerHealth.srcDmgEntity = other;
+                orb.onCollision(other, this->getSceneHandler());
+            }
         }
 	}
     else 
@@ -858,12 +861,15 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
     }
     else if (this->hasComponents<Orb>(other)) 
     {
-        auto& orb = this->getComponent<Orb>(other);
-        HealthComp& playerHealth = this->getComponent<HealthComp>(player);
-        playerHealth.health -=
-            orb.orbPower->damage;
-        playerHealth.srcDmgEntity = other;
-        orb.onCollision(other, this->getSceneHandler());
+        if(this->isActive(other))
+        {
+            auto& orb = this->getComponent<Orb>(other);
+            HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+            playerHealth.health -=
+                orb.orbPower->damage;
+            playerHealth.srcDmgEntity = other;
+            orb.onCollision(other, this->getSceneHandler());
+        }
     }
   }
   else 
