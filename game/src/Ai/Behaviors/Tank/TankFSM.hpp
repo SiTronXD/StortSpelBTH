@@ -56,16 +56,15 @@ struct TankComponent
         viewLich.each(lichLamda);
 	}
 
-	//Ints
 	int currentLevel				= 0;
-    int FULL_HEALTH					= 500;  
-    int life						= FULL_HEALTH;
-	int friendHealthRegen			= 15;
 
 	//Floats
-	float idleSpeed					= 10.0f;
-	float shieldSpeed				= 5.0f;
-	float cahargeSpeed				= 200.0f;
+    float FULL_HEALTH				= 500.0f;  
+    float life						= FULL_HEALTH;
+	float friendHealthRegen			= 15.0f;
+	float idleSpeed					= 40.0f;
+	float shieldSpeed				= 20.0f;
+	float cahargeSpeed				= 270.0f;
     float sightRadius				= 200.0f; // I'll can attack you
     float peronalSpaceRadius		= 75.0f; // This is my personal space, get away!
 	float friendVisitRadius			= 15.0f; //When go this close to friends
@@ -159,9 +158,10 @@ struct TankComponent
 		this->friendVisitRadius			*= eliteComp.radiusMultiplier; 
 
 		Collider col = scene->getComponent<Collider>(entityID);
-		col.radius *= eliteComp.sizeMultiplier;
+
+		col.extents *= eliteComp.sizeMultiplier;
 		col.offset += glm::vec3(0.0f, 5.0f, 0.0f);
-		scene->setComponent<Collider>(entityID, col);
+		scene->setComponent<Collider>(entityID, Collider::createBox(col.extents, col.offset));
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale * eliteComp.sizeMultiplier;
 		this->origScale = trans.scale;
@@ -187,9 +187,9 @@ struct TankComponent
 
 
 		Collider col = scene->getComponent<Collider>(entityID);
-		col.radius /= this->eliteStats.sizeMultiplier;
+		col.extents /= this->eliteStats.sizeMultiplier;
 		col.offset -= glm::vec3(0.0f, 5.0f, 0.0f);
-		scene->setComponent<Collider>(entityID, col);
+		scene->setComponent<Collider>(entityID, Collider::createBox(col.extents, col.offset));
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale / this->eliteStats.sizeMultiplier;
 		this->origScale = trans.scale;

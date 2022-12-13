@@ -30,13 +30,14 @@ private:
 	const bool* paused;
 	const bool* disabled;
 
-	int lostHealth;
+	float lostHealth;
 	std::vector<uint32_t> attackSounds;
 	uint32_t moveSound;
 	uint32_t takeDmgSound;
 
 	float walkTimer = -1.f;
 	float walkTime = 0.5f;
+    float pickupTimer = 4.f;
 
 	int swordMesh;
 	int perkMeshes[5];
@@ -44,6 +45,7 @@ private:
 
 	std::vector<Entity> hitEnemies;
 	bool canHit = true;
+    std::string pickupErrorText;
 
 public:
 	CombatSystem(SceneHandler* sceneHandler, Entity playerID, 
@@ -669,8 +671,8 @@ public:
 			setDefaultHp(combat, healthComp);
 			combat.hpMultiplier += perk.multiplier;
 		}
-		float tempHp = (float)healthComp.maxHealth * combat.hpMultiplier;
-		healthComp.maxHealth = (int)tempHp;
+		float tempHp = healthComp.maxHealth * combat.hpMultiplier;
+		healthComp.maxHealth = tempHp;
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 		this->script->setScriptComponentValue(playerScript, healthComp.maxHealth, "maxHealth");
 		healthComp.health = std::min(healthComp.health, healthComp.maxHealth);
@@ -737,8 +739,8 @@ public:
 			{
 				combat.movementMultiplier = 2.f;
 				moveTimers[0] = 2.f;
-                moveTimers[1] = 2.8f;  //1.4f;
-				moveTimers[2] = 5.6f; // 2.4f;
+                moveTimers[1] = 2.8f;
+				moveTimers[2] = 5.6f;
 				this->script->setScriptComponentValue(playerScript, moveTimers[0], "idleAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[1], "runAnimTime");
 				this->script->setScriptComponentValue(playerScript, moveTimers[2], "sprintAnimTime");
@@ -821,8 +823,8 @@ public:
 
 	void setDefaultHp(Combat& combat, HealthComp& healthComp)
 	{
-		float tempHp = (float)healthComp.maxHealth / combat.hpMultiplier;
-		healthComp.maxHealth = (int)(tempHp + 0.5f);
+		float tempHp = healthComp.maxHealth / combat.hpMultiplier;
+		healthComp.maxHealth = (tempHp + 0.5f);
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 		this->script->setScriptComponentValue(playerScript, healthComp.maxHealth, "maxHealth");
 	}
@@ -964,7 +966,6 @@ public:
 		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
 		Rigidbody& abilityRb = this->scene->getComponent<Rigidbody>(entity);
 		abilityTrans.position = glm::vec3(playerTrans.position.x, playerTrans.position.y + 8.f, playerTrans.position.z);
-		abilityTrans.scale = glm::vec3(3.f);
 		playerTrans.updateMatrix();
 		glm::vec3 throwDir = safeNormalize(playerTrans.forward());
 		abilityRb.gravityMult = 6.f;
@@ -1045,6 +1046,11 @@ public:
 					{
 						this->networkHandler->pickUpItemRequest(hitID[i], ItemType::PERK);
 					}
+					else
+                    {
+						pickupErrorText = "you can't pick up any more perks";
+                        pickupTimer = 0.f;
+					}
 				}
 			}
 		}
@@ -1118,9 +1124,17 @@ public:
 					pos + glm::vec3(0.0f, 7.5f, 0.0f), glm::vec2(100.0f), 1.0f);
 				this->uiRenderer->renderString("press e to pick up", pos + glm::vec3(0.0f, 7.5f, 0.0f) - up * 2.5f, glm::vec2(100.0f), 1.0f);
 
-				if (Input::isKeyPressed(Keys::E) && combat.ability.abilityType == emptyAbility)
+				if (Input::isKeyPressed(Keys::E))
 				{
-					this->networkHandler->pickUpItemRequest(hitID[i], ItemType::ABILITY);
+                    if (combat.ability.abilityType == emptyAbility)
+                    {
+						this->networkHandler->pickUpItemRequest(hitID[i], ItemType::ABILITY);
+					}
+                    else
+                    {
+                        pickupErrorText = "you already have an ability";
+                        pickupTimer = 0.f;
+					}
 				}
 			}
 		}
@@ -1215,5 +1229,18 @@ public:
 		{
 			this->walkTimer -= deltaTime;
 		}
+
+        if (pickupTimer < 1.f)
+            {
+                this->uiRenderer->renderString(
+                    pickupErrorText,
+                    glm::vec2(0.0f, 50.0f),
+                    glm::vec2(30.0f),
+                    0.0f,
+                    StringAlignment::CENTER,
+                    glm::vec4(1.0f, 1.0f, 1.0f, cos(this->pickupTimer * 2))
+                );
+                pickupTimer += Time::getDT();
+            }
 	}
 };

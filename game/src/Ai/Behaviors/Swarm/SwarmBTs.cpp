@@ -677,8 +677,6 @@ BTStatus SwarmBT::playDeathAnim(Entity entityID)
 BTStatus SwarmBT::die(Entity entityID)
 {
     BTStatus ret = BTStatus::Success;
-    static int chanceToSpawnPerk = 2;
-    static int chanceToSpawnability = 1 ;
 	int playerID = getPlayerID(entityID);
 	if(playerID == -1){return ret;}
     HealthComp& playerHealth = sceneHandler->getScene()->getComponent<HealthComp>(playerID);
@@ -686,18 +684,45 @@ BTStatus SwarmBT::die(Entity entityID)
     {
         playerHealth.health += 10;
     }
+	static int chanceToSpawnPerk = 2;
+	static int chanceToSpawnability = 1;
     int spawnLoot = rand() % 10;
     ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
 
     if (serverScene != nullptr)
     {
         int itemID, type = -1, otherType;
-        float multiplier;
+        float multiplier = 0.f;
         if (spawnLoot < chanceToSpawnPerk)
         {
             type = (int)ItemType::PERK;
             otherType = rand() % PerkType::emptyPerk;
-            multiplier = 0.2f;
+			switch (otherType)
+			{
+			case PerkType::hpUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::dmgUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::attackSpeedUpPerk:
+				multiplier = 0.05f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.05f;
+				break;
+			case PerkType::movementUpPerk:
+				multiplier = 0.2f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::staminaUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.1f;
+				break;
+			}
+			if (otherType == PerkType::attackSpeedUpPerk && getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel > 6)
+			{
+				multiplier = 0.4f;
+			}
+			else if (otherType == PerkType::movementUpPerk && getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel > 7)
+			{
+				multiplier = 1.f;
+			}
         }
         else if (spawnLoot < chanceToSpawnPerk + chanceToSpawnability)
         {
@@ -723,20 +748,51 @@ BTStatus SwarmBT::die(Entity entityID)
     }
     else
     {
-        if (spawnLoot < 2)
-	    {
-            NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
-	    	Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
-            network->spawnItemRequest((PerkType)(rand() % PerkType::emptyPerk), 0.2f, swarmTrans.position,
-                glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
-	    }
-	    else if (spawnLoot == 2)
-	    {
-            NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
-            Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
-            network->spawnItemRequest((AbilityType)(rand() % 2), swarmTrans.position,
-                glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
-	    }
+		PerkType otherType;
+		float multiplier;
+		if (spawnLoot < 2)
+		{
+			otherType = PerkType(rand() % PerkType::emptyPerk);
+			NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
+			Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+
+			switch (otherType)
+			{
+			case PerkType::hpUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::dmgUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::attackSpeedUpPerk:
+				multiplier = 0.05f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.05f;
+				break;
+			case PerkType::movementUpPerk:
+				multiplier = 0.2f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::staminaUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.1f;
+				break;
+			}
+			if (otherType == PerkType::attackSpeedUpPerk && getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel > 6)
+			{
+				multiplier = 0.4f;
+			}
+			else if (otherType == PerkType::movementUpPerk && getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel > 7)
+			{
+				multiplier = 1.f;
+			}
+
+			network->spawnItemRequest(otherType, multiplier, swarmTrans.position,
+				glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
+		}
+		else if (spawnLoot == 2)
+		{
+			NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
+			Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+			network->spawnItemRequest((AbilityType)(rand() % 2), swarmTrans.position,
+				glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
+		}
     }
 
     //TODO: Sometgin goes wrong when we remove from group.

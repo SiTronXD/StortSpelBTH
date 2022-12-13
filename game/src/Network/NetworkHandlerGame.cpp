@@ -46,7 +46,6 @@ Entity NetworkHandlerGame::spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 
 
 	Transform& perkTrans = sceneHandler->getScene()->getComponent<Transform>(e);
 	perkTrans.position = pos;
-	perkTrans.scale = glm::vec3(2.0f);
 	scene->setComponent<Collider>(e, Collider::createSphere(5.0f, glm::vec3(0.0f), true));
 
 	if (shootDir != glm::vec3(0.0f))
@@ -588,7 +587,7 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
         tcpPacket >> i0 >> i1;
         if (i0 == this->ID)
         {
-			this->sceneHandler->getScene()->getComponent<HealthComp>(player).health = i1;   
+			this->sceneHandler->getScene()->getComponent<HealthComp>(player).health = (float)i1;   
 		}
 		break;
     case GameEvent::SPAWN_ORB:
@@ -606,7 +605,7 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
             this->sceneHandler->getScene()->setActive(serverEntities[i0]);
             this->sceneHandler->getScene()->getComponent<Transform>(serverEntities[i0]).position = v0;
             this->sceneHandler->getScene()->getComponent<Rigidbody>(serverEntities[i0]).velocity = v1;
-            this->sceneHandler->getScene()->getComponent<Orb>(serverEntities[i0]).timeAtCast = Time::getTimeSinceStart();
+            this->sceneHandler->getScene()->getComponent<Orb>(serverEntities[i0]).timeAtCast = (int)Time::getTimeSinceStart();
 
 			// Orb particle effect color
 			glm::vec4 projectileColor = glm::vec4(0.8f, 0.2f, 0.8f, 1.0f) * 4.0f;
@@ -640,13 +639,13 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
         {
 			int e = serverEntities.find(i0)->second;
 			if (this->sceneHandler->getScene()->hasComponents<SwarmComponent>(e)) {
-				this->sceneHandler->getScene()->getComponent<SwarmComponent>(e).life = i1;
+				this->sceneHandler->getScene()->getComponent<SwarmComponent>(e).life = (float)i1;
 			}
             else if(this->sceneHandler->getScene()->hasComponents<LichComponent>(e)) {
-				this->sceneHandler->getScene()->getComponent<LichComponent>(e).life = i1;
+				this->sceneHandler->getScene()->getComponent<LichComponent>(e).life = (float)i1;
 			}
 			else if(this->sceneHandler->getScene()->hasComponents<TankComponent>(e)) {
-				this->sceneHandler->getScene()->getComponent<TankComponent>(e).life = i1;
+				this->sceneHandler->getScene()->getComponent<TankComponent>(e).life = (float)i1;
 			}
             
 		}
@@ -785,7 +784,7 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 {
 	sf::Packet packet;
-	glm::vec3 vec;
+	glm::vec3 vec;//Not used?
 	Transform* t;
 	AnimationComponent* anim;
     this->timer = 0;
@@ -938,21 +937,21 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientIndex, s
 		// Get how they should take damage
         if (serverScene->hasComponents<SwarmComponent>(si0))
         {
-			si2 = (serverScene->getComponent<SwarmComponent>(si0).life -= si1);
+			si2 = (int)(serverScene->getComponent<SwarmComponent>(si0).life -= (float)si1);
 			si3 = 0;
 			si4 = 0;
 			si5 = 0;
 		}
         else if (serverScene->hasComponents<TankComponent>(si0))
         {
-			si2 = (serverScene->getComponent<TankComponent>(si0).life -= si1);  
+			si2 = (int)(serverScene->getComponent<TankComponent>(si0).life -= (float)si1);  
 			si3 = 1;
 			si4 = 0;
 			si5 = 0;
 		}
         else if (serverScene->hasComponents<LichComponent>(si0))
         {
-			si2 = (serverScene->getComponent<LichComponent>(si0).life -= si1);
+			si2 = (int)(serverScene->getComponent<LichComponent>(si0).life -= (float)si1);
 			si3 = 2;
 			si4 = 0;
 			si5 = 0;
@@ -1102,7 +1101,7 @@ void NetworkHandlerGame::setPlayerEntity(Entity player)
 
 void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 {
-	int size = this->otherPlayersServerId.size();
+	int size = (int)this->otherPlayersServerId.size();
 	this->playerEntities.resize(size);
 	this->swords.resize(size);
 	this->playerPosLast.resize(size);

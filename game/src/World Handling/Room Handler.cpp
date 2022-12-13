@@ -174,7 +174,7 @@ void RoomHandler::serverActivateCurrentRoom()
 {
 	Room& room = this->rooms[this->activeIndex];
 	this->activateRoom(this->activeIndex);
-	for (size_t i = 0; i < this->rooms.size(); i++)
+	for (int i = 0; i < (int)this->rooms.size(); i++)
 	{
 		if (i != this->activeIndex && i != room.connectingIndex[0] && i != room.connectingIndex[1] && 
 			i != room.connectingIndex[2] && i != room.connectingIndex[3])
@@ -357,7 +357,7 @@ bool RoomHandler::playersInPathway(const std::vector<Entity>& players)
 	Collider& p1Col = this->scene->getComponent<Collider>(players[0]);
 	Transform& p1Tra = this->scene->getComponent<Transform>(players[0]);
 
-	for (size_t i = 0; i < this->rooms.size(); i++)
+	for (int i = 0; i < (int)this->rooms.size(); i++)
 	{
 		if (this->physicsEngine->testContactPair(
 			this->rooms[i].box, this->rooms[i].colliderPos, glm::vec3(0.f), p1Col, p1Tra.position, p1Tra.rotation))
@@ -746,7 +746,7 @@ void RoomHandler::generate(uint32_t seed, uint16_t level)
 	{
 		if (network->isConnected())
 		{
-			for (size_t i = 1; i < this->rooms.size(); i++)
+			for (int i = 1; i < (int)this->rooms.size(); i++)
 			{
 				this->forceToggleDoors(i, false);
 				this->deactivateRoom(i);
@@ -950,7 +950,7 @@ bool RoomHandler::inExitRoom() const
 bool TileInfo::checkValidTileInfoVector(const std::vector<TileInfo>& tileInfos, int roomIndex)
 {
     bool tileInfosValid = true; 
-    for(size_t i = 0; i < tileInfos.size(); i++ )
+    for(int i = 0; i < (int)tileInfos.size(); i++ )
     {
         if(!tileInfos[i].amIMyNeighboursNeighbour(i, tileInfos))
         {

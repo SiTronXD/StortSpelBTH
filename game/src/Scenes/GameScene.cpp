@@ -246,10 +246,11 @@ void GameScene::start()
 
     if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {
-        //this->networkHandler->spawnItemRequest(knockbackAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        //this->networkHandler->spawnItemRequest(knockbackAbility, glm::vec3(50.0f, 10.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        //this->networkHandler->spawnItemRequest(healAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         //this->networkHandler->spawnItemRequest(hpUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         //this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.3f, glm::vec3(30.0f, 7.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        //this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.3f, glm::vec3(30.0f, 7.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         //this->networkHandler->spawnItemRequest(movementUpPerk, 1.f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         //this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
     }
@@ -257,12 +258,15 @@ void GameScene::start()
     this->levelString = "level: " + std::to_string(currentLevel.level);
 
     // Pause menu
-    this->resumeButton.position = glm::vec2(0.0f, 150.0f);
-    this->settingsButton.position = glm::vec2(0.0f, 0.0f);
-    this->exitButton.position = glm::vec2(0.0f, -150.0f);
+    this->resumeButton.position = glm::vec2(0.0f, 225.0f);
+    this->settingsButton.position = glm::vec2(0.0f, 75.0f);
+    this->howToPlayButton.position = glm::vec2(0.0f, -75.0f);
+    this->exitButton.position = glm::vec2(0.0f, -255.0f);
     this->backButton.position = glm::vec2(-745.0f, -360.0f);
+
     this->resumeButton.dimension = glm::vec2(500.0f, 100.0f);
     this->settingsButton.dimension = glm::vec2(500.0f, 100.0f);
+    this->howToPlayButton.dimension = glm::vec2(500.0f, 100.0f);
     this->exitButton.dimension = glm::vec2(500.0f, 100.0f);
     this->backButton.dimension = glm::vec2(190.0f, 65.0f);
 
@@ -332,7 +336,7 @@ void GameScene::update()
         if (this->roomHandler.playerNewRoom(this->playerID))
         {
             this->newRoomFrame = true;
-            this->timeWhenEnteredRoom = Time::getTimeSinceStart();
+            this->timeWhenEnteredRoom = (uint32_t)Time::getTimeSinceStart();
             this->safetyCleanDone = false;
 
             this->spawnHandler.spawnEnemiesIntoRoom(this->currentLevel.level);
@@ -557,8 +561,8 @@ void GameScene::update()
 
     // Render HP bar UI
     HealthComp& playerHealth = this->getComponent<HealthComp>(this->playerID);
-    float hpPercent = std::max(playerHealth.health * 0.01f, 0.0f);
     float maxHpPercent = playerHealth.maxHealth * 0.01f;
+    float hpPercent = std::max(std::min(playerHealth.health * 0.01f, maxHpPercent), 0.0f);
     float xPos = -600.f;
     float yPos = -472.f;
     float xSize = 420.0f;
@@ -594,6 +598,7 @@ void GameScene::update()
             {
                 this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
                 this->getScriptHandler()->setGlobal(false, "settings");
+                this->getScriptHandler()->setGlobal(false, "howToPlay");
                 this->setInactive(this->settingsEntity);
             }
         }
@@ -605,13 +610,23 @@ void GameScene::update()
                 this->paused = false;
                 this->getScriptHandler()->setGlobal(this->paused, "paused");
                 this->getScriptHandler()->setGlobal(false, "settings");
+                this->getScriptHandler()->setGlobal(false, "howToPlay");
                 Input::setHideCursor(!this->paused);
             }
             else if (this->settingsButton.isClicking())
             {
                 this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
                 this->getScriptHandler()->setGlobal(true, "settings");
+                this->getScriptHandler()->setGlobal(false, "howToPlay");
                 this->setActive(this->settingsEntity);
+            }
+            if (this->howToPlayButton.isClicking())
+            {
+                this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
+                this->getScriptHandler()->setGlobal(true, "settings");
+                this->getScriptHandler()->setGlobal(true, "howToPlay");
+                this->setActive(this->settingsEntity);
+                Log::write("Pressed!");
             }
             else if (this->exitButton.isClicking())
             {
@@ -697,19 +712,24 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
         
         if (this->hasComponents<Orb>(other)) 
         {
-            auto& orb = this->getComponent<Orb>(other);
-            HealthComp& playerHealth = this->getComponent<HealthComp>(player);
-            playerHealth.health -=
-                orb.orbPower->damage;
-            playerHealth.srcDmgEntity = other;
-            orb.onCollision(other, this->getSceneHandler());
+            if(this->isActive(other))
+            {
+                auto& orb = this->getComponent<Orb>(other);
+                HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+                playerHealth.health -=
+                    orb.orbPower->damage;
+                playerHealth.srcDmgEntity = other;
+                orb.onCollision(other, this->getSceneHandler());
+            }
         }
 	}
     else 
     { // Collision between two things that isnt player
         
-        if((this->hasComponents<Orb>(e1) || this->hasComponents<Orb>(e2))&&
-            !(this->hasComponents<LichComponent>(e1) || this->hasComponents<LichComponent>(e2)))
+        if((this->hasComponents<Orb>(e1)                || this->hasComponents<Orb>(e2))&&
+            !(this->hasComponents<LichComponent>(e1)    || this->hasComponents<LichComponent>(e2))&&
+            !(this->hasComponents<RockFenceComp>(e1)    || this->hasComponents<RockFenceComp>(e2))&&
+            !(this->hasComponents<Perks>(e1)            || this->hasComponents<Perks>(e2)))
         {
             Entity collidingOrb = this->hasComponents<Orb>(e1) ? e1 : e2; 
             
@@ -838,12 +858,15 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
     }
     else if (this->hasComponents<Orb>(other)) 
     {
-        auto& orb = this->getComponent<Orb>(other);
-        HealthComp& playerHealth = this->getComponent<HealthComp>(player);
-        playerHealth.health -=
-            orb.orbPower->damage;
-        playerHealth.srcDmgEntity = other;
-        orb.onCollision(other, this->getSceneHandler());
+        if(this->isActive(other))
+        {
+            auto& orb = this->getComponent<Orb>(other);
+            HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+            playerHealth.health -=
+                orb.orbPower->damage;
+            playerHealth.srcDmgEntity = other;
+            orb.onCollision(other, this->getSceneHandler());
+        }
     }
   }
   else 
@@ -851,6 +874,7 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
     
     if(this->hasComponents<Orb>(e1) || this->hasComponents<Orb>(e2))
     {
+
         Entity collidingOrb = this->hasComponents<Orb>(e1) ? e1 : e2; 
         
         auto& orb = this->getComponent<Orb>(collidingOrb);        
@@ -921,7 +945,7 @@ void GameScene::imguiUpdate()
     getScriptHandler()->getGlobal(playerID, playerString);
     auto& playerHealthComp = getComponent<HealthComp>(playerID);
     if(ImGui::Button("INVINCIBLE Player")){
-        playerHealthComp.health = INT_MAX;
+        playerHealthComp.health = 9999999999.9f;
     }
     if(ImGui::Button("Kill Player")){
         playerHealthComp.health = 0; 

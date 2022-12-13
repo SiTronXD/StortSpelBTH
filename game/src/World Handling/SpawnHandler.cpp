@@ -25,9 +25,7 @@ void SpawnHandler::spawnEnemiesIntoRoom(int level)
     this->tilePicker.init(this->roomHandler->getFreeTileInfos());
 
     this->nrOfEnemiesPerRoom *= this->tilePicker.size();
-    this->nrOfEnemiesPerRoom = std::clamp(
-        (int)this->nrOfEnemiesPerRoom, 0, SpawnHandler::MAX_NR_OF_ENEMIES
-    );
+    this->nrOfEnemiesPerRoom = (float)std::clamp((int)this->nrOfEnemiesPerRoom, 0 , SpawnHandler::MAX_NR_OF_ENEMIES);
 
     float a = this->tilePicker.size() * MAX_ENEMIES_PER_TILES * PERCENTAGE_TANKS * levelMultipler;
     float a2 = this->tilePicker.size() * MAX_ENEMIES_PER_TILES * PERCENTAGE_LICHS * levelMultipler;
@@ -174,6 +172,9 @@ void SpawnHandler::spawnTank(
     transform.scale = tankComp.origScale;
     tankComp.origScaleY = transform.scale.y;
 
+    transform.position.y = currScene->getComponent<Collider>(this->tankIDs[tankIdx]).extents.y;
+
+
     if (dynamic_cast<NetworkScene*>(currScene) != nullptr)
         {
             ((NetworkScene*)currScene)
@@ -236,6 +237,8 @@ uint32_t SpawnHandler::spawnLich(
             lichComp.life = lichComp.FULL_HEALTH;
             transform.scale = lichComp.origScale;
             lichComp.origScaleY = transform.scale.y;
+
+            //transform.position.y = currScene->getComponent<Collider>(this->lichIDs[lichIdx]).height/2;
 
             // Place Alter
             Transform& alterTransform =
@@ -338,6 +341,8 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos, int level, boo
                 }
         }
 
+
+    transform.position.y = currScene->getComponent<Collider>(this->swarmIDs[swarmIdx]).radius;
     transform.scale = swarmComp.origScale;
     swarmComp.origScaleY = transform.scale.y;
     swarmComp.currentLevel = level;
@@ -357,6 +362,12 @@ void SpawnHandler::spawnSwarm(int swarmIdx, const glm::vec3& pos, int level, boo
             ((NetworkScene*)currScene)
                 ->addEvent({(int)GameEvent::ACTIVATE, this->swarmIDs[swarmIdx]}
                 );
+            ((NetworkScene*)currScene)
+                ->addEvent(
+                { (int)GameEvent::ENTITY_SET_HP,
+                 (int)static_cast<int>(this->swarmIDs[swarmIdx]),
+                 (int)swarmComp.life }
+            );
         }
 }
 
@@ -448,6 +459,7 @@ void SpawnHandler::killAllEnemiesOutsideRoom()
 
                 if (enemyUnderFloor || enemyOverRoof || enemyOutsideRoom)
                     {
+                        //std::cout<<"Under floor: "<<enemyUnderFloor<<"\nOver roof: "<<enemyOverRoof<<"\n"<<"Outside room: "<<enemyOutsideRoom<<std::endl;
                         int id = static_cast<int>(entity);
 
                         if (this->sceneHandler->getScene()
@@ -550,14 +562,8 @@ void SpawnHandler::createTank()
     rb.gravityMult = 50.0f;
     rb.friction = 3.0f;
     rb.mass = 100.0f;
-    Transform& transform =
-        this->currScene->getComponent<Transform>(this->tankIDs.back());
-    this->currScene->setComponent<Collider>(
-        this->tankIDs.back(),
-        Collider::createSphere(
-            TankComponent::colliderRadius, glm::vec3(0.0f, 19.5f, 0.0f)
-        )
-    );
+    Transform& transform = this->currScene->getComponent<Transform>(this->tankIDs.back());
+    this->currScene->setComponent<Collider>(this->tankIDs.back(), Collider::createBox(glm::vec3(10.0f, 20.0f, 10.0f), glm::vec3(0.0f, 19.5f, 0.0f)));
     this->aiHandler->createAIEntity(this->tankIDs.back(), "tankFSM");
     TankComponent& tankComp =
         this->currScene->getComponent<TankComponent>(this->tankIDs.back());
@@ -1018,33 +1024,19 @@ ImguiLambda SpawnHandler::TankImgui()
         auto entityImguiWindow = [&](TankFSM* tankFsm,
                                      uint32_t entityId) -> void
         {
-            auto& entityTankComponent =
-                this->sceneHandler->getScene()->getComponent<TankComponent>(
-                    entityId
-                );
-            auto& entiyFSMAgentComp =
-                this->sceneHandler->getScene()->getComponent<FSMAgentComponent>(
-                    entityId
-                );
-            auto& entityRigidBody =
-                this->sceneHandler->getScene()->getComponent<Rigidbody>(entityId
-                );
-            const glm::vec3& tankPos = this->sceneHandler->getScene()
-                                           ->getComponent<Transform>(entityId)
-                                           .position;
-            int& health = entityTankComponent.life;
-            std::string fis =
-                "Friends in sight: " +
-                std::to_string(entityTankComponent.friendsInSight.size());
-            std::string af =
-                "All friends alive: " +
-                std::to_string(entityTankComponent.allFriends.size());
-            float& gravity = entityRigidBody.gravityMult;
-            float& humpForce = entityTankComponent.humpForce;
-            float& humpYForce = entityTankComponent.humpYForce;
-            float& humpShockwaveSpeed = entityTankComponent.humpShockwaveSpeed;
-            float& humpSpeed = entityTankComponent.groundHumpTimerOrig;
-            std::string& status = entiyFSMAgentComp.currentNode->status;
+            auto& entityTankComponent	= this->sceneHandler->getScene()->getComponent<TankComponent>(entityId);
+            auto& entiyFSMAgentComp		= this->sceneHandler->getScene()->getComponent<FSMAgentComponent>(entityId);
+            auto& entityRigidBody		= this->sceneHandler->getScene()->getComponent<Rigidbody>(entityId);
+            const glm::vec3& tankPos    = this->sceneHandler->getScene()->getComponent<Transform>(entityId).position;
+            float& health				= entityTankComponent.life;
+            std::string fis				= "Friends in sight: "+std::to_string(entityTankComponent.friendsInSight.size());
+            std::string af				= "All friends alive: "+std::to_string(entityTankComponent.allFriends.size());
+            float& gravity 				= entityRigidBody.gravityMult;
+            float& humpForce 			= entityTankComponent.humpForce;
+            float& humpYForce 			= entityTankComponent.humpYForce;
+            float& humpShockwaveSpeed 	= entityTankComponent.humpShockwaveSpeed;
+            float& humpSpeed 			= entityTankComponent.groundHumpTimerOrig;
+            std::string& status			= entiyFSMAgentComp.currentNode->status;   
             ImGui::Text(status.c_str());
 
             ImGui::Text(
@@ -1057,16 +1049,12 @@ ImguiLambda SpawnHandler::TankImgui()
 
             ImGui::Text(fis.c_str());
             ImGui::Text(af.c_str());
-            ImGui::SliderInt(
-                "health", &health, 0, entityTankComponent.FULL_HEALTH
-            );
-            ImGui::SliderFloat("humpForce", &humpForce, 0.0f, 200.0f);
-            ImGui::SliderFloat("humpYForce", &humpYForce, 0.0f, 200.0f);
-            ImGui::SliderFloat(
-                "humpShockwaveSpeed", &humpShockwaveSpeed, 0.0f, 200.0f
-            );
-            ImGui::SliderFloat("humpSpeed", &humpSpeed, 0.1f, 10.0f);
-            ImGui::SliderFloat("gravity", &gravity, 0, 10);
+            ImGui::SliderFloat("health",                &health,               0.0f,      entityTankComponent.FULL_HEALTH);
+            ImGui::SliderFloat("humpForce",             &humpForce,            0.0f,   200.0f);
+            ImGui::SliderFloat("humpYForce",            &humpYForce,           0.0f,   200.0f);
+            ImGui::SliderFloat("humpShockwaveSpeed",    &humpShockwaveSpeed,   0.0f,   200.0f);
+            ImGui::SliderFloat("humpSpeed",             &humpSpeed,            0.1f,   10.0f);
+            ImGui::SliderFloat("gravity",               &gravity,              0,      10);
         };
         //TEMP
 
@@ -1112,20 +1100,14 @@ ImguiLambda SpawnHandler::LichImgui()
         // Imgui Lich
         LichFSM* swarmFsm = (LichFSM*)fsm;
 
-        auto& lichComponent =
-            this->sceneHandler->getScene()->getComponent<LichComponent>(entityId
-            );
-        auto& entiyFSMAgentComp =
-            this->sceneHandler->getScene()->getComponent<FSMAgentComponent>(
-                entityId
-            );
-        auto& entityRigidBody =
-            this->sceneHandler->getScene()->getComponent<Rigidbody>(entityId);
-        int& health = lichComponent.life;
-        float& mana = lichComponent.mana;
-        float& speed = lichComponent.speed;
-        float& huntSpeed = lichComponent.huntSpeed;
-        float& sightRange = lichComponent.sightRadius;
+        auto& lichComponent     = this->sceneHandler->getScene()->getComponent<LichComponent>(entityId);
+        auto& entiyFSMAgentComp = this->sceneHandler->getScene()->getComponent<FSMAgentComponent>(entityId);
+        auto& entityRigidBody   = this->sceneHandler->getScene()->getComponent<Rigidbody>(entityId);
+        float& health           = lichComponent.life;
+        float& mana             = lichComponent.mana;
+        float& speed            = lichComponent.speed;
+        float& huntSpeed        = lichComponent.huntSpeed;
+        float& sightRange       = lichComponent.sightRadius;
         float& personalspaceRad = lichComponent.peronalSpaceRadius;
         float& attackRange = lichComponent.attackRadius;
         float& nonoRadius = lichComponent.nonoRadius;
@@ -1148,7 +1130,7 @@ ImguiLambda SpawnHandler::LichImgui()
 
         ImGui::Checkbox("Attack", &tempAttack);
         ImGui::SliderFloat("mana", &mana, 0, 100);
-        ImGui::SliderInt("health", &health, 0, lichComponent.FULL_HEALTH);
+        ImGui::SliderFloat("health", &health, 0.0f, lichComponent.FULL_HEALTH);
         ImGui::SliderFloat("speed", &speed, 0, 100);
         ImGui::SliderFloat("huntSpeed", &huntSpeed, 0, 100);
         ImGui::SliderFloat("gravity", &gravity, 0, 10);
@@ -1169,36 +1151,24 @@ ImguiLambda SpawnHandler::SwarmImgui()
         auto entityImguiWindow = [&](SwarmFSM* swarmFsm,
                                      uint32_t entityId) -> void
         {
-            auto& entitySwarmComponent =
-                this->sceneHandler->getScene()->getComponent<SwarmComponent>(
-                    entityId
-                );
-            auto& entiyFSMAgentComp =
-                this->sceneHandler->getScene()->getComponent<FSMAgentComponent>(
-                    entityId
-                );
-            auto& entityRigidBody =
-                this->sceneHandler->getScene()->getComponent<Rigidbody>(entityId
-                );
-            auto& entityTransform =
-                this->sceneHandler->getScene()->getComponent<Transform>(entityId
-                );
-            float& posY = entityTransform.position.y;
-            float& rotSpeed = entitySwarmComponent.idleRotSpeed;
-            int& health = entitySwarmComponent.life;
-            float& jumpForce = entitySwarmComponent.jumpForce;
-            float& jumpForceY = entitySwarmComponent.jumpY;
-            float& speed = entitySwarmComponent.speed;
-            float& attackRange = entitySwarmComponent.attackRange;
-            float& sightRange = entitySwarmComponent.sightRadius;
-            bool& inCombat = entitySwarmComponent.inCombat;
-            float& attackPerSec = entitySwarmComponent.lightAttackTime;
-            float& lightAttackDmg = entitySwarmComponent.lightHit;
-            float& gravity = entityRigidBody.gravityMult;
-            std::string& status = entiyFSMAgentComp.currentNode->status;
-            const glm::vec3& blobPos = this->sceneHandler->getScene()
-                                           ->getComponent<Transform>(entityId)
-                                           .position;
+            auto& entitySwarmComponent      = this->sceneHandler->getScene()->getComponent<SwarmComponent>(entityId);
+            auto& entiyFSMAgentComp         = this->sceneHandler->getScene()->getComponent<FSMAgentComponent>(entityId);
+            auto& entityRigidBody           = this->sceneHandler->getScene()->getComponent<Rigidbody>(entityId);
+            auto& entityTransform           = this->sceneHandler->getScene()->getComponent<Transform>(entityId);
+            float& posY                     = entityTransform.position.y;
+            float& rotSpeed                 = entitySwarmComponent.idleRotSpeed;
+            float& health                   = entitySwarmComponent.life;
+            float& jumpForce	            = entitySwarmComponent.jumpForce;
+            float& jumpForceY	            = entitySwarmComponent.jumpY;
+            float& speed                    = entitySwarmComponent.speed;
+            float& attackRange              = entitySwarmComponent.attackRange;
+            float& sightRange               = entitySwarmComponent.sightRadius;
+            bool& inCombat                  = entitySwarmComponent.inCombat;
+            float& attackPerSec             = entitySwarmComponent.lightAttackTime;
+            float& lightAttackDmg           = entitySwarmComponent.lightHit;
+            float& gravity 		            = entityRigidBody.gravityMult;
+            std::string& status             = entiyFSMAgentComp.currentNode->status;   
+            const glm::vec3& blobPos        = this->sceneHandler->getScene()->getComponent<Transform>(entityId).position;
 
             ImGui::Text(status.c_str());
             ImGui::Text(
@@ -1207,8 +1177,8 @@ ImguiLambda SpawnHandler::SwarmImgui()
                 (int)blobPos.y,
                 (int)blobPos.z
             );
-            ImGui::Separator();
-            ImGui::SliderInt("health", &health, 0, 100);
+            ImGui::Separator();    
+            ImGui::SliderFloat("health", &health, 0, 100);
             ImGui::SliderFloat("speed", &speed, 0, 100);
             ImGui::SliderFloat("pos y", &posY, 0, 15);
             ImGui::SliderFloat("rot speed", &rotSpeed, 0, 200);

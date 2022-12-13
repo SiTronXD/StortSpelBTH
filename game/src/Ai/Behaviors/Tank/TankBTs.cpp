@@ -86,7 +86,7 @@ void TankBT::groundHumpShortcut(Entity entityID)
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	tankComp.chargeTimer = tankComp.chargeTimerOrig;
 	tankComp.hasRunTarget = false;
-	bool grounded = (tankTrans.position.y - tankCol.radius) <= 3.0f;
+	bool grounded = (tankTrans.position.y - tankCol.extents.y) <= 3.0f;
 	if(glm::length(tankRb.velocity) <= 0.1f && grounded)
 	{
 		if(tankComp.groundHumpTimer <= 0)
@@ -133,15 +133,6 @@ void TankBT::groundHumpShortcut(Entity entityID)
 	updateCanBeHit(entityID);
 }
 
-void TankBT::drawRaySimple(Ray& ray, float dist, glm::vec3 color)
-{
-	//Draw ray
-	BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
-	ray.pos,
-	ray.pos + ray.dir * dist,
-	glm::vec3(1.0f, 0.0f, 0.0f));
-}
-
 bool TankBT::rayChecking(Entity entityID)
 {
 	bool ret = true;
@@ -164,19 +155,19 @@ bool TankBT::rayChecking(Entity entityID)
 	glm::vec3 to = entityTransform.position;
 	float maxDist = glm::length(to - from);
 	glm::vec3 dir = safeNormalize(from - to);
-	glm::vec3 offset = entityTransform.right() * (entityCollider.radius +1.0f);
+	glm::vec3 offset = entityTransform.right() * (entityCollider.extents.x);
 	Ray rayToPlayer{from, -dir};  
 	Ray rayToPlayer_right{from + offset, -dir};    
 	Ray rayToPlayer_left{from - offset, -dir};    
 	Ray rayRight{to, entityTransform.right()};    
 	Ray rayLeft{to, -entityTransform.right()};    
-	float left_right_maxDist = entityCollider.radius + 3.0f;
+	//float left_right_maxDist = entityCollider.radius + 3.0f;
     RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, maxDist);
     RayPayload rp1 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_right, maxDist);
     RayPayload rp2 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_left, maxDist);
-	//drawRaySimple(rayToPlayer, maxDist);
-	//drawRaySimple(rayToPlayer_right, maxDist);
-	//drawRaySimple(rayToPlayer_left, maxDist);
+	/*drawRaySimple(BehaviorTree::sceneHandler, rayToPlayer,			maxDist);
+	drawRaySimple(BehaviorTree::sceneHandler, rayToPlayer_right,	maxDist);
+	drawRaySimple(BehaviorTree::sceneHandler, rayToPlayer_left,		maxDist);*/
 	if(rp.hit || rp1.hit || rp2.hit)
 	{
 		bool one = (rp.entity != -1 && 
@@ -215,7 +206,7 @@ void TankBT::giveFriendsHealth(Entity entityID)
 		    {
 				SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(f.first);
 				swarmComp.shieldedByTank = true;
-				int toAdd = tankComp.friendHealthRegen;
+				float toAdd = tankComp.friendHealthRegen;
 				if((swarmComp.life + toAdd) > swarmComp.FULL_HEALTH)
 				{
 					swarmComp.life = swarmComp.FULL_HEALTH;
@@ -230,7 +221,7 @@ void TankBT::giveFriendsHealth(Entity entityID)
 		    {
 				LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(f.first);
 		        lichComp.shieldedByTank = true;
-				int toAdd = tankComp.friendHealthRegen;
+				float toAdd = tankComp.friendHealthRegen;
 				if((lichComp.life + toAdd) > lichComp.FULL_HEALTH)
 				{
 					lichComp.life = lichComp.FULL_HEALTH;
@@ -525,7 +516,7 @@ BTStatus TankBT::MoveAround(Entity entityID)
 	float distToCheck = 0.0f;
 	if(tankComp.allFriends[tankComp.firendTarget.id].type == "Swarm")
 	{
-		distToCheck = getTheScene()->getComponent<SwarmComponent>(tankComp.firendTarget.id).group->idleRadius + (tankCol.radius*2) + (friendCol.radius*2) + 2.0f;
+		distToCheck = getTheScene()->getComponent<SwarmComponent>(tankComp.firendTarget.id).group->idleRadius + (tankCol.extents.x*2) + (friendCol.extents.x*2) + 2.0f;
 	}
 	else
 	{
@@ -679,7 +670,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	}
 
 	//Tick down charge
-	if(/*!tankComp.hasRunTarget && */(tankComp.chargeTimer > 0.0f || !rotationDone(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f)))
+	if(!tankComp.hasRunTarget && (tankComp.chargeTimer > 0.0f || !rotationDone(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f)))
 	{
 		rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
 		tankComp.chargeTimer -= get_dt();
@@ -905,7 +896,7 @@ BTStatus TankBT::playAlertAnim(Entity entityID)
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 	Transform& tankTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Collider& tankCol = sceneHandler->getScene()->getComponent<Collider>(entityID);
-	float toMove = (tankCol.radius*2) * (1.0f - tankComp.origScaleY + tankComp.alertScale);
+	float toMove = (tankCol.extents.x*2) * (1.0f - tankComp.origScaleY + tankComp.alertScale);
 	
 	tankTrans.rotation.y = lookAtY(tankTrans, playerTransform);
 	tankTrans.updateMatrix();
@@ -981,9 +972,119 @@ BTStatus TankBT::die(Entity entityID)
 	{
 		playerHealth.health += 10;
 	}
+	static int chanceToSpawnPerk = 2;
+	static int chanceToSpawnability = 1;
+	int spawnLoot = rand() % 10;
+	ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
+
+	if (serverScene != nullptr)
+	{
+		int itemID, type = -1, otherType;
+		float multiplier;
+		if (spawnLoot < chanceToSpawnPerk)
+		{
+			type = (int)ItemType::PERK;
+			otherType = rand() % PerkType::emptyPerk;
+			switch (otherType)
+			{
+			case PerkType::hpUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::dmgUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::attackSpeedUpPerk:
+				multiplier = 0.05f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.05f;
+				break;
+			case PerkType::movementUpPerk:
+				multiplier = 0.2f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::staminaUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.1f;
+				break;
+			}
+			if (otherType == PerkType::attackSpeedUpPerk && getTheScene()->getComponent<TankComponent>(entityID).currentLevel > 6)
+			{
+				multiplier = 0.4f;
+			}
+			else if (otherType == PerkType::movementUpPerk && getTheScene()->getComponent<TankComponent>(entityID).currentLevel > 7)
+			{
+				multiplier = 1.f;
+			}
+		}
+		else if (spawnLoot < chanceToSpawnPerk + chanceToSpawnability)
+		{
+			type = (int)ItemType::ABILITY;
+			otherType = (AbilityType)(rand() % 2);
+			multiplier = 0.0f;
+		}
+		if (type != -1)
+		{
+			glm::vec3 spawnPos = sceneHandler->getScene()->getComponent<Transform>(entityID).position;
+			glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
+			itemID = serverScene->spawnItem((ItemType)type, otherType, multiplier);
+			serverScene->addEvent(
+				{ (int)GameEvent::SPAWN_ITEM,
+				itemID,
+				type,
+				otherType },
+				{ multiplier,
+				spawnPos.x, spawnPos.y, spawnPos.z,
+				spawnDir.x, spawnDir.y, spawnDir.z }
+			);
+		}
+	}
+	else
+	{
+		PerkType otherType;
+		float multiplier;
+		if (spawnLoot < 2)
+		{
+			otherType = PerkType(rand() % PerkType::emptyPerk);
+			NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
+			Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+
+			switch (otherType)
+			{
+			case PerkType::hpUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::dmgUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::attackSpeedUpPerk:
+				multiplier = 0.05f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.05f;
+				break;
+			case PerkType::movementUpPerk:
+				multiplier = 0.2f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::staminaUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.1f;
+				break;
+			}
+			if (otherType == PerkType::attackSpeedUpPerk && getTheScene()->getComponent<TankComponent>(entityID).currentLevel > 6)
+			{
+				multiplier = 0.4f;
+			}
+			else if (otherType == PerkType::movementUpPerk && getTheScene()->getComponent<TankComponent>(entityID).currentLevel > 7)
+			{
+				multiplier = 1.f;
+			}
+
+			network->spawnItemRequest(otherType, multiplier, swarmTrans.position,
+				glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
+		}
+		else if (spawnLoot == 2)
+		{
+			NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
+			Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+			network->spawnItemRequest((AbilityType)(rand() % 2), swarmTrans.position,
+				glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
+		}
+	}
+
 	ret = BTStatus::Success;
 	getTheScene()->setInactive(entityID);
-	ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
     if (serverScene != nullptr) 
     {
         serverScene->addEvent({(int)GameEvent::INACTIVATE, entityID});   

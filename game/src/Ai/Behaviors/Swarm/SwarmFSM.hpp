@@ -17,10 +17,10 @@ struct SwarmComponent
 
 	//Ints
 	int currentLevel            = 0;
-	int LOW_HEALTH				= 30;
-	int FULL_HEALTH				= 100;
-	int life					= FULL_HEALTH;
 	//Floats
+	float LOW_HEALTH			= 30.0f;
+	float FULL_HEALTH			= 100.0f;
+	float life					= FULL_HEALTH;
     float speed					= 17.0f;
 	float jumpForce				= 70.0f;
 	float idleSpeed				= 10.0f;
@@ -94,7 +94,7 @@ struct SwarmComponent
 
 		Collider col = scene->getComponent<Collider>(entityID);
 		col.radius *= eliteComp.sizeMultiplier;
-		scene->setComponent<Collider>(entityID, col);
+		scene->setComponent<Collider>(entityID, Collider::createSphere(col.radius));
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale * eliteComp.sizeMultiplier;
 		this->origScale = trans.scale;
@@ -115,7 +115,7 @@ struct SwarmComponent
 				
 		Collider col = scene->getComponent<Collider>(entityID);
 		col.radius /= this->eliteStats.sizeMultiplier;
-		scene->setComponent<Collider>(entityID, col);
+		scene->setComponent<Collider>(entityID, Collider::createSphere(col.radius));
 		Transform& trans = scene->getComponent<Transform>(entityID);
 		trans.scale = this->origScale / this->eliteStats.sizeMultiplier;
 		this->origScale = trans.scale;
