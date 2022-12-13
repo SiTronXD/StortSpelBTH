@@ -27,7 +27,7 @@ void ServerGameMode::init()
     this->getSceneHandler()->setAIHandler(&aiHandler);
 
     roomHandler.init(this, this->getResourceManager(), this->getPhysicsEngine(), false);
-    roomHandler.generate(this->roomSeed);
+    roomHandler.generate(this->roomSeed, (uint16_t)this->level);
     createPortal();
     spawnHandler.init(
         &this->roomHandler,

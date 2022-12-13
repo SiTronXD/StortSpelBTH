@@ -88,7 +88,7 @@ void GameSceneNetwork::init()
       this,
       this->getResourceManager(), this->getPhysicsEngine(), true
   );
-  roomHandler.generate(123);
+  roomHandler.generate(123, 0u);
   createPortal();
 
   ResourceManager* resourceMng = this->getResourceManager();
