@@ -684,7 +684,7 @@ BTStatus SwarmBT::die(Entity entityID)
     {
         playerHealth.health += 10;
     }
-	static int chanceToSpawnPerk = 2;
+	static int chanceToSpawnPerk = 9;
 	static int chanceToSpawnability = 1;
     int spawnLoot = rand() % 10;
     ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());

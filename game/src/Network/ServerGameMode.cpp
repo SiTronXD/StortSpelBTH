@@ -371,10 +371,10 @@ void ServerGameMode::createPortal()
     }
 }
 
-void ServerGameMode::onDisconnect(int index)
-{
-
-}
+//void ServerGameMode::onDisconnect(int index)
+//{
+//
+//}
 
 void ServerGameMode::onTriggerStay(Entity e1, Entity e2) {
     Entity player = isAPlayer(e1) ? e1 : isAPlayer(e2) ? e2 : -1;
