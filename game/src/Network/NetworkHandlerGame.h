@@ -148,7 +148,6 @@ private:
 
 	// RoomHandler
     bool newRoomFrame;
-    int* numRoomsCleared;
     bool gettingSeed;
     RoomHandler* roomHandler;
 
@@ -178,7 +177,7 @@ private:
 	void setCombatSystem(CombatSystem* system);
 	void setGhostMat(Material* ghostMat);
 	int getSeed();
-    void setRoomHandler(RoomHandler& roomHandler, int& numRoomsCleared);
+    void setRoomHandler(RoomHandler& roomHandler);
 
 	virtual void handleTCPEventClient(sf::Packet& tcpPacket, int event) override;
 	virtual void handleUDPEventClient(sf::Packet& udpPacket, int event) override;

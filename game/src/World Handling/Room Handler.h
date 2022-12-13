@@ -129,6 +129,7 @@ private:
 	// Room generation
 	void placeBranch(int index, int left, int right);
 	void moveRoom(int roomIndex, const glm::vec3& offset);
+	RoomGenerator::RoomDescription getRoomDesc(uint16_t level);
 	std::vector<RoomExitPoint> roomExitPoints;
 	
 	// Create Entities
@@ -154,6 +155,7 @@ private:
 	Entity doorLamps[4];
 
 	// Room Updating
+	int portalRoomIndex = 0;
 	int respawnDoorIdx = -1;
 	int prevRoomIndex = -1;
 	int activeIndex = 0;
@@ -179,7 +181,7 @@ private:
 	int lampMeshId;
 	int lampDiffuseId;
 	int lampGlowId;
-	// TODO: FIX ROCK COLLIDER + COMPONENT FOR LOWE
+
 	// Other
 	void createFloor();
 	void reset();
@@ -189,12 +191,17 @@ private:
 
 	bool playersOnCollider(Collider& col, const glm::vec3& pos, const std::vector<Entity>& players);
 
+#ifdef _CONSOLE
+	bool overrideLevel = false;
+	RoomGenerator::RoomDescription desc;
+#endif
+
 public:
 	RoomHandler();
 	~RoomHandler();
 
 	void init(Scene* scene, ResourceManager* resourceMan, PhysicsEngine* physicsEngine, bool useMeshes);
-	void generate(uint32_t seed);
+	void generate(uint32_t seed, uint16_t level);
 
 #ifdef _CONSOLE
 	void imgui(DebugRenderer* dr);
@@ -221,6 +228,7 @@ public:
 	const std::vector<glm::vec3>& getFreeTiles();
 	const std::vector<TileInfo>& getFreeTileInfos();
 	const Room& getExitRoom() const;
+	bool isPortalRoomDone() const;
 	int getNumRooms() const;
 	bool inExitRoom() const;
 

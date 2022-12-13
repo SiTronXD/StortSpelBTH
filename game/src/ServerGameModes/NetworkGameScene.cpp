@@ -34,7 +34,7 @@ void NetworkGameScene::start()
   std::cout << "SERVER: seed is: " << roomSeed << std::endl;
   this->addEvent({(int)NetworkEvent::EMPTY, this->roomSeed});
   this->roomHandler.init(this, this->getResourceManager(), this->getPhysicsEngine(), false);
-  this->roomHandler.generate(this->roomSeed);
+  this->roomHandler.generate(this->roomSeed, 0u);
   
   // Ai management
   this->aiHandler = new AIHandler();

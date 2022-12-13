@@ -75,11 +75,19 @@ function script:update(dt)
             self.currentAnimation = self.activeAnimation.dead
         end
     end
+
+    -- Push timer countdown
+    if self.pushTimer > 0.0 then
+        self.pushTimer = self.pushTimer - dt
+        self.isPushed = true
+    else
+        self.isPushed = false
+    end
+
     -- Paused game or dead
-    if (paused or self.currentAnimation == self.activeAnimation.dead) then
+    if (self.currentAnimation == self.activeAnimation.dead) then
         local rb = scene.getComponent(self.ID, CompType.Rigidbody)
-        rb.velocity.x = 0
-        rb.velocity.z = 0
+        rb.velocity = vector(0, 0, 0)
         scene.setComponent(self.ID, CompType.Rigidbody, rb)
         return
     end
@@ -100,18 +108,11 @@ function script:update(dt)
     local right = camTransform:right()
     right.y = 0
 
-    -- Push timer countdown
-    if self.pushTimer > 0.0 then
-        self.pushTimer = self.pushTimer - dt
-        self.isPushed = true
-    else
-        self.isPushed = false
-    end
-
     -- Input vector
     if not self.isDodging and self.canMove
     then
         self.moveDir = vector(core.btoi(input.isKeyDown(Keys.A)) - core.btoi(input.isKeyDown(Keys.D)), core.btoi(input.isKeyDown(Keys.W)) - core.btoi(input.isKeyDown(Keys.S)), 0)
+        self.moveDir = self.moveDir * core.btoi(not paused)
 
         if self.moveDir ~= vector(0)
         then
@@ -204,7 +205,7 @@ function script:update(dt)
 
     -- Apply jump via acceleration
     local jump = self.jumpTimer > 0 and input.isKeyDown(Keys.SPACE)
-    if(jump) then
+    if(jump and not paused) then
         rb.acceleration.y = 100
     else
         rb.acceleration.y = -300

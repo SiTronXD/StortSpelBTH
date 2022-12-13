@@ -27,7 +27,7 @@ void ServerGameMode::init()
     this->getSceneHandler()->setAIHandler(&aiHandler);
 
     roomHandler.init(this, this->getResourceManager(), this->getPhysicsEngine(), false);
-    roomHandler.generate(this->roomSeed);
+    roomHandler.generate(this->roomSeed, (uint16_t)this->level);
     createPortal();
     spawnHandler.init(
         &this->roomHandler,
@@ -73,7 +73,7 @@ void ServerGameMode::update(float dt)
         spawnHandler.spawnEnemiesIntoRoom(this->level);
 
         this->newRoomFrame = true;
-        this->timeWhenEnteredRoom = Time::getTimeSinceStart();
+        this->timeWhenEnteredRoom = (uint32_t)Time::getTimeSinceStart();
         this->safetyCleanDone = false; 
     }
     else if (this->newRoomFrame)
@@ -104,16 +104,15 @@ void ServerGameMode::update(float dt)
         this->addEvent({(int)GameEvent::ROOM_CLEAR});
         // Call when a room is cleared
         roomHandler.roomCompleted();
-        this->numRoomsCleared++;
         this->doorsClosed = false;
-        if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+        if (this->roomHandler.isPortalRoomDone())
         {
             std::cout << "Server: Spawn portal" << std::endl;
             this->addEvent({(int)GameEvent::SPAWN_PORTAL});
         }
     }
     //check if all players are at portal
-    if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+    if (this->roomHandler.isPortalRoomDone())
     {
             
         std::vector<int> colWithPortal = this->getPhysicsEngine()->testContact(
@@ -256,7 +255,7 @@ void ServerGameMode::makeDataSendToClient()
                 this->addEvent(
                     {(int)GameEvent::ENTITY_SET_HP,
                      (int)static_cast<int>(entity),
-                     this->getComponent<SwarmComponent>(static_cast<int>(entity)).life}
+                     (int)this->getComponent<SwarmComponent>(static_cast<int>(entity)).life}
                  );
                 lastSwarmHp[i].health = this->getComponent<SwarmComponent>(static_cast<int>(entity)).life;
             }
@@ -268,7 +267,7 @@ void ServerGameMode::makeDataSendToClient()
                 this->addEvent(
                     {(int)GameEvent::ENTITY_SET_HP,
                     (int)static_cast<int>(entity),
-                    this->getComponent<LichComponent>(static_cast<int>(entity)).life}
+                    (int)this->getComponent<LichComponent>(static_cast<int>(entity)).life}
                  );
                 lastLichHp[i].health = this->getComponent<LichComponent>(static_cast<int>(entity)).life;
             }
@@ -280,7 +279,7 @@ void ServerGameMode::makeDataSendToClient()
                 this->addEvent(
                     {(int)GameEvent::ENTITY_SET_HP,
                     (int)static_cast<int>(entity),
-                     this->getComponent<TankComponent>(static_cast<int>(entity)).life}
+                     (int)this->getComponent<TankComponent>(static_cast<int>(entity)).life}
                  );
                 lastTankHp[i].health = this->getComponent<TankComponent>(static_cast<int>(entity)).life;
             }
@@ -300,7 +299,7 @@ void ServerGameMode::makeDataSendToClient()
             this->addEvent(
                 {(int)GameEvent::PLAYER_SETHP,
                  getPlayer(i),
-                 this->getComponent<HealthComp>(getPlayer(i)).health}
+                (int)this->getComponent<HealthComp>(getPlayer(i)).health}
             );
             if (this->getComponent<HealthComp>(getPlayer(i)).health < lastPlayerHps[i].health) 
             {
@@ -526,20 +525,20 @@ void ServerGameMode::updatePlayerHp(int id, int health)
     HealthComp& healthComp = this->getComponent<HealthComp>(getPlayer(id));
     if (healthComp.health == this->lastPlayerHps[id].health) // No current change
     {
-        healthComp.health = health;
-        this->lastPlayerHps[id].health = health;
+        healthComp.health = (float)health;
+        this->lastPlayerHps[id].health = (float)health;
     }
 }
 
 int ServerGameMode::spawnItem(ItemType type, int otherType, float multiplier)
 {
 	this->curItems.push_back({ type, otherType, multiplier });
-	return this->curItems.size() - 1;
+	return (int)this->curItems.size() - 1;
 }
 
 void ServerGameMode::deleteItem(int playerID, int index, ItemType type, int otherType, float multiplier)
 {
-    int size = this->curItems.size();
+    int size = (int)this->curItems.size();
     if (index >= size || index < 0)
     {
         return;

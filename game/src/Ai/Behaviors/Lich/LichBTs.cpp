@@ -203,7 +203,7 @@ void LichBT::givePointsForPlayerHealth(Entity entityID, float& l_points, float& 
 {
     int playerID = getPlayerID(entityID);
     if(playerID == -1){return;}
-    int playerHealth = 0;
+    float playerHealth = 0.0f;
     HealthComp& playerHealthComp = getTheScene()->getComponent<HealthComp>(playerID);
     playerHealth = playerHealthComp.health;
 
@@ -583,7 +583,7 @@ BTStatus LichBT::pickBestStrategy(Entity entityID)
 
     int playerID                = getPlayerID(entityID);
     if(playerID == -1){return ret;}
-    int playerHealth            = 0;
+    float playerHealth            = 0.0f;
 
     //singleplayer
     HealthComp& playerHealthComp        = getTheScene()->getComponent<HealthComp>(playerID);
@@ -812,7 +812,7 @@ BTStatus LichBT::attack(Entity entityID)
             }
 
             lichComp.hasBegunAttackAnim = false;
-            orb.timeAtCast = Time::getTimeSinceStart();
+            orb.timeAtCast = (int)Time::getTimeSinceStart();
         }
 
         //Remove current strat
@@ -831,7 +831,8 @@ BTStatus LichBT::selfHeal(Entity entityID)
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     if(lichComp.life < lichComp.FULL_HEALTH)
     {
-
+        //Self heal particles
+        /*
         Scene* scene = getTheScene();
         NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
         if (s == nullptr)
@@ -849,7 +850,7 @@ BTStatus LichBT::selfHeal(Entity entityID)
         {
             s->addEvent({(int)GameEvent::PLAY_PARTICLE, (int)ParticleTypes::LICH_HEAL, (int)entityID});
 		
-        }
+        }*/
         lichComp.life_float += get_dt() * lichComp.healthRegenSpeed;
         if(lichComp.life_float > 1.0f)
         {
@@ -942,9 +943,119 @@ BTStatus LichBT::die(Entity entityID)
 	{
         playerHealth.health += 10;
 	}
+    static int chanceToSpawnPerk = 2;
+    static int chanceToSpawnability = 1;
+    int spawnLoot = rand() % 10;
+    ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
+
+    if (serverScene != nullptr)
+    {
+        int itemID, type = -1, otherType;
+        float multiplier;
+        if (spawnLoot < chanceToSpawnPerk)
+        {
+            type = (int)ItemType::PERK;
+            otherType = rand() % PerkType::emptyPerk;
+            switch (otherType)
+            {
+            case PerkType::hpUpPerk:
+                multiplier = 0.1f + getTheScene()->getComponent<LichComponent>(entityID).currentLevel * 0.1f;
+                break;
+            case PerkType::dmgUpPerk:
+                multiplier = 0.1f + getTheScene()->getComponent<LichComponent>(entityID).currentLevel * 0.1f;
+                break;
+            case PerkType::attackSpeedUpPerk:
+                multiplier = 0.05f + getTheScene()->getComponent<LichComponent>(entityID).currentLevel * 0.05f;
+                break;
+            case PerkType::movementUpPerk:
+                multiplier = 0.2f + getTheScene()->getComponent<LichComponent>(entityID).currentLevel * 0.1f;
+                break;
+            case PerkType::staminaUpPerk:
+                multiplier = 0.1f + getTheScene()->getComponent<LichComponent>(entityID).currentLevel * 0.1f;
+                break;
+            }
+            if (otherType == PerkType::attackSpeedUpPerk && getTheScene()->getComponent<LichComponent>(entityID).currentLevel > 6)
+            {
+                multiplier = 0.4f;
+            }
+            else if (otherType == PerkType::movementUpPerk && getTheScene()->getComponent<LichComponent>(entityID).currentLevel > 7)
+            {
+                multiplier = 1.f;
+            }
+        }
+        else if (spawnLoot < chanceToSpawnPerk + chanceToSpawnability)
+        {
+            type = (int)ItemType::ABILITY;
+            otherType = (AbilityType)(rand() % 2);
+            multiplier = 0.0f;
+        }
+        if (type != -1)
+        {
+            glm::vec3 spawnPos = sceneHandler->getScene()->getComponent<Transform>(entityID).position;
+            glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
+            itemID = serverScene->spawnItem((ItemType)type, otherType, multiplier);
+            serverScene->addEvent(
+                { (int)GameEvent::SPAWN_ITEM,
+                itemID,
+                type,
+                otherType },
+                { multiplier,
+                spawnPos.x, spawnPos.y, spawnPos.z,
+                spawnDir.x, spawnDir.y, spawnDir.z }
+            );
+        }
+    }
+    else
+    {
+        PerkType otherType;
+        float multiplier;
+        if (spawnLoot < 2)
+        {
+            otherType = PerkType(rand() % PerkType::emptyPerk);
+            NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
+            Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+
+            switch (otherType)
+            {
+            case PerkType::hpUpPerk:
+                multiplier = 0.1f + getTheScene()->getComponent<LichComponent>(entityID).currentLevel * 0.1f;
+                break;
+            case PerkType::dmgUpPerk:
+                multiplier = 0.1f + getTheScene()->getComponent<LichComponent>(entityID).currentLevel * 0.1f;
+                break;
+            case PerkType::attackSpeedUpPerk:
+                multiplier = 0.05f + getTheScene()->getComponent<LichComponent>(entityID).currentLevel * 0.05f;
+                break;
+            case PerkType::movementUpPerk:
+                multiplier = 0.2f + getTheScene()->getComponent<LichComponent>(entityID).currentLevel * 0.1f;
+                break;
+            case PerkType::staminaUpPerk:
+                multiplier = 0.1f + getTheScene()->getComponent<LichComponent>(entityID).currentLevel * 0.1f;
+                break;
+            }
+            if (otherType == PerkType::attackSpeedUpPerk && getTheScene()->getComponent<LichComponent>(entityID).currentLevel > 6)
+            {
+                multiplier = 0.4f;
+            }
+            else if (otherType == PerkType::movementUpPerk && getTheScene()->getComponent<LichComponent>(entityID).currentLevel > 7)
+            {
+                multiplier = 1.f;
+            }
+
+            network->spawnItemRequest(otherType, multiplier, swarmTrans.position,
+                glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
+        }
+        else if (spawnLoot == 2)
+        {
+            NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
+            Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+            network->spawnItemRequest((AbilityType)(rand() % 2), swarmTrans.position,
+                glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
+        }
+    }
+
     ret = BTStatus::Success;
 	getTheScene()->setInactive(entityID);
-    ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
     if (serverScene != nullptr) 
     {
         serverScene->addEvent({(int)GameEvent::INACTIVATE, entityID});
