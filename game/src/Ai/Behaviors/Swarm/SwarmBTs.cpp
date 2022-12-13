@@ -678,7 +678,7 @@ BTStatus SwarmBT::die(Entity entityID)
 {
     BTStatus ret = BTStatus::Success;
     static int chanceToSpawnPerk = 2;
-    static int chanceToSpawnability = 1;
+    static int chanceToSpawnability = 1 ;
 	int playerID = getPlayerID(entityID);
 	if(playerID == -1){return ret;}
     HealthComp& playerHealth = sceneHandler->getScene()->getComponent<HealthComp>(playerID);
@@ -699,7 +699,7 @@ BTStatus SwarmBT::die(Entity entityID)
             otherType = rand() % PerkType::emptyPerk;
             multiplier = 0.2f;
         }
-        else if (spawnLoot <= chanceToSpawnPerk + chanceToSpawnability)
+        else if (spawnLoot < chanceToSpawnPerk + chanceToSpawnability)
         {
             type = (int)ItemType::ABILITY;
             otherType = (AbilityType)(rand() % 2);
@@ -709,7 +709,6 @@ BTStatus SwarmBT::die(Entity entityID)
         {
             glm::vec3 spawnPos = sceneHandler->getScene()->getComponent<Transform>(entityID).position;
             glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
-            //ServerGameMode* serverScene = (ServerGameMode*)((NetworkSceneHandler*)sceneHandler)->getScene();
             itemID = serverScene->spawnItem((ItemType)type, otherType, multiplier);
             serverScene->addEvent(
                 {(int)GameEvent::SPAWN_ITEM,
@@ -730,23 +729,6 @@ BTStatus SwarmBT::die(Entity entityID)
 	    	Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
             network->spawnItemRequest((PerkType)(rand() % PerkType::emptyPerk), 0.2f, swarmTrans.position,
                 glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
-	    	// Spawn Perk
-	    	/*PerkType perkType = (PerkType)(rand() % PerkType::emptyPerk);
-	    	Perks perk{ .multiplier = 0.2f, .perkType = perkType };
-	    	Entity perkEnt = sceneHandler->getScene()->createEntity();
-	    	sceneHandler->getScene()->setComponent<MeshComponent>(perkEnt, SwarmBT::perkMeshes[perkType]);
-	    	Transform& perkTrans = sceneHandler->getScene()->getComponent<Transform>(perkEnt);
-	    	perkTrans.position = swarmTrans.position;
-	    	perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
-	    	sceneHandler->getScene()->setComponent<Collider>(perkEnt, Collider::createSphere(2.f, glm::vec3(0.f, 0.f, 0.f), true));
-	    	sceneHandler->getScene()->setComponent<Rigidbody>(perkEnt);
-	    	Rigidbody& perkRb = sceneHandler->getScene()->getComponent<Rigidbody>(perkEnt);
-	    	glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
-	    	perkRb.gravityMult = 6.f;
-	    	perkRb.velocity = safeNormalize(spawnDir) * 20.f;
-	    	sceneHandler->getScene()->setComponent<Perks>(perkEnt, perk);
-	    	sceneHandler->getScene()->setComponent<PointLight>(perkEnt, glm::vec3(5.f, 7.f, 9.f));
-	    	sceneHandler->getScene()->setScriptComponent(perkEnt, "scripts/spin.lua");*/
 	    }
 	    else if (spawnLoot == 2)
 	    {
@@ -754,23 +736,6 @@ BTStatus SwarmBT::die(Entity entityID)
             Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
             network->spawnItemRequest((AbilityType)(rand() % 2), swarmTrans.position,
                 glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
-
-	    	/*AbilityType abilityType = (AbilityType)(rand() % 2);
-	    	Abilities ability{ .abilityType = abilityType };
-	    	Entity abilityEnt = sceneHandler->getScene()->createEntity();
-	    	sceneHandler->getScene()->setComponent<MeshComponent>(abilityEnt, SwarmBT::abilityMeshes[abilityType]);
-	    	Transform& abilityTrans = sceneHandler->getScene()->getComponent<Transform>(abilityEnt);
-	    	Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
-	    	abilityTrans.position = swarmTrans.position;
-	    	abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
-	    	sceneHandler->getScene()->setComponent<Collider>(abilityEnt, Collider::createSphere(4.f, glm::vec3(0.f, 0.f, 0.f), true));
-	    	sceneHandler->getScene()->setComponent<Rigidbody>(abilityEnt);
-	    	Rigidbody& abilityRb = sceneHandler->getScene()->getComponent<Rigidbody>(abilityEnt);
-	    	glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
-	    	abilityRb.gravityMult = 4.f;
-	    	abilityRb.velocity = safeNormalize(spawnDir) * 40.f;
-	    	sceneHandler->getScene()->setComponent<Abilities>(abilityEnt, ability);
-	    	sceneHandler->getScene()->setComponent<PointLight>(abilityEnt, glm::vec3(7.f, 9.f, 5.f));*/
 	    }
     }
 

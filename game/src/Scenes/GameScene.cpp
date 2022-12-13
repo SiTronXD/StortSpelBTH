@@ -23,6 +23,8 @@ void decreaseFps();
 double heavyFunction(double value);
 #endif
 
+const float GameScene::FADE_TIMER_DONE = 2.75f;
+
 void GameScene::testParticleSystem(const Entity& particleSystemEntity)
 {
     // Used for testing particle systems
@@ -152,9 +154,9 @@ void GameScene::init()
     this->perkTextures[3] = resourceMng->addTexture("assets/textures/UI/moveUp.png");
     this->perkTextures[4] = resourceMng->addTexture("assets/textures/UI/staminaUp.png");
     this->perkTextures[5] = resourceMng->addTexture("assets/textures/UI/empty.png");
-    this->hpBarBackgroundTextureID = resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
-    this->hpBarTextureID = resourceMng->addTexture("assets/textures/UI/hpBar.png");
-    this->blackTextureIndex = resourceMng->addTexture("vengine_assets/textures/Black.png");
+    this->hpBarBackgroundTextureID = resourceMng->addTexture("assets/textures/UI/hpBarBackground.jpg");
+    this->hpBarTextureID = resourceMng->addTexture("assets/textures/UI/hpBar.jpg");
+    this->blackTextureIndex = resourceMng->addTexture("vengine_assets/textures/Black.jpg");
     this->ghostOverlayIndex = resourceMng->addTexture("assets/textures/UI/GhostUI.png");
     this->buttonSound = resourceMng->addSound("assets/Sounds/buttonClick.ogg");
 
@@ -180,8 +182,8 @@ void GameScene::init()
     MeshComponent& ghostMesh = this->getComponent<MeshComponent>(ghost);
     this->getResourceManager()->makeUniqueMaterials(ghostMesh);
     this->ghostMat = &ghostMesh.overrideMaterials[0];
-    this->ghostMat->diffuseTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhost.png");
-    this->ghostMat->glowMapTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhostGlow.png");
+    this->ghostMat->diffuseTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhost.jpg");
+    this->ghostMat->glowMapTextureIndex = this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhostGlow.jpg");
     this->ghostMat->emissionColor = glm::vec3(0.0f, 1.0f, 0.35f);
     this->ghostMat->emissionIntensity = 0.75f;
 
@@ -247,7 +249,7 @@ void GameScene::start()
         //this->networkHandler->spawnItemRequest(knockbackAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         //this->networkHandler->spawnItemRequest(hpUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         //this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        //this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.3f, glm::vec3(30.0f, 7.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         //this->networkHandler->spawnItemRequest(movementUpPerk, 1.f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         //this->networkHandler->spawnItemRequest(staminaUpPerk, 0.5f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
     }
@@ -320,6 +322,9 @@ void GameScene::update()
 
     networkHandler->deleteInitialParticleSystems();
 
+    Script& playerScript = this->getComponent<Script>(this->playerID);
+    this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
+
     if (!networkHandler->isConnected() && networkHandler->getStatus() == ServerStatus::WAITING)
     {   
         this->aiHandler->update(Time::getDT());
@@ -366,14 +371,12 @@ void GameScene::update()
         // Switch scene if the player is dead
         if (this->hasComponents<HealthComp>(this->playerID))
         {
-			Script& playerScript = this->getComponent<Script>(this->playerID);
             int tempHealth = this->getComponent<HealthComp>(this->playerID).health;
             if (tempHealth <= 0 && !this->isDead)
             {
                 this->isDead = true;
                 this->deathTimer = 1.5f;
                 this->ghostTransitionTimer = 0.0f;
-                this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
             }
             else if (this->isDead)
             {
@@ -383,13 +386,6 @@ void GameScene::update()
                     if (this->deathTimer <= 0.0f)
                     {
                         this->fadeTimer = 0.0f;
-                    }
-
-                    int currentAnim = -1;
-                    this->getScriptHandler()->getScriptComponentValue(playerScript, currentAnim, "currentAnimation");
-                    if (currentAnim != 7)
-                    {
-                        this->getScriptHandler()->setScriptComponentValue(playerScript, tempHealth, "currentHealth");
                     }
                 }
                 else if (!this->isGhost)
@@ -416,10 +412,6 @@ void GameScene::update()
 
                 HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
                 healthComp.health = healthComp.maxHealth;
-                
-                Script& playerScript = this->getComponent<Script>(this->playerID);
-                this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
-                this->getScriptHandler()->setScriptComponentValue(playerScript, healthComp.health, "currentHealth");
 
                 this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = *this->ghostMat;
                 this->getComponent<Transform>(this->playerID).position = this->roomHandler.getRespawnPos();
@@ -467,7 +459,7 @@ void GameScene::update()
         // If player is dead make the player a ghost with no combat
         if (this->hasComponents<HealthComp>(this->playerID))
         {
-            Script& playerScript = this->getComponent<Script>(this->playerID);
+            //Script& playerScript = this->getComponent<Script>(this->playerID);
             int tempHealth = this->getComponent<HealthComp>(this->playerID).health;
             if (tempHealth <= 0 && !this->isDead && !this->isGhost)
             {
@@ -475,7 +467,6 @@ void GameScene::update()
                 this->combatDisabled = true;
                 this->deathTimer = 1.5f;
                 this->ghostTransitionTimer = 0.0f;
-                this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
                 HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
                 healthComp.health = 0;
             }
@@ -487,13 +478,6 @@ void GameScene::update()
                     this->fadeTimer = 0.0f;
                     this->isGhost = true;
                     this->hasRespawned = false;
-                }
-
-                int currentAnim = -1;
-                this->getScriptHandler()->getScriptComponentValue(playerScript, currentAnim, "currentAnimation");
-                if (currentAnim != 7)
-                {
-                    this->getScriptHandler()->setScriptComponentValue(playerScript, tempHealth, "currentHealth");
                 }
             }
         }
@@ -509,10 +493,6 @@ void GameScene::update()
             this->isDead = false;
 
             this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = *this->ghostMat;
-            Script& playerScript = this->getComponent<Script>(this->playerID);
-            this->getScriptHandler()->setScriptComponentValue(playerScript, this->isDead, "isDead");
-            this->getScriptHandler()->setScriptComponentValue(playerScript, 1, "currentHealth");
-
             this->networkHandler->setGhost();
         }
         if (this->isGhost && this->ghostTransitionTimer > 1.0f)
@@ -541,7 +521,7 @@ void GameScene::update()
     }
 
     // Fade in/out to black
-    if (this->fadeTimer < 2.75f)
+    if (this->fadeTimer < FADE_TIMER_DONE)
     {
         this->getUIRenderer()->setTexture(this->blackTextureIndex);
         this->getUIRenderer()->renderTexture(glm::vec2(0.0f), ResTranslator::getInternalDimensions(), glm::uvec4(0, 0, 1, 1),
@@ -902,16 +882,20 @@ void GameScene::onCollisionExit(Entity e1, Entity e2)
 
 void GameScene::revivePlayer()
 {
-    if (this->isGhost)
+    if (this->isGhost || this->isDead)
     {
         // Get back half hp
         this->getComponent<HealthComp>(this->playerID).health = this->getComponent<HealthComp>(this->playerID).maxHealth / 2;
 
         this->isGhost = false;
+        this->isDead = false;
         this->combatDisabled = false;
         this->hasRespawned = false;
         this->ghostTransitionTimer = 0.0f;
-        this->fadeTimer = 0.0f;
+        if (fadeTimer >= FADE_TIMER_DONE)
+        {
+            this->fadeTimer = 0.0f;
+        }
         this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = this->origMat;
     }
 }
@@ -920,7 +904,10 @@ void GameScene::endGame()
 {
     if (!this->end)
     {
-        this->fadeTimer = 0.0f;
+        if (fadeTimer >= FADE_TIMER_DONE)
+        {
+            this->fadeTimer = 0.0f;
+        }
         this->end = true;
     }
 }
