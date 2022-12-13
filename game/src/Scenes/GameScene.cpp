@@ -350,9 +350,8 @@ void GameScene::update()
             this->newRoomFrame = false;
             // Call when a room is cleared
             this->roomHandler.roomCompleted();
-            this->numRoomsCleared++;
 
-            if (this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+            if (this->roomHandler.isPortalRoomDone())
             {
                 this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
 
@@ -439,7 +438,7 @@ void GameScene::update()
         {
             this->newRoomFrame = true;
         }
-        if (!this->spawnPortal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1)
+        if (!this->spawnPortal && this->roomHandler.isPortalRoomDone())
         {
             spawnPortal = true;
             this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
@@ -688,7 +687,7 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
     
         if (!networkHandler->isConnected())
         {
-		    if (other == this->portal && this->numRoomsCleared >= this->roomHandler.getNumRooms() - 1) // -1 not counting start room            
+		    if (other == this->portal && this->roomHandler.isPortalRoomDone())       
 		    {
                 networkHandler->cleanUp();
 		    	this->switchScene(new GameScene(this->setNewLevel()), "scripts/gamescene.lua");
