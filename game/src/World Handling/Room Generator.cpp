@@ -30,7 +30,7 @@ RoomGenerator::~RoomGenerator()
 
 void RoomGenerator::setDesc(const RoomDescription& roomDesc)
 {
-	this->roomDesc = roomDesc;
+	this->roomDesc = this->roomDesc;
 }
 
 void RoomGenerator::clear()
@@ -55,24 +55,24 @@ void RoomGenerator::generate(bool* doors)
 
 	glm::vec2 fBranch(0);
 	glm::ivec2 iBranch(0);
-	for (uint32_t i = 0; i < roomDesc.numBranches; i++)
+	for (uint32_t i = 0; i < this->roomDesc.numBranches; i++)
 	{
 		fBranch.x = float(this->random.rand() % 2001) * 0.001f - 1.f;
 		fBranch.y = float(this->random.rand() % 2001) * 0.001f - 1.f;
 		fBranch = safeNormalize(fBranch);
-		iBranch = fBranch * (float)roomDesc.branchDist;
+		iBranch = fBranch * (float)this->roomDesc.branchDist;
 		iBranch += gridMid;
 
-		for (uint32_t j = 0; j < roomDesc.branchDepth; j++)
+		for (uint32_t j = 0; j < this->roomDesc.branchDepth; j++)
 		{
-			this->drawCircle(iBranch, roomDesc.radius, Tile::Unused, Tile::OneXOne);
+			this->drawCircle(iBranch, this->roomDesc.radius, Tile::Unused, Tile::OneXOne);
 			
-			if (roomDesc.maxAngle != 0)
+			if (this->roomDesc.maxAngle != 0)
 			{
-				const float rotAngle = float((int)this->random.rand() % (int)roomDesc.maxAngle - (int)roomDesc.maxAngle / 2);
+				const float rotAngle = float((int)this->random.rand() % (int)this->roomDesc.maxAngle - (int)this->roomDesc.maxAngle / 2);
 				fBranch = glm::rotate(fBranch, float(rotAngle * (M_PI / 180.f)));
 			}
-			iBranch += fBranch * (float)roomDesc.branchDist;
+			iBranch += fBranch * (float)this->roomDesc.branchDist;
 		}
 	}
 
@@ -139,7 +139,7 @@ void RoomGenerator::setBigTiles()
 	// First part of loops is for 2x2, second part is for 1x2/2x1
 	// Steps: Try finding a placeable position "MAX_SEARCH" times. 
 	// if position found, stop search and throw die
-	for (uint32_t i = 0; i < roomDesc.maxTwoXTwo + roomDesc.maxOneXTwo; i++)
+	for (uint32_t i = 0; i < this->roomDesc.maxTwoXTwo + this->roomDesc.maxOneXTwo; i++)
 	{
 		searchCounter = 0;
 
@@ -149,12 +149,12 @@ void RoomGenerator::setBigTiles()
 			pos.x = (int)this->random.rand() % this->size.x + this->minMaxPos[RIGHT_P].x;
 			pos.y = (int)this->random.rand() % this->size.y + this->minMaxPos[LOWER_P].y;
 			
-			if (i < roomDesc.maxTwoXTwo)
+			if (i < this->roomDesc.maxTwoXTwo)
 			{
 				if (this->canPlaceTwoXTwo(pos))
 				{
 					searchCounter = MAX_SEARCH;
-					if (this->random.rand() % 100 < roomDesc.twoXTwoChance)
+					if (this->random.rand() % 100 < this->roomDesc.twoXTwoChance)
 					{
 						this->placeTwoXTwo(pos);
 					}
@@ -166,7 +166,7 @@ void RoomGenerator::setBigTiles()
 				if (this->canPlaceOneXTwo(pos, vertical))
 				{
 					searchCounter = MAX_SEARCH;
-					if (this->random.rand() % 100 < roomDesc.oneXTwoChance)
+					if (this->random.rand() % 100 < this->roomDesc.oneXTwoChance)
 					{
 						this->placeOneXTwo(pos, vertical);
 					}
@@ -174,7 +174,7 @@ void RoomGenerator::setBigTiles()
 				else if (this->canPlaceOneXTwo(pos, !vertical))
 				{
 					searchCounter = MAX_SEARCH;
-					if (this->random.rand() % 100 < roomDesc.oneXTwoChance)
+					if (this->random.rand() % 100 < this->roomDesc.oneXTwoChance)
 					{
 						this->placeOneXTwo(pos, !vertical);
 					}
@@ -233,7 +233,7 @@ void RoomGenerator::findAITiles(bool* doors)
 	{
 		if (doors[i])
 		{
-			drawCircle(exitTilesPos[i] + OFFSETS[i] * -3, 3, Tile::AI, Tile::OneXOne);
+			this->drawCircle(exitTilesPos[i] + OFFSETS[i] * -3, 3, Tile::AI, Tile::OneXOne);
 		}
 	}
 }
@@ -253,10 +253,10 @@ void RoomGenerator::setExits(bool* doors)
 
 	const glm::ivec2 offsets[4] =
 	{
-		{0, roomDesc.radius / 2},
-		{0, roomDesc.radius / 2},
-		{roomDesc.radius / 2, 0},
-		{roomDesc.radius / 2, 0}
+		{0, this->roomDesc.radius / 2},
+		{0, this->roomDesc.radius / 2},
+		{this->roomDesc.radius / 2, 0},
+		{this->roomDesc.radius / 2, 0}
 	};
 
 	const glm::ivec2 dirs[4] =
@@ -278,10 +278,10 @@ void RoomGenerator::setExits(bool* doors)
 			const int length = i <= 1 ? std::abs(this->middle.x - doorsPos[i].x) : std::abs(this->middle.y - doorsPos[i].y);
 			for (int j = 0; j < length; j++)
 			{
-				this->drawCircle(doorsPos[i] + -dirs[i] * j, roomDesc.radius, Tile::Unused, Tile::OneXOne);
+				this->drawCircle(doorsPos[i] + -dirs[i] * j, this->roomDesc.radius, Tile::Unused, Tile::OneXOne);
 			}
 
-			doorsPos[i] += dirs[i] * (int)roomDesc.radius;
+			doorsPos[i] += dirs[i] * (int)this->roomDesc.radius;
 
 			if (this->onEdge(doorsPos[i]))
 			{
@@ -488,7 +488,7 @@ bool RoomGenerator::canPlaceOneXTwo(const glm::ivec2& pos, bool vertical)
 	}
 
 	glm::ivec2 curPos(0);
-	const int thicc = (int)roomDesc.bigTileMinDist;
+	const int thicc = (int)this->roomDesc.bigTileMinDist;
 	for (curPos.x = pos.x - thicc; curPos.x <= (pos.x + (int)!vertical + thicc); curPos.x++)
 	{
 		for (curPos.y = pos.y - thicc; curPos.y <= (pos.y + (int)vertical + thicc); curPos.y++)
@@ -522,7 +522,7 @@ bool RoomGenerator::canPlaceTwoXTwo(const glm::ivec2& pos)
 	}
 
 	glm::ivec2 curPos(0);
-	const int thicc = (int)roomDesc.bigTileMinDist;
+	const int thicc = (int)this->roomDesc.bigTileMinDist;
 	for (curPos.x = pos.x - thicc; curPos.x <= (pos.x + 1 + thicc); curPos.x++)
 	{
 		for (curPos.y = pos.y - thicc; curPos.y <= (pos.y + 1 + thicc); curPos.y++)
