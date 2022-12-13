@@ -888,15 +888,7 @@ const std::vector<TileInfo>& RoomHandler::getFreeTileInfos()
 
 const RoomHandler::Room& RoomHandler::getExitRoom() const
 {
-	for (const RoomHandler::Room& room : this->rooms)
-	{
-		if (room.type == RoomData::Type::EXIT_ROOM)
-		{
-			return room;
-		}
-	}
-
-	return this->rooms[0];
+	return this->rooms[this->portalRoomIndex];
 }
 
 bool RoomHandler::isPortalRoomDone() const
