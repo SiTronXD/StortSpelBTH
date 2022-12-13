@@ -76,7 +76,7 @@ void MainMenu::init()
 
 	this->settingsBackgroundId = this->getResourceManager()->addTexture("assets/textures/UI/settings.png");
 	this->howToPlayBackgroundId = this->getResourceManager()->addTexture("assets/textures/UI/howToPlay.png");
-	this->buttonTexture = this->getResourceManager()->addTexture("assets/textures/UI/button.png");
+	this->buttonTexture = this->getResourceManager()->addTexture("assets/textures/UI/button.jpg");
 	this->buttonSound = this->getResourceManager()->addSound("assets/Sounds/buttonClick.ogg");
 	this->qrCodeID = this->getResourceManager()->addTexture("assets/textures/UI/Presumed Dead QR.png");
 

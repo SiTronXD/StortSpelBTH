@@ -90,8 +90,8 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan,PhysicsEngine*
 		this->tileFloorMeshId = (int)resourceMan->addMesh("assets/models/Tiles/Floor.obj");
 		this->lampMeshId = (int)resourceMan->addMesh("assets/models/Tiles/OneXTwo/lamp.obj");
 
-		this->lampDiffuseId = (int)resourceMan->addTexture("assets/textures/lampTex.png");
-		this->lampGlowId = (int)resourceMan->addTexture("assets/textures/Perk_HpTex.png");
+		this->lampDiffuseId = (int)resourceMan->addTexture("assets/textures/lampTex.jpg");
+		this->lampGlowId = (int)resourceMan->addTexture("assets/textures/Perk_HpTex.jpg");
 	}
 }
 

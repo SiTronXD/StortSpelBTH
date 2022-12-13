@@ -585,7 +585,7 @@ BTStatus TankBT::GroundHump(Entity entityID)
 		}
 		else
 		{
-			getTheScene()->blendToAnimation(entityID, "GroundHump", "", 0.18f, 1.09f);
+			getTheScene()->blendToAnimation(entityID, "GroundHump", "", 0.18f, 1.107f);
 		}
 	}
 

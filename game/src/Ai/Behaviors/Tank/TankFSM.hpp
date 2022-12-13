@@ -57,6 +57,7 @@ struct TankComponent
 	}
 
 	//Ints
+	int currentLevel				= 0;
     int FULL_HEALTH					= 500;  
     int life						= FULL_HEALTH;
 	int friendHealthRegen			= 15;
