@@ -222,6 +222,11 @@ void LobbyScene::update()
     // Start game
     if (this->getNetworkHandler()->getStatus() == ServerStatus::RUNNING)
     {
+        // REMOVE THIS LATER
+        GameSceneLevel gameshizz;
+        gameshizz.level = 3;
+        gameshizz.hp = 100;
+        // REMOVE THIS LATER
         this->switchScene(
             new GameScene(), "scripts/gamescene.lua"
         );
