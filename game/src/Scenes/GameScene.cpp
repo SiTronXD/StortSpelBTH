@@ -335,7 +335,7 @@ void GameScene::update()
         if (this->roomHandler.playerNewRoom(this->playerID))
         {
             this->newRoomFrame = true;
-            this->timeWhenEnteredRoom = Time::getTimeSinceStart();
+            this->timeWhenEnteredRoom = (uint32_t)Time::getTimeSinceStart();
             this->safetyCleanDone = false;
 
             this->spawnHandler.spawnEnemiesIntoRoom(this->currentLevel.level);
@@ -711,19 +711,24 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
         
         if (this->hasComponents<Orb>(other)) 
         {
-            auto& orb = this->getComponent<Orb>(other);
-            HealthComp& playerHealth = this->getComponent<HealthComp>(player);
-            playerHealth.health -=
-                orb.orbPower->damage;
-            playerHealth.srcDmgEntity = other;
-            orb.onCollision(other, this->getSceneHandler());
+            if(this->isActive(other))
+            {
+                auto& orb = this->getComponent<Orb>(other);
+                HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+                playerHealth.health -=
+                    orb.orbPower->damage;
+                playerHealth.srcDmgEntity = other;
+                orb.onCollision(other, this->getSceneHandler());
+            }
         }
 	}
     else 
     { // Collision between two things that isnt player
         
-        if((this->hasComponents<Orb>(e1) || this->hasComponents<Orb>(e2))&&
-            !(this->hasComponents<LichComponent>(e1) || this->hasComponents<LichComponent>(e2)))
+        if((this->hasComponents<Orb>(e1)                || this->hasComponents<Orb>(e2))&&
+            !(this->hasComponents<LichComponent>(e1)    || this->hasComponents<LichComponent>(e2))&&
+            !(this->hasComponents<RockFenceComp>(e1)    || this->hasComponents<RockFenceComp>(e2))&&
+            !(this->hasComponents<Perks>(e1)            || this->hasComponents<Perks>(e2)))
         {
             Entity collidingOrb = this->hasComponents<Orb>(e1) ? e1 : e2; 
             
@@ -852,12 +857,15 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
     }
     else if (this->hasComponents<Orb>(other)) 
     {
-        auto& orb = this->getComponent<Orb>(other);
-        HealthComp& playerHealth = this->getComponent<HealthComp>(player);
-        playerHealth.health -=
-            orb.orbPower->damage;
-        playerHealth.srcDmgEntity = other;
-        orb.onCollision(other, this->getSceneHandler());
+        if(this->isActive(other))
+        {
+            auto& orb = this->getComponent<Orb>(other);
+            HealthComp& playerHealth = this->getComponent<HealthComp>(player);
+            playerHealth.health -=
+                orb.orbPower->damage;
+            playerHealth.srcDmgEntity = other;
+            orb.onCollision(other, this->getSceneHandler());
+        }
     }
   }
   else 
@@ -865,6 +873,7 @@ void GameScene::onCollisionStay(Entity e1, Entity e2)
     
     if(this->hasComponents<Orb>(e1) || this->hasComponents<Orb>(e2))
     {
+
         Entity collidingOrb = this->hasComponents<Orb>(e1) ? e1 : e2; 
         
         auto& orb = this->getComponent<Orb>(collidingOrb);        
@@ -935,7 +944,7 @@ void GameScene::imguiUpdate()
     getScriptHandler()->getGlobal(playerID, playerString);
     auto& playerHealthComp = getComponent<HealthComp>(playerID);
     if(ImGui::Button("INVINCIBLE Player")){
-        playerHealthComp.health = INT_MAX;
+        playerHealthComp.health = 9999999999.9f;
     }
     if(ImGui::Button("Kill Player")){
         playerHealthComp.health = 0; 

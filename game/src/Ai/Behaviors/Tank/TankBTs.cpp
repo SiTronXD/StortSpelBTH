@@ -133,15 +133,6 @@ void TankBT::groundHumpShortcut(Entity entityID)
 	updateCanBeHit(entityID);
 }
 
-void TankBT::drawRaySimple(Ray& ray, float dist, glm::vec3 color)
-{
-	//Draw ray
-	BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
-	ray.pos,
-	ray.pos + ray.dir * dist,
-	glm::vec3(1.0f, 0.0f, 0.0f));
-}
-
 bool TankBT::rayChecking(Entity entityID)
 {
 	bool ret = true;
@@ -164,19 +155,19 @@ bool TankBT::rayChecking(Entity entityID)
 	glm::vec3 to = entityTransform.position;
 	float maxDist = glm::length(to - from);
 	glm::vec3 dir = safeNormalize(from - to);
-	glm::vec3 offset = entityTransform.right() * (entityCollider.radius +1.0f);
+	glm::vec3 offset = entityTransform.right() * (entityCollider.extents.x);
 	Ray rayToPlayer{from, -dir};  
 	Ray rayToPlayer_right{from + offset, -dir};    
 	Ray rayToPlayer_left{from - offset, -dir};    
 	Ray rayRight{to, entityTransform.right()};    
 	Ray rayLeft{to, -entityTransform.right()};    
-	float left_right_maxDist = entityCollider.radius + 3.0f;
+	//float left_right_maxDist = entityCollider.radius + 3.0f;
     RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, maxDist);
     RayPayload rp1 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_right, maxDist);
     RayPayload rp2 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_left, maxDist);
-	//drawRaySimple(rayToPlayer, maxDist);
-	//drawRaySimple(rayToPlayer_right, maxDist);
-	//drawRaySimple(rayToPlayer_left, maxDist);
+	/*drawRaySimple(BehaviorTree::sceneHandler, rayToPlayer,			maxDist);
+	drawRaySimple(BehaviorTree::sceneHandler, rayToPlayer_right,	maxDist);
+	drawRaySimple(BehaviorTree::sceneHandler, rayToPlayer_left,		maxDist);*/
 	if(rp.hit || rp1.hit || rp2.hit)
 	{
 		bool one = (rp.entity != -1 && 
@@ -215,7 +206,7 @@ void TankBT::giveFriendsHealth(Entity entityID)
 		    {
 				SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(f.first);
 				swarmComp.shieldedByTank = true;
-				int toAdd = tankComp.friendHealthRegen;
+				float toAdd = tankComp.friendHealthRegen;
 				if((swarmComp.life + toAdd) > swarmComp.FULL_HEALTH)
 				{
 					swarmComp.life = swarmComp.FULL_HEALTH;
@@ -230,7 +221,7 @@ void TankBT::giveFriendsHealth(Entity entityID)
 		    {
 				LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(f.first);
 		        lichComp.shieldedByTank = true;
-				int toAdd = tankComp.friendHealthRegen;
+				float toAdd = tankComp.friendHealthRegen;
 				if((lichComp.life + toAdd) > lichComp.FULL_HEALTH)
 				{
 					lichComp.life = lichComp.FULL_HEALTH;
@@ -679,7 +670,7 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	}
 
 	//Tick down charge
-	if(/*!tankComp.hasRunTarget && */(tankComp.chargeTimer > 0.0f || !rotationDone(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f)))
+	if(!tankComp.hasRunTarget && (tankComp.chargeTimer > 0.0f || !rotationDone(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f)))
 	{
 		rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
 		tankComp.chargeTimer -= get_dt();

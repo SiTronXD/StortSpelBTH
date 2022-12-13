@@ -203,7 +203,7 @@ void LichBT::givePointsForPlayerHealth(Entity entityID, float& l_points, float& 
 {
     int playerID = getPlayerID(entityID);
     if(playerID == -1){return;}
-    int playerHealth = 0;
+    float playerHealth = 0.0f;
     HealthComp& playerHealthComp = getTheScene()->getComponent<HealthComp>(playerID);
     playerHealth = playerHealthComp.health;
 
@@ -583,7 +583,7 @@ BTStatus LichBT::pickBestStrategy(Entity entityID)
 
     int playerID                = getPlayerID(entityID);
     if(playerID == -1){return ret;}
-    int playerHealth            = 0;
+    float playerHealth            = 0.0f;
 
     //singleplayer
     HealthComp& playerHealthComp        = getTheScene()->getComponent<HealthComp>(playerID);
@@ -812,7 +812,7 @@ BTStatus LichBT::attack(Entity entityID)
             }
 
             lichComp.hasBegunAttackAnim = false;
-            orb.timeAtCast = Time::getTimeSinceStart();
+            orb.timeAtCast = (int)Time::getTimeSinceStart();
         }
 
         //Remove current strat
@@ -831,7 +831,8 @@ BTStatus LichBT::selfHeal(Entity entityID)
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     if(lichComp.life < lichComp.FULL_HEALTH)
     {
-
+        //Self heal particles
+        /*
         Scene* scene = getTheScene();
         NetworkScene* s = dynamic_cast<NetworkScene*>(sceneHandler->getScene());
         if (s == nullptr)
@@ -849,7 +850,7 @@ BTStatus LichBT::selfHeal(Entity entityID)
         {
             s->addEvent({(int)GameEvent::PLAY_PARTICLE, (int)ParticleTypes::LICH_HEAL, (int)entityID});
 		
-        }
+        }*/
         lichComp.life_float += get_dt() * lichComp.healthRegenSpeed;
         if(lichComp.life_float > 1.0f)
         {

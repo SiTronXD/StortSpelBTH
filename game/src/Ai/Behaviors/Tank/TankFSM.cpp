@@ -113,9 +113,13 @@ void TankFSM::updateHump(Entity entityID, uint32_t what)
 
 void TankFSM::updateHumps(Entity entityID)
 {
+    TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+    if(tankComp.life <= 0.0f)
+    {
+        return;
+    }
     for(auto p: getAllPlayerIDs(entityID))
     {
-        TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	    Transform& playerTrans = getTheScene()->getComponent<Transform>(p);
 	    Collider& playerCol = getTheScene()->getComponent<Collider>(p);	
 	    Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
@@ -123,6 +127,8 @@ void TankFSM::updateHumps(Entity entityID)
 
         for(auto& h: tankComp.humps)
 	    {
+            
+
 	    	h.second += tankComp.humpShockwaveSpeed * get_dt();
 
 	    	updateHump(entityID, h.first);
