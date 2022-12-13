@@ -197,6 +197,17 @@ void GameScene::init()
 
 void GameScene::start()
 {
+    //FOR TRAILER
+    this->trailerCamera = this->createEntity();
+    this->setComponent<Camera>(this->trailerCamera);
+    this->getComponent<Camera>(this->trailerCamera).farPlane = 20000;
+    this->getComponent<Camera>(this->trailerCamera).fov = 60;
+    this->setScriptComponent(this->trailerCamera, "scripts/TrailerCameraMovement.lua");
+    //this->getResourceManager()->addMesh("assets/vengine_assets/models/box.obj");
+    this->setComponent<MeshComponent>(trailerCamera);
+    this->getComponent<Transform>(trailerCamera).position.y = 5;
+    lastCamera = this->getMainCameraID();
+
     this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, "playerID");
 
     this->networkHandler = dynamic_cast<NetworkHandlerGame*>(this->getNetworkHandler());
@@ -291,26 +302,32 @@ void GameScene::start()
 
 void GameScene::update()
 {
+    if (Input::isKeyPressed(Keys::C))
+    {
+        this->setMainCamera(((int)this->getMainCameraID()) == trailerCamera ? lastCamera : trailerCamera);
+
+    }
     if (++this->musicCounter == 20)
     {
         this->getAudioHandler()->playMusic();
     }
 
     // Level text
-    if (this->levelTimer < 4.0f)
-    {
-        this->getUIRenderer()->renderString(levelString, glm::vec2(0.0f, 50.0f), glm::vec2(100.0f), 0.0f, StringAlignment::CENTER,
-            glm::vec4(1.0f, 1.0f, 1.0f, sin(0.5f + this->levelTimer * 0.75f)));
-        this->levelTimer += Time::getDT();
-    }
-
-    // Portal text
-    if (this->portalTimer < 8.0f)
-    {
-        this->getUIRenderer()->renderString("portal has been activated", glm::vec2(0.0f, 50.0f), glm::vec2(75.0f), 0.0f, StringAlignment::CENTER,
-            glm::vec4(1.0f, 1.0f, 1.0f, sin(this->portalTimer * 0.5f)));
-        this->portalTimer += Time::getDT();
-    }
+    //only disabled in trailer
+    //if (this->levelTimer < 4.0f)
+    //{
+    //    this->getUIRenderer()->renderString(levelString, glm::vec2(0.0f, 50.0f), glm::vec2(100.0f), 0.0f, StringAlignment::CENTER,
+    //        glm::vec4(1.0f, 1.0f, 1.0f, sin(0.5f + this->levelTimer * 0.75f)));
+    //    this->levelTimer += Time::getDT();
+    //}
+    //
+    //// Portal text
+    //if (this->portalTimer < 8.0f)
+    //{
+    //    this->getUIRenderer()->renderString("portal has been activated", glm::vec2(0.0f, 50.0f), glm::vec2(75.0f), 0.0f, StringAlignment::CENTER,
+    //        glm::vec4(1.0f, 1.0f, 1.0f, sin(this->portalTimer * 0.5f)));
+    //    this->portalTimer += Time::getDT();
+    //}
 
     // Ghost overlay
     if (this->isGhost && this->ghostTransitionTimer >= 1.0f || this->hasRespawned)
@@ -529,26 +546,27 @@ void GameScene::update()
         this->fadeTimer += Time::getDT();
     }
 
-    Combat& playerCombat = this->getComponent<Combat>(this->playerID);
-    this->getUIRenderer()->setTexture(
-        abilityTextures[playerCombat.ability.abilityType]
-    );
-    this->getUIRenderer()->renderTexture(
-        glm::vec2(-875.f, -455.f), glm::vec2(113.0f)
-    );
+    //Combat& playerCombat = this->getComponent<Combat>(this->playerID);
+    //this->getUIRenderer()->setTexture(
+    //    abilityTextures[playerCombat.ability.abilityType]
+    //);
+    //this->getUIRenderer()->renderTexture(
+    //    glm::vec2(-875.f, -455.f), glm::vec2(113.0f)
+    //);
 
-    float perkXPos = -720.f;
-    float perkYPos = -500.f;
-    for (size_t i = 0; i < 4; i++)
-    {
-        this->getUIRenderer()->setTexture(
-            this->perkTextures[playerCombat.perks[i].perkType]
-        );
-        this->getUIRenderer()->renderTexture(
-            glm::vec2(-perkXPos - 142.f + i * 83.f, perkYPos + 25.f),
-            glm::vec2(76.0f)
-        );
-    }
+    //float perkXPos = -720.f;
+    //float perkYPos = -500.f;
+    //for (size_t i = 0; i < 4; i++)
+    //{
+    //    this->getUIRenderer()->setTexture(
+    //        this->perkTextures[playerCombat.perks[i].perkType]
+    //    );
+    //    this->getUIRenderer()->renderTexture(
+    //        glm::vec2(-perkXPos - 142.f + i * 83.f, perkYPos + 25.f),
+    //        glm::vec2(76.0f)
+    //    );
+    //}
+     /*
     // Render Level
     if (this->levelTimer >= 4.0f)
     {
@@ -574,7 +592,7 @@ void GameScene::update()
         glm::vec2(xPos - (1.0f - hpPercent) * xSize * 0.5f, yPos + 20.f),
         glm::vec2(xSize * hpPercent, ySize)
     );
-
+    */
     // Paused
     if (Input::isKeyPressed(Keys::ESC))
     {

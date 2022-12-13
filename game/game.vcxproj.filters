@@ -93,5 +93,6 @@
     <None Include="src\Scripts\Prefab.lua" />
     <None Include="src\Scripts\Prefabs.lua" />
     <None Include="scripts\moveRock.lua" />
+    <None Include="scripts\TrailerCameraMovement.lua" />
   </ItemGroup>
 </Project>
