@@ -305,7 +305,11 @@ void GameScene::update()
     if (Input::isKeyPressed(Keys::C))
     {
         this->setMainCamera(((int)this->getMainCameraID()) == trailerCamera ? lastCamera : trailerCamera);
-
+        this->getMainCamera()->fov = 60;
+    }
+    if (Input::isKeyPressed(Keys::V))
+    {
+        this->getComponent<Transform>(trailerCamera).position = this->getComponent<Transform>(playerID).position;    
     }
     if (++this->musicCounter == 20)
     {
