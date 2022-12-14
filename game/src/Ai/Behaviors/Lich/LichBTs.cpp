@@ -718,14 +718,14 @@ BTStatus LichBT::attack(Entity entityID)
                 {
                     orbTrans.position = lichTrans.position + glm::vec3(0.0f, LichComponent::handPositionElite, 0.0f) + (lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
                     const glm::vec3 aimAtPlayerPos {playerTrans.position.x, playerTrans.position.y+LichComponent::aimAtPlayerYOffset, playerTrans.position.z};               
-                    const glm::vec3 aimFromLichPos {lichTrans.position.x, lichTrans.position.y+LichComponent::handPositionElite, lichTrans.position.z};               
+                    const glm::vec3 aimFromLichPos = orbTrans.position;//{lichTrans.position.x, lichTrans.position.y+LichComponent::handPositionElite, lichTrans.position.z};               
                     spellVector = safeNormalize(aimAtPlayerPos - aimFromLichPos);
                 }
                 else
                 {
                     orbTrans.position = lichTrans.position + glm::vec3(0.0f, LichComponent::handPosition, 0.0f) + (lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
                     const glm::vec3 aimAtPlayerPos {playerTrans.position.x, playerTrans.position.y+LichComponent::aimAtPlayerYOffset, playerTrans.position.z};               
-                    const glm::vec3 aimFromLichPos {lichTrans.position.x, lichTrans.position.y+LichComponent::handPosition, lichTrans.position.z};               
+                    const glm::vec3 aimFromLichPos =orbTrans.position;//{lichTrans.position.x, lichTrans.position.y+LichComponent::handPosition, lichTrans.position.z};               
                     spellVector = safeNormalize(aimAtPlayerPos - aimFromLichPos);
                 }
                 
@@ -782,14 +782,14 @@ BTStatus LichBT::attack(Entity entityID)
                 {
                     initialOrbPos = lichTrans.position + glm::vec3(0.0f, LichComponent::handPositionElite, 0.0f) + (lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
                     const glm::vec3 aimAtPlayerPos {playerTrans.position.x, playerTrans.position.y+LichComponent::aimAtPlayerYOffset, playerTrans.position.z};               
-                    const glm::vec3 aimFromLichPos {lichTrans.position.x, lichTrans.position.y+LichComponent::handPositionElite, lichTrans.position.z};               
+                    const glm::vec3 aimFromLichPos = initialOrbPos;//{lichTrans.position.x, lichTrans.position.y+LichComponent::handPositionElite, lichTrans.position.z};               
                     spellVector = safeNormalize(aimAtPlayerPos - aimFromLichPos);
                 }
                 else
                 {
                     initialOrbPos = lichTrans.position + glm::vec3(0.0f, LichComponent::handPosition, 0.0f) + (lichTrans.forward() * (float)(LichComponent::colliderRadius + LichComponent::orbRadius + LichComponent::orbSpawnDistFrom));
                     const glm::vec3 aimAtPlayerPos {playerTrans.position.x, playerTrans.position.y+LichComponent::aimAtPlayerYOffset, playerTrans.position.z};               
-                    const glm::vec3 aimFromLichPos {lichTrans.position.x, lichTrans.position.y+LichComponent::handPosition, lichTrans.position.z};               
+                    const glm::vec3 aimFromLichPos = initialOrbPos;//{lichTrans.position.x, lichTrans.position.y+LichComponent::handPosition, lichTrans.position.z};               
                     spellVector = safeNormalize(aimAtPlayerPos - aimFromLichPos);
                 }
                 
