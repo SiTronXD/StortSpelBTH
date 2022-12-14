@@ -713,9 +713,8 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
                 int num = this->networkHandler->checkOtherPlayersCollision(this->getComponent<Transform>(other), this->getComponent<Collider>(other)) + 1;
                 this->getUIRenderer()->renderString(std::to_string(num) + "/" + std::to_string(this->networkHandler->getPlayers().size() + 1),
                     portalPos + glm::vec3(0.0f, 20.0f, 0.0f), glm::vec2(500.0f), 0.0f, StringAlignment::CENTER, glm::vec4(1.0f, 1.0f, 1.0f,
-                    sin(std::min(this->inPortalTimer, glm::half_pi<float>()) * 1.0f)));
+                    sin(std::min(this->inPortalTimer, glm::half_pi<float>()))));
                 this->inPortalTimer += Time::getDT();
-                Log::write("Timer: " + std::to_string(inPortalTimer));
             }
         }
         
