@@ -293,7 +293,12 @@ function script:update(dt)
             self.currentAnimation = self.activeAnimation.run
         elseif self.currentAnimation ~= self.activeAnimation.Sprint and self.isSprinting
         then
-            scene.setAnimationTimeScale(self.ID, self.sprintAnimTime, "LowerBody")
+            if scene.getAnimationStatus(self.ID, "LowerBody").animationName ~= "run"
+            then
+                scene.blendToAnimation(self.ID, "run", "LowerBody", 0.3, self.sprintAnimTime)
+            else
+                scene.setAnimationTimeScale(self.ID, self.sprintAnimTime, "LowerBody")
+            end
             self.currentAnimation = self.activeAnimation.sprint
         end
     elseif self.isAttacking and curMoveSum < 0.1 and self.currentAnimation ~= self.activeAnimation.idle
