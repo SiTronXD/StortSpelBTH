@@ -932,6 +932,12 @@ const RoomHandler::Room& RoomHandler::getExitRoom() const
 	return this->rooms[this->portalRoomIndex];
 }
 
+glm::vec3 RoomHandler::getPortalPosition() const
+{
+	return this->rooms[this->portalRoomIndex].position + 
+		glm::vec3(TILE_WIDTH * 0.5f, 0.f, TILE_WIDTH * 0.5f);
+}
+
 bool RoomHandler::isPortalRoomDone() const
 {
 	return this->rooms[this->portalRoomIndex].finished;

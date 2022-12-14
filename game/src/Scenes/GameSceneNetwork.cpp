@@ -402,7 +402,7 @@ void GameSceneNetwork::createPortal()
 
   portal = this->createEntity();
   this->getComponent<Transform>(portal).position =
-      this->roomHandler.getExitRoom().position;
+      this->roomHandler.getPortalPosition();
   this->setComponent<Collider>(
       portal, Collider::createBox(portalTriggerDims, glm::vec3(0, 0, 0), true)
   );

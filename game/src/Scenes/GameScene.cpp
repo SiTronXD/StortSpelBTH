@@ -982,7 +982,7 @@ void GameScene::createPortal()
 
     portal = this->createEntity();
     Transform& portalTransform = this->getComponent<Transform>(portal);
-    portalTransform.position = this->roomHandler.getExitRoom().position;
+    portalTransform.position = this->roomHandler.getPortalPosition();
     this->setComponent<Collider>(
         portal, Collider::createSphere(18.f, glm::vec3(0.f, 15.f, 0.f), true)
         );

@@ -230,6 +230,7 @@ public:
 	const std::vector<glm::vec3>& getFreeTiles();
 	const std::vector<TileInfo>& getFreeTileInfos();
 	const Room& getExitRoom() const;
+	glm::vec3 getPortalPosition() const;
 	bool isPortalRoomDone() const;
 	int getNumRooms() const;
 	bool inExitRoom() const;
