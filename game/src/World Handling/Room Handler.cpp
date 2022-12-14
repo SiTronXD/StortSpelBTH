@@ -148,6 +148,7 @@ void RoomHandler::multiplayerToggleCurrentDoors(int nextIndex)
 	this->activeIndex = nextIndex;
 
 	this->placeDoorLamps();
+	this->togglePaths(this->oldIndex, false);
 	this->togglePaths(this->activeIndex, true);
 	this->toggleDoors(this->activeIndex, true);
 }
@@ -172,46 +173,33 @@ void RoomHandler::mutliplayerCloseDoors()
 
 void RoomHandler::serverActivateCurrentRoom()
 {
-	Room& room = this->rooms[this->activeIndex];
-	this->activateRoom(this->activeIndex);
-	for (int i = 0; i < (int)this->rooms.size(); i++)
-	{
-		if (i != this->activeIndex && i != room.connectingIndex[0] && i != room.connectingIndex[1] && 
-			i != room.connectingIndex[2] && i != room.connectingIndex[3])
-		{
-			this->deactivateRoom(i);
-		}
-		else
-		{
-			this->activateRoom(i);
-		}
+	//this->togglePaths(this->oldIndex, false);
 
+	Room& room = this->rooms[this->activeIndex];
+
+	this->activateRoom(this->activeIndex);
+	this->togglePaths(this->activeIndex, true);
+	this->toggleDoors(this->oldIndex, false);
+
+	for (int i = 0; i < 4; i++)
+	{
+		if (room.connectingIndex[i] != -1)
+		{
+			this->activateRoom(room.connectingIndex[i]);
+		}
 	}
 }
 
-void RoomHandler::serverToggleCurrentPaths(bool active)
+void RoomHandler::serverDeactivateSurrounding()
 {
-	Room& curRoom = this->rooms[this->activeIndex];
-	this->togglePaths(this->activeIndex, active);
-	if (!active)
+	Room& room = this->rooms[this->activeIndex];
+	this->toggleDoors(this->activeIndex, false);
+	this->togglePaths(this->activeIndex, false);
+	for (int i = 0; i < 4; i++)
 	{
-		this->forceToggleDoors(this->activeIndex, false);
-		for (int i = 0; i < 4; i++)
+		if (room.connectingIndex[i] != -1)
 		{
-			if (curRoom.connectingIndex[i] != -1)
-			{
-				this->deactivateRoom(curRoom.connectingIndex[i]);
-			}
-		}
-	}
-	else
-	{
-		for (int i = 0; i < 4; i++)
-		{
-			if (curRoom.connectingIndex[i] != -1)
-			{
-				this->forceToggleDoors(curRoom.connectingIndex[i], false);
-			}
+			this->deactivateRoom(room.connectingIndex[i]);
 		}
 	}
 }
@@ -226,17 +214,32 @@ void RoomHandler::roomCompleted()
 		this->scene->setScriptComponent(this->rooms[this->activeIndex].rock, "scripts/moveRock.lua");
 	}
 
-	this->toggleDoors(this->activeIndex, true);
-	if (this->oldIndex != -1)
+	if (this->useMeshes)
 	{
-		this->toggleDoors(this->oldIndex, true);
-	}
-
-	for (int i = 0; i < 4; i++)
-	{
-		if (curRoom.connectingIndex[i] != -1)
+		this->toggleDoors(this->activeIndex, true);
+		if (this->oldIndex != -1)
 		{
-			this->activateRoom(curRoom.connectingIndex[i]);
+			this->toggleDoors(this->oldIndex, true);
+		}
+
+		for (int i = 0; i < 4; i++)
+		{
+			if (curRoom.connectingIndex[i] != -1)
+			{
+				this->activateRoom(curRoom.connectingIndex[i]);
+			}
+		}
+	}
+	else
+	{
+		this->deactivateRoom(this->activeIndex);
+		this->togglePaths(this->activeIndex, false);
+		for (int i = 0; i < 4; i++)
+		{
+			if (curRoom.connectingIndex[i] != -1)
+			{
+				this->deactivateRoom(curRoom.connectingIndex[i]);
+			}
 		}
 	}
 	
@@ -777,6 +780,19 @@ void RoomHandler::generate(uint32_t seed, uint16_t level)
 					}
 				}
 			}
+		}
+	}
+	
+	// Server side
+	if (!this->useMeshes)
+	{
+		for (size_t i = 0; i < this->rooms.size(); i++)
+		{
+			this->deactivateRoom(i);
+		}
+		for (size_t i = 0; i < this->paths.size(); i++)
+		{
+			this->togglePaths(i, false);
 		}
 	}
 }

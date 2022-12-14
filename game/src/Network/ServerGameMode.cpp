@@ -69,7 +69,6 @@ void ServerGameMode::update(float dt)
 #endif
         
         roomHandler.serverActivateCurrentRoom();
-        roomHandler.serverToggleCurrentPaths(true);
         spawnHandler.spawnEnemiesIntoRoom(this->level);
 
         this->newRoomFrame = true;
@@ -82,7 +81,7 @@ void ServerGameMode::update(float dt)
         {
             addEvent({(int)GameEvent::CLOSE_NEW_DOORS});
             this->doorsClosed = true;
-            roomHandler.serverToggleCurrentPaths(false);
+            roomHandler.serverDeactivateSurrounding();
         }
     }
 
