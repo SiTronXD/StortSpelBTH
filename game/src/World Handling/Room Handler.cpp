@@ -1394,6 +1394,10 @@ Entity RoomHandler::createBorderEntity(const glm::vec2& position, bool scalePos)
 	{
         this->scene->setComponent<MeshComponent>(entity, (int)this->borderMeshIds[std::abs(int(this->random->rand())) % NUM_BORDER]);
 	}
+	else
+	{
+		this->random->rand();
+	}
 
 	return entity;
 }
