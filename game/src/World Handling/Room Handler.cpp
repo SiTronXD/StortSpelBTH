@@ -903,8 +903,8 @@ Entity RoomHandler::createFloorDecoEntity(const glm::vec2& pos, bool scalePos)
 {
 	Entity entity = scene->createEntity();
 	Transform& transform = scene->getComponent<Transform>(entity);
-	transform.position.x = pos.x * (scalePos ? TILE_WIDTH : 1.f) + float(std::abs(int(this->random->rand())) % 8 - 4);
-	transform.position.z = pos.y * (scalePos ? TILE_WIDTH : 1.f) + float(std::abs(int(this->random->rand())) % 8 - 4);
+	transform.position.x = pos.x * (scalePos ? TILE_WIDTH : 1.f) + float(std::abs(int(this->random->rand())) % 16 - 8);
+	transform.position.z = pos.y * (scalePos ? TILE_WIDTH : 1.f) + float(std::abs(int(this->random->rand())) % 16 - 8);
 	transform.rotation.y = float(std::abs(int(this->random->rand())) % 360);
 	if (this->useMeshes)
 	{
