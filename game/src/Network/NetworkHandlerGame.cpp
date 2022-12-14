@@ -1107,11 +1107,26 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 	this->playerPosLast.resize(size);
     this->currDistToStepSound.resize(size, 0);
 	this->playerPosCurrent.resize(size);
+
 	float angle = 360.0f / (size + 1);
+
+	std::vector<int> positionOrder(size + 1);
+	positionOrder[0] = this->ID;
+	for (int i = 0; i < size; i++)
+	{
+		positionOrder[i + 1] = this->otherPlayersServerId[i];
+	}
+	std::sort(positionOrder.begin(), positionOrder.end());
+
+	std::map<int, int> indices{};
+	for (int i = 0; i < size + 1; i++)
+	{
+		indices.insert(std::pair<int, int>(positionOrder[i], i));
+	}
 
 	Scene* scene = this->sceneHandler->getScene();
 	Transform& playerTrans = scene->getComponent<Transform>(this->player);
-	playerTrans.position = SMath::rotateVector(glm::vec3(0.0f, angle * (this->ID % (size + 1)), 0.0f), glm::vec3(15.0f, 12.0f, 0.0f));
+	playerTrans.position = SMath::rotateVector(glm::vec3(0.0f, angle * (indices[this->ID] % (size + 1)), 0.0f), glm::vec3(15.0f, 12.0f, 0.0f));
 	for (int i = 0; i < size; i++)
 	{
 		this->playerEntities[i] = scene->createEntity();
@@ -1126,7 +1141,7 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 
 		// Set Position
 		Transform& t = scene->getComponent<Transform>(this->playerEntities[i]);
-		t.position = SMath::rotateVector(glm::vec3(0.0f, angle * (this->otherPlayersServerId[i] % (size + 1)), 0.0f), glm::vec3(15.0f, 0.0f, 0.0f));
+		t.position = SMath::rotateVector(glm::vec3(0.0f, angle * (indices[this->otherPlayersServerId[i]] % (size + 1)), 0.0f), glm::vec3(15.0f, 0.0f, 0.0f));
 		this->playerPosLast[i] = t.position;
 		this->playerPosCurrent[i] = t.position;
 
