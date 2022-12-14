@@ -26,6 +26,24 @@ void LoadingScene::init()
 		this->getResourceManager()->addTexture("assets/textures/logo.png", {});
 	this->blackTextureIndex = 
 		this->getResourceManager()->addTexture("vengine_assets/textures/Black.jpg", {});
+
+	// Font
+	TextureSamplerSettings samplerSettings{};
+	samplerSettings.filterMode = vk::Filter::eNearest;
+	samplerSettings.unnormalizedCoordinates = VK_TRUE;
+
+	int fontTextureId = Scene::getResourceManager()->addTexture(
+		"assets/textures/UI/font.png", { samplerSettings, true });
+	Scene::getUIRenderer()->setBitmapFont(
+		{ "abcdefghij",
+		 "klmnopqrst",
+		 "uvwxyz+-.'",
+		 "0123456789",
+		 "!?,<>:()#^",
+		 "@%/       " },
+		fontTextureId,
+		glm::uvec2(50, 50)
+	);
 }
 
 void LoadingScene::start() 
@@ -42,6 +60,14 @@ void LoadingScene::update()
 	// Logo
 	this->getUIRenderer()->setTexture(this->loadingTextureIndex);
 	this->getUIRenderer()->renderTexture(glm::vec2(0.0f), glm::vec2(1921, 1079));
+
+	// Text
+	this->getUIRenderer()->renderString(
+		"loading...", 
+		glm::vec2(0.0f, -350.0f), 
+		glm::vec2(70.0f), 
+		0.0f
+	);
 
 	// Switch scene after 1 frame
 	if (this->oneFrameHasPassed)
