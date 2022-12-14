@@ -33,7 +33,7 @@ Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 
 	}
 
 	scene->setComponent<Perks>(e, perk);
-	scene->setComponent<PointLight>(e, glm::vec3(0.0f), glm::vec3(5.0f, 7.0f, 9.0f));
+	scene->setComponent<PointLight>(e, glm::vec3(0.0f, -4.f, 0.f), (glm::vec3(5.0f, 7.0f, 9.0f) * 3.f));
 
 	return e;
 }
@@ -57,7 +57,7 @@ Entity NetworkHandlerGame::spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 
 	}
 
 	scene->setComponent<Abilities>(e, type);
-	scene->setComponent<PointLight>(e, glm::vec3(0.0f), glm::vec3(7.0f, 9.0f, 5.0f));
+	scene->setComponent<PointLight>(e, glm::vec3(0.f, -7.f, 0.f), (glm::vec3(7.0f, 9.0f, 5.0f) * 3.f));
 
 	return e;
 }
