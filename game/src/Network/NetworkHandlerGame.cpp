@@ -712,7 +712,7 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 				str = i3 == 0 ? "LowerBody" : i3 == 1 ? "UpperBody" : "";
 				if (i2 == 2) // GroundHump
 				{
-					this->sceneHandler->getScene()->blendToAnimation(serverEntities.find(i0)->second, this->tankAnims[i2], str, 0.18f, 1.09f);
+					this->sceneHandler->getScene()->blendToAnimation(serverEntities.find(i0)->second, this->tankAnims[i2], str, 0.5f, 1.09f);
 				}
 				else
 				{
