@@ -14,14 +14,15 @@ void logInScene::start()
     samplerSettings.unnormalizedCoordinates = VK_TRUE;
 
     this->backgroundId =
-        this->getResourceManager()->addTexture("assets/textures/blackTex.png"
+        this->getResourceManager()->addTexture("assets/textures/blackTex.jpg"
         );
     this->buttonId =
-        this->getResourceManager()->addTexture("assets/textures/UI/button.png");
+        this->getResourceManager()->addTexture("assets/textures/UI/button.jpg");
 
     this->fontTextureId = Scene::getResourceManager()->addTexture(
         "assets/textures/UI/font.png", {samplerSettings, true}
     );
+    this->buttonSound = this->getResourceManager()->addSound("assets/Sounds/buttonClick.ogg");
 
     Scene::getUIRenderer()->setBitmapFont(
         {"abcdefghij",
@@ -57,10 +58,12 @@ void logInScene::update()
 {
     if (this->nameButton.isClicking())
     {
+        this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
         selected = &name;
     }
     else if (this->ipButton.isClicking() && !this->getNetworkHandler()->hasServer())
     {
+        this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
         selected = &ipAddress;
     }
     else if (Input::isMouseButtonPressed(Mouse::LEFT))
@@ -74,13 +77,14 @@ void logInScene::update()
     }
     else if (this->startButton.isClicking())
     {
+        this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
         this->getNetworkHandler()->createClient(name);
         if (this->getNetworkHandler()->hasServer())
         {
             if (this->getNetworkHandler()->connectClientToThis())
             {
                 std::string str = sf::IpAddress::getLocalAddress().toString();
-                this->getSceneHandler()->setScene(new LobbyScene(str.substr(str.length() - 3, 3)));
+                this->getSceneHandler()->setScene(new LobbyScene(str.substr(10)));
             }
             else
             {
@@ -103,6 +107,7 @@ void logInScene::update()
     }
     if (this->backButton.isClicking())
     {
+        this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
         this->getNetworkHandler()->deleteServer();
         this->getSceneHandler()->setScene(new MainMenu(), "scripts/MainMenu.lua");
     }

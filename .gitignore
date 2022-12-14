@@ -354,3 +354,6 @@ Tracy-release
 game/vengine_assets/*
 vengine_assets
 _vengine_assets
+CMakeFiles/cmake.check_cache
+valgrind-out.txt
+CMakeCache.txt

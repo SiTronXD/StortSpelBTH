@@ -21,7 +21,7 @@ void TankBT::updateCanBeHit(Entity entityID)
 	hitDeg = 180 - hitDeg;
 	if(tank_player_len < tankComp.peronalSpaceRadius)
 	{
-		if(getAngleBetween(tank_player_vec, -tankTrans.forward()) >= hitDeg)
+		if(getAngleBetween(tank_player_vec, tankTrans.forward()) >= hitDeg)
 		{
 			tankComp.canBeHit = true;
 		}
@@ -86,7 +86,8 @@ void TankBT::groundHumpShortcut(Entity entityID)
 	Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
 	tankComp.chargeTimer = tankComp.chargeTimerOrig;
 	tankComp.hasRunTarget = false;
-	if(glm::length(tankRb.velocity) <= 0.1f && (tankTrans.position.y - tankCol.radius) <= 1.0f)
+	bool grounded = (tankTrans.position.y - tankCol.extents.y) <= 3.0f;
+	if(glm::length(tankRb.velocity) <= 0.1f && grounded)
 	{
 		if(tankComp.groundHumpTimer <= 0)
 		{
@@ -96,7 +97,7 @@ void TankBT::groundHumpShortcut(Entity entityID)
 		        uint32_t newHump = activateHump(entityID);
 		        Transform& hTrans = getTheScene()->getComponent<Transform>(newHump);
 		        hTrans.position = getTheScene()->getComponent<Transform>(entityID).position;
-		        hTrans.position.y -= tankCol.radius - 0.5f;
+		        hTrans.position.y = 0.5f;
 		        tankComp.humps.insert({newHump, 1.0f});
 		        tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
 				
@@ -104,7 +105,12 @@ void TankBT::groundHumpShortcut(Entity entityID)
 				if(netScene)
 		        {
 		            netScene->addEvent({(int)GameEvent::DO_HUMP, (int)newHump}, {hTrans.position.x, hTrans.position.y, hTrans.position.z});
-		        }            
+					netScene->addEvent({ (int)GameEvent::PLAY_ENEMY_SOUND, entityID, 1, 1, 0 });
+		        }
+				else
+				{
+					sceneHandler->getAudioHandler()->playSound(entityID, TankComponent::s_shockwave, 30.f);
+				}
 			}
 			else
 			{
@@ -119,26 +125,15 @@ void TankBT::groundHumpShortcut(Entity entityID)
 	}
 	
 
-	int playerID = getPlayerID(entityID);
-	if(playerID == -1){return;}
-	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
+	//int playerID = getPlayerID(entityID);
+	//if(playerID == -1){return;}
+	//Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 
-
-
-	rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
+	//rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
 	updateCanBeHit(entityID);
 }
 
-void TankBT::drawRaySimple(Ray& ray, float dist, glm::vec3 color)
-{
-	//Draw ray
-	BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
-	ray.pos,
-	ray.pos + ray.dir * dist,
-	glm::vec3(1.0f, 0.0f, 0.0f));
-}
-
-bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
+bool TankBT::rayChecking(Entity entityID)
 {
 	bool ret = true;
 	bool somethingInTheWay = false;
@@ -160,85 +155,41 @@ bool TankBT::rayChecking(Entity entityID, glm::vec3& moveDir)
 	glm::vec3 to = entityTransform.position;
 	float maxDist = glm::length(to - from);
 	glm::vec3 dir = safeNormalize(from - to);
-	glm::vec3 offset = entityTransform.right() * (entityCollider.radius +1.0f);
+	glm::vec3 offset = entityTransform.right() * (entityCollider.extents.x);
 	Ray rayToPlayer{from, -dir};  
 	Ray rayToPlayer_right{from + offset, -dir};    
 	Ray rayToPlayer_left{from - offset, -dir};    
 	Ray rayRight{to, entityTransform.right()};    
 	Ray rayLeft{to, -entityTransform.right()};    
-	float left_right_maxDist = entityCollider.radius + 3.0f;
+	//float left_right_maxDist = entityCollider.radius + 3.0f;
     RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, maxDist);
     RayPayload rp1 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_right, maxDist);
     RayPayload rp2 = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer_left, maxDist);
-	//drawRaySimple(rayToPlayer, maxDist);
-	//drawRaySimple(rayToPlayer_right, maxDist);
-	//drawRaySimple(rayToPlayer_left, maxDist);
+	/*drawRaySimple(BehaviorTree::sceneHandler, rayToPlayer,			maxDist);
+	drawRaySimple(BehaviorTree::sceneHandler, rayToPlayer_right,	maxDist);
+	drawRaySimple(BehaviorTree::sceneHandler, rayToPlayer_left,		maxDist);*/
 	if(rp.hit || rp1.hit || rp2.hit)
 	{
-		
-		if((sceneHandler->getScene()->hasComponents<Collider>(rp.entity) && !getTheScene()->getComponent<Collider>(rp.entity).isTrigger && rp.entity != entityID) || 
-			(sceneHandler->getScene()->hasComponents<Collider>(rp1.entity) && !getTheScene()->getComponent<Collider>(rp1.entity).isTrigger && rp1.entity != entityID) ||
-			(sceneHandler->getScene()->hasComponents<Collider>(rp2.entity) && !getTheScene()->getComponent<Collider>(rp2.entity).isTrigger && rp2.entity != entityID))
+		bool one = (rp.entity != -1 && 
+			sceneHandler->getScene()->hasComponents<Collider>(rp.entity) && 
+			!getTheScene()->getComponent<Collider>(rp.entity).isTrigger && 
+			rp.entity != entityID &&
+			(!getTheScene()->hasComponents<SwarmComponent>(rp.entity) || !getTheScene()->hasComponents<LichComponent>(rp.entity)));
+		bool two = (rp1.entity != -1 && 
+			sceneHandler->getScene()->hasComponents<Collider>(rp1.entity) && 
+			!getTheScene()->getComponent<Collider>(rp1.entity).isTrigger &&
+			rp1.entity != entityID) &&
+			(!getTheScene()->hasComponents<SwarmComponent>(rp.entity) || !getTheScene()->hasComponents<LichComponent>(rp.entity));
+		bool three= (rp2.entity != -1 && 
+			sceneHandler->getScene()->hasComponents<Collider>(rp2.entity) && 
+			!getTheScene()->getComponent<Collider>(rp2.entity).isTrigger && rp2.entity 
+			!= entityID &&
+			(!getTheScene()->hasComponents<SwarmComponent>(rp.entity) || !getTheScene()->hasComponents<LichComponent>(rp.entity)));
+		if(one || two || three)
 		{
 			ret = false;
-			somethingInTheWay = true;
-			entityTransform.updateMatrix();
-
-			RayPayload r_right= BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayRight, left_right_maxDist);
-			RayPayload r_left = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayLeft, left_right_maxDist);
-			RayPayload r_forward = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, left_right_maxDist);
-			//drawRaySimple(rayToPlayer, left_right_maxDist);
-			//drawRaySimple(rayRight, left_right_maxDist);
-			//drawRaySimple(rayLeft, left_right_maxDist);
-
-			if(r_forward.hit && !getTheScene()->getComponent<Collider>(r_forward.entity).isTrigger)
-			{
-				canGoForward = false;
-			}
-			if(r_right.hit && !getTheScene()->getComponent<Collider>(r_right.entity).isTrigger)
-			{
-				canGoRight = false;
-				tankComp.attackGoRight = false;
-			}
-			if(r_left.hit && !getTheScene()->getComponent<Collider>(r_left.entity).isTrigger)
-			{
-				canGoLeft = false;
-				tankComp.attackGoRight = true;
-			}
-
 		}
 	}
-
-	if(somethingInTheWay)
-	{
-		ret = false;
-		dir = glm::vec3(0.0f, 0.0f, 0.0f);
-		entityTransform.updateMatrix();
-
-		if(canGoForward)
-		{
-			dir += -entityTransform.forward();
-		}
-
-		if(canGoRight && tankComp.attackGoRight)
-		{
-			dir += entityTransform.right();
-		}
-		else if(canGoLeft && !tankComp.attackGoRight)
-		{
-			dir -= entityTransform.right();
-		}
-	}
-
-	if(dir == glm::vec3(0.0f, 0.0f, 0.0f))
-	{
-		dir = -entityTransform.forward();
-	}
-	rotateTowards(entityID, playerTransform.position, tankComp.idleRotSpeed, 5.0f);
-	safeNormalize(dir);
-	dir.y = 0;
-	moveDir = dir;
-
 
 	return ret;
 }
@@ -255,7 +206,7 @@ void TankBT::giveFriendsHealth(Entity entityID)
 		    {
 				SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(f.first);
 				swarmComp.shieldedByTank = true;
-				int toAdd = tankComp.friendHealthRegen;
+				float toAdd = tankComp.friendHealthRegen;
 				if((swarmComp.life + toAdd) > swarmComp.FULL_HEALTH)
 				{
 					swarmComp.life = swarmComp.FULL_HEALTH;
@@ -270,7 +221,7 @@ void TankBT::giveFriendsHealth(Entity entityID)
 		    {
 				LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(f.first);
 		        lichComp.shieldedByTank = true;
-				int toAdd = tankComp.friendHealthRegen;
+				float toAdd = tankComp.friendHealthRegen;
 				if((lichComp.life + toAdd) > lichComp.FULL_HEALTH)
 				{
 					lichComp.life = lichComp.FULL_HEALTH;
@@ -339,7 +290,7 @@ void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 	tankTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(tankComp.firendTarget.pos.x, tankComp.firendTarget.pos.z);
 	glm::vec2 tankPos			= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	glm::vec2 curRot			= -safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	glm::vec2 curRot			= safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
 	glm::vec2 tank_to_friend	= safeNormalize(targetPos - tankPos);
 
 	float angle_between			= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
@@ -358,7 +309,7 @@ void TankBT::rotateTowardsTarget(Entity entityID, float precision)
 	tankTrans.updateMatrix();
 	targetPos			= glm::vec2(tankComp.firendTarget.pos.x, tankComp.firendTarget.pos.z);
 	tankPos				= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	curRot				= -safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	curRot				= safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
 	tank_to_friend		= safeNormalize(targetPos - tankPos);
 	angle_between		= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
 	//If angle got bigger, then change direction
@@ -383,7 +334,7 @@ void TankBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 	tankTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
 	glm::vec2 tankPos			= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	glm::vec2 curRot			= -safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	glm::vec2 curRot			= safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
 	glm::vec2 tank_to_friend	= safeNormalize(targetPos - tankPos);
 
 	float angle_between			= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
@@ -402,7 +353,7 @@ void TankBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, fl
 	tankTrans.updateMatrix();
 	targetPos			= glm::vec2(target.x, target.z);
 	tankPos				= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	curRot				= -safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	curRot				= safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
 	tank_to_friend		= safeNormalize(targetPos - tankPos);
 	angle_between		= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
 	//If angle got bigger, then change direction
@@ -426,7 +377,7 @@ bool TankBT::rotationDone(Entity entityID, glm::vec3 target, float rotSpeed, flo
 	tankTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
 	glm::vec2 tankPos			= glm::vec2(tankTrans.position.x, tankTrans.position.z);
-	glm::vec2 curRot			= -safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
+	glm::vec2 curRot			= safeNormalize(glm::vec2(tankTrans.forward().x, tankTrans.forward().z));
 	glm::vec2 tank_to_friend	= safeNormalize(targetPos - tankPos);
 
 	float angle_between			= glm::degrees(glm::acos(glm::dot(tank_to_friend, curRot)));
@@ -530,15 +481,29 @@ BTStatus TankBT::PickNewRandomTarget(Entity entityID)
 BTStatus TankBT::MoveAround(Entity entityID)
 {
 	BTStatus ret = BTStatus::Running;
-
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	if (tankComp.lowerCurrentAnim != 0) // Walk
+	{
+		tankComp.lowerCurrentAnim = 0;
+		tankComp.upperCurrentAnim = 0;
+		if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+		{
+			ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 0, 0, -1 });
+		}
+		else
+		{
+			getTheScene()->blendToAnimation(entityID, "Walk");
+		}
+	}
+
 	if(tankComp.firendTarget.id == entityID)
 	{
 		tankComp.firendTarget.id = -1;
 		return ret;
 	}
 	Transform& tankTrans	= getTheScene()->getComponent<Transform>(entityID);
-	glm::vec3 moveDir		= pathFindingManager.getDirTo(tankTrans.position, tankComp.firendTarget.pos);
+	glm::vec3 moveDir		= getDir(tankTrans.position, tankComp.firendTarget.pos);
 	moveDir = safeNormalize(moveDir);
 
 	Rigidbody& tankRb		= getTheScene()->getComponent<Rigidbody>(entityID);
@@ -546,13 +511,12 @@ BTStatus TankBT::MoveAround(Entity entityID)
 	Collider& friendCol		= getTheScene()->getComponent<Collider>(tankComp.firendTarget.id);
 
 	rotateTowardsTarget(entityID, 5.0f);
-	
 
 	float dist = glm::length(tankTrans.position - tankComp.firendTarget.pos);
 	float distToCheck = 0.0f;
 	if(tankComp.allFriends[tankComp.firendTarget.id].type == "Swarm")
 	{
-		distToCheck = getTheScene()->getComponent<SwarmComponent>(tankComp.firendTarget.id).group->idleRadius + (tankCol.radius*2) + (friendCol.radius*2) + 2.0f;
+		distToCheck = getTheScene()->getComponent<SwarmComponent>(tankComp.firendTarget.id).group->idleRadius + (tankCol.extents.x*2) + (friendCol.extents.x*2) + 2.0f;
 	}
 	else
 	{
@@ -568,7 +532,7 @@ BTStatus TankBT::MoveAround(Entity entityID)
 	}
 	else
 	{
-		avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, tankComp.firendTarget.pos, moveDir, glm::vec3(0.0f, -3.0f, 0.0f));
+		avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, tankComp.firendTarget.pos, moveDir);
 		tankRb.velocity = moveDir * tankComp.idleSpeed;
 	}
 
@@ -585,20 +549,50 @@ BTStatus TankBT::playerInPersonalSpace(Entity entityID)
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
     float tank_player_dist	= glm::length(playerTrans.position - tankTrans.position);
-    if(tank_player_dist <= tankComp.peronalSpaceRadius)
+    if(tank_player_dist <= tankComp.peronalSpaceRadius && !tankComp.hasRunTarget)
     {
         ret = BTStatus::Success;
     }
+	else
+	{
+		//ankComp.hasDoneFirstHump = false;
+	}
 
 	return ret;
 }
 
 BTStatus TankBT::GroundHump(Entity entityID)
 {
-	BTStatus ret = BTStatus::Running;
-
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
-	groundHumpShortcut(entityID);
+	if (tankComp.lowerCurrentAnim != 2 || tankComp.upperCurrentAnim != 2)
+	{
+		tankComp.lowerCurrentAnim = 2;
+		tankComp.upperCurrentAnim = 2;
+		tankComp.groundHumpTimer = 2.075f;
+		if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+		{
+			ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 0, 2, -1 });
+		}
+		else
+		{
+			getTheScene()->blendToAnimation(entityID, "GroundHump", "", 0.18f, 1.107f);
+		}
+	}
+
+	BTStatus ret = BTStatus::Running;
+	glm::vec3 target = getTheScene()->getComponent<Transform>(getPlayerID(entityID)).position;
+	rotateTowards(entityID, target, tankComp.combatRotSpeed, 5.0f);
+
+	if (tankComp.groundHumpTimer <= 0.0f/* || tankComp.hasDoneFirstHump*/)
+	{
+		//tankComp.hasDoneFirstHump = true;
+		groundHumpShortcut(entityID);
+	}
+	else
+	{
+		tankComp.groundHumpTimer -= get_dt();
+	}
 
 	return ret;
 }
@@ -612,17 +606,51 @@ BTStatus TankBT::playerOutsidePersonalSpace(Entity entityID)
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
     Transform& tankTrans    = getTheScene()->getComponent<Transform>(entityID);
     float tank_player_dist	= glm::length(playerTrans.position - tankTrans.position);
-    if(tank_player_dist > tankComp.peronalSpaceRadius)
+    if(tank_player_dist > tankComp.peronalSpaceRadius || tankComp.hasRunTarget)
     {
         ret = BTStatus::Success;
     }
+
+	tankComp.runTimer -= get_dt();
 	return ret;
 }
 
 BTStatus TankBT::ChargeAndRun(Entity entityID)
 {
-	BTStatus ret = BTStatus::Running;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	if (tankComp.lowerCurrentAnim == 1 && tankComp.chargeAnimTimer >= 1.5f)
+	{
+		if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+		{
+			ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM_TIMESCALE, entityID, -1 }, { 0.0f });
+		}
+		else
+		{
+			getTheScene()->setAnimationTimeScale(entityID, 0.0f);
+		}
+	}
+	else if (tankComp.lowerCurrentAnim != 1)
+	{
+		tankComp.lowerCurrentAnim = 1;
+		tankComp.upperCurrentAnim = 1;
+		tankComp.chargeAnimTimer = 0.0f;
+		if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+		{
+			ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 0, 1, -1 });
+		}
+		else
+		{
+			getTheScene()->blendToAnimation(entityID, "Charge");
+		}
+	}
+	else
+	{
+		tankComp.chargeAnimTimer += get_dt();
+	}
+
+	BTStatus ret = BTStatus::Running;
 	int playerID			= getPlayerID(entityID);
 	if(playerID == -1){return ret;}
     Transform& playerTrans  = getTheScene()->getComponent<Transform>(playerID);
@@ -630,21 +658,44 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 	Collider& tankCol = getTheScene()->getComponent<Collider>(entityID);
 	Rigidbody& rb = getTheScene()->getComponent<Rigidbody>(entityID);
 
+	rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
 
-	glm::vec3 dir;
-	if(!rayChecking(entityID, dir))
+	if(!rayChecking(entityID))
 	{
+		
+		glm::vec3 dir = safeNormalize(playerTrans.position - tankTrans.position);
+		avoidStuff(entityID, BehaviorTree::getSceneHandler(), tankComp.attackGoRight, playerTrans.position, dir);
 		rb.velocity = dir * tankComp.idleSpeed;
 		return ret;
 	}
 
-
+	//Tick down charge
 	if(!tankComp.hasRunTarget && (tankComp.chargeTimer > 0.0f || !rotationDone(entityID, playerTrans.position, tankComp.idleRotSpeed, 5.0f)))
 	{
 		rotateTowards(entityID, playerTrans.position, tankComp.combatRotSpeed, 5.0f);
 		tankComp.chargeTimer -= get_dt();
 		return ret;
 	}
+	if (tankComp.chargeTimer < 1.f)
+	{
+		ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+
+		if (netScene && tankComp.s_activateCharge)
+		{
+			netScene->addEvent(
+				{ (int)GameEvent::PLAY_ENEMY_SOUND, entityID, 0, 1, 0 }
+			);
+			tankComp.s_activateCharge = false;
+		}
+		else if (!netScene && tankComp.s_activateCharge)
+		{
+			sceneHandler->getAudioHandler()->playSound(
+				entityID, TankComponent::s_charge, 30.f
+			);
+			tankComp.s_activateCharge = false;
+		}
+	}
+	//Set target
 	if(!tankComp.hasRunTarget)
 	{
 		tankComp.runTarget = playerTrans.position;
@@ -655,12 +706,10 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.canAttack = true;
 	}
 
-	
 
 	if(glm::length(tankComp.runOrigin - tankTrans.position) < tankComp.runDist &&
 		tankComp.runTimer > 0.0f)
 	{
-		tankComp.runTimer -= get_dt();
 		rb.velocity = tankComp.runDir * tankComp.cahargeSpeed;
 	}
 	else
@@ -669,8 +718,8 @@ BTStatus TankBT::ChargeAndRun(Entity entityID)
 		tankComp.runTimer = tankComp.runTimerOrig;
 		tankComp.hasRunTarget = false;
 		tankComp.canAttack = false;
+        tankComp.s_activateCharge = true;
 	}
-
 
 	return ret;
 }
@@ -734,31 +783,100 @@ BTStatus TankBT::groupInPersonalSpece(Entity entityID)
 
 BTStatus TankBT::moveTowardsGroup(Entity entityID)
 {
-	BTStatus ret			= BTStatus::Success;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	if (tankComp.lowerCurrentAnim != 0) // Walk
+	{
+		tankComp.lowerCurrentAnim = 0;
+		tankComp.upperCurrentAnim = 0;
+		if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+		{
+			ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 0, 0, -1 });
+		}
+		else
+		{
+			getTheScene()->blendToAnimation(entityID, "Walk");
+		}
+	}
+	BTStatus ret			= BTStatus::Success;
 	Transform& tankTrans	= getTheScene()->getComponent<Transform>(entityID);
 	Rigidbody& tankRb		= getTheScene()->getComponent<Rigidbody>(entityID);
-	glm::vec3 moveDir		= pathFindingManager.getDirTo(tankTrans.position, tankComp.shieldTargetPos);
+	glm::vec3 moveDir		= getDir(tankTrans.position, tankComp.shieldTargetPos);
 	moveDir					= safeNormalize(moveDir);
-	avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, tankComp.firendTarget.pos, moveDir, glm::vec3(0.0f, -3.0f, 0.0f));
+	avoidStuff(entityID, BehaviorTree::sceneHandler, tankComp.attackGoRight, tankComp.firendTarget.pos, moveDir);
 	tankRb.velocity			= moveDir * tankComp.shieldSpeed;
 	return ret;
 }
 
 BTStatus TankBT::HoldShield(Entity entityID)
 {
-	BTStatus ret = BTStatus::Failure;
 	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	if (tankComp.upperCurrentAnim != 3)
+	{
+		tankComp.upperCurrentAnim = 3;
+		tankComp.shieldAnimTimer = 0.0f;
+		tankComp.shieldAnimDone = false;
+		if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+		{
+			ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 0, 3, 1 });
+		}
+		else
+		{
+			getTheScene()->blendToAnimation(entityID, "RaiseShield", "UpperBody");
+		}
+	}
+	else if (tankComp.shieldAnimTimer > 0.725f && !tankComp.shieldAnimDone)
+	{
+		tankComp.shieldAnimDone = true;
+		if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+		{
+			ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM_TIMESCALE, entityID, 1 }, { 0.0f });
+		}
+		else
+		{
+			getTheScene()->setAnimationTimeScale(entityID, 0.0f, "UpperBody");
+		}
+	}
+	else
+	{
+		tankComp.shieldAnimTimer += get_dt();
+	}
+	
+	if (tankComp.lowerCurrentAnim != 2)
+	{
+		tankComp.groundHumpTimer = 2.075f;
+		tankComp.lowerCurrentAnim = 2;
+		if (getSceneHandler()->getNetworkHandler() == nullptr) // Multiplayer
+		{
+			ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+			netScene->addEvent({ (int)GameEvent::UPDATE_ANIM, entityID, 0, 2, 0 });
+		}
+		else
+		{
+			getTheScene()->blendToAnimation(entityID, "GroundHump", "LowerBody", 0.18f, 1.09f);
+		}
+	}
+
+	BTStatus ret = BTStatus::Failure;
 
 	giveFriendsHealth(entityID);
-	
 
 	int playerID = getPlayerID(entityID);
 	if(playerID == -1){return ret;}
 	Transform& playerTrans = getTheScene()->getComponent<Transform>(playerID);
 	rotateTowards(entityID, playerTrans.position, tankComp.shildRotSpeed, 5.0f);
 
-	groundHumpShortcut(entityID);
+	if (tankComp.groundHumpTimer <= 0.0f/* || tankComp.hasDoneFirstHump*/)
+	{
+		//tankComp.hasDoneFirstHump = true;
+		groundHumpShortcut(entityID);
+	}
+	else
+	{
+		tankComp.groundHumpTimer -= get_dt();
+	}
 
 	updateCanBeHit(entityID);
 
@@ -767,15 +885,18 @@ BTStatus TankBT::HoldShield(Entity entityID)
 
 BTStatus TankBT::playAlertAnim(Entity entityID)
 {
+	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+	tankComp.alertDone = true;
+	return BTStatus::Success; // No scale 
+
 	BTStatus ret = BTStatus::Running;
 
-	TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
     int playerID = getPlayerID(entityID);
 	if(playerID == -1){return ret;}
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 	Transform& tankTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 	Collider& tankCol = sceneHandler->getScene()->getComponent<Collider>(entityID);
-	float toMove = (tankCol.radius*2) * (1.0f - tankComp.origScaleY + tankComp.alertScale);
+	float toMove = (tankCol.extents.x*2) * (1.0f - tankComp.origScaleY + tankComp.alertScale);
 	
 	tankTrans.rotation.y = lookAtY(tankTrans, playerTransform);
 	tankTrans.updateMatrix();
@@ -833,7 +954,7 @@ BTStatus TankBT::playDeathAnim(Entity entityID)
 	}
 	else
 	{
-		tankTrans.rotation.y +=  1000*tankComp.deathAnimSpeed*get_dt();
+		tankTrans.rotation.y +=  500*tankComp.deathAnimSpeed*get_dt();
 		tankTrans.scale.y -= tankComp.deathAnimSpeed*get_dt();
 	}
 
@@ -851,13 +972,132 @@ BTStatus TankBT::die(Entity entityID)
 	{
 		playerHealth.health += 10;
 	}
-
-	getTheScene()->setInactive(entityID);
+	static int chanceToSpawnPerk = 2;
+	static int chanceToSpawnability = 1;
+	int spawnLoot = rand() % 10;
 	ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
+
+	if (serverScene != nullptr)
+	{
+		int itemID, type = -1, otherType;
+		float multiplier;
+		if (spawnLoot < chanceToSpawnPerk)
+		{
+			type = (int)ItemType::PERK;
+			otherType = rand() % PerkType::emptyPerk;
+			switch (otherType)
+			{
+			case PerkType::hpUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::dmgUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::attackSpeedUpPerk:
+				multiplier = 0.05f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.05f;
+				break;
+			case PerkType::movementUpPerk:
+				multiplier = 0.2f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::staminaUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.1f;
+				break;
+			}
+			if (otherType == PerkType::attackSpeedUpPerk && getTheScene()->getComponent<TankComponent>(entityID).currentLevel > 6)
+			{
+				multiplier = 0.4f;
+			}
+			else if (otherType == PerkType::movementUpPerk && getTheScene()->getComponent<TankComponent>(entityID).currentLevel > 7)
+			{
+				multiplier = 1.f;
+			}
+		}
+		else if (spawnLoot < chanceToSpawnPerk + chanceToSpawnability)
+		{
+			type = (int)ItemType::ABILITY;
+			otherType = (AbilityType)(rand() % 2);
+			multiplier = 0.0f;
+		}
+		if (type != -1)
+		{
+			glm::vec3 spawnPos = sceneHandler->getScene()->getComponent<Transform>(entityID).position;
+			glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
+			itemID = serverScene->spawnItem((ItemType)type, otherType, multiplier);
+			serverScene->addEvent(
+				{ (int)GameEvent::SPAWN_ITEM,
+				itemID,
+				type,
+				otherType },
+				{ multiplier,
+				spawnPos.x, spawnPos.y, spawnPos.z,
+				spawnDir.x, spawnDir.y, spawnDir.z }
+			);
+		}
+	}
+	else
+	{
+		PerkType otherType;
+		float multiplier;
+		if (spawnLoot < 2)
+		{
+			otherType = PerkType(rand() % PerkType::emptyPerk);
+			NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
+			Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+
+			switch (otherType)
+			{
+			case PerkType::hpUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::dmgUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::attackSpeedUpPerk:
+				multiplier = 0.05f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.05f;
+				break;
+			case PerkType::movementUpPerk:
+				multiplier = 0.2f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::staminaUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<TankComponent>(entityID).currentLevel * 0.1f;
+				break;
+			}
+			if (otherType == PerkType::attackSpeedUpPerk && getTheScene()->getComponent<TankComponent>(entityID).currentLevel > 6)
+			{
+				multiplier = 0.4f;
+			}
+			else if (otherType == PerkType::movementUpPerk && getTheScene()->getComponent<TankComponent>(entityID).currentLevel > 7)
+			{
+				multiplier = 1.f;
+			}
+
+			network->spawnItemRequest(otherType, multiplier, swarmTrans.position,
+				glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
+		}
+		else if (spawnLoot == 2)
+		{
+			NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
+			Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+			network->spawnItemRequest((AbilityType)(rand() % 2), swarmTrans.position,
+				glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
+		}
+	}
+
+	ret = BTStatus::Success;
+	getTheScene()->setInactive(entityID);
     if (serverScene != nullptr) 
     {
         serverScene->addEvent({(int)GameEvent::INACTIVATE, entityID});   
     }
+
+	if(ret == BTStatus::Success)
+	{
+		TankComponent& tankComp = sceneHandler->getScene()->getComponent<TankComponent>(entityID);
+		if(tankComp.isElite)
+		{
+			tankComp.removeEliteStats(sceneHandler->getScene(), entityID);
+		}
+	}
 	return ret;
 }
 

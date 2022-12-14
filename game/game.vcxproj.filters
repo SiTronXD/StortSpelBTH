@@ -28,6 +28,7 @@
     <ClCompile Include="src\ServerGameModes\NetworkLobbyScene.cpp" />
     <ClCompile Include="src\ServerGameModes\NetworkGameScene.cpp" />
     <ClCompile Include="src\World Handling\SpawnHandler.cpp" />
+    <ClCompile Include="src\Settings\Settings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -73,18 +74,24 @@
     <ClInclude Include="src\Ai\Behaviors\Tank\TankBTs.hpp" />
     <ClInclude Include="src\Network\NetworkDataFetcher.hpp" />
     <ClInclude Include="src\World Handling\SpawnHandler.hpp" />
+    <ClInclude Include="src\Components\AiElite.hpp" />
     <ClInclude Include="src\ServerGameModes\NetworkLobbyScene.h" />
     <ClInclude Include="src\ServerGameModes\NetworkGameScene.h" />
     <ClInclude Include="src\World Handling\SpawnHandler.hpp" />
     <ClInclude Include="src\Components\HealthComp.h" />
     <ClInclude Include="src\Components\HealArea.h" />
     <ClInclude Include="src\Systems\HealSystem.hpp" />
+    <ClInclude Include="src\Systems\ParticleRemoveEntity.hpp" />
+    <ClInclude Include="src\Systems\ParticleRemoveComponent.hpp" />
+    <ClInclude Include="src\World Handling\ParticleSystemGenerator.hpp" />
+    <ClInclude Include="src\Settings\Settings.h" />
+    <ClInclude Include="src\Systems\PerkAbilityOutsideRangeSystem.hpp" />
+    <ClInclude Include="src\Systems\FollowEntitySystem.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
     <None Include="src\Scripts\Prefab.lua" />
     <None Include="src\Scripts\Prefabs.lua" />
-    <None Include="scripts\levelEditor.lua" />
     <None Include="scripts\moveRock.lua" />
   </ItemGroup>
 </Project>

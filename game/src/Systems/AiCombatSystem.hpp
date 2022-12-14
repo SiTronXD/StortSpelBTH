@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vengine.h>
-#include "../Components/AiCombatSwarm.h"
 #include "../Components/AiMovement.h"
 #include "../Components/Combat.h"
 
@@ -19,8 +18,8 @@ public:
 
 	bool update(entt::registry& reg, float dt) final
 	{
-		auto view = reg.view<AiCombatSwarm, AiMovement>();
-		auto foo = [&](AiCombatSwarm& combat, AiMovement& movement)
+		auto view = reg.view<SwarmComponent, AiMovement>();
+		auto foo = [&](SwarmComponent& combat, AiMovement& movement)
 		{
 			if (combat.timer > 0.f)
 			{
@@ -36,7 +35,7 @@ public:
 		return false;
 	}
 
-	void attack(AiCombatSwarm& combat, AiMovement& movement)
+	void attack(SwarmComponent& combat, AiMovement& movement)
 	{
 		HealthComp& playerHealth = scene->getComponent<HealthComp>(playerID);
 		playerHealth.health -= (int)combat.lightHit;

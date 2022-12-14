@@ -1,7 +1,7 @@
 local script = {}
 
 function script:init()
-    local blobMesh = resources.addMesh("assets/models/Swarm_Model.obj");
+    local blobMesh = resources.addMesh("assets/models/Swarm_RotTest.obj");
     scene.setComponent(self.ID, CompType.Mesh, blobMesh);
     local col = {
         radius  = 4,

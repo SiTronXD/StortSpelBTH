@@ -19,6 +19,15 @@ endif()
 set(USE_COMPILE_COMMANDS ON)
 
 
+# #ASAN_OPTIONS=halt_on_error=0:detect_leaks=1 ./../build/debug_unix_lldb/3D_VEngine_GameDemo
+# add_compile_options(-g -fsanitize=address,leak -fno-omit-frame-pointer -fsanitize-recover=address )
+# add_link_options(   -g -fsanitize=address,leak -fno-omit-frame-pointer -fsanitize-memory-track-origins=2)
+
+# SET(CMAKE_LINKER clang)
+#ASAN_OPTIONS=halt_on_error=0:detect_leaks=1 ./../build/debug_unix_lldb/3D_VEngine_GameDemo
+# add_compile_options(-g -fsanitize=address,leak -fno-omit-frame-pointer -fsanitize-recover=address )
+# add_link_options(   -g -fsanitize=address,leak -fno-omit-frame-pointer -fsanitize-memory-track-origins=2)
+
 # all the source files
 FILE(GLOB_RECURSE GAME_SOURCES CONFIGURE_DEPENDS
     game/*.cpp 
@@ -100,6 +109,7 @@ target_link_libraries(3D_VEngine_GameDemo PUBLIC vengine::vengine)
 
 create_symlink_now(${CMAKE_SOURCE_DIR}/deps/vengine/src/vengine/vengine_assets ${CMAKE_SOURCE_DIR}/game/vengine_assets)
 #create_symlink_now(${CMAKE_SOURCE_DIR}/ ${CMAKE_SOURCE_DIR}/game/vengine_assets)
+
 
 
 # Ignore FETCHING variant for now... 

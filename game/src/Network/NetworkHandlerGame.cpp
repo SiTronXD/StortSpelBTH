@@ -1,22 +1,24 @@
 #include "NetworkHandlerGame.h"
 #include "../Systems/CombatSystem.hpp"
+#include "../Systems/FollowEntitySystem.hpp"
 #include "ServerGameMode.h"
 #include "../Scenes/GameScene.h"
 #include "vengine/network/ServerEngine/Timer.h"
 
 const float NetworkHandlerGame::UPDATE_RATE = ServerUpdateRate;
-LichAttack* NetworkHandlerGame::lich_fire  = new LichAttack();
-LichAttack* NetworkHandlerGame::lich_ice   = new LichAttack();
-LichAttack* NetworkHandlerGame::lich_light = new LichAttack();
+LichAttack NetworkHandlerGame::lich_fire;
+LichAttack NetworkHandlerGame::lich_ice;
+LichAttack NetworkHandlerGame::lich_light;
+
 
 Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 pos, glm::vec3 shootDir)
 {
 	Scene* scene = this->sceneHandler->getScene();
 	Perks perk{ .multiplier = multiplier, .perkType = type };
-
+	
 	Entity e = scene->createEntity();
 	scene->setComponent<MeshComponent>(e, perkMeshes[type]);
-
+	
 	Transform& perkTrans = sceneHandler->getScene()->getComponent<Transform>(e);
 	perkTrans.position = pos;
 	perkTrans.scale = glm::vec3(2.0f);
@@ -44,7 +46,6 @@ Entity NetworkHandlerGame::spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 
 
 	Transform& perkTrans = sceneHandler->getScene()->getComponent<Transform>(e);
 	perkTrans.position = pos;
-	perkTrans.scale = glm::vec3(2.0f);
 	scene->setComponent<Collider>(e, Collider::createSphere(5.0f, glm::vec3(0.0f), true));
 
 	if (shootDir != glm::vec3(0.0f))
@@ -72,18 +73,186 @@ Entity NetworkHandlerGame::spawnEnemy(const int& type, const glm::vec3& pos) {
 		break;
 	case 1:
 		// Load lich
-		this->sceneHandler->getScene()->setScriptComponent(e, "scripts/loadBlob.lua");
+		this->sceneHandler->getScene()->setScriptComponent(e, "scripts/loadLich.lua");
 		this->sceneHandler->getScene()->setComponent<LichComponent>(e);
 		break;
 	case 2:
 		// Load tank
-		this->sceneHandler->getScene()->setScriptComponent(e, "scripts/loadBlob.lua");
+		this->sceneHandler->getScene()->setScriptComponent(e, "scripts/loadTank.lua");
 		this->sceneHandler->getScene()->setComponent<TankComponent>(e);
 		break;
 	default:
 		break;
 	}
     return e;
+}
+
+void NetworkHandlerGame::initParticleSystems() 
+{
+    deletedParticleSystems = false;
+
+
+
+    // Heal particle system
+    ParticleSystem healPS{};
+    healPS.maxlifeTime = 3.0f;
+    healPS.numParticles = 32;
+    healPS.textureIndex = resourceManger->addTexture("assets/textures/UI/HealingAbilityParticle.png");
+    healPS.startSize = glm::vec2(1.7f);
+    healPS.endSize = glm::vec2(0.3f);
+    healPS.startColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    healPS.endColor = glm::vec4(0.2f, 0.2f, 0.2f, 0.0f);
+    healPS.velocityStrength = 10.0f;
+    healPS.acceleration = glm::vec3(0.0f, -3.0f, 0.0f);
+    healPS.coneSpawnVolume.diskRadius = 25.0f;
+    healPS.coneSpawnVolume.coneAngle = 0.0f;
+    healPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
+    healPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, -0.5f, 0.0f);
+    this->healParticleSystem.create(this->sceneHandler->getScene(), healPS, 1);
+
+	//Lich heal particle system
+	ParticleSystem lichHealPS = healPS;
+	lichHealPS.coneSpawnVolume.diskRadius = 10.0f;
+	this->lichHealParticleSystem.create(this->sceneHandler->getScene(), lichHealPS, 1);
+
+    // Blood particle system
+    ParticleSystem bloodPS{};
+    std::strcpy(bloodPS.name, "BloodPS");
+    bloodPS.maxlifeTime = 0.7f;
+    bloodPS.numParticles = 64;
+    bloodPS.textureIndex = resourceManger->addTexture("assets/textures/bloodParticle.png");
+    bloodPS.startSize = glm::vec2(0.4f);
+    bloodPS.endSize = glm::vec2(0.0f);
+    bloodPS.startColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    bloodPS.endColor = glm::vec4(0.2f, 0.0f, 0.0f, 0.0f);
+    bloodPS.velocityStrength = 30.0f;
+    bloodPS.acceleration = glm::vec3(0.0f, -30.0f, 0.0f);
+    bloodPS.spawnRate = 0.01f;
+    bloodPS.respawnSetting = RespawnSetting::EXPLOSION;
+    bloodPS.coneSpawnVolume.diskRadius = 1.5f;
+    bloodPS.coneSpawnVolume.coneAngle = 70.0f;
+    bloodPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 0.0f, 1.0f);
+    bloodPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, 10.0f, 0.0f);
+    this->bloodParticleSystems.create(this->sceneHandler->getScene(), bloodPS, 3 * 2); // 3 for each player
+
+    // Swarm particle system
+    ParticleSystem swarmPS{};
+    std::strcpy(swarmPS.name, "SwarmPS");
+    swarmPS.maxlifeTime = 2.0f;
+    swarmPS.numParticles = 8;
+    swarmPS.textureIndex = resourceManger->addTexture("assets/textures/slimeParticle.png");
+    swarmPS.startSize = glm::vec2(0.4f);
+    swarmPS.endSize = glm::vec2(0.0f);
+    swarmPS.startColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    swarmPS.endColor = glm::vec4(0.2f, 0.2f, 0.2f, 0.0f);
+    swarmPS.velocityStrength = 5.0f;
+    swarmPS.acceleration = glm::vec3(0.0f, -7.0f, 0.0f);
+    swarmPS.spawnRate = 0.01f;
+    swarmPS.respawnSetting = RespawnSetting::EXPLOSION;
+    swarmPS.coneSpawnVolume.diskRadius = 1.5f;
+    swarmPS.coneSpawnVolume.coneAngle = 160.0f;
+    swarmPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
+    swarmPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+    this->swarmParticleSystems.create(this->sceneHandler->getScene(), swarmPS, 5);
+	 
+    ParticleSystem footstepPS{};
+    footstepPS.maxlifeTime = 1.2f;
+    footstepPS.numParticles = 12;
+    footstepPS.textureIndex = resourceManger->addTexture("assets/textures/grassDustParticle.png");
+    footstepPS.startSize = glm::vec2(0.0f);
+    footstepPS.endSize = glm::vec2(1.7f);
+    footstepPS.startColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    footstepPS.endColor = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
+    footstepPS.velocityStrength = 2.0f;
+    footstepPS.acceleration = glm::vec3(0.0f, -0.5f, 0.0f);
+    footstepPS.coneSpawnVolume.diskRadius = 3.0f;
+    footstepPS.coneSpawnVolume.coneAngle = 0.0f;
+    footstepPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
+    footstepPS.coneSpawnVolume.localPosition = glm::vec3(0.0f);
+    footstepPS.spawn = false;
+
+	
+	this->sceneHandler->getScene()->setComponent<ParticleSystem>(this->player);
+    ParticleSystem& footSteepPPS = this->sceneHandler->getScene()->getComponent<ParticleSystem>(this->player);
+    footSteepPPS = footstepPS;
+    for (int i = 0; i < this->playerEntities.size(); i++)
+    {
+        this->sceneHandler->getScene()->setComponent<ParticleSystem>(playerEntities[i]);
+		ParticleSystem& footSteepOPPS = this->sceneHandler->getScene()->getComponent<ParticleSystem>(playerEntities[i]);
+        footSteepOPPS = footstepPS;
+	}
+
+    // Portal particle system
+    ParticleSystem portalPS0{};
+    portalPS0.maxlifeTime = 3.0f;
+    portalPS0.numParticles = 32;
+    portalPS0.textureIndex = resourceManger->addTexture("assets/textures/portalParticle.png");
+    portalPS0.startSize = glm::vec2(0.0f);
+    portalPS0.endSize = glm::vec2(1.2f);
+    portalPS0.startColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    portalPS0.endColor = glm::vec4(0.2f, 0.2f, 0.2f, 0.0f);
+    portalPS0.velocityStrength = 10.0f;
+    portalPS0.acceleration = glm::vec3(0.0f, 2.0f, 0.0f);
+    portalPS0.coneSpawnVolume.diskRadius = 15.0f;
+    portalPS0.coneSpawnVolume.coneAngle = 0.0f;
+    portalPS0.coneSpawnVolume.localDirection = glm::vec3(0.0f, 0.0f, 1.0f);
+    portalPS0.coneSpawnVolume.localPosition = glm::vec3(0.0f, 5.0f, -30.0f);
+    ParticleSystem portalPS1{};
+    portalPS1 = portalPS0;
+    portalPS1.coneSpawnVolume.localDirection.z *= -1.0f;
+    portalPS1.coneSpawnVolume.localPosition.z *= -1.0f;
+    this->portalParticleSystemSide0.create(this->sceneHandler->getScene(), portalPS0, 1);
+    this->portalParticleSystemSide1.create(this->sceneHandler->getScene(), portalPS1, 1);
+
+	// Orb particle system
+	ParticleSystem orbPS{};
+	std::strcpy(orbPS.name, "RmvEntity");
+	orbPS.maxlifeTime = 0.9f;
+	orbPS.numParticles = 64;
+	orbPS.textureIndex = this->resourceManger->addTexture("assets/textures/orbParticle.png");
+	orbPS.startSize = glm::vec2(0.8f);
+	orbPS.endSize = glm::vec2(0.3f);
+	orbPS.startColor = glm::vec4(0.2f, 0.2f, 0.8f, 1.0f) * 4.0f;
+	orbPS.endColor = orbPS.startColor * 0.0f;
+	orbPS.velocityStrength = 10.0f;
+	orbPS.acceleration = glm::vec3(0.0f, -3.0f, 0.0f);
+	orbPS.coneSpawnVolume.diskRadius = 3.5f;
+	orbPS.coneSpawnVolume.coneAngle = 142.0f;
+	orbPS.coneSpawnVolume.localDirection = glm::vec3(0.0f, 1.0f, 0.0f);
+	orbPS.coneSpawnVolume.localPosition = glm::vec3(0.0f, -0.5f, 0.0f);
+	this->orbParticleSystems.create(this->sceneHandler->getScene(), orbPS, 3);
+}
+
+void NetworkHandlerGame::deleteInitialParticleSystems() 
+{
+	// Only delete particle systems once
+    if (this->deletedParticleSystems)
+    {
+        return;
+    }
+    this->deletedParticleSystems = true;
+
+    this->healParticleSystem.removeEntities(this->sceneHandler->getScene());
+	this->lichHealParticleSystem.removeEntities(this->sceneHandler->getScene());
+    this->bloodParticleSystems.removeEntities(this->sceneHandler->getScene());
+    this->swarmParticleSystems.removeEntities(this->sceneHandler->getScene());
+    this->portalParticleSystemSide0.removeEntities(this->sceneHandler->getScene());
+    this->portalParticleSystemSide1.removeEntities(this->sceneHandler->getScene());
+	this->orbParticleSystems.removeEntities(this->sceneHandler->getScene());
+
+    // Find all particle entities
+    std::vector<Entity> particleEntities;
+    particleEntities.reserve(32);
+    auto pView =
+        this->sceneHandler->getScene()->getSceneReg().view<Transform, ParticleSystem>();
+    pView.each(
+        [&](const auto entity,
+            const Transform& transform,
+            const ParticleSystem& particleSystem)
+        {
+            particleEntities.push_back((Entity) entity);
+        }
+    );
 }
 
 Entity NetworkHandlerGame::spawnHealArea(glm::vec3 pos)
@@ -96,11 +265,25 @@ Entity NetworkHandlerGame::spawnHealArea(glm::vec3 pos)
 	scene->setComponent<HealArea>(heal);
 	scene->getComponent<Transform>(heal).position = pos;
 
+	// Particle system
+	scene->setComponent<ParticleSystem>(heal);
+	ParticleSystem scenePartSys = getHealParticleSystem();
+	scene->getComponent<ParticleSystem>(heal) = scenePartSys;
+
 	return heal;
+}
+
+NetworkHandlerGame::~NetworkHandlerGame() {
+
+    this->cleanUp();
 }
 
 void NetworkHandlerGame::init()
 {
+    gettingSeed = false;
+    this->cleanUp();
+    this->deletedParticleSystems = false;
+    this->moveSound = this->resourceManger->addSound("assets/Sounds/PlayerSounds/RunningSound.ogg");
 	this->perkMeshes[0] = this->resourceManger->addMesh("assets/models/Perk_Hp.obj");
 	this->perkMeshes[1] = this->resourceManger->addMesh("assets/models/Perk_Dmg.obj");
 	this->perkMeshes[2] = this->resourceManger->addMesh("assets/models/Perk_AtkSpeed.obj");
@@ -115,17 +298,57 @@ void NetworkHandlerGame::init()
     this->alterMesh = this->resourceManger->addMesh("assets/models/alter.obj");
     this->humpMesh = this->resourceManger->addMesh("assets/models/hump.obj");//TODO : ADD THE humpMesh!!!
 
-    NetworkHandlerGame::lich_fire->setStats(ATTACK_STRATEGY::FIRE);
-    NetworkHandlerGame::lich_ice->setStats(ATTACK_STRATEGY::ICE);
-    NetworkHandlerGame::lich_light->setStats(ATTACK_STRATEGY::LIGHT);
+	if (!TankComponent::s_initialized)
+	{
+		TankComponent::s_takeDmg =
+			this->resourceManger->addSound("assets/Sounds/Enemysounds/Golem/GolemTakeDmg.ogg");
+		TankComponent::s_shockwave =
+			this->resourceManger->addSound("assets/Sounds/Enemysounds/Golem/Shockwave.ogg");
+		TankComponent::s_charge =
+			this->resourceManger->addSound("assets/Sounds/Enemysounds/Golem/GolemCharge.ogg");
+		TankComponent::s_initialized = true;
+	}
+	if (!LichComponent::s_initialized)
+	{
+		LichComponent::s_takeDmg =
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Lich/LichTakeDmg.ogg");
+		LichComponent::s_lightning =
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Lich/ChargeLightning.ogg");
+		LichComponent::s_fire =
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Lich/ChargeFire.ogg");
+		LichComponent::s_ice =
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Lich/ChargeIce.ogg");
+		LichComponent::s_initialized = true;
+	}
+	if (!SwarmComponent::s_initialized)
+	{
+		SwarmComponent::s_takeDmg =
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Swarm/SwarmTakeDmg.ogg");
+		SwarmComponent::s_attack =
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Swarm/SwarmAttack.ogg");
+		SwarmComponent::s_initialized = true;
+	}
+
+    this->lich_fire.setStats(ATTACK_STRATEGY::FIRE);
+    this->lich_ice.setStats(ATTACK_STRATEGY::ICE);
+    this->lich_light.setStats(ATTACK_STRATEGY::LIGHT);
 }
 
-void NetworkHandlerGame::cleanup()
+void NetworkHandlerGame::cleanUp()
 {
+    playerEntities.clear();
+    swords.clear();
+    playerPosLast.clear();
+    playerPosCurrent.clear();
+    serverEntities.clear();
+    itemIDs.clear();
+    entityToPosScale.clear();
+    entityLastPosScale.clear();
 }
 
 int NetworkHandlerGame::getSeed()
 {
+    gettingSeed = true;
 	if (this->hasServer())
 	{
 		sf::Packet packet;
@@ -154,17 +377,24 @@ int NetworkHandlerGame::getSeed()
 		}
         timer.updateDeltaTime();
 	}
+    gettingSeed = false;
 	return this->seed;
 }
 
 void NetworkHandlerGame::setCombatSystem(CombatSystem* system)
 {
-	combatSystem = system;
+	this->combatSystem = system;
+}
+
+void NetworkHandlerGame::setGhostMat(Material* ghostMat)
+{
+	this->ghostMat = ghostMat;
 }
 
 void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 {
 	sf::Packet packet;
+	Scene* scene = this->sceneHandler->getScene();
 	switch ((GameEvent)event)
 	{
 	case GameEvent::SEED:
@@ -271,13 +501,94 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 			);
 		}
         break;
+	case GameEvent::PLAY_ENEMY_SOUND:
+		tcpPacket >> i0 >> i1 >> i2 >> i3;
+		if (i1 == 0)
+		{
+			if (i2 == 0)
+			{
+				
+				this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<SwarmComponent>(serverEntities[i0]).s_takeDmg, 20.f);
+			}
+			else if (i2 == 1)
+			{
+				// DEAL DAMAGE SOUND
+				this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<SwarmComponent>(serverEntities[i0]).s_attack, 70.f);
+			}
+			else if (i2 == 3)
+			{
+				// Move sound?
+			}
+		}		
+		else if (i1 == 1)
+		{
+			if (i2 == 0)
+			{
+				this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<TankComponent>(serverEntities[i0]).s_takeDmg, 30.f);
+			}
+			else if (i2 == 1)
+			{
+				// DEAL DAMAGE SOUND
+				if (i3 == 0)
+				{
+					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<TankComponent>(serverEntities[i0]).s_shockwave, 30.f);
+				}
+				else if (i3 == 1)
+				{
+					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<TankComponent>(serverEntities[i0]).s_charge, 30.f);
+				}
+			}
+			else if (i2 == 3)
+			{
+				// Move sound?
+			}
+		}
+		else if (i1 == 2)
+		{
+			if (i2 == 0)
+			{
+				this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_takeDmg, 0.4f);
+			}
+			else if (i2 == 1)
+			{
+				// DEAL DAMAGE SOUND
+				if (i3 == 0)
+				{
+					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_fire, 0.4f);
+				}
+				else if (i3 == 1)
+				{
+					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_lightning, 0.4f);
+				}
+				else if (i3 == 2)
+				{
+					this->sceneHandler->getAudioHandler()->playSound(serverEntities[i0], this->sceneHandler->getScene()->getComponent<LichComponent>(serverEntities[i0]).s_ice, 0.4f);
+				}
+			}
+			else if (i2 == 3)
+			{
+				// Move sound?
+			}
+		}
+		break;
+    case GameEvent::PLAY_PLAYER_SOUND:
+        tcpPacket >> i0 >> i1 >> f0;
+        for (int i = 0; i < otherPlayersServerId.size(); i++)
+        {
+			if (otherPlayersServerId[i] == i0) 
+			{
+				//what shall be the id
+				this->sceneHandler->getAudioHandler()->playSound(otherPlayers[i].first, i1, f0);
+				break;
+			}
+		}
+		break;
     case GameEvent::PLAYER_SETHP:
         tcpPacket >> i0 >> i1;
-        if (i0 == ID)
+        if (i0 == this->ID)
         {
-			this->sceneHandler->getScene()->getComponent<HealthComp>(player).health = i1;   
+			this->sceneHandler->getScene()->getComponent<HealthComp>(player).health = (float)i1;   
 		}
-		// Else give hp to other players visually
 		break;
     case GameEvent::SPAWN_ORB:
         tcpPacket >> i0 >> i1;
@@ -294,7 +605,30 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
             this->sceneHandler->getScene()->setActive(serverEntities[i0]);
             this->sceneHandler->getScene()->getComponent<Transform>(serverEntities[i0]).position = v0;
             this->sceneHandler->getScene()->getComponent<Rigidbody>(serverEntities[i0]).velocity = v1;
-            this->sceneHandler->getScene()->getComponent<Orb>(serverEntities[i0]).timeAtCast = Time::getTimeSinceStart();
+            this->sceneHandler->getScene()->getComponent<Orb>(serverEntities[i0]).timeAtCast = (int)Time::getTimeSinceStart();
+
+			// Orb particle effect color
+			glm::vec4 projectileColor = glm::vec4(0.8f, 0.2f, 0.8f, 1.0f) * 4.0f;
+			switch (this->sceneHandler->getScene()->getComponent<Orb>(serverEntities[i0]).orbPower->type)
+			{
+			case ATTACK_STRATEGY::FIRE:
+				projectileColor = glm::vec4(0.8f, 0.3f, 0.2f, 1.0f) * 4.0f;
+				break;
+
+			case ATTACK_STRATEGY::LIGHT:
+				projectileColor = glm::vec4(0.90f, 0.8f, 0.2f, 1.0f) * 4.0f;
+				break;
+
+			case ATTACK_STRATEGY::ICE:
+				projectileColor = glm::vec4(0.2f, 0.2f, 0.8f, 1.0f) * 4.0f;
+				break;
+			}
+
+			// Spawn particle effect on orb
+			this->createProjectileParticleSystem(
+				serverEntities[i0], 
+				projectileColor
+			);
         }
 
         
@@ -305,15 +639,54 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
         {
 			int e = serverEntities.find(i0)->second;
 			if (this->sceneHandler->getScene()->hasComponents<SwarmComponent>(e)) {
-				this->sceneHandler->getScene()->getComponent<SwarmComponent>(e).life = i1;
+				this->sceneHandler->getScene()->getComponent<SwarmComponent>(e).life = (float)i1;
 			}
             else if(this->sceneHandler->getScene()->hasComponents<LichComponent>(e)) {
-				this->sceneHandler->getScene()->getComponent<LichComponent>(e).life = i1;
+				this->sceneHandler->getScene()->getComponent<LichComponent>(e).life = (float)i1;
 			}
 			else if(this->sceneHandler->getScene()->hasComponents<TankComponent>(e)) {
-				this->sceneHandler->getScene()->getComponent<TankComponent>(e).life = i1;
+				this->sceneHandler->getScene()->getComponent<TankComponent>(e).life = (float)i1;
 			}
             
+		}
+		break;
+    case GameEvent::ROOM_CLEAR:
+        this->newRoomFrame = false;
+        roomHandler->roomCompleted();
+		
+		dynamic_cast<GameScene*>(scene)->revivePlayer();
+		for (int i = 0; i < (int)this->playerEntities.size(); i++)
+		{
+			MeshComponent& mesh = scene->getComponent<MeshComponent>(this->playerEntities[i]);
+			mesh.overrideMaterials[0] = this->origMat;
+			mesh.overrideMaterials[0].tintColor = this->playerColors[i + 1];
+			scene->setActive(this->swords[i]);
+		}
+        break;
+    case GameEvent::NEXT_LEVEL:
+        if (!this->gettingSeed)
+        {
+			this->cleanUp();
+			this->sceneHandler->setScene(
+				new GameScene(((GameScene*)this->sceneHandler->getScene())->setNewLevel()), "scripts/gamescene.lua"
+			);
+        }
+		break;
+    case GameEvent::PLAY_PARTICLE:
+        tcpPacket >> i0 >> i1;
+        if (serverEntities.find(i1) != serverEntities.end()){
+            this->playParticle((ParticleTypes)i0, serverEntities[i1]);
+		}
+		break;
+	case GameEvent::PLAY_PARTICLE_P:
+        tcpPacket >> i0 >> i1;
+        for (int i = 0; i < this->otherPlayersServerId.size(); i++)
+		{
+			if (this->otherPlayersServerId[i] == i1)
+			{
+                playParticle((ParticleTypes)i0, otherPlayers[i].first);
+				break;
+			}
 		}
 		break;
     case GameEvent::INACTIVATE:
@@ -330,6 +703,79 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
             this->sceneHandler->getScene()->setActive(serverEntities.find(i0)->second);
 		}
 		break;
+	case GameEvent::UPDATE_ANIM:
+		tcpPacket >> i0 >> i1 >> i2 >> i3;
+		if (serverEntities.find(i0) != serverEntities.end())
+		{
+			if (i1 == 0) // Tank
+			{
+				str = i3 == 0 ? "LowerBody" : i3 == 1 ? "UpperBody" : "";
+				if (i2 == 2) // GroundHump
+				{
+					this->sceneHandler->getScene()->blendToAnimation(serverEntities.find(i0)->second, this->tankAnims[i2], str, 0.18f, 1.09f);
+				}
+				else
+				{
+					this->sceneHandler->getScene()->blendToAnimation(serverEntities.find(i0)->second, this->tankAnims[i2], str);
+				}
+			}
+			else // Lich
+			{
+				if (i2 == 1) // Attack
+				{
+					this->sceneHandler->getScene()->blendToAnimation(serverEntities.find(i0)->second, "Attack", "", 0.18f, 2.0f);
+				}
+				else
+				{
+					this->sceneHandler->getScene()->blendToAnimation(serverEntities.find(i0)->second, "Walk");
+				}
+			}
+		}
+		break;
+	case GameEvent::UPDATE_ANIM_TIMESCALE:
+		tcpPacket >> i0 >> i1 >> f0;
+		if (serverEntities.find(i0) != serverEntities.end())
+		{
+			i2 = serverEntities.find(i0)->second;
+			str = i1 == 0 ? "LowerBody" : i1 == 1 ? "UpperBody" : "";
+			if (str == "UpperBody" && f0 == 0.0f) // Shield anim for tank (ugly fix due to latency)
+			{
+				this->sceneHandler->getScene()->blendToAnimation(i2, "RaiseShield", str, 0.18f, 0.0f);
+				this->sceneHandler->getScene()->getAnimationSlot(i2, str).nTimer = 0.725f * 24.0f;
+			}
+			else
+			{
+				this->sceneHandler->getScene()->setAnimationTimeScale(i2, f0, str);
+			}
+		}
+		break;
+	case GameEvent::PLAYER_SET_GHOST:
+		tcpPacket >> i0;
+		i1 = -1;
+		for (int i = 0; i < this->otherPlayersServerId.size(); i++)
+		{
+			if (this->otherPlayersServerId[i] == i0)
+			{
+				i1 = i;
+				break;
+			}
+		}
+		if (i1 != -1)
+		{
+			this->sceneHandler->getScene()->getComponent<MeshComponent>(this->playerEntities[i1]).overrideMaterials[0] = *this->ghostMat;
+			this->sceneHandler->getScene()->setInactive(this->swords[i1]);
+		}
+		break;
+	case GameEvent::END_GAME:
+		((GameScene*)this->sceneHandler->getScene())->endGame();
+		break;
+	case GameEvent::CLOSE_OLD_DOORS:
+		tcpPacket >> i0;
+		roomHandler->multiplayerToggleCurrentDoors(i0);
+		break;
+	case GameEvent::CLOSE_NEW_DOORS:
+		roomHandler->mutliplayerCloseDoors();
+		break;
 	default:
 		break;
 	}
@@ -338,7 +784,7 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 {
 	sf::Packet packet;
-	glm::vec3 vec;
+	glm::vec3 vec;//Not used?
 	Transform* t;
 	AnimationComponent* anim;
     this->timer = 0;
@@ -400,13 +846,48 @@ void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 			entityLastPosScale[i1].second = entityToPosScale[i1].second;
 			entityToPosScale[i1].first = v0;
 			entityToPosScale[i1].second = v2;
-            
-            sceneHandler->getScene()->getComponent<Transform>(serverEntities.find(i1)->second).rotation = v1;
+			
+			i2 = serverEntities.find(i1)->second;
 
-			// Get and set animation // don't know how this should be made
-			//anim = &this->sceneHandler->getScene()->getComponent<AnimationComponent>(serverEnteties.find(i1)->second);
-			//udpPacket >> i2 >> anim->timer >> anim->timeScale;
-			//anim->animationIndex = (uint32_t)i2;
+			// Update full health (not that pretty however)
+			if (sceneHandler->getScene()->hasComponents<SwarmComponent>(i2))
+			{
+				SwarmComponent& swarm = sceneHandler->getScene()->getComponent<SwarmComponent>(i2);
+				if (v2.x > 1.0f)
+				{
+					swarm.FULL_HEALTH = 150;
+				}
+				else
+				{
+					swarm.FULL_HEALTH = 100;
+				}
+			}
+			else if (sceneHandler->getScene()->hasComponents<LichComponent>(i2))
+			{
+				LichComponent& lich = sceneHandler->getScene()->getComponent<LichComponent>(i2);
+				if (v2.x > 1.5f)
+				{
+					lich.FULL_HEALTH = 450;
+				}
+				else
+				{
+					lich.FULL_HEALTH = 300;
+				}
+			}
+			else if (sceneHandler->getScene()->hasComponents<TankComponent>(i2))
+			{
+				TankComponent& tank = sceneHandler->getScene()->getComponent<TankComponent>(i2);
+				if (v2.x > 1.0f)
+				{
+					tank.FULL_HEALTH = 750;
+				}
+				else
+				{
+					tank.FULL_HEALTH = 500;
+				}
+			}
+            
+            sceneHandler->getScene()->getComponent<Transform>(i2).rotation = v1;
 		}
 		break;
 	default:
@@ -414,7 +895,7 @@ void NetworkHandlerGame::handleUDPEventClient(sf::Packet& udpPacket, int event)
 	}
 }
 
-void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::Packet& tcpPacket, int event)
+void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientIndex, sf::Packet& tcpPacket, int event)
 {
 	sf::Packet packet;
 	ServerGameMode* serverScene;
@@ -441,7 +922,7 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 	case GameEvent::PICKUP_ITEM:
 		serverScene = server->getScene<ServerGameMode>();
 		tcpPacket >> si0 >> si1 >> si2 >> sf0;
-		serverScene->deleteItem(clientID, si0, (ItemType)si1, si2, sf0);
+		serverScene->deleteItem(clientIndex, si0, (ItemType)si1, si2, sf0);
 		break;
 
 	case GameEvent::USE_HEAL:
@@ -456,39 +937,50 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientID, sf::
 		// Get how they should take damage
         if (serverScene->hasComponents<SwarmComponent>(si0))
         {
-			si2 = (serverScene->getComponent<SwarmComponent>(si0).life -= si1);
+			si2 = (int)(serverScene->getComponent<SwarmComponent>(si0).life -= (float)si1);
+			si3 = 0;
+			si4 = 0;
+			si5 = 0;
 		}
         else if (serverScene->hasComponents<TankComponent>(si0))
         {
-			si2 = (serverScene->getComponent<TankComponent>(si0).life -= si1);  
+			si2 = (int)(serverScene->getComponent<TankComponent>(si0).life -= (float)si1);  
+			si3 = 1;
+			si4 = 0;
+			si5 = 0;
 		}
         else if (serverScene->hasComponents<LichComponent>(si0))
         {
-			si2 = (serverScene->getComponent<LichComponent>(si0).life -= si1);
+			si2 = (int)(serverScene->getComponent<LichComponent>(si0).life -= (float)si1);
+			si3 = 2;
+			si4 = 0;
+			si5 = 0;
 		}
-        if (serverScene->hasComponents<Transform>(si0))
+        if (serverScene->hasComponents<Rigidbody>(si0))
         {
 			sv1 = serverScene->getComponent<Transform>(si0).position;
-			sv2 = serverScene->getComponent<Transform>(serverScene->getPlayer(clientID)).position;
-			sv0 = glm::normalize(sv2 - sv1);
-            if(serverScene->hasComponents<Rigidbody>(si0)){
-                serverScene->getComponent<Rigidbody>(si0).velocity = glm::vec3(-sv0.x, 0.f, -sv0.z) * sf0;
-            }else {
-                std::cout << "ERROR; something is fucked up with Rigidbody on Monster Take Damage\n";
-                std::cout << "ERROR; is Lich " << serverScene->hasComponents<LichComponent>(si0) << "\n";
-                std::cout << "ERROR; is Tank"  << serverScene->hasComponents<TankComponent>(si0)<< "\n";
-                std::cout << "ERROR; is Swarm" << serverScene->hasComponents<SwarmComponent>(si0)<< "\n";
-                
-                assert(false);
-            }
-			
+			sv2 = serverScene->getComponent<Transform>(serverScene->getPlayer(clientIndex)).position;
+			sv0 = safeNormalize(sv2 - sv1);
+            serverScene->getComponent<Rigidbody>(si0).velocity = glm::vec3(-sv0.x, 0.f, -sv0.z) * sf0;
         }
+		
+		packet << (int)GameEvent::PLAY_ENEMY_SOUND << si0 << si3 << si4 << si5;
+		server->sendToAllClientsTCP(packet);
         
+		break;
+    case GameEvent::PLAY_PLAYER_SOUND:
+            tcpPacket >> i0 >> f0;
+			packet << (int)GameEvent::PLAY_PLAYER_SOUND << server->getClientID(clientIndex) << i0 << f0;
+            server->sendToAllOtherClientsTCP(packet, clientIndex);
+		break;
+	case GameEvent::PLAYER_SET_GHOST:
+		packet << (int)GameEvent::PLAYER_SET_GHOST << server->getClientID(clientIndex);
+		server->sendToAllOtherClientsTCP(packet, clientIndex);
 		break;
     case GameEvent::ROOM_CLEAR:
         this->newRoomFrame = false;
+        std::cout << "error room shall not be cleared here \n\n" << std::endl;
         roomHandler->roomCompleted();
-		this->numRoomsCleared++;
 		break;
 	default:
 		packet << event;
@@ -501,23 +993,21 @@ void NetworkHandlerGame::setRoomHandler(RoomHandler& roomHandler)
 {
     this->roomHandler = &roomHandler;
     newRoomFrame = false;
-    this->numRoomsCleared = 0;
 }
 
-void NetworkHandlerGame::handleUDPEventServer(Server* server, int clientID, sf::Packet& udpPacket, int event)
+void NetworkHandlerGame::handleUDPEventServer(Server* server, int clientIndex, sf::Packet& udpPacket, int event)
 {
 	sf::Packet packet;
 	ServerGameMode* serverScene;
-	NetworkScene* scene;
 	switch ((GameEvent)event)
 	{
 	case GameEvent::UPDATE_PLAYER:
-        scene = server->getScene<NetworkScene>();
-		packet << (int)GameEvent::UPDATE_PLAYER << clientID;
+		serverScene = server->getScene<ServerGameMode>();
+		packet << (int)GameEvent::UPDATE_PLAYER << server->getClientID(clientIndex);
 		sv0 = this->getVec(udpPacket);
 		this->sendVec(packet, sv0);
         
-        scene->getComponent<Transform>(scene->getPlayer(clientID)).position = sv0;
+		serverScene->getComponent<Transform>(serverScene->getPlayer(clientIndex)).position = sv0;
 		sv0 = this->getVec(udpPacket);
 		this->sendVec(packet, sv0);
 
@@ -526,7 +1016,10 @@ void NetworkHandlerGame::handleUDPEventServer(Server* server, int clientID, sf::
 		udpPacket >> si0 >> sf0 >> sf1;
 		packet << si0 << sf0 << sf1;
 
-		server->sendToAllOtherClientsUDP(packet, clientID);
+		udpPacket >> si0;
+		serverScene->updatePlayerHp(clientIndex, si0);
+
+		server->sendToAllOtherClientsUDP(packet, clientIndex);
 		break;
 	default:
 		packet << event;
@@ -569,30 +1062,30 @@ void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
     {
 		bool isEnemy = false;
 		if (sceneHandler->getScene()->hasComponents<SwarmComponent>(entityID)) {
+			this->sceneHandler->getAudioHandler()->playSound(entityID, SwarmComponent::s_takeDmg, 10.f);
 			SwarmComponent& enemy = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
                   enemy.life -= damage;
                   isEnemy = true;
 		}
 		else if (sceneHandler->getScene()->hasComponents<TankComponent>(entityID)) {
+			this->sceneHandler->getAudioHandler()->playSound(entityID, TankComponent::s_takeDmg, 10.f);
 			TankComponent& enemy = sceneHandler->getScene()->getComponent<TankComponent>(entityID);
-                  enemy.life -= damage;
-                  isEnemy = true;
+			enemy.life -= damage;
+            isEnemy = true;
 		}
         else if (sceneHandler->getScene()->hasComponents<LichComponent>(entityID)) {
+			this->sceneHandler->getAudioHandler()->playSound(entityID, LichComponent::s_takeDmg, 10.f);
 			LichComponent& enemy = sceneHandler->getScene()->getComponent<LichComponent>(entityID);
-                  enemy.life -= damage;
-                  isEnemy = true;
-                  std::cout << "LichWas HIT\n";
+            enemy.life -= damage;
+            isEnemy = true;
+            std::cout << "LichWas HIT\n";
 		}
-		//if (sceneHandler->getScene()->hasComponents<LichComponent>(entityID)) {
-		//
-		//}
 		if (isEnemy)
         {
             Rigidbody& enemyRB = sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
 			Transform& enemyTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 			Transform& playerTrans = sceneHandler->getScene()->getComponent<Transform>(player);
-			glm::vec3 newDir = glm::normalize(playerTrans.position - enemyTrans.position);
+			glm::vec3 newDir = safeNormalize(playerTrans.position - enemyTrans.position);
 			enemyRB.velocity = glm::vec3(-newDir.x, 0.f, -newDir.z) * knockBack;
 		}
 	}
@@ -601,23 +1094,28 @@ void NetworkHandlerGame::sendHitOn(int entityID, int damage, float knockBack)
 void NetworkHandlerGame::setPlayerEntity(Entity player)
 {
 	this->player = player;
+	MeshComponent& mesh = this->sceneHandler->getScene()->getComponent<MeshComponent>(this->player);
+	this->resourceManger->makeUniqueMaterials(mesh);
+	this->origMat = mesh.overrideMaterials[0];
 }
 
 void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 {
-	int size = this->otherPlayersServerId.size();
+	int size = (int)this->otherPlayersServerId.size();
 	this->playerEntities.resize(size);
 	this->swords.resize(size);
 	this->playerPosLast.resize(size);
+    this->currDistToStepSound.resize(size, 0);
 	this->playerPosCurrent.resize(size);
 	float angle = 360.0f / (size + 1);
 
 	Scene* scene = this->sceneHandler->getScene();
 	Transform& playerTrans = scene->getComponent<Transform>(this->player);
-	playerTrans.position = SMath::rotateVector(glm::vec3(0.0f, angle * this->ID, 0.0f), glm::vec3(10.0f, 12.0f, 0.0f));
+	playerTrans.position = SMath::rotateVector(glm::vec3(0.0f, angle * (this->ID % (size + 1)), 0.0f), glm::vec3(15.0f, 12.0f, 0.0f));
 	for (int i = 0; i < size; i++)
 	{
 		this->playerEntities[i] = scene->createEntity();
+        this->otherPlayers[i].first = this->playerEntities[i];
 		scene->setComponent<MeshComponent>(this->playerEntities[i], playerMesh);
 		scene->setComponent<AnimationComponent>(this->playerEntities[i]);
 		scene->setComponent<Collider>(this->playerEntities[i], Collider::createCapsule(2, 10, glm::vec3(0, 7.3, 0)));
@@ -628,19 +1126,12 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 
 		// Set Position
 		Transform& t = scene->getComponent<Transform>(this->playerEntities[i]);
-		t.position = playerTrans.position = SMath::rotateVector(glm::vec3(0.0f, angle * this->otherPlayersServerId[i], 0.0f), glm::vec3(10.0f, 12.0f, 0.0f));
+		t.position = playerTrans.position = SMath::rotateVector(glm::vec3(0.0f, angle * (this->otherPlayersServerId[i] % (size + 1)), 0.0f), glm::vec3(10.0f, 12.0f, 0.0f));
 
 		// Set tint color
 		MeshComponent& mesh = scene->getComponent<MeshComponent>(this->playerEntities[i]);
 		this->resourceManger->makeUniqueMaterials(mesh);
 		mesh.overrideMaterials[0].tintColor = this->playerColors[i + 1];
-
-		/*scene->setComponent<Rigidbody>(this->playerEntities[i]);
-
-		Rigidbody& rb = scene->getComponent<Rigidbody>(this->playerEntities[i]);
-		rb.gravityMult = 5;
-		rb.friction = 0.1f;
-		rb.rotFactor = glm::vec3(0);*/
 	}
 }
 
@@ -651,33 +1142,44 @@ void NetworkHandlerGame::updatePlayer()
 		sf::Packet packet;
 		Transform& t = this->sceneHandler->getScene()->getComponent<Transform>(this->player);
 		AnimationComponent& anim = this->sceneHandler->getScene()->getComponent<AnimationComponent>(this->player);
+		HealthComp& healthComp = this->sceneHandler->getScene()->getComponent<HealthComp>(this->player);
 
 		packet << (int)GameEvent::UPDATE_PLAYER <<
 			t.position.x << t.position.y << t.position.z <<
 			t.rotation.x << t.rotation.y << t.rotation.z <<
 			(int)anim.aniSlots[0].animationIndex << anim.aniSlots[0].timer << anim.aniSlots[0].timeScale <<
-			(int)anim.aniSlots[1].animationIndex << anim.aniSlots[1].timer << anim.aniSlots[1].timeScale;
+			(int)anim.aniSlots[1].animationIndex << anim.aniSlots[1].timer << anim.aniSlots[1].timeScale <<
+			(int)healthComp.health;
 		this->sendDataToServerUDP(packet);
 	}
 }
 
 void NetworkHandlerGame::interpolatePositions()
 {
+    
 	Scene* scene = this->sceneHandler->getScene();
 	UIRenderer* UI = this->sceneHandler->getUIRenderer();
 	this->timer += Time::getDT();
 
 	float percent = this->timer / UPDATE_RATE;
-    if (percent > 1.5)//we have gone to far without and update
-    {
-		return;    
-	}
 	for (int i = 0; i < this->playerEntities.size(); i++)
 	{
 		Transform& t = scene->getComponent<Transform>(this->playerEntities[i]);
-		t.position = this->playerPosLast[i] + percent * (this->playerPosCurrent[i] - this->playerPosLast[i]);
+		glm::vec3 newPosition = this->playerPosLast[i] + percent * (this->playerPosCurrent[i] - this->playerPosLast[i]);
+        if (newPosition.y < 3)//3 seems to be an ok value
+        {    
+			float moveLenght = glm::length(newPosition - t.position);
+            currDistToStepSound[i] -= moveLenght;
+			ParticleSystem& footstepPS = scene->getComponent<ParticleSystem>(this->otherPlayers[i].first);
+            footstepPS.spawn = moveLenght > 0.01f;
+		}
+        t.position = newPosition;
 		UI->renderString(this->otherPlayers[i].second, t.position + glm::vec3(0.0f, 20.0f, 0.0f) + t.forward(), glm::vec2(150.0f));
-
+        if (currDistToStepSound[i] <= 0)
+        {
+			currDistToStepSound[i] = distToStepSound;
+            this->sceneHandler->getAudioHandler()->playSound(this->otherPlayers[i].first, moveSound, 7.f);
+		}
 		// Put sword in characters hand and keep updating it
 		scene->getComponent<Transform>(this->swords[i]).setMatrix(
 			this->resourceManger->getJointTransform(
@@ -788,6 +1290,82 @@ void NetworkHandlerGame::useHealAbilityRequest(glm::vec3 position)
 		this->spawnHealArea(position);
 	}
 }
+
+void NetworkHandlerGame::setGhost()
+{
+	sf::Packet packet;
+	packet << (int)GameEvent::PLAYER_SET_GHOST;
+	this->sendDataToServerTCP(packet);
+}
+
+void NetworkHandlerGame::setPerks(const Perks perk[])
+{
+    
+    Combat& combat = sceneHandler->getScene()->getComponent<Combat>(player);
+	HealthComp& healthComp = sceneHandler->getScene()->getComponent<HealthComp>(player);
+	for (size_t j = 0; j < 4; j++)
+	{
+		if (combat.perks[j].perkType == emptyPerk)
+		{
+			combat.perks[j] = perk[j];
+			switch (combat.perks[j].perkType)
+			{
+			case hpUpPerk:
+				this->combatSystem->updateHealth(combat, healthComp, combat.perks[j]);
+				break;
+			case dmgUpPerk:
+				this->combatSystem->updateDmg(combat, combat.perks[j]);
+				break;
+			case attackSpeedUpPerk:
+				this->combatSystem->updateAttackSpeed(combat, combat.perks[j]);
+				break;
+			case movementUpPerk:
+				this->combatSystem->updateMovementSpeed(combat, combat.perks[j]);
+				break;
+			case staminaUpPerk:
+				this->combatSystem->updateStamina(combat, combat.perks[j]);
+				break;
+			}
+		}
+	}
+}
+
+void NetworkHandlerGame::playParticle(const ParticleTypes& particleType, Entity& entity)
+{
+    Scene* scene = sceneHandler->getScene();
+	if (particleType == ParticleTypes::BLOOD) {
+		int bloodEntity = scene->createEntity();
+		scene->getComponent<Transform>(bloodEntity).position = scene->getComponent<Transform>(entity).position;
+
+		scene->setComponent<ParticleSystem>(bloodEntity);
+		ParticleSystem& partSys = scene->getComponent<ParticleSystem>(bloodEntity);
+        partSys = this->getBloodParticleSystem();
+		partSys.spawn = true;
+	}
+    else if (!scene->hasComponents<ParticleSystem>(entity))
+    {
+    	scene->setComponent<ParticleSystem>(entity);
+    	
+		ParticleSystem& partSys = scene->getComponent<ParticleSystem>(entity);
+		switch (particleType)
+		{
+		case ParticleTypes::HEAL:
+			partSys = this->getHealParticleSystem();
+			break;
+		case ParticleTypes::LICH_HEAL:
+			partSys = this->getLichHealParticleSystem();
+			break;
+		case ParticleTypes::SWARM:
+			partSys = this->getSwarmParticleSystem();
+			break;
+		default:
+			return;
+			break;
+		}
+		partSys.spawn = true;
+    }
+}
+
 Entity NetworkHandlerGame::spawnOrbs(int orbType)
 {
     static int fireOrb_mesh  = this->resourceManger->addMesh("assets/models/fire_orb.obj");
@@ -799,11 +1377,11 @@ Entity NetworkHandlerGame::spawnOrbs(int orbType)
     {
         this->sceneHandler->getScene()->setComponent<MeshComponent>(orb, fireOrb_mesh);
         this->sceneHandler->getScene()->setComponent<Collider>(
-            orb, Collider::createSphere(LichComponent::orbRadius)
+            orb, Collider::createSphere(LichComponent::orbRadius,glm::vec3(0.0f),true)
         );
         this->sceneHandler->getScene()->setComponent<Orb>(orb);
         this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
-        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = NetworkHandlerGame::lich_fire;
+        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = &NetworkHandlerGame::lich_fire;
         Rigidbody& rb =
             this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
         rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -815,11 +1393,11 @@ Entity NetworkHandlerGame::spawnOrbs(int orbType)
     {
         this->sceneHandler->getScene()->setComponent<MeshComponent>(orb, iceOrb_mesh);
         this->sceneHandler->getScene()->setComponent<Collider>(
-            orb, Collider::createSphere(LichComponent::orbRadius)
+            orb, Collider::createSphere(LichComponent::orbRadius,glm::vec3(0.0f),true)
         );
         this->sceneHandler->getScene()->setComponent<Orb>(orb);
         this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
-        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = NetworkHandlerGame::lich_ice;
+        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = &NetworkHandlerGame::lich_ice;
         Rigidbody& rb =
             this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
         rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -831,11 +1409,11 @@ Entity NetworkHandlerGame::spawnOrbs(int orbType)
     {
         this->sceneHandler->getScene()->setComponent<MeshComponent>(orb, lightOrb_mesh);
         this->sceneHandler->getScene()->setComponent<Collider>(
-            orb, Collider::createSphere(LichComponent::orbRadius)
+            orb, Collider::createSphere(LichComponent::orbRadius,glm::vec3(0.0f),true)
         );
         this->sceneHandler->getScene()->setComponent<Orb>(orb);
         this->sceneHandler->getScene()->setComponent<Rigidbody>(orb);
-        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = NetworkHandlerGame::lich_light;
+        this->sceneHandler->getScene()->getComponent<Orb>(orb).orbPower = &NetworkHandlerGame::lich_light;
         Rigidbody& rb =
             this->sceneHandler->getScene()->getComponent<Rigidbody>(orb);
         rb.rotFactor = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -865,7 +1443,9 @@ Entity NetworkHandlerGame::spawnObject(
                     Collider::createBox(glm::vec3{
                         LichComponent::alterWidth,
                         LichComponent::alterHeight,
-                        LichComponent::alterDepth})
+                        LichComponent::alterDepth},
+                        glm::vec3(0.f,LichComponent::alterHeight/2.f, 0.f)
+                        )
                 );
 
                 break;
@@ -878,7 +1458,9 @@ Entity NetworkHandlerGame::spawnObject(
                     Collider::createBox(glm::vec3{
                         LichComponent::graveWidth,
                         LichComponent::graveHeight,
-                        LichComponent::graveDepth})
+                        LichComponent::graveDepth},
+                        glm::vec3(0.f,LichComponent::graveHeight/2.f, 0.f)
+                        )
                 );
                 break;
             default:
@@ -900,4 +1482,45 @@ Entity NetworkHandlerGame::createHump(){
     sceneHandler->getScene()->setInactive(e);
 
     return e;
+}
+
+void NetworkHandlerGame::createProjectileParticleSystem(
+	const Entity& projectile,
+	const glm::vec4& startColor)
+{
+	Scene* scene = this->sceneHandler->getScene();
+
+	// Create entity
+	Entity followProjectileEntity = scene->createEntity();
+
+	// Follow orb
+	scene->setComponent<FollowEntity>(followProjectileEntity);
+	scene->getComponent<FollowEntity>(followProjectileEntity).entityToFollow = projectile;
+
+	// Particle system
+	scene->setComponent<ParticleSystem>(followProjectileEntity);
+	ParticleSystem& partSys = 
+		scene->getComponent<ParticleSystem>(followProjectileEntity);
+	partSys = this->getOrbParticleSystem();
+
+	partSys.startColor = startColor;
+}
+
+void NetworkHandlerGame::stopFollowingEntity(const Entity& followedEntity)
+{
+	auto followView = 
+		this->sceneHandler->getScene()->getSceneReg().view<Transform, FollowEntity, ParticleSystem>();
+	auto followFunc = [&](
+		const auto entity,
+		Transform& transform,
+		const FollowEntity& followEntityComponent,
+		ParticleSystem& particleSystem)
+	{
+		// Found entity
+		if (followEntityComponent.entityToFollow == followedEntity)
+		{
+			particleSystem.spawn = false;
+		}
+	};
+	followView.each(followFunc);
 }
