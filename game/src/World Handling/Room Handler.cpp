@@ -9,7 +9,7 @@
 const float RoomHandler::TILE_WIDTH = 25.f;
 const float RoomHandler::BORDER_COLLIDER_HEIGHT = TILE_WIDTH * 6.f;
 const uint32_t RoomHandler::TILES_BETWEEN_ROOMS = 5;
-const uint32_t RoomHandler::DECO_ENTITY_CHANCE = 30u;
+const uint32_t RoomHandler::DECO_ENTITY_CHANCE = 50u;
 const uint32_t RoomHandler::NUM_BORDER = 1;
 const uint32_t RoomHandler::NUM_ONE_X_ONE = 5;
 const uint32_t RoomHandler::NUM_ONE_X_TWO = 2;
