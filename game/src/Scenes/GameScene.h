@@ -67,6 +67,7 @@ private:
 
     float levelTimer;
     float portalTimer;
+    float inPortalTimer;
     float fadeTimer;
     float deathTimer;
     bool isDead;
