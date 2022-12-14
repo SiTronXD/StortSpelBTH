@@ -965,7 +965,7 @@ public:
 		Transform& abilityTrans = this->scene->getComponent<Transform>(entity);
 		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
 		Rigidbody& abilityRb = this->scene->getComponent<Rigidbody>(entity);
-		abilityTrans.position = glm::vec3(playerTrans.position.x, playerTrans.position.y + 8.f, playerTrans.position.z);
+		abilityTrans.position = glm::vec3(playerTrans.position.x, playerTrans.position.y + 4.f, playerTrans.position.z);
 		playerTrans.updateMatrix();
 		glm::vec3 throwDir = safeNormalize(playerTrans.forward());
 		abilityRb.gravityMult = 6.f;
