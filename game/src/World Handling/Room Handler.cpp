@@ -155,7 +155,6 @@ void RoomHandler::multiplayerToggleCurrentDoors(int nextIndex)
 
 void RoomHandler::mutliplayerCloseDoors()
 {
-
 	this->toggleDoors(this->oldIndex, true);
 	this->toggleDoors(this->activeIndex, false);
 	this->togglePaths(this->oldIndex, false);
@@ -173,8 +172,6 @@ void RoomHandler::mutliplayerCloseDoors()
 
 void RoomHandler::serverActivateCurrentRoom()
 {
-	//this->togglePaths(this->oldIndex, false);
-
 	Room& room = this->rooms[this->activeIndex];
 
 	this->activateRoom(this->activeIndex);
@@ -210,7 +207,6 @@ void RoomHandler::roomCompleted()
 	curRoom.finished = true;
 	if (curRoom.type != RoomData::START_ROOM && curRoom.type != RoomData::EXIT_ROOM)
 	{
-		glm::vec3 pos = scene->getComponent<Transform>(this->rooms[this->activeIndex].rock).position;
 		this->scene->setScriptComponent(this->rooms[this->activeIndex].rock, "scripts/moveRock.lua");
 	}
 
@@ -292,7 +288,7 @@ bool RoomHandler::playerNewRoom(Entity player)
 			if (this->physicsEngine->testContactPair(newRoom.box, newRoom.colliderPos, glm::vec3(0.f), 
 				playerCol, playerTra.position, playerTra.rotation))
 			{
-				this->serverNextIndex = -1; // rmv ?
+				this->serverNextIndex = -1;
 				this->oldIndex = this->activeIndex;
 				this->activeIndex = curRoom.connectingIndex[i];
 				this->placeDoorLamps();
@@ -1409,10 +1405,6 @@ Entity RoomHandler::createBorderEntity(const glm::vec2& position, bool scalePos)
 	if (this->useMeshes)
 	{
         this->scene->setComponent<MeshComponent>(entity, (int)this->borderMeshIds[std::abs(int(this->random->rand())) % NUM_BORDER]);
-	}
-	else
-	{
-		this->random->rand();
 	}
 
 	return entity;
