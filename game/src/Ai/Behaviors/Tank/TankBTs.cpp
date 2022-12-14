@@ -100,6 +100,7 @@ void TankBT::groundHumpShortcut(Entity entityID)
 		        hTrans.position.y = 0.5f;
 		        tankComp.humps.insert({newHump, 1.0f});
 		        tankComp.groundHumpTimer = tankComp.groundHumpTimerOrig;
+				tankComp.lowerCurrentAnim = -1;
 				
 		        ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
 				if(netScene)
