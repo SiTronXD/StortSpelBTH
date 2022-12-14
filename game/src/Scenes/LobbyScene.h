@@ -38,6 +38,8 @@ private:
 
 	void addCandle(glm::vec3 position);
 
+	void preloadAssets();
+
 public:
 	LobbyScene(const std::string& serverIP = "");
 	virtual ~LobbyScene();

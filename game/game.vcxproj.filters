@@ -29,6 +29,7 @@
     <ClCompile Include="src\ServerGameModes\NetworkGameScene.cpp" />
     <ClCompile Include="src\World Handling\SpawnHandler.cpp" />
     <ClCompile Include="src\Settings\Settings.cpp" />
+    <ClCompile Include="src\Scenes\LoadingScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -87,6 +88,7 @@
     <ClInclude Include="src\Settings\Settings.h" />
     <ClInclude Include="src\Systems\PerkAbilityOutsideRangeSystem.hpp" />
     <ClInclude Include="src\Systems\FollowEntitySystem.hpp" />
+    <ClInclude Include="src\Scenes\LoadingScene.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
