@@ -208,6 +208,7 @@ void ServerGameMode::update(float dt)
             }
         }
     }
+    // Don't remove, used for debug
     /*for (auto ent : spawnHandler.allEntityIDs)
     {
         if (hasComponents<Collider>(ent))
