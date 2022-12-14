@@ -11,10 +11,9 @@ script.perkProperties =
 function script:init()
 	print("init with ID: " .. self.ID)
 
-    
 	self.moveDir = vector()
 	self.currentSpeed = vector()
-	self.maxSpeed = 30.0
+	self.maxSpeed = 30
     self.sprintSpeed = 60
     self.isSprinting = false
 	self.speedIncrease = 200
@@ -28,8 +27,8 @@ function script:init()
     self.currentHealth = 100
     self.maxStamina = 100
     self.currentStamina = 100
-    self.sprintStamDrain = 20.0
-    self.staminaRegen = 20.0
+    self.sprintStamDrain = 10.0
+    self.staminaRegen = 30.0
     self.staminaRegenCd = 2.0
     self.staminaTimer = 0.0
     self.useStamina = true
@@ -56,41 +55,28 @@ function script:init()
         dodge = 4, attack = 5, moveAttack = 6, dead = 7 }
     self.currentAnimation = 1
     self.idleAnimTime = 1.0
-    self.runAnimTime = 0.7
-    self.sprintAnimTime = 1.2
+    self.runAnimTime = 1.8
+    self.sprintAnimTime = 2.8
     self.dodgeAnimTime = 3.0
 end
 
 function script:update(dt)
-    if (paused) then
-        local rb = scene.getComponent(self.ID, CompType.Rigidbody)
-        rb.velocity = vector()
-        scene.setComponent(self.ID, CompType.Rigidbody, rb)
-        return
+    -- Dead as animation but no longer dead
+    if (self.currentAnimation == self.activeAnimation.dead and not self.isDead) then
+        self.currentAnimation = 1
+        scene.blendToAnimation(self.ID, "idle", "", 0.25, 1)
     end
-    if (self.currentAnimation == self.activeAnimation.dead) then
-        local rb = scene.getComponent(self.ID, CompType.Rigidbody)
-        rb.velocity = vector(0)
-        return
-    end
-
-    -- Check if grounded
-    local payload = physics.raycast(self.transform.position, vector(0, -1, 0))
-    if (payload) then
-        if (scene.getComponent(payload.entity, CompType.Collider).isTrigger == false and
-            payload.entity ~= self.playerID) then
-            self.onGround = (self.transform.position - payload.hitPoint):length() < 7.5
+    -- Dead change to death animation
+    if self.isDead
+    then
+        if self.currentAnimation ~= self.activeAnimation.dead
+        then
+            scene.blendToAnimation(self.ID, "dead", "", 0.3, 1.0)
+            self.currentAnimation = self.activeAnimation.dead
         end
     end
 
-    -- New movement using rigidbody
-    local camTransform = scene.getComponent(self.camID, CompType.Transform)
-    local forward = camTransform:forward()
-    forward.y = 0
-    local right = camTransform:right()
-    right.y = 0
-
-    --push timer countdown
+    -- Push timer countdown
     if self.pushTimer > 0.0 then
         self.pushTimer = self.pushTimer - dt
         self.isPushed = true
@@ -98,10 +84,35 @@ function script:update(dt)
         self.isPushed = false
     end
 
+    -- Paused game or dead
+    if (self.currentAnimation == self.activeAnimation.dead) then
+        local rb = scene.getComponent(self.ID, CompType.Rigidbody)
+        rb.velocity = vector(0, 0, 0)
+        scene.setComponent(self.ID, CompType.Rigidbody, rb)
+        return
+    end
+
+    -- Check if grounded
+    local payload = physics.raycast(self.transform.position + vector(0, 1, 0), vector(0, -1, 0))
+    if (payload) then
+        if (scene.getComponent(payload.entity, CompType.Collider).isTrigger == false and
+            payload.entity ~= self.playerID) then
+            self.onGround = (self.transform.position - payload.hitPoint):length() < 2
+        end
+    end
+
+    -- Movement using rigidbody
+    local camTransform = scene.getComponent(self.camID, CompType.Transform)
+    local forward = camTransform:forward()
+    forward.y = 0
+    local right = camTransform:right()
+    right.y = 0
+
     -- Input vector
-    if not self.isDodging
+    if not self.isDodging and self.canMove
     then
         self.moveDir = vector(core.btoi(input.isKeyDown(Keys.A)) - core.btoi(input.isKeyDown(Keys.D)), core.btoi(input.isKeyDown(Keys.W)) - core.btoi(input.isKeyDown(Keys.S)), 0)
+        self.moveDir = self.moveDir * core.btoi(not paused)
 
         if self.moveDir ~= vector(0)
         then
@@ -128,7 +139,8 @@ function script:update(dt)
         end
     end
 
-    if (input.isKeyDown(Keys.SHIFT))
+    -- Sprint
+    if (input.isKeyDown(Keys.SHIFT) and self.canMove)
     then
         if (self.currentStamina > 0 and self.useStamina == true and self.moveDir ~= vector(0))
         then
@@ -150,7 +162,8 @@ function script:update(dt)
         self.dodgeTimer = self.dodgeTimer - dt
     end
 
-    if (input.isKeyPressed(Keys.CTRL))
+    -- Dodge
+    if (input.isKeyPressed(Keys.CTRL) and self.canMove)
     then
         self.currentMoveDir = self.moveDir:normalize()
         if (self.currentStamina > 20.0 and self.currentMoveDir ~= vector(0))
@@ -174,6 +187,7 @@ function script:update(dt)
     -- Final vector in 3D using cameras directional vectors
     self.currentSpeed = forward:normalize() * self.currentSpeed.y + right:normalize() * self.currentSpeed.x
 
+    -- Jumping
     if (input.isKeyDown(Keys.SPACE) and self.onGround) then
         self.jumpTimer = 0.25
     elseif (self.jumpTimer > 0) then
@@ -191,7 +205,7 @@ function script:update(dt)
 
     -- Apply jump via acceleration
     local jump = self.jumpTimer > 0 and input.isKeyDown(Keys.SPACE)
-    if(jump) then
+    if(jump and not paused) then
         rb.acceleration.y = 100
     else
         rb.acceleration.y = -300
@@ -236,47 +250,56 @@ function script:update(dt)
             then
                 if self.currentAnimation ~= self.activeAnimation.sprint
                 then
-                    scene.blendToAnimation(self.ID, "run", "", 0.3, self.sprintAnimTime)
-                    self.currentAnimation = self.activeAnimation.sprint
+                    if self.currentAnimation == self.activeAnimation.run
+                    then
+                        scene.setAnimationTimeScale(self.ID, self.sprintAnimTime, "")
+                        self.currentAnimation = self.activeAnimation.sprint
+                    else
+                        scene.blendToAnimation(self.ID, "run", "", 0.3, self.sprintAnimTime)
+                        self.currentAnimation = self.activeAnimation.sprint
+                    end
                 end
             end
         end
     end
 
-    if (not self.isSprinting and not self.isDodging and not self.isDead)
+    if not self.isSprinting and not self.isDodging and not self.isDead
     then
         if (self.animTimer < 0.0)
         then
             if self.moveDir ~= vector(0) and self.currentAnimation ~= self.activeAnimation.run
             then
-                scene.blendToAnimation(self.ID, "run", "", 0.3, self.runAnimTime)
-                self.currentAnimation = self.activeAnimation.run
+                if self.currentAnimation == self.activeAnimation.sprint
+                then
+                    scene.setAnimationTimeScale(self.ID, self.runAnimTime, "")
+                    self.currentAnimation = self.activeAnimation.run
+                else
+                    scene.blendToAnimation(self.ID, "run", "", 0.3, self.runAnimTime)
+                    self.currentAnimation = self.activeAnimation.run
+                end
             elseif curMoveSum < 0.1 and self.currentAnimation ~= self.activeAnimation.idle
             then
                 scene.blendToAnimation(self.ID, "idle", "", 0.2, self.idleAnimTime)
                 self.currentAnimation = self.activeAnimation.idle
             end
-        elseif (self.wholeBody == false)
-        then
-            if (self.isMoving and self.currentAnimation ~= self.activeAnimation.run)
-            then
-                scene.blendToAnimation(self.ID, "run", "LowerBody", 0.3, self.runAnimTime)
-                self.currentAnimation = self.activeAnimation.run
-            elseif (not self.isMoving and self.currentAnimation ~= self.activeAnimation.idle)
-            then
-                scene.blendToAnimation(self.ID, "idle", "LowerBody", 0.2, self.idleAnimTime)
-                self.currentAnimation = self.activeAnimation.idle
-            end
         end
     end
 
-    if self.currentHealth <= 0
+    if self.isAttacking and self.moveDir ~= vector(0) and self.canMove
     then
-        if self.currentAnimation ~= self.activeAnimation.dead
+        if self.currentAnimation ~= self.activeAnimation.run and not self.isSprinting
         then
-            scene.blendToAnimation(self.ID, "dead", "", 0.3, 1.0)
-            self.currentAnimation = self.activeAnimation.dead
+            scene.blendToAnimation(self.ID, "run", "LowerBody", 0.3, self.runAnimTime)
+            self.currentAnimation = self.activeAnimation.run
+        elseif self.currentAnimation ~= self.activeAnimation.Sprint and self.isSprinting
+        then
+            scene.setAnimationTimeScale(self.ID, self.sprintAnimTime, "LowerBody")
+            self.currentAnimation = self.activeAnimation.sprint
         end
+    elseif self.isAttacking and curMoveSum < 0.1 and self.currentAnimation ~= self.activeAnimation.idle
+    then
+        scene.blendToAnimation(self.ID, "idle", "LowerBody", 0.2, self.idleAnimTime)
+        self.currentAnimation = self.activeAnimation.idle
     end
 
     if (scene.getComponent(self.ID, CompType.Mesh).meshID == self.playerMesh)
@@ -349,8 +372,6 @@ function script:rotate2(deltaTime)
         
         self.transform.rotation.y = self.transform.rotation.y + 180
     end
-    
-    --print(self.moveDir.x .. " " .. self.moveDir.y)
 end
 
 return script

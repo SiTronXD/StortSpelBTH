@@ -57,7 +57,7 @@ void SwarmBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, f
 	swarmTrans.updateMatrix();
 	glm::vec2 targetPos			= glm::vec2(target.x, target.z);
 	glm::vec2 swarmpos			= glm::vec2(swarmTrans.position.x, swarmTrans.position.z);
-	glm::vec2 curRot			= -safeNormalize(glm::vec2(swarmTrans.forward().x, swarmTrans.forward().z));
+	glm::vec2 curRot			= safeNormalize(glm::vec2(swarmTrans.forward().x, swarmTrans.forward().z));
 	glm::vec2 swarm_to_friend	= safeNormalize(targetPos - swarmpos);
 
 	float angle_between			= glm::degrees(glm::acos(glm::dot(swarm_to_friend, curRot)));
@@ -76,7 +76,7 @@ void SwarmBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, f
 	swarmTrans.updateMatrix();
 	targetPos			= glm::vec2(target.x, target.z);
 	swarmpos				= glm::vec2(swarmTrans.position.x, swarmTrans.position.z);
-	curRot				= -safeNormalize(glm::vec2(swarmTrans.forward().x, swarmTrans.forward().z));
+	curRot				= safeNormalize(glm::vec2(swarmTrans.forward().x, swarmTrans.forward().z));
 	swarm_to_friend		= safeNormalize(targetPos - swarmpos);
 	angle_between		= glm::degrees(glm::acos(glm::dot(swarm_to_friend, curRot)));
 	//If angle got bigger, then change direction
@@ -160,9 +160,9 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 {
     BTStatus ret = BTStatus::Running;
     if (hasFriends(entityID) == BTStatus::Failure)
-        {
-            return BTStatus::Failure;
-        }
+    {
+        return BTStatus::Failure;
+    }
 
 	Transform& swarmTransform = getTheScene()->getComponent<Transform>(entityID);
 	SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(entityID);
@@ -304,10 +304,12 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 
 	Transform tempTrans = swarmTransform;
 	float tempVelY = swarmRB.velocity.y;
+	glm::vec3 target = swarmTransform.position + swarmComp.dir*10.0f;
+	avoidStuff(entityID, BehaviorTree::sceneHandler, swarmComp.attackGoRight, target, swarmComp.dir);
 	swarmRB.velocity = swarmComp.dir * swarmComp.idleSpeed;
 	swarmRB.velocity.y = tempVelY;
 	glm::vec3 to = swarmTransform.position + swarmComp.dir * 3.0f;
-	swarmTransform.rotation.y = lookAtY(swarmTransform.position, to);
+	rotateTowards(entityID, to, swarmComp.idleRotSpeed, 5.0f);
 	swarmTransform.updateMatrix();
 	swarmComp.forward = swarmTransform.forward();
 	swarmComp.right = swarmTransform.right();
@@ -444,33 +446,22 @@ BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 
     if (glm::length((thisTransform.position - playerTransform.position)) >
         thisSwarmComp.sightRadius)
-        {
-            return BTStatus::Success;
-        }
+    {
+        return BTStatus::Success;
+    }
 
-    thisTransform.rotation.y = lookAtY(playerTransform, thisTransform);
+	glm::vec3 direction = safeNormalize(thisTransform.position - playerTransform.position);
+	glm::vec3 target = thisTransform.position + direction * 2.0f;
+	rotateTowards(entityID, target, swarmComp.attackRotSpeed, 5.0f);
     thisTransform.updateMatrix();
 
-    glm::vec3 dir =
-        -safeNormalize(playerTransform.position - thisTransform.position);
+    glm::vec3 dir = safeNormalize(thisTransform.position - playerTransform.position);
+	avoidStuff(entityID, BehaviorTree::sceneHandler, thisSwarmComp.attackGoRight, target, dir);
     dir.y = 0;
     float tempYvel = rigidbody.velocity.y;
     rigidbody.velocity = dir * swarmComp.speed;
     rigidbody.velocity.y = tempYvel;
 
-    if (rand() % 2 == 0)
-        {
-            thisTransform.rotation.y +=
-                100 * thisSwarmComp.escapeAnimSpeed * get_dt();
-        }
-    else
-        {
-            thisTransform.rotation.y -=
-                100 * thisSwarmComp.escapeAnimSpeed * get_dt();
-        }
-
-    //TODO BTStatus: failure not returned.
-    //TODO : Check if cornered, return failure
 
 
 	return ret;
@@ -566,85 +557,10 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
     rigidbody.velocity = -dir * swarmComp.speed;
     rigidbody.velocity.y = tempYvel;
 
- /*   entityTransform.rotation.y = lookAtY(entityTransform, playerTransform);
-	entityTransform.updateMatrix();    
-
-	glm::vec3 newPlayerPos = playerTransform.position;
-	newPlayerPos = newPlayerPos + playerTransform.up() * 3.0f;
-    
-    glm::vec3& entityPos	= entityTransform.position;
-    glm::vec3 dirEntityToPlayer = safeNormalize(newPlayerPos - entityTransform.position);
-    float distEntityToPlayer	= glm::length(newPlayerPos - entityPos);
-    
-	int safetyBreak = 0;
-	int safetyBreak2 = 0;
-    bool canSeePlayer = false; 
-	//TODO: saftybeak is bad stuff, fix this shit
-    while(!canSeePlayer) 
-    {
-		newPlayerPos = playerTransform.position;
-		newPlayerPos = newPlayerPos + playerTransform.up() * 3.0f;
-        dirEntityToPlayer = safeNormalize(newPlayerPos - entityPos);
-        distEntityToPlayer	= glm::length(newPlayerPos - entityPos);
-        Ray rayToPlayer{entityPos, dirEntityToPlayer};    
-        RayPayload rp = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayToPlayer, distEntityToPlayer);
-
-		//Draw ray
-		
-		BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(
-		entityPos,
-		entityPos + dirEntityToPlayer * distEntityToPlayer,
-		glm::vec3(1.0f, 0.0f, 0.0f));
-
-            if (rp.hit)
-                {
-                    int playerId = getPlayerID(sceneHandler, entityID);
-
-                    if (playerId != rp.entity)
-                        {
-                            glm::vec3 leftOfBlob = glm::cross(
-                                dirEntityToPlayer, glm::vec3(0.f, 1.f, 0.f)
-                            );
-                            entityPos += leftOfBlob;
-                        }
-                    else if (playerId == rp.entity)
-                        {
-                            canSeePlayer = true;
-                        }
-                    if (++safetyBreak2 > 150)
-                        {
-                            Log::warning(
-                                "Swarm ray check running too many times,this "
-                                "is bad",
-                                BT_FILTER
-                            );
-                            break;
-                        }
-                }
-            else
-                {
-                    if (++safetyBreak > 25)
-                        {
-                            Log::warning(
-                                "Swarm ray check running too many times,this "
-                                "is bad",
-                                BT_FILTER
-                            );
-                            break;
-                        }
-                }
-        }
-
-    dirEntityToPlayer.y = 0;
-    float tempYvel = rigidbody.velocity.y;
-    rigidbody.velocity = dirEntityToPlayer * swarmComp.speed;
-    rigidbody.velocity.y = tempYvel;
-*/
-
     if (closeEnoughToPlayer(entityID) == BTStatus::Success)
-        {
-            return BTStatus::Success;
-        }
+    {
+        return BTStatus::Success;
+    }
 
     return ret;
 }
@@ -669,42 +585,60 @@ BTStatus SwarmBT::closeEnoughToPlayer(Entity entityID)
 BTStatus SwarmBT::attack(Entity entityID)
 {
     BTStatus ret = BTStatus::Running;
+
 	int playerID = getPlayerID(entityID);
 	if(playerID == -1){return ret;}
 	Transform& thisTransform = getTheScene()->getComponent<Transform>(entityID);
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 	SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(entityID);
-	AiCombatSwarm& combat = getTheScene()->getComponent<AiCombatSwarm>(entityID);
 	Rigidbody& rigidbody = getTheScene()->getComponent<Rigidbody>(entityID);
 	Collider& sawrmCollider = getTheScene()->getComponent<Collider>(entityID);
 
-    glm::vec3 dir = playerTransform.position - thisTransform.position;
+    glm::vec3 playerTargetPos{playerTransform.position.x,playerTransform.position.y + SwarmComponent::aimAtPlayerYOffset, playerTransform.position.z};
+    glm::vec3 dir = playerTargetPos - thisTransform.position;
     dir.y += swarmComp.jumpY;
     dir = safeNormalize(dir);
 
-    thisTransform.rotation.y = lookAtY(thisTransform, playerTransform);
+	rotateTowards(entityID, playerTransform.position, swarmComp.attackRotSpeed, 5.0f);
     thisTransform.updateMatrix();
 
     static float initialFriction = rigidbody.friction;
 
     static Ray downRay{thisTransform.position, glm::vec3(0.0f, -1.0f, 0.0f)};
 
-	if(swarmComp.grounded && combat.timer > 0.0f)
+	if(swarmComp.grounded && swarmComp.timer > 0.0f)
 	{
-		combat.timer -= get_dt();
-		if(thisTransform.scale.y > 0.5f)
+		swarmComp.timer -= get_dt();
+		if(thisTransform.scale.y > (swarmComp.origScaleY * 0.5f))
 		{
 			thisTransform.scale.y -= swarmComp.chargeAnimSpeed * get_dt();
+		}
+
+		if(glm::length(playerTransform.position - thisTransform.position) < swarmComp.attackRange/2.0f)
+		{
+			glm::vec3 direction = safeNormalize(thisTransform.position - playerTransform.position);
+			avoidStuffBackwards(entityID, BehaviorTree::sceneHandler, swarmComp.attackGoRight, playerTransform.position, direction);
+			rigidbody.velocity =  direction * swarmComp.speed;
 		}
 	}
 	else if(!swarmComp.inAttack && !swarmComp.touchedPlayer && swarmComp.grounded)
 	{
 		//JUMP!
 		swarmComp.grounded = false;
-		thisTransform.scale.y = 1.0f;
+		thisTransform.scale.y = swarmComp.origScaleY;
 		rigidbody.velocity = dir * swarmComp.jumpForce;
 		swarmComp.inAttack = true; 
 		rigidbody.friction = 0.0f;
+
+		ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(getTheScene());
+		if (netScene)
+		{
+			netScene->addEvent({ (int)GameEvent::PLAY_ENEMY_SOUND, entityID, 0, 1, 0 });
+		}
+		else
+		{
+			sceneHandler->getAudioHandler()->playSound(entityID, SwarmComponent::s_attack, 10.f);
+		}
 	
 		Log::write("ATTACK!!!!", BT_FILTER);
 		ret = BTStatus::Success;
@@ -714,7 +648,7 @@ BTStatus SwarmBT::attack(Entity entityID)
 		swarmComp.inAttack = false; 
 		swarmComp.touchedPlayer = false; 
 		rigidbody.friction = initialFriction;
-		combat.timer = combat.lightAttackTime;
+		swarmComp.timer = swarmComp.lightAttackTime;
     }
 
 	return ret;
@@ -743,8 +677,6 @@ BTStatus SwarmBT::playDeathAnim(Entity entityID)
 BTStatus SwarmBT::die(Entity entityID)
 {
     BTStatus ret = BTStatus::Success;
-    static int chanceToSpawnPerk = 2;
-    static int chanceToSpawnability = 1;
 	int playerID = getPlayerID(entityID);
 	if(playerID == -1){return ret;}
     HealthComp& playerHealth = sceneHandler->getScene()->getComponent<HealthComp>(playerID);
@@ -752,20 +684,47 @@ BTStatus SwarmBT::die(Entity entityID)
     {
         playerHealth.health += 10;
     }
+	static int chanceToSpawnPerk = 2;
+	static int chanceToSpawnability = 1;
     int spawnLoot = rand() % 10;
     ServerGameMode* serverScene = dynamic_cast<ServerGameMode*>(sceneHandler->getScene());
 
     if (serverScene != nullptr)
     {
         int itemID, type = -1, otherType;
-        float multiplier;
+        float multiplier = 0.f;
         if (spawnLoot < chanceToSpawnPerk)
         {
             type = (int)ItemType::PERK;
             otherType = rand() % PerkType::emptyPerk;
-            multiplier = 0.2f;
+			switch (otherType)
+			{
+			case PerkType::hpUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::dmgUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::attackSpeedUpPerk:
+				multiplier = 0.05f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.05f;
+				break;
+			case PerkType::movementUpPerk:
+				multiplier = 0.2f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::staminaUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.1f;
+				break;
+			}
+			if (otherType == PerkType::attackSpeedUpPerk && getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel > 6)
+			{
+				multiplier = 0.4f;
+			}
+			else if (otherType == PerkType::movementUpPerk && getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel > 7)
+			{
+				multiplier = 1.f;
+			}
         }
-        else if (spawnLoot <= chanceToSpawnPerk + chanceToSpawnability)
+        else if (spawnLoot < chanceToSpawnPerk + chanceToSpawnability)
         {
             type = (int)ItemType::ABILITY;
             otherType = (AbilityType)(rand() % 2);
@@ -775,7 +734,6 @@ BTStatus SwarmBT::die(Entity entityID)
         {
             glm::vec3 spawnPos = sceneHandler->getScene()->getComponent<Transform>(entityID).position;
             glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
-            //ServerGameMode* serverScene = (ServerGameMode*)((NetworkSceneHandler*)sceneHandler)->getScene();
             itemID = serverScene->spawnItem((ItemType)type, otherType, multiplier);
             serverScene->addEvent(
                 {(int)GameEvent::SPAWN_ITEM,
@@ -790,54 +748,51 @@ BTStatus SwarmBT::die(Entity entityID)
     }
     else
     {
-        if (spawnLoot < 2)
-	    {
-            NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
-	    	Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
-            network->spawnItemRequest((PerkType)(rand() % PerkType::emptyPerk), 0.2f, swarmTrans.position,
-                glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
-	    	// Spawn Perk
-	    	/*PerkType perkType = (PerkType)(rand() % PerkType::emptyPerk);
-	    	Perks perk{ .multiplier = 0.2f, .perkType = perkType };
-	    	Entity perkEnt = sceneHandler->getScene()->createEntity();
-	    	sceneHandler->getScene()->setComponent<MeshComponent>(perkEnt, SwarmBT::perkMeshes[perkType]);
-	    	Transform& perkTrans = sceneHandler->getScene()->getComponent<Transform>(perkEnt);
-	    	perkTrans.position = swarmTrans.position;
-	    	perkTrans.scale = glm::vec3(2.f, 2.f, 2.f);
-	    	sceneHandler->getScene()->setComponent<Collider>(perkEnt, Collider::createSphere(2.f, glm::vec3(0.f, 0.f, 0.f), true));
-	    	sceneHandler->getScene()->setComponent<Rigidbody>(perkEnt);
-	    	Rigidbody& perkRb = sceneHandler->getScene()->getComponent<Rigidbody>(perkEnt);
-	    	glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
-	    	perkRb.gravityMult = 6.f;
-	    	perkRb.velocity = safeNormalize(spawnDir) * 20.f;
-	    	sceneHandler->getScene()->setComponent<Perks>(perkEnt, perk);
-	    	sceneHandler->getScene()->setComponent<PointLight>(perkEnt, glm::vec3(5.f, 7.f, 9.f));
-	    	sceneHandler->getScene()->setScriptComponent(perkEnt, "scripts/spin.lua");*/
-	    }
-	    else if (spawnLoot == 2)
-	    {
-            NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
-            Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
-            network->spawnItemRequest((AbilityType)(rand() % 2), swarmTrans.position,
-                glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
+		PerkType otherType;
+		float multiplier;
+		if (spawnLoot < 2)
+		{
+			otherType = PerkType(rand() % PerkType::emptyPerk);
+			NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
+			Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 
-	    	/*AbilityType abilityType = (AbilityType)(rand() % 2);
-	    	Abilities ability{ .abilityType = abilityType };
-	    	Entity abilityEnt = sceneHandler->getScene()->createEntity();
-	    	sceneHandler->getScene()->setComponent<MeshComponent>(abilityEnt, SwarmBT::abilityMeshes[abilityType]);
-	    	Transform& abilityTrans = sceneHandler->getScene()->getComponent<Transform>(abilityEnt);
-	    	Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
-	    	abilityTrans.position = swarmTrans.position;
-	    	abilityTrans.scale = glm::vec3(4.f, 4.f, 4.f);
-	    	sceneHandler->getScene()->setComponent<Collider>(abilityEnt, Collider::createSphere(4.f, glm::vec3(0.f, 0.f, 0.f), true));
-	    	sceneHandler->getScene()->setComponent<Rigidbody>(abilityEnt);
-	    	Rigidbody& abilityRb = sceneHandler->getScene()->getComponent<Rigidbody>(abilityEnt);
-	    	glm::vec3 spawnDir = glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1);
-	    	abilityRb.gravityMult = 4.f;
-	    	abilityRb.velocity = safeNormalize(spawnDir) * 40.f;
-	    	sceneHandler->getScene()->setComponent<Abilities>(abilityEnt, ability);
-	    	sceneHandler->getScene()->setComponent<PointLight>(abilityEnt, glm::vec3(7.f, 9.f, 5.f));*/
-	    }
+			switch (otherType)
+			{
+			case PerkType::hpUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::dmgUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::attackSpeedUpPerk:
+				multiplier = 0.05f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.05f;
+				break;
+			case PerkType::movementUpPerk:
+				multiplier = 0.2f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.1f;
+				break;
+			case PerkType::staminaUpPerk:
+				multiplier = 0.1f + getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel * 0.1f;
+				break;
+			}
+			if (otherType == PerkType::attackSpeedUpPerk && getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel > 6)
+			{
+				multiplier = 0.4f;
+			}
+			else if (otherType == PerkType::movementUpPerk && getTheScene()->getComponent<SwarmComponent>(entityID).currentLevel > 7)
+			{
+				multiplier = 1.f;
+			}
+
+			network->spawnItemRequest(otherType, multiplier, swarmTrans.position,
+				glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
+		}
+		else if (spawnLoot == 2)
+		{
+			NetworkHandlerGame* network = dynamic_cast<NetworkHandlerGame*>(sceneHandler->getNetworkHandler());
+			Transform& swarmTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
+			network->spawnItemRequest((AbilityType)(rand() % 2), swarmTrans.position,
+				glm::vec3((rand() % 201) * 0.01f - 1, 1, (rand() % 200) * 0.01f - 1));
+		}
     }
 
     //TODO: Sometgin goes wrong when we remove from group.
@@ -851,6 +806,15 @@ BTStatus SwarmBT::die(Entity entityID)
         serverScene->addEvent({(int)GameEvent::INACTIVATE, entityID});
     }
     sceneHandler->getScene()->setInactive(entityID);
+	ret = BTStatus::Success;
+	if(ret==BTStatus::Success)
+	{
+		SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
+		if(swarmComp.isElite)
+		{
+			swarmComp.removeEliteStats(sceneHandler->getScene(), entityID);
+		}
+	}
 
     return ret;
 }
@@ -864,24 +828,22 @@ BTStatus SwarmBT::alerted(Entity entityID)
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 	Transform& swarmTrans = getTheScene()->getComponent<Transform>(entityID);
 	Collider& swarmCol = getTheScene()->getComponent<Collider>(entityID);
-	float toMove = (swarmCol.radius*2) * (1.0f - swarmComp.alertScale);
+	float toMove = (swarmCol.radius*2) * (swarmComp.origScaleY - (swarmComp.origScaleY*swarmComp.alertScale));
 	
-	swarmTrans.rotation.y = lookAtY(swarmTrans, playerTransform);
+	rotateTowards(entityID, playerTransform.position, swarmComp.attackRotSpeed, 5.0f);
 	swarmTrans.updateMatrix();
 
-    swarmTrans.rotation.y = lookAtY(swarmTrans, playerTransform);
-    swarmTrans.updateMatrix();
 
     if (!swarmComp.alertAtTop)
         {
-            if (swarmTrans.scale.y >= swarmComp.alertScale &&
+            if (swarmTrans.scale.y >= (swarmComp.origScaleY*swarmComp.alertScale) &&
                 swarmTrans.position.y >= (swarmComp.alertTempYpos + toMove))
                 {
                     swarmComp.alertAtTop = true;
                 }
             else
                 {
-                    if (swarmTrans.scale.y < swarmComp.alertScale)
+                    if (swarmTrans.scale.y < (swarmComp.origScaleY*swarmComp.alertScale))
                         {
                             swarmTrans.scale.y +=
                                 swarmComp.alertAnimSpeed * get_dt();
@@ -896,9 +858,9 @@ BTStatus SwarmBT::alerted(Entity entityID)
         }
     else
         {
-            if (swarmTrans.scale.y <= 1.0f)
+            if (swarmTrans.scale.y <= swarmComp.origScaleY)
                 {
-                    swarmTrans.scale.y = 1.0f;
+                    swarmTrans.scale.y = swarmComp.origScaleY;
                     swarmTrans.position.y = swarmComp.alertTempYpos;
                     swarmComp.alertAtTop = false;
                     swarmComp.alertDone = true;
@@ -906,7 +868,7 @@ BTStatus SwarmBT::alerted(Entity entityID)
                 }
             else
                 {
-                    if (swarmTrans.scale.y > 1.0)
+                    if (swarmTrans.scale.y > swarmComp.origScaleY)
                         {
                             swarmTrans.scale.y -=
                                 swarmComp.alertAnimSpeed * get_dt();

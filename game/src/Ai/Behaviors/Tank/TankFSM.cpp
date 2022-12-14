@@ -113,9 +113,13 @@ void TankFSM::updateHump(Entity entityID, uint32_t what)
 
 void TankFSM::updateHumps(Entity entityID)
 {
+    TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
+    if(tankComp.life <= 0.0f)
+    {
+        return;
+    }
     for(auto p: getAllPlayerIDs(entityID))
     {
-        TankComponent& tankComp = getTheScene()->getComponent<TankComponent>(entityID);
 	    Transform& playerTrans = getTheScene()->getComponent<Transform>(p);
 	    Collider& playerCol = getTheScene()->getComponent<Collider>(p);	
 	    Transform& tankTrans = getTheScene()->getComponent<Transform>(entityID);
@@ -123,6 +127,8 @@ void TankFSM::updateHumps(Entity entityID)
 
         for(auto& h: tankComp.humps)
 	    {
+            
+
 	    	h.second += tankComp.humpShockwaveSpeed * get_dt();
 
 	    	updateHump(entityID, h.first);
@@ -141,7 +147,7 @@ void TankFSM::updateHumps(Entity entityID)
 	    		//PlayerHit!
                 toRemove.push_back(h.first);
 	    		glm::vec3 to = playerTrans.position;
-	    		glm::normalize(to);
+	    		safeNormalize(to);
 	    		getTheScene()->getComponent<HealthComp>(p).health -= (int)tankComp.humpHit;
                 std::cout<<"Player humped!\n";
 	    		//single player
@@ -151,14 +157,14 @@ void TankFSM::updateHumps(Entity entityID)
 	    			FSM::sceneHandler->getScriptHandler()->setScriptComponentValue(playerScript , 1.0f, "pushTimer");
                     Rigidbody& playerRB = getTheScene()->getComponent<Rigidbody>(p);
 
-                    glm::vec3 dir = glm::normalize(to - tankTrans.position);
+                    glm::vec3 dir = safeNormalize(to - tankTrans.position);
                     playerRB.velocity = dir * tankComp.humpForce;
                     playerRB.velocity.y += tankComp.humpYForce;
 	    		}
                 else
                 {
 	    			//send pushPlayer
-                    glm::vec3 dir = glm::normalize(to - tankTrans.position);
+                    glm::vec3 dir = safeNormalize(to - tankTrans.position);
                     dir *= tankComp.humpForce;
                     dir.y += tankComp.humpYForce;
 	    			//trust that push timer never changes

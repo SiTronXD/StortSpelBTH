@@ -2,13 +2,13 @@
 #include "vengine.h"
 #include "LichBTs.hpp"
 #include <string>
-
+#include "../../../Components/AiElite.hpp"
 
 struct LichAttack
 {
     ATTACK_STRATEGY type;
     float manaCost;
-    int damage;
+    float damage;
     float cooldownTimer;
     float cooldownTimerOrig;
     float castTimeTimer;
@@ -55,12 +55,7 @@ struct Orb {
         rb.velocity = glm::vec3(0.f,0.f,0.f);
         sceneHandler->getScene()->setInactive(static_cast<int>(entityID));
     }
-    inline void onCollision(Entity entityID, SceneHandler* sceneHandler)
-    {
-        //TODO: Some effect? 
-        this->setInactive(entityID, sceneHandler);
-
-    }
+    void onCollision(Entity entityID, SceneHandler* sceneHandler);
 };
 
 class OrbSystem : public System 
@@ -87,14 +82,28 @@ public:
 
 struct LichComponent
 {
-    inline static const uint32_t colliderRadius = 4;
-    inline static const uint32_t colliderHeight = 12;
+    inline static bool s_initialized = false;
+    inline static int s_takeDmg = -1;
+    inline static int s_lightning = -1;
+    inline static int s_ice = -1;
+    inline static int s_fire = -1;
+
+    inline static const uint32_t colliderRadius = 6;
+    inline static const uint32_t colliderHeight = 22;
+
+    inline static const float    colliderYOffset = 15;
+    inline static const float    colliderYOffsetElite = 32;
+
+    inline static const float    handPosition       = 12;
+    inline static const float    handPositionElite  = 25;
+
+    inline static const float    aimAtPlayerYOffset  = 7;
 
     inline static const uint32_t graveHeight = 8;
     inline static const uint32_t graveWidth = 6;
     inline static const uint32_t graveDepth = 4;
 
-    inline static const uint32_t alterHeight = 8;
+    inline static const uint32_t alterHeight = 14;
     inline static const uint32_t alterWidth = 3;
     inline static const uint32_t alterDepth = 3;
 
@@ -119,15 +128,16 @@ struct LichComponent
     };
 
     //Ints
-    int LOW_HEALTH              = 30;            
-    int FULL_HEALTH             = 300;  
-    int ESCAPE_HEALTH           = FULL_HEALTH / 4; 
-    int BACK_TO_FIGHT_HEALTH    = FULL_HEALTH / 2; 
+    int currentLevel            = 0;
     int numBones                = 0;
-    int life                    = FULL_HEALTH;    
 
 
     //Floats
+    float LOW_HEALTH            = 30.0f;            
+    float FULL_HEALTH           = 300.0f;  
+    float ESCAPE_HEALTH         = FULL_HEALTH / 4.0f; 
+    float BACK_TO_FIGHT_HEALTH  = FULL_HEALTH / 2.0f; 
+    float life                  = FULL_HEALTH;    
     float life_float            = 0.0f;//Dont touch!
     float tempRotAngle			= 0.0f;//Dont touch!
     float creepRotSpeed         = 60.0f;
@@ -153,11 +163,12 @@ struct LichComponent
         //Stats
     float maxMana               = 100.0f;
     float mana                  = maxMana;
-    float manaRegenSpeed        = 5.0f;
+    float manaRegenSpeed        = 20.0f;
     float healthRegenSpeed      = 2.0f;
     float deathAnimSpeed        = 3.0f;
     float huntSpeed             = 60.0f;
-    float speed                 = 20.0f ; // Too close, I will back away from you! (while shooting) 
+    float combatSpeed	        = 20.0f;
+    float speed                 = 30.0f ; // Too close, I will back away from you! (while shooting) 
 
     //ATTACK_STRATEGY strat       = ATTACK_STRATEGY::NONE;
 
@@ -171,8 +182,16 @@ struct LichComponent
     bool chargingAttack         = true;
     bool tempAttack             = false;//For testing strategy picker
     bool attackGoRight          = false;
+    bool isElite                = false;
+    bool carryingBones          = false;
 
-    bool carryingBones = false;
+    glm::vec3 origScale         = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    // Anim
+    LichAnim activeAnim;
+    int currentAnim;
+    float attackAnimTimer;
+    bool hasBegunAttackAnim = false;
 
     // Orbs
     std::array<Entity, LichComponent::NR_FIRE_ORBS>  fireOrbs;
@@ -183,15 +202,83 @@ struct LichComponent
     Entity alterID;
     Entity graveID;
 
+    AiEliteComponent eliteStats;
+
+    void applyEliteStats(AiEliteComponent& eliteComp, Scene* scene, Entity entityID)
+    {
+        this->eliteStats = eliteComp;
+        this->isElite                   = true;
+
+        for(auto a: this->attacks)
+        {
+            a.second.damage             *= eliteComp.dmgMultiplier;
+        }
+        this->LOW_HEALTH                *= eliteComp.healthMultiplier;           
+        this->FULL_HEALTH               *= eliteComp.healthMultiplier;
+        this->ESCAPE_HEALTH             *= eliteComp.healthMultiplier;
+        this->BACK_TO_FIGHT_HEALTH      *= eliteComp.healthMultiplier;
+
+        this->sightRadius               *= eliteComp.radiusMultiplier;
+        this->peronalSpaceRadius        *= eliteComp.radiusMultiplier;
+        this->attackRadius              *= eliteComp.radiusMultiplier;
+        this->nonoRadius                *= eliteComp.radiusMultiplier;
+
+        Collider col = scene->getComponent<Collider>(entityID);
+		col.radius *= eliteComp.sizeMultiplier;
+		col.height *= eliteComp.sizeMultiplier;
+		col.offset.y = LichComponent::colliderYOffsetElite;
+		scene->setComponent<Collider>(entityID, Collider::createCapsule(col.radius, col.height, col.offset));
+		Transform& trans = scene->getComponent<Transform>(entityID);
+		trans.scale = this->origScale * eliteComp.sizeMultiplier;
+		this->origScale = trans.scale;
+        
+        this->healthRegenSpeed          *= eliteComp.speedMultiplier;
+        this->manaRegenSpeed            *= eliteComp.speedMultiplier;
+        this->creepRotSpeed             *= eliteComp.speedMultiplier;
+        this->huntRotSpeed              *= eliteComp.speedMultiplier;
+        this->huntSpeed                 *= eliteComp.speedMultiplier;
+        this->speed                     *= eliteComp.speedMultiplier;
+    }
+    void removeEliteStats(Scene* scene, Entity entityID)
+    {
+        this->isElite                   = false;
+
+        for(auto a: this->attacks)
+        {
+            a.second.damage             /= this->eliteStats.dmgMultiplier;
+        }
+        this->LOW_HEALTH                /= this->eliteStats.radiusMultiplier;           
+        this->FULL_HEALTH               /= this->eliteStats.radiusMultiplier;
+        this->ESCAPE_HEALTH             /= this->eliteStats.radiusMultiplier;
+        this->BACK_TO_FIGHT_HEALTH      /= this->eliteStats.radiusMultiplier;
+        this->sightRadius               /= this->eliteStats.radiusMultiplier;
+        this->peronalSpaceRadius        /= this->eliteStats.radiusMultiplier;
+        this->attackRadius              /= this->eliteStats.radiusMultiplier;
+        this->nonoRadius                /= this->eliteStats.radiusMultiplier;
+
+
+        Collider col = scene->getComponent<Collider>(entityID);
+		col.radius /= this->eliteStats.sizeMultiplier;
+		col.height /= this->eliteStats.sizeMultiplier;
+        col.offset.y = LichComponent::colliderYOffset;
+		scene->setComponent<Collider>(entityID, Collider::createCapsule(col.radius, col.height, col.offset));
+		Transform& trans = scene->getComponent<Transform>(entityID);
+		trans.scale = this->origScale / this->eliteStats.sizeMultiplier;
+		this->origScale = trans.scale;
+
+        this->healthRegenSpeed          /= this->eliteStats.speedMultiplier;
+        this->manaRegenSpeed            /= this->eliteStats.speedMultiplier;
+        this->creepRotSpeed             /= this->eliteStats.speedMultiplier;
+        this->huntRotSpeed              /= this->eliteStats.speedMultiplier;
+        this->huntSpeed                 /= this->eliteStats.speedMultiplier;
+        this->speed                     /= this->eliteStats.speedMultiplier;
+    }
 
     bool isDead(){return life<=0;}
 
     //Combat stuff
     LichAttack* curAttack       = nullptr;
     std::unordered_map<std::string, LichAttack> attacks;
-   /* LichAttack lightning;
-    LichAttack fire;
-    LichAttack ice;*/
 
     std::string lastAttack      = "";
 };

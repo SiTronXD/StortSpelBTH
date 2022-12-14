@@ -1,4 +1,4 @@
-local playerMesh = resources.addAnimations({ "assets/models/Character/CharIdle.fbx", "assets/models/Character/CharRun.fbx", 
+local playerMesh = resources.addAnimations({ "assets/models/Character/CharIdle.fbx", "assets/models/Character/CharRun2.fbx", 
 "assets/models/Character/CharDodge.fbx", "assets/models/Character/CharOutwardAttack.fbx", "assets/models/Character/CharHeavyAttack.fbx", 
 "assets/models/Character/CharSpinAttack.fbx", "assets/models/Character/CharKnockbackAttack.fbx", 
 "assets/models/Character/CharInwardAttack.fbx", "assets/models/Character/CharSlashAttack.fbx", 
@@ -9,6 +9,8 @@ resources.createAnimationSlot(playerMesh, "LowerBody", "mixamorig:Hips")
 resources.createAnimationSlot(playerMesh, "UpperBody", "mixamorig:Spine1")
 
 paused = false
+settings = false
+howToPlay = false
 
 -- Camera
 local cam = scene.createPrefab("scripts/prefabs/CameraPrefab.lua")
@@ -38,9 +40,9 @@ local pixelArtSettings = {}
 pixelArtSettings.samplerSettings = {}
 pixelArtSettings.samplerSettings.filterMode = Filters.Nearest
 scene.getComponent(uiID, CompType.Script).staminaBarBackgroundTxtID =
-	resources.addTexture("assets/textures/UI/staminaBarBackground.png")
+	resources.addTexture("assets/textures/UI/hpBarBackground.jpg")
 scene.getComponent(uiID, CompType.Script).staminaBarTxtID = 
-	resources.addTexture("assets/textures/UI/staminaBar.png")
+	resources.addTexture("assets/textures/UI/staminaBar.jpg")
 scene.getComponent(uiID, CompType.Script).perkSlotTextureID = 
 	resources.addTexture("assets/textures/UI/perkSlot.png", pixelArtSettings)
 scene.getComponent(uiID, CompType.Script).uiHpMidTexID = 
@@ -56,7 +58,7 @@ scene.getComponent(uiID, CompType.Script).uiBorderTexID =
 scene.getComponent(uiID, CompType.Script).pauseBackgroundTexID = 
 	resources.addTexture("assets/textures/UI/frame.png")
 scene.getComponent(uiID, CompType.Script).buttonTexID = 
-	resources.addTexture("assets/textures/UI/button.png")
+	resources.addTexture("assets/textures/UI/button.jpg")
 
 --[[local p = scene.createPrefab("scripts/prefabs/prefab.lua")
 

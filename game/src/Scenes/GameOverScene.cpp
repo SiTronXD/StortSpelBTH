@@ -24,6 +24,9 @@ GameOverScene::~GameOverScene()
 
 void GameOverScene::init() 
 {
+	this->getNetworkHandler()->disconnectClient();
+	this->getNetworkHandler()->deleteServer();
+
 	TextureSamplerSettings samplerSettings{};
 	samplerSettings.filterMode = vk::Filter::eNearest;
 	samplerSettings.unnormalizedCoordinates = VK_TRUE;
@@ -42,7 +45,7 @@ void GameOverScene::init()
 		glm::uvec2(50, 50)
 	);
 
-	this->setBloomBufferLerpAlpha(0.340);
+	this->setBloomBufferLerpAlpha(0.340f);
 	this->setBloomNumMipLevels(7);
 
 	this->cam = this->createEntity();
@@ -101,7 +104,7 @@ void GameOverScene::init()
 
 	Material& crystalMat = this->getResourceManager()->getMaterial(this->getComponent<MeshComponent>(this->crystals[0]), 0);
 	crystalMat.emissionColor = glm::vec3(0.431f, 1.624f, 0.130f);
-	crystalMat.glowMapTextureIndex = this->getResourceManager()->addTexture("vengine_assets/textures/DefaultEmission.png");
+	crystalMat.glowMapTextureIndex = this->getResourceManager()->addTexture("vengine_assets/textures/DefaultEmission.jpg");
 
 	// GENERATE TREES
 	float treeOffset = 12.f;
@@ -168,7 +171,7 @@ void GameOverScene::init()
 	this->setComponent<MeshComponent>(this->ground, ground);
 	Transform& groundTrans = this->getComponent<Transform>(this->ground);
 	groundTrans.position.y = -1.;
-	groundTrans.scale = glm::vec3(400.f);
+	groundTrans.scale = glm::vec3(2000.f);
 
 	// DIRLIGHT FOR SCENE
 	this->dirLight = this->createEntity();
@@ -178,9 +181,9 @@ void GameOverScene::init()
 		glm::vec3(0.1f)
 		);
 	DirectionalLight& dirLight = this->getComponent<DirectionalLight>(this->dirLight);
-	dirLight.cascadeSizes[0] = 0.044f;
-	dirLight.cascadeSizes[1] = 0.149f;
-	dirLight.cascadeSizes[2] = 1.0f;
+	dirLight.cascadeSizes[0] = 47.0f;
+	dirLight.cascadeSizes[1] = 144.0f;
+	dirLight.cascadeSizes[2] = 500.0f;
 	dirLight.cascadeDepthScale = 36.952f;
 	dirLight.shadowMapMinBias = 0.00001f;
 	dirLight.shadowMapAngleBias = 0.0004f;

@@ -5,6 +5,7 @@
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
+#include "../Components/AiElite.hpp"
 
 #include <list>
 #include <random>
@@ -16,7 +17,6 @@ using ImguiLambda = std::function<void(FSM* fsm, uint32_t entityId)>;
 class TilePicker
 {
 private:
-
     std::mt19937 randomDev;
 
     std::vector<const TileInfo*> usedTiles;
@@ -36,7 +36,7 @@ private:
     void updateFreeTiles();
 
 public:
-    TilePicker() : randomDev(69){}//TODO: Use same seed as game...
+    TilePicker() : randomDev(69){} //TODO: Use same seed as game...
         
     void   init(const std::vector<TileInfo>& freeTileInfos);
     size_t size() const;
@@ -57,21 +57,23 @@ class SpawnHandler
 {
 public:
     inline static const int MAX_NR_OF_ENEMIES = 100;
-    inline static const float PERCENTAGE_TANKS   = 0.10f;
-    inline static const float PERCENTAGE_LICHS   = 0.25f;
-    inline static const float PERCENTAGE_SWARMS  = 0.75f;
-
-    const float enemiesPerTiles = 0.25f;//0.05f;//0.10f
-
     inline static const int NR_BLOBS_IN_GROUP = 3;
+
+
+    inline static const float PERCENTAGE_TANKS   = 0.35f;
+    inline static const float PERCENTAGE_LICHS   = 0.50f;
+    inline static const float PERCENTAGE_SWARMS  = 0.80f * NR_BLOBS_IN_GROUP;
+
+    const float MAX_ENEMIES_PER_TILES = 0.25f;
+    const float MIN_ENEMIES_PER_TILES = 0.05f;
 
     inline static const int MAX_NR_TANKS        = (int)(MAX_NR_OF_ENEMIES * PERCENTAGE_TANKS);
     inline static const int MAX_NR_LICHS        = (int)(MAX_NR_OF_ENEMIES * PERCENTAGE_LICHS);
-    inline static const int MAX_NR_SWARMGROUPS  = (int)((MAX_NR_OF_ENEMIES * PERCENTAGE_SWARMS)/NR_BLOBS_IN_GROUP);
+    inline static const int MAX_NR_SWARMGROUPS  = (int)((MAX_NR_OF_ENEMIES * PERCENTAGE_SWARMS)/NR_BLOBS_IN_GROUP/NR_BLOBS_IN_GROUP);
 
-    inline static const bool USE_DEBUG = false;
-    inline static const int NR_TANK_DBG         = 0;
-    inline static const int NR_LICH_DBG         = 1;
+    inline static const bool USE_DEBUG = true;
+    inline static const int NR_TANK_DBG         = 1;
+    inline static const int NR_LICH_DBG         = 0;
     inline static const int NR_SWARM_GROUPS_DBG = 0;
 
 private:
@@ -81,7 +83,6 @@ private:
     AIHandler*       aiHandler        = nullptr;
     ResourceManager* resourceManager  = nullptr;
     UIRenderer*      uiRenderer       = nullptr;
-
 
     float nrOfEnemiesPerRoom = 0; // Set based on nr of Tile per room
 
@@ -110,11 +111,11 @@ private:
 
     TilePicker tilePicker;
 
-    void spawnTank( const int tankIdx,  const glm::vec3& pos);
-    uint32_t spawnLich( const int lichIdx, std::vector<const TileInfo*> tileInfos);
-    uint32_t spawnSwarmGroup(const int swarmStartIdx, std::vector<const TileInfo*> tileInfo); //TODO: Do we need to have a vector of pos; say 2 to let a swarm spawn over two tiles?
-    void spawnSwarm(const int swarmIdx, const glm::vec3& pos);
-    void initTanks();
+    void        spawnTank        (const int tankIdx         , const glm::vec3& pos                  , int level, bool elite = false);
+    uint32_t    spawnLich        (const int lichIdx         , std::vector<const TileInfo*> tileInfos, int level, bool elite = false);
+    uint32_t    spawnSwarmGroup  (const int swarmStartIdx   , std::vector<const TileInfo*> tileInfo , int level, bool elite = false); //TODO: Do we need to have a vector of pos; say 2 to let a swarm spawn over two tiles?
+    void        spawnSwarm       (const int swarmIdx        , const glm::vec3& pos                  , int level, bool elite = false);
+    void        initTanks        ();
 
     void createTank();
     void createLich();
@@ -150,7 +151,8 @@ public:
         this->createEntities();
     }
 
-    void spawnEnemiesIntoRoom();
+    void spawnEnemiesIntoRoom(int level);
+    void resetEnemies();
 
     void createEntities();
 

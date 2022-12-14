@@ -10,7 +10,7 @@ void LobbyScene::init()
   this->playerModel = this->getResourceManager()->addAnimations(
         std::vector<std::string>(
             {"assets/models/Character/CharIdle.fbx",
-             "assets/models/Character/CharRun.fbx",
+             "assets/models/Character/CharRun2.fbx",
              "assets/models/Character/CharDodge.fbx",
              "assets/models/Character/CharOutwardAttack.fbx",
              "assets/models/Character/CharHeavyAttack.fbx",
@@ -44,10 +44,12 @@ void LobbyScene::init()
     this->networkHandler = dynamic_cast<NetworkHandlerGame*>(this->getNetworkHandler());
 
     this->backgroundId =
-        this->getResourceManager()->addTexture("assets/textures/blackTex.png"
+        this->getResourceManager()->addTexture("assets/textures/blackTex.jpg"
         );
     this->buttonId =
-        this->getResourceManager()->addTexture("assets/textures/UI/button.png");
+        this->getResourceManager()->addTexture("assets/textures/UI/button.jpg");
+
+    this->buttonSound = this->getResourceManager()->addSound("assets/Sounds/buttonClick.ogg");
 
     this->fontTextureId = Scene::getResourceManager()->addTexture(
         "assets/textures/UI/font.png", {samplerSettings, true}
@@ -64,9 +66,9 @@ void LobbyScene::init()
     );
 
     int camEntity = this->createEntity();
-    this->setComponent<Camera>(camEntity);
+    this->setComponent<Camera>(camEntity, 55.f);
     this->setMainCamera(camEntity);
-    this->getComponent<Transform>(camEntity).position = glm::vec3(0, 0, 0);
+    this->getComponent<Transform>(camEntity).position = glm::vec3(0, 0, -20);
     this->getComponent<Transform>(camEntity).rotation = glm::vec3(0, 0, 0);
 
     scene = this->createEntity();
@@ -74,6 +76,17 @@ void LobbyScene::init()
     Transform& t = this->getComponent<Transform>(scene);
     t.position = glm::vec3(0.f, 0.5f, 40.f);
     t.rotation = glm::vec3(0.f, 180.f, 0.f);
+
+    addCandle(glm::vec3(8, 0, -24));
+    addCandle(glm::vec3(-8, 0, -24));
+    addCandle(glm::vec3(22, 0, -14.5));
+    addCandle(glm::vec3(-22, 0, -14.5));
+    addCandle(glm::vec3(26.5, 0, 0));
+    addCandle(glm::vec3(-26, 0, 0));
+    addCandle(glm::vec3(22, 0, 14.5));
+    addCandle(glm::vec3(-22, 0, 14.5));
+    addCandle(glm::vec3(8, 0, 26));
+    addCandle(glm::vec3(-8, 0, 26));
 
     this->players.resize(MAX_PLAYER_COUNT);
     this->playersNames.resize(MAX_PLAYER_COUNT);
@@ -94,12 +107,12 @@ void LobbyScene::init()
             mesh.overrideMaterials[0].tintColor = this->networkHandler->playerColors[i];
         }
     }
-    this->setActive(players[0]);
+    this->setActive(this->players[0]);
 
-    startButton.position = glm::vec2(0.0f, -400.f);
+    startButton.position = glm::vec2(0.0f, -450.f);
     startButton.dimension = glm::vec2(275.0f, 100.0f);
 
-    disconnectButton.position = glm::vec2(-700.f, -400.f);
+    disconnectButton.position = glm::vec2(-800.f, -450.f);
     disconnectButton.dimension = glm::vec2(225.0f, 75.0f);
 }
 
@@ -118,17 +131,45 @@ void LobbyScene::start()
     this->setComponent<PointLight>(light);
     this->getComponent<PointLight>(light).color = glm::vec3(10, 10, 10);
     this->getComponent<Transform>(light).position = glm::vec3(0, 0, 0);
+    this->getComponent<DirectionalLight>(light).shadowMapMinBias = 0.002f;
+    this->getComponent<DirectionalLight>(light).shadowMapAngleBias = 0.007f;
+}
+
+void LobbyScene::addCandle(glm::vec3 position) 
+{
+    Entity candle = this->createEntity();
+    this->setComponent<MeshComponent>(candle, (int)this->getResourceManager()->addMesh("assets/models/Menu/candle.obj"));
+    this->setComponent<PointLight>(candle, glm::vec3(0.5, -7, 26), glm::vec3(40, 10, 5));
+    this->getComponent<Transform>(candle).position = position;
+
+    // Fireflies particle system
+    this->setComponent<ParticleSystem>(candle);
+    ParticleSystem& firefliesPS = this->getComponent<ParticleSystem>(candle);
+    firefliesPS.maxlifeTime = 2.0f;
+    firefliesPS.numParticles = 4;
+    firefliesPS.textureIndex = this->getResourceManager()->addTexture("assets/textures/firefliesParticle2.png");
+    firefliesPS.startSize = glm::vec2(0.5f);
+    firefliesPS.endSize = glm::vec2(0.0f);
+    firefliesPS.startColor = glm::vec4(0.0f);
+    firefliesPS.endColor = glm::vec4(1.0f);
+    firefliesPS.velocityStrength = 0.7f;
+    firefliesPS.acceleration = glm::vec3(0.0f);
+    firefliesPS.spawnRate = 0.01f;
+    firefliesPS.coneSpawnVolume.diskRadius = 1.5f;
+    firefliesPS.coneSpawnVolume.coneAngle = 120.0f;
+    firefliesPS.coneSpawnVolume.localDirection =
+        glm::vec3(0.0f, 1.0f, 0.0f);
+    firefliesPS.coneSpawnVolume.localPosition = glm::vec3(0.5f, -8.2f, 26.5f);
 }
 
 void LobbyScene::update()
 {
-    
     // Set model position and player names
     auto netPlayers = this->networkHandler->getPlayers();
     if (netPlayers.size() != this->activePlayers - 1)
     {
         this->playersNames.clear();
-        this->activePlayers = netPlayers.size() + 1;
+        this->activePlayers = (int)netPlayers.size() + 1;
         this->getComponent<AnimationComponent>(this->players[0]).aniSlots[0].timer = 0.0f;
         for (int i = 0; i < netPlayers.size(); i++)
         {
@@ -144,7 +185,7 @@ void LobbyScene::update()
         }
     }
 
-    // Button backtgrounds
+    // Button backgrounds
     this->getUIRenderer()->setTexture(this->buttonId);
     this->getUIRenderer()->renderTexture(
         this->disconnectButton.position, this->disconnectButton.dimension,
@@ -161,14 +202,15 @@ void LobbyScene::update()
     this->getUIRenderer()->renderString(
         this->getNetworkHandler()->getClientName(),
         this->POSITIONS[0] + glm::vec3(0.0f, 20.0f, 0.0f),
-        glm::vec2(100.0f)
+        glm::vec2(200.0f)
     );
+
     for (int i = 0; i < this->playersNames.size(); i++)
     {
         this->getUIRenderer()->renderString(
             playersNames[i],
             this->POSITIONS[i + 1] + glm::vec3(0.0f, 20.0f, 0.0f),
-            glm::vec2(100.0f)
+            glm::vec2(200.0f)
         );
     }
     this->getUIRenderer()->renderString(
@@ -191,11 +233,13 @@ void LobbyScene::update()
         );
         if (this->startButton.isClicking())
         {
+            this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
             // Start singleplayer
-            if (this->activePlayers == 1)
+            if (this->activePlayers == 1 && !Input::isKeyDown(Keys::M))
             {
                this->getNetworkHandler()->disconnectClient();
                this->getNetworkHandler()->deleteServer();
+               this->getNetworkHandler()->setStatus(ServerStatus::WAITING);
                this->switchScene(
                    new GameScene(), "scripts/gamescene.lua"
                );
@@ -207,8 +251,7 @@ void LobbyScene::update()
             }
         }
     }
-
-    if (!this->getNetworkHandler()->isConnected())
+    else if (!this->getNetworkHandler()->isConnected())
     {
         this->getNetworkHandler()->disconnectClient();
         this->getNetworkHandler()->deleteServer();
@@ -219,6 +262,7 @@ void LobbyScene::update()
         "disconnect", this->disconnectButton.position, glm::vec2(25.0f), 0.0f, StringAlignment::CENTER
     );
     if (this->disconnectButton.isClicking()) {
+        this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
         this->getNetworkHandler()->disconnectClient();
         this->getNetworkHandler()->deleteServer();
         this->getSceneHandler()->setScene(new MainMenu, "scripts/MainMenu.lua");

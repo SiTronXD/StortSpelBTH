@@ -11,8 +11,8 @@ RoomTesting::~RoomTesting()
 
 void RoomTesting::init()
 {
-	this->roomHandler.init(this, this->getResourceManager(), true);
-	this->roomHandler.generate(123);
+	this->roomHandler.init(this, this->getResourceManager(), this->getPhysicsEngine(), true);
+	this->roomHandler.generate(rand(), 0u);
 
 	Entity cam = this->createEntity();
 	this->setComponent<Camera>(cam);
@@ -22,13 +22,14 @@ void RoomTesting::init()
 	this->setComponent<DirectionalLight>(cam,
 		{glm::vec3(0.f, -1.f, 0.f), glm::vec3(1.f)});
 	DirectionalLight& light = this->getComponent<DirectionalLight>(cam);
-	light.cascadeSizes[0] = 400.f;
+	light.cascadeSizes[0] = 3000.f;
 	light.cascadeSizes[1] = 3.f;
 	light.cascadeSizes[2] = 3.f;
 	light.cascadeDepthScale = 36.952f;
 	light.shadowMapMinBias = 0.00001f;
 	light.shadowMapAngleBias = 0.0004f;
 
+	this->setFogStartDistance(9999999999999999999999.f);
 
 	int playerMesh = this->getResourceManager()->addMesh("assets/models/Character/CharRun.fbx");
 	player = this->createEntity();
@@ -47,7 +48,7 @@ void RoomTesting::update()
 #endif // _CONSOLE
 
 	const float speed = 100.f;
-	const float frameSpeed = speed * Time::getDT() * Input::isKeyDown(Keys::CTRL) ? 0.1f : Input::isKeyDown(Keys::SHIFT) ? 3.f : 1.f;
+	const float frameSpeed = speed * Time::getDT() * Input::isKeyDown(Keys::CTRL) ? 0.1f : Input::isKeyDown(Keys::SHIFT) ? 10.f : 1.f;
 
 	Entity cam = this->getMainCameraID();
 	Transform& camTra = this->getComponent<Transform>(cam);

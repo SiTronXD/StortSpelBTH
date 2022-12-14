@@ -45,7 +45,7 @@ void GameSceneNetwork::init()
   );
 
   int swarm =
-      this->getResourceManager()->addMesh("assets/models/Swarm_Model.obj");
+      this->getResourceManager()->addMesh("assets/models/Swarm_RotTest.obj");
   int playerModel = this->getResourceManager()->addAnimations(
       std::vector<std::string>(
           {"assets/models/Character/CharIdle.fbx",
@@ -86,9 +86,9 @@ void GameSceneNetwork::init()
 
   roomHandler.init(
       this,
-      this->getResourceManager(), true
+      this->getResourceManager(), this->getPhysicsEngine(), true
   );
-  roomHandler.generate(123);
+  roomHandler.generate(123, 0u);
   createPortal();
 
   ResourceManager* resourceMng = this->getResourceManager();
@@ -103,9 +103,9 @@ void GameSceneNetwork::init()
       resourceMng->addTexture("assets/textures/UI/atkSpeedUp.png");
   perkTextures[3] = resourceMng->addTexture("assets/textures/UI/empty.png");
   this->hpBarBackgroundTextureID =
-      resourceMng->addTexture("assets/textures/UI/hpBarBackground.png");
+      resourceMng->addTexture("assets/textures/UI/hpBarBackground.jpg");
   this->hpBarTextureID =
-      resourceMng->addTexture("assets/textures/UI/hpBar.png");
+      resourceMng->addTexture("assets/textures/UI/hpBar.jpg");
 
   // Temporary light
   Entity directionalLightEntity = this->createEntity();
@@ -132,15 +132,13 @@ void GameSceneNetwork::start()
   this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, playerName);
 
   bool paused = false;
+  bool disabled = false;
   this->setComponent<Combat>(playerID);
   this->createSystem<CombatSystem>(
-      this,
-      this->getResourceManager(),
+      this->getSceneHandler(),
       this->playerID,
       &paused,
-      this->getPhysicsEngine(),
-      this->getUIRenderer(),
-      this->getScriptHandler(),
+      &disabled,
       nullptr
   );
 
@@ -201,7 +199,7 @@ void GameSceneNetwork::update()
 {
     
             // TODO: Move to SpawnHandler ---- 
-    if (this->roomHandler.playerNewRoom(this->playerID, this->getPhysicsEngine()))
+    if (this->roomHandler.playerNewRoom(this->playerID))
     {
         this->newRoomFrame = true;
     }

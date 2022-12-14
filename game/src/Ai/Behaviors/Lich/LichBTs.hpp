@@ -6,7 +6,6 @@
 
 #include "../../../Components/Combat.h"
 #include "../HelperFuncs.hpp"
-//#include "ai/PathFinding.h"
 
 enum class ATTACK_STRATEGY
 {
@@ -18,15 +17,30 @@ enum class ATTACK_STRATEGY
 
 };
 
+enum class LichAnim
+{
+    Walking,
+    Attacking
+};
+
+struct ExtraBlendAnimationArgs
+{
+    bool use = false;
+    std::string slotName; 
+    float transitionTime;
+    float nextAniTimeScale;
+};
+
 class LichBT : public BehaviorTree
 {
-    friend class Orb;
+    friend struct Orb;
    protected:
 	// static int perkMeshes[3];
 	virtual void start() = 0;
     void registerEntityComponents(Entity entityId) override;
 
   public:
+	  virtual ~LichBT() {};
 
    protected:
 
@@ -62,6 +76,10 @@ class LichBT : public BehaviorTree
 
 
 	//Helper funcs
+    static ExtraBlendAnimationArgs junkArg;
+    static void     setAnimation(Entity entityID, LichAnim anim, BTStatus(*callee)(Entity) );
+    static void     activateAnim(Entity entityID, LichAnim anim, const std::string& blendTo, ExtraBlendAnimationArgs& extra = LichBT::junkArg);
+
 	static int		getPlayerID(Entity entityID);
 	static float	get_dt();
 	static Scene*	getTheScene();
