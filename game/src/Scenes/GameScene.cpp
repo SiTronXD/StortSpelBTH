@@ -247,12 +247,12 @@ void GameScene::start()
     if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {
         //this->networkHandler->spawnItemRequest(knockbackAbility, glm::vec3(50.0f, 10.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(healAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(hpUpPerk, 1.f, glm::vec3(30.0f, 7.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        //this->networkHandler->spawnItemRequest(healAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        //this->networkHandler->spawnItemRequest(hpUpPerk, 1.f, glm::vec3(30.0f, 7.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         //this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.4f, glm::vec3(30.0f, 7.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(movementUpPerk, 1.f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(staminaUpPerk, 1.f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        //this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.4f, glm::vec3(30.0f, 7.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        //this->networkHandler->spawnItemRequest(movementUpPerk, 1.f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        //this->networkHandler->spawnItemRequest(staminaUpPerk, 1.f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
     }
 
     this->levelString = "level: " + std::to_string(currentLevel.level);
@@ -802,8 +802,9 @@ void GameScene::onTriggerEnter(Entity e1, Entity e2)
         {
             this->removeComponent<Rigidbody>(ability);
             Transform& abilityTrans = this->getComponent<Transform>(ability);
-            abilityTrans.position.y = 8.f;
+            abilityTrans.position.y = 10.f;
             this->setScriptComponent(ability, "scripts/spin.lua");
+            this->getScriptHandler()->setScriptComponentValue(this->getComponent<Script>(ability), 10.f, "floatValue");
         }
     }
 }

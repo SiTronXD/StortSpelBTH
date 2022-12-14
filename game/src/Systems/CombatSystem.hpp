@@ -961,11 +961,11 @@ public:
 		this->scene->setComponent<Collider>(entity, Collider::createSphere(4.f, glm::vec3(0, 0, 0), true));
 		this->scene->setComponent<Rigidbody>(entity);
 		this->scene->setComponent<Abilities>(entity, ability);
-		this->scene->setComponent<PointLight>(entity, { glm::vec3(0.f), glm::vec3(7.f, 9.f, 5.f) });
+		this->scene->setComponent<PointLight>(entity, { glm::vec3(0.f, -10.f, 0.f), (glm::vec3(7.f, 9.f, 5.f)) });
 		Transform& abilityTrans = this->scene->getComponent<Transform>(entity);
 		Transform& playerTrans = this->scene->getComponent<Transform>(this->playerID);
 		Rigidbody& abilityRb = this->scene->getComponent<Rigidbody>(entity);
-		abilityTrans.position = glm::vec3(playerTrans.position.x, playerTrans.position.y + 4.f, playerTrans.position.z);
+		abilityTrans.position = glm::vec3(playerTrans.position.x, playerTrans.position.y + 8.f, playerTrans.position.z);
 		playerTrans.updateMatrix();
 		glm::vec3 throwDir = safeNormalize(playerTrans.forward());
 		abilityRb.gravityMult = 6.f;
