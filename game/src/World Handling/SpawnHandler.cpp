@@ -53,7 +53,7 @@ void SpawnHandler::spawnEnemiesIntoRoom(int level)
             // Spawn Tanks
             for (size_t i = 0; i < NR_TANK_DBG; i++)
             {
-                this->spawnTank(tankIdx, this->tilePicker.getRandomEmptyTile()->getPos(), level-1);
+                this->spawnTank( tankIdx,this->tilePicker.getRandomEmptyTile()->getPos(),level - 1);
                 tankIdx++;
             }
 

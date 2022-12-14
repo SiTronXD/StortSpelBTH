@@ -1,7 +1,7 @@
 local script = {}
 
 function script:init()
-    self.movementSpeed = 10;
+    self.movementSpeed = 60;
     self.rotationSpeed = 20;
     self.currentSpeed = vector();
     self.moveDir = vector();
