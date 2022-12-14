@@ -72,8 +72,8 @@ GameSceneLevel GameScene::setNewLevel() {
 
 GameScene::GameScene(GameSceneLevel gameSceneLevel) :
     playerID(-1), portal(-1), newRoomFrame(false), perk(-1),
-    perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1), 
-    deathTimer(0.0f), isDead(false), fadeTimer(1.0f), portalTimer(9.0f)
+    perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1),
+    deathTimer(0.0f), isDead(false), fadeTimer(1.0f), portalTimer(9.0f), inPortalTimer(0.0f)
 {
     Input::setHideCursor(true);
     currentLevel = gameSceneLevel;
@@ -97,7 +97,7 @@ void GameScene::init()
          "uvwxyz+-.'",
          "0123456789",
          "!?,<>:()#^",
-         "@%        " },
+         "@%/       " },
         fontTextureId,
         glm::uvec2(50, 50));
 
@@ -355,8 +355,9 @@ void GameScene::update()
             // Call when a room is cleared
             this->roomHandler.roomCompleted();
 
-            if (this->roomHandler.isPortalRoomDone())
+            if (this->roomHandler.isPortalRoomDone() && !this->portalActivated)
             {
+                this->portalActivated = true;
                 this->getComponent<MeshComponent>(this->portal).meshID = this->portalOnMesh;
 
                 // Particle effects
@@ -700,13 +701,22 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
 	{
 		Entity other = e1 == player ? e2 : e1;
     
-        if (!networkHandler->isConnected())
+        if (other == this->portal && this->roomHandler.isPortalRoomDone())
         {
-		    if (other == this->portal && this->roomHandler.isPortalRoomDone())       
-		    {
+            if (!networkHandler->isConnected())
+            {
                 networkHandler->cleanUp();
-		    	this->switchScene(new GameScene(this->setNewLevel()), "scripts/gamescene.lua");
-		    }
+                this->switchScene(new GameScene(this->setNewLevel()), "scripts/gamescene.lua");
+            }
+            else
+            {
+                glm::vec3 portalPos = this->getComponent<Transform>(this->portal).position;
+                int num = this->networkHandler->checkOtherPlayersCollision(this->getComponent<Transform>(other), this->getComponent<Collider>(other)) + 1;
+                this->getUIRenderer()->renderString(std::to_string(num) + "/" + std::to_string(this->networkHandler->getPlayers().size() + 1),
+                    portalPos + glm::vec3(0.0f, 20.0f, 0.0f), glm::vec2(500.0f), 0.0f, StringAlignment::CENTER, glm::vec4(1.0f, 1.0f, 1.0f,
+                    sin(std::min(this->inPortalTimer, glm::half_pi<float>()))));
+                this->inPortalTimer += Time::getDT();
+            }
         }
         
         if (this->hasComponents<Orb>(other)) 
@@ -750,6 +760,12 @@ void GameScene::onTriggerEnter(Entity e1, Entity e2)
     Entity ability = this->hasComponents<Abilities>(e1)   ? e1
                     : this->hasComponents<Abilities>(e2) ? e2
                                                        : -1;
+
+    Entity portalEnt = e1 == this->portal ? e1 : e2 == this->portal ? e2 : -1;
+    if (this->entityValid(portalEnt))
+    {
+        this->inPortalTimer = 0.0f;
+    }
 
 	if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<SwarmComponent>(e2))
 	{
@@ -957,8 +973,6 @@ void GameScene::imguiUpdate()
 
 void GameScene::createPortal()
 {
-    glm::vec3 portalTriggerDims(11.f, 27.f, 6.f);
-
     portalOffMesh = this->getResourceManager()->addMesh("assets/models/PortalOff.obj");
     portalOnMesh = this->getResourceManager()->addMesh("assets/models/PortalOn.obj");
 
@@ -970,13 +984,13 @@ void GameScene::createPortal()
     Transform& portalTransform = this->getComponent<Transform>(portal);
     portalTransform.position = this->roomHandler.getExitRoom().position;
     this->setComponent<Collider>(
-        portal, Collider::createBox(portalTriggerDims, glm::vec3(0, 0, 0), true)
+        portal, Collider::createSphere(18.f, glm::vec3(0.f, 15.f, 0.f), true)
         );
 
     this->setComponent<MeshComponent>(portal);
     this->getComponent<MeshComponent>(portal).meshID = portalOffMesh;
 
-        Entity collisionEntity;
+    Entity collisionEntity;
 
     for (size_t i = 0; i < colliders.size(); i++)
     {

@@ -57,8 +57,8 @@ void RoomGenerator::generate(bool* doors)
 	glm::ivec2 iBranch(0);
 	for (uint32_t i = 0; i < this->roomDesc.numBranches; i++)
 	{
-		fBranch.x = float(this->random.rand() % 2001) * 0.001f - 1.f;
-		fBranch.y = float(this->random.rand() % 2001) * 0.001f - 1.f;
+		fBranch.x = float(std::abs(int(this->random.rand())) % 2001) * 0.001f - 1.f;
+		fBranch.y = float(std::abs(int(this->random.rand())) % 2001) * 0.001f - 1.f;
 		fBranch = safeNormalize(fBranch);
 		iBranch = fBranch * (float)this->roomDesc.branchDist;
 		iBranch += gridMid;
@@ -69,7 +69,7 @@ void RoomGenerator::generate(bool* doors)
 			
 			if (this->roomDesc.maxAngle != 0)
 			{
-				const float rotAngle = float((int)this->random.rand() % (int)this->roomDesc.maxAngle - (int)this->roomDesc.maxAngle / 2);
+				const float rotAngle = float(std::abs(int(this->random.rand())) % (int)this->roomDesc.maxAngle - (int)this->roomDesc.maxAngle / 2);
 				fBranch = glm::rotate(fBranch, float(rotAngle * (M_PI / 180.f)));
 			}
 			iBranch += fBranch * (float)this->roomDesc.branchDist;
@@ -146,15 +146,15 @@ void RoomGenerator::setBigTiles()
 		while (searchCounter++ < MAX_SEARCH)
 		{
 			// TODO: Verify results of pos
-			pos.x = (int)this->random.rand() % this->size.x + this->minMaxPos[RIGHT_P].x;
-			pos.y = (int)this->random.rand() % this->size.y + this->minMaxPos[LOWER_P].y;
+			pos.x = std::abs(int(this->random.rand())) % this->size.x + this->minMaxPos[RIGHT_P].x;
+			pos.y = std::abs(int(this->random.rand())) % this->size.y + this->minMaxPos[LOWER_P].y;
 			
 			if (i < this->roomDesc.maxTwoXTwo)
 			{
 				if (this->canPlaceTwoXTwo(pos))
 				{
 					searchCounter = MAX_SEARCH;
-					if (this->random.rand() % 100 < this->roomDesc.twoXTwoChance)
+					if (std::abs(int(this->random.rand())) % 100 < this->roomDesc.twoXTwoChance)
 					{
 						this->placeTwoXTwo(pos);
 					}
@@ -162,11 +162,11 @@ void RoomGenerator::setBigTiles()
 			}
 			else
 			{
-				vertical = bool(this->random.rand() % 2);
+				vertical = bool(std::abs(int(this->random.rand())) % 2);
 				if (this->canPlaceOneXTwo(pos, vertical))
 				{
 					searchCounter = MAX_SEARCH;
-					if (this->random.rand() % 100 < this->roomDesc.oneXTwoChance)
+					if (std::abs(int(this->random.rand())) % 100 < this->roomDesc.oneXTwoChance)
 					{
 						this->placeOneXTwo(pos, vertical);
 					}
@@ -174,7 +174,7 @@ void RoomGenerator::setBigTiles()
 				else if (this->canPlaceOneXTwo(pos, !vertical))
 				{
 					searchCounter = MAX_SEARCH;
-					if (this->random.rand() % 100 < this->roomDesc.oneXTwoChance)
+					if (std::abs(int(this->random.rand())) % 100 < this->roomDesc.oneXTwoChance)
 					{
 						this->placeOneXTwo(pos, !vertical);
 					}
@@ -244,11 +244,11 @@ void RoomGenerator::setExits(bool* doors)
 
 	glm::ivec2 doorsPos[4] = 
 	{
-		{ this->minMaxPos[LEFT_P].x,  this->middle.y + (this->random.rand() % maxOffsets.y - maxOffsets.y / 2) },
-		{ this->minMaxPos[RIGHT_P].x, this->middle.y + (this->random.rand() % maxOffsets.y - maxOffsets.y / 2) },
+		{ this->minMaxPos[LEFT_P].x,  this->middle.y + (std::abs(int(this->random.rand())) % maxOffsets.y - maxOffsets.y / 2) },
+		{ this->minMaxPos[RIGHT_P].x, this->middle.y + (std::abs(int(this->random.rand())) % maxOffsets.y - maxOffsets.y / 2) },
 
-		{ this->middle.x + (this->random.rand() % maxOffsets.x - maxOffsets.x / 2), this->minMaxPos[UPPER_P].y },
-		{ this->middle.x + (this->random.rand() % maxOffsets.x - maxOffsets.x / 2), this->minMaxPos[LOWER_P].y }
+		{ this->middle.x + (std::abs(int(this->random.rand())) % maxOffsets.x - maxOffsets.x / 2), this->minMaxPos[UPPER_P].y },
+		{ this->middle.x + (std::abs(int(this->random.rand())) % maxOffsets.x - maxOffsets.x / 2), this->minMaxPos[LOWER_P].y }
 	};
 
 	const glm::ivec2 offsets[4] =

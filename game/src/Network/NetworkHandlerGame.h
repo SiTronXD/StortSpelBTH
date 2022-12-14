@@ -189,6 +189,7 @@ private:
 
 	void setPlayerEntity(Entity player);
 	void createOtherPlayers(int playerMesh);
+	int checkOtherPlayersCollision(Transform& transform, Collider& col);
 
 	void updatePlayer();
 	void interpolatePositions();

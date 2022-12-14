@@ -60,7 +60,7 @@ void LobbyScene::init()
         "uvwxyz+-.'",
         "0123456789",
         "!?,<>:()#^",
-        "@%        "},
+        "@%/       "},
         this->fontTextureId,
         glm::vec2(50,50)
     );

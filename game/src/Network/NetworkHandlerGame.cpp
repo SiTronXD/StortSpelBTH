@@ -1126,13 +1126,29 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 
 		// Set Position
 		Transform& t = scene->getComponent<Transform>(this->playerEntities[i]);
-		t.position = playerTrans.position = SMath::rotateVector(glm::vec3(0.0f, angle * (this->otherPlayersServerId[i] % (size + 1)), 0.0f), glm::vec3(10.0f, 12.0f, 0.0f));
+		t.position = SMath::rotateVector(glm::vec3(0.0f, angle * (this->otherPlayersServerId[i] % (size + 1)), 0.0f), glm::vec3(15.0f, 0.0f, 0.0f));
+		this->playerPosLast[i] = t.position;
+		this->playerPosCurrent[i] = t.position;
 
 		// Set tint color
 		MeshComponent& mesh = scene->getComponent<MeshComponent>(this->playerEntities[i]);
 		this->resourceManger->makeUniqueMaterials(mesh);
 		mesh.overrideMaterials[0].tintColor = this->playerColors[i + 1];
 	}
+}
+
+int NetworkHandlerGame::checkOtherPlayersCollision(Transform& transform, Collider& col)
+{
+	int count = 0;
+
+	for (const auto& player : this->playerEntities)
+	{
+		Collider& playerCol = this->sceneHandler->getScene()->getComponent<Collider>(player);
+		Transform& playerTransform = this->sceneHandler->getScene()->getComponent<Transform>(player);
+		count += this->sceneHandler->getPhysicsEngine()->testContactPair(col, transform.position, transform.rotation, playerCol, playerTransform.position, playerTransform.rotation);
+	}
+
+	return count;
 }
 
 void NetworkHandlerGame::updatePlayer()

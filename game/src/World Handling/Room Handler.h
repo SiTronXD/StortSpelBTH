@@ -205,19 +205,21 @@ public:
 
 #ifdef _CONSOLE
 	void imgui(DebugRenderer* dr);
-	const std::vector<Room>& getRooms() const;
 #endif //  _CONSOLE
+
+	const std::vector<Room>& getRooms() const;
+	const std::vector<Pathway>& getPaths() const;
 
 	void roomCompleted();
 
 	// Multiplayer
-	int serverGetNextRoomIndex() const;
 	bool playersInPathway(const std::vector<Entity>& players);
 	bool playersInsideNewRoom(const std::vector<Entity>& players);
-	void multiplayerToggleCurrentDoors(int nextRoom);
-	void mutliplayerCloseDoors();
+	int serverGetNextRoomIndex() const;
 	void serverActivateCurrentRoom();
-	void serverToggleCurrentPaths(bool active);
+	void serverDeactivateSurrounding();
+	void multiplayerToggleCurrentDoors(int nextRoom); // Event
+	void mutliplayerCloseDoors(); // Event
 
 	bool playerNewRoom(Entity player);
 
