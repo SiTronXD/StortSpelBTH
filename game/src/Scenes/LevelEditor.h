@@ -21,6 +21,20 @@ private:
     Entity mayaCamera;
     Entity sun;
 
+    Entity settingsEntity;
+    UIArea resumeButton;
+    UIArea settingsButton;
+    UIArea howToPlayButton;
+    UIArea exitButton;
+    UIArea backButton;
+    uint32_t fontTextureId;
+    uint32_t pauseBackgroundId;
+    uint32_t howToUseBackgroundId;
+    uint32_t settingsBackgroundId;
+    uint32_t buttonTexture;
+
+    bool paused = false;
+
     void readBuffer();
 
 public:

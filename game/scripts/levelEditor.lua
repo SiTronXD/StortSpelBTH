@@ -1,4 +1,4 @@
---local playerMesh = resources.addMesh("assets/models/Amogus/source/1.fbx")
+
 local playerMesh = resources.addAnimations({ "assets/models/Character/CharIdle.fbx", "assets/models/Character/CharRun.fbx", 
 "assets/models/Character/CharDodge.fbx", "assets/models/Character/CharOutwardAttack.fbx", 
 "assets/models/Character/CharHeavyAttack.fbx", 
@@ -30,3 +30,7 @@ scene.getComponent(cam, CompType.Script).playerID = playerID
 local player = scene.getComponent(playerID, CompType.Script)
 player.camID = cam
 player.playerMesh = playerMesh
+
+-- UI
+local uiID = scene.createEntity()
+scene.setComponent(uiID, CompType.Script, "scripts/levelEditorUI.lua")

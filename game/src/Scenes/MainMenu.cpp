@@ -243,7 +243,10 @@ void MainMenu::update()
 		{
 			this->state = State::LevelEdit;
 		}
-
+        if (Input::isKeyPressed(Keys::E))
+        {
+                this->state = State::LevelEdit;
+		}
 		break;
 
 	case Settings:
@@ -252,14 +255,10 @@ void MainMenu::update()
 	case HowToPlay:
 		this->howToPlay();
 		break;
-
-#ifdef WIN32
 	case LevelEdit:
 		this->switchScene(new LevelEditor(), "scripts/levelEditor.lua");
 
 		break;
-#endif 
-
 	case Quit:
 		this->getSceneHandler()->getWindow()->close();
 		break;
