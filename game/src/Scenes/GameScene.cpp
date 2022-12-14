@@ -72,8 +72,8 @@ GameSceneLevel GameScene::setNewLevel() {
 
 GameScene::GameScene(GameSceneLevel gameSceneLevel) :
     playerID(-1), portal(-1), newRoomFrame(false), perk(-1),
-    perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1), 
-    deathTimer(0.0f), isDead(false), fadeTimer(1.0f), portalTimer(9.0f)
+    perk1(-1), perk2(-1), perk3(-1), perk4(-1), ability(-1), ability1(-1),
+    deathTimer(0.0f), isDead(false), fadeTimer(1.0f), portalTimer(9.0f), inPortalTimer(0.0f)
 {
     Input::setHideCursor(true);
     currentLevel = gameSceneLevel;
@@ -709,9 +709,13 @@ void GameScene::onTriggerStay(Entity e1, Entity e2)
             }
             else
             {
+                glm::vec3 portalPos = this->getComponent<Transform>(this->portal).position;
                 int num = this->networkHandler->checkOtherPlayersCollision(this->getComponent<Transform>(other), this->getComponent<Collider>(other)) + 1;
                 this->getUIRenderer()->renderString(std::to_string(num) + "/" + std::to_string(this->networkHandler->getPlayers().size() + 1),
-                    glm::vec2(0.0f), glm::vec2(100.0f));
+                    portalPos + glm::vec3(0.0f, 20.0f, 0.0f), glm::vec2(500.0f), 0.0f, StringAlignment::CENTER, glm::vec4(1.0f, 1.0f, 1.0f,
+                    sin(std::min(this->inPortalTimer, glm::half_pi<float>()) * 1.0f)));
+                this->inPortalTimer += Time::getDT();
+                Log::write("Timer: " + std::to_string(inPortalTimer));
             }
         }
         
@@ -756,6 +760,12 @@ void GameScene::onTriggerEnter(Entity e1, Entity e2)
     Entity ability = this->hasComponents<Abilities>(e1)   ? e1
                     : this->hasComponents<Abilities>(e2) ? e2
                                                        : -1;
+
+    Entity portalEnt = e1 == this->portal ? e1 : e2 == this->portal ? e2 : -1;
+    if (this->entityValid(portalEnt))
+    {
+        this->inPortalTimer = 0.0f;
+    }
 
 	if(this->hasComponents<SwarmComponent>(e1) && this->hasComponents<SwarmComponent>(e2))
 	{
