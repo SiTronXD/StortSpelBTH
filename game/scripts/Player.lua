@@ -210,7 +210,7 @@ function script:update(dt)
     else
         rb.acceleration.y = -300
     end
-    if(input.isKeyPressed(Keys.SPACE) and self.onGround) then
+    if(input.isKeyPressed(Keys.SPACE) and self.onGround and not paused) then
         y = y + 50
     end
 
