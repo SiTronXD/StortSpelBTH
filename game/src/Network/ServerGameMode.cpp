@@ -1,7 +1,7 @@
 #include "ServerGameMode.h"
 #include "../Components/HealthComp.h"
 
-#define ROOMDEBUG
+//#define ROOMDEBUG
 
 ServerGameMode::ServerGameMode(int level) {
     this->level = level;
