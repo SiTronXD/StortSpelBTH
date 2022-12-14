@@ -23,9 +23,9 @@ void LoadingScene::init()
 
 	// Loading texture
 	this->loadingTextureIndex = 
-		this->getResourceManager()->addTexture("assets/textures/logo.png", {});
+		this->getResourceManager()->addTexture("assets/textures/logo.png");
 	this->blackTextureIndex = 
-		this->getResourceManager()->addTexture("vengine_assets/textures/Black.jpg", {});
+		this->getResourceManager()->addTexture("vengine_assets/textures/Black.jpg");
 
 	// Font
 	TextureSamplerSettings samplerSettings{};
