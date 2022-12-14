@@ -52,56 +52,44 @@ public:
 		int counter = 0;
 		Transform& camTransform = this->scene->getComponent<Transform>(this->scene->getMainCameraID());
 
-		uiRenderer->setTexture(backgroundID);
-		auto tankBackground = [&](Transform& transform, TankComponent& tank)
-		{
-			float dotDist = glm::dot(transform.position - camTransform.position, camTransform.forward());
-			//float alpha = dotDist <= ALPHA_DIST ? 1.0f : std::max(ALPHA_DIST + FALLOFF_DIST - dotDist, 0.0f) / (float)FALLOFF_DIST;
-			float alpha = std::clamp((ALPHA_DIST + FALLOFF_DIST - dotDist) / (float)FALLOFF_DIST, 0.0f, 1.0f);
-			uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 42.0f, 0.0f), glm::vec2(2000.0f, 150.0f), backgroundRects[counter++],
-				glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, alpha));
-		};
-		tankView.each(tankBackground);
-		auto lichBackground = [&](Transform& transform, LichComponent& lich)
-		{
-			float dotDist = glm::dot(transform.position - camTransform.position, camTransform.forward());
-			float alpha = std::clamp((ALPHA_DIST + FALLOFF_DIST - dotDist) / (float)FALLOFF_DIST, 0.0f, 1.0f);
-			uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 28.0f, 0.0f), glm::vec2(1750.0f, 150.0f), backgroundRects[counter++],
-				glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, alpha));
-		};
-		lichView.each(lichBackground);
-		auto swarmBackground = [&](Transform& transform, SwarmComponent& swarm)
-		{
-			float dotDist = glm::dot(transform.position - camTransform.position, camTransform.forward());
-			float alpha = std::clamp((ALPHA_DIST + FALLOFF_DIST - dotDist) / (float)FALLOFF_DIST, 0.0f, 1.0f);
-			uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 10.0f, 0.0f), glm::vec2(1500.0f, 150.0f), backgroundRects[counter++],
-				glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, alpha));
-		};
-		swarmView.each(swarmBackground);
+		//uiRenderer->setTexture(backgroundID);
+		//auto tankBackground = [&](Transform& transform, TankComponent& tank)
+		//{
+		//	uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 36.0f, 0.0f), glm::vec2(2000.0f, 150.0f));
+		//};
+		//tankView.each(tankBackground);
+		//auto lichBackground = [&](Transform& transform, LichComponent& lich)
+		//{
+		//	uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 28.0f, 0.0f), glm::vec2(1750.0f, 150.0f));
+		//};
+		//lichView.each(lichBackground);
+		//auto swarmBackground = [&](Transform& transform, SwarmComponent& swarm)
+		//{
+		//	uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 10.0f, 0.0f), glm::vec2(1500.0f, 150.0f));
+		//};
+		//swarmView.each(swarmBackground);
 
-		counter = 0;
-		uiRenderer->setTexture(healthBarID);
-		auto tankHealthBar = [&](Transform& transform, TankComponent& tank)
-		{
-			float percentage = std::max((float)tank.life / tank.FULL_HEALTH, 0.0f);
-			this->renderHealth(transform, camTransform, counter, percentage);
-			counter++;
-		};
-		tankView.each(tankHealthBar);
-		auto lichHealthBar = [&](Transform& transform, LichComponent& lich)
-		{
-			float percentage = std::max((float)lich.life / lich.FULL_HEALTH, 0.0f);
-			this->renderHealth(transform, camTransform, counter, percentage);
-			counter++;
-		};
-		lichView.each(lichHealthBar);
-		auto swarmHealthBar = [&](Transform& transform, SwarmComponent& swarm)
-		{
-			float percentage = std::max((float)swarm.life / swarm.FULL_HEALTH, 0.0f);
-			this->renderHealth(transform, camTransform, counter, percentage);
-			counter++;
-		};
-		swarmView.each(swarmHealthBar);
+		//uiRenderer->setTexture(healthBarID);
+		//Transform& camTransform = this->scene->getComponent<Transform>(this->scene->getMainCameraID());
+		//
+		//auto tankHealthBar = [&](Transform& transform, TankComponent& tank)
+		//{
+		//	float percentage = std::max((float)tank.life / tank.FULL_HEALTH, 0.0f);
+		//	uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 36.0f, 0.0f) + camTransform.right() * 9.0f * (1.0f - percentage), glm::vec2(1950.0f * percentage, 100.0f));
+		//};
+		//tankView.each(tankHealthBar);
+		//auto lichHealthBar = [&](Transform& transform, LichComponent& lich)
+		//{
+		//	float percentage = std::max((float)lich.life / lich.FULL_HEALTH, 0.0f);
+		//	uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 28.0f, 0.0f) + camTransform.right() * 7.75f * (1.0f - percentage), glm::vec2(1700.0f * percentage, 100.0f));
+		//};
+		//lichView.each(lichHealthBar);
+		//auto swarmHealthBar = [&](Transform& transform, SwarmComponent& swarm)
+		//{
+		//	float percentage = std::max((float)swarm.life / swarm.FULL_HEALTH, 0.0f);
+		//	uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 10.0f, 0.0f) + camTransform.right() * 6.75f * (1.0f - percentage), glm::vec2(1450.0f * percentage, 100.0f));
+		//};
+		//swarmView.each(swarmHealthBar);
 
 		//backgroundRects.assign(counter, glm::vec4(0.0f));
 		std::fill(backgroundRects.begin(),backgroundRects.end(), glm::vec4(0.0f));

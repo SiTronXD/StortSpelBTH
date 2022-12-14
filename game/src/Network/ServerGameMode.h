@@ -48,7 +48,7 @@ private:
     virtual ~ServerGameMode();
 	virtual void init() override;
 	void update(float dt) override;
-	virtual void onDisconnect(int index) override;
+	//virtual void onDisconnect(int index) override;
 
 	virtual void onTriggerStay(Entity e1, Entity e2) override;
     virtual void onTriggerEnter(Entity e1, Entity e2) override;

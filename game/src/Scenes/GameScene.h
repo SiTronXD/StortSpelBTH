@@ -113,6 +113,9 @@ private:
     void testParticleSystem(const Entity& particleSystemEntity);
     void setCurrentLevel(const GameSceneLevel& lvl);
   
+  //FOR TRAILER
+  int trailerCamera;
+  int lastCamera;
 
 public:
     GameScene(GameSceneLevel gameSceneLevel = GameSceneLevel());
