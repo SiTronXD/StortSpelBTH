@@ -284,6 +284,7 @@ SET ERRORLEVEL=0</Command>
     <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmBTs.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmFSM.cpp" />
     <ClCompile Include="src\Scenes\GameScene.cpp" />
+    <ClCompile Include="src\Scenes\LoadingScene.cpp" />
     <ClCompile Include="src\Scenes\RoomTesting.cpp" />
     <ClCompile Include="src\Scenes\GameSceneNetwork.cpp" />
     <ClCompile Include="src\Scenes\LobbyScene.cpp" />
@@ -302,6 +303,7 @@ SET ERRORLEVEL=0</Command>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
     <ClInclude Include="Components\Movement.h" />
+    <ClInclude Include="src\Scenes\LoadingScene.h" />
     <ClInclude Include="src\Settings\Settings.h" />
     <ClInclude Include="src\Components\HealArea.h" />
     <ClInclude Include="src\Components\HealthComp.h" />

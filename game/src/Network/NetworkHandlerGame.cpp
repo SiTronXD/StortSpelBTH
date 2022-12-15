@@ -33,7 +33,7 @@ Entity NetworkHandlerGame::spawnItem(PerkType type, float multiplier, glm::vec3 
 	}
 
 	scene->setComponent<Perks>(e, perk);
-	scene->setComponent<PointLight>(e, glm::vec3(0.0f), glm::vec3(5.0f, 7.0f, 9.0f));
+	scene->setComponent<PointLight>(e, glm::vec3(0.0f, -4.f, 0.f), (glm::vec3(5.0f, 7.0f, 9.0f) * 3.f));
 
 	return e;
 }
@@ -57,7 +57,7 @@ Entity NetworkHandlerGame::spawnItem(AbilityType type, glm::vec3 pos, glm::vec3 
 	}
 
 	scene->setComponent<Abilities>(e, type);
-	scene->setComponent<PointLight>(e, glm::vec3(0.0f), glm::vec3(7.0f, 9.0f, 5.0f));
+	scene->setComponent<PointLight>(e, glm::vec3(0.f, -7.f, 0.f), (glm::vec3(7.0f, 9.0f, 5.0f) * 3.f));
 
 	return e;
 }
@@ -1107,11 +1107,26 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 	this->playerPosLast.resize(size);
     this->currDistToStepSound.resize(size, 0);
 	this->playerPosCurrent.resize(size);
+
 	float angle = 360.0f / (size + 1);
+
+	std::vector<int> positionOrder(size + 1);
+	positionOrder[0] = this->ID;
+	for (int i = 0; i < size; i++)
+	{
+		positionOrder[i + 1] = this->otherPlayersServerId[i];
+	}
+	std::sort(positionOrder.begin(), positionOrder.end());
+
+	std::map<int, int> indices{};
+	for (int i = 0; i < size + 1; i++)
+	{
+		indices.insert(std::pair<int, int>(positionOrder[i], i));
+	}
 
 	Scene* scene = this->sceneHandler->getScene();
 	Transform& playerTrans = scene->getComponent<Transform>(this->player);
-	playerTrans.position = SMath::rotateVector(glm::vec3(0.0f, angle * (this->ID % (size + 1)), 0.0f), glm::vec3(15.0f, 12.0f, 0.0f));
+	playerTrans.position = SMath::rotateVector(glm::vec3(0.0f, angle * (indices[this->ID] % (size + 1)), 0.0f), glm::vec3(15.0f, 12.0f, 0.0f));
 	for (int i = 0; i < size; i++)
 	{
 		this->playerEntities[i] = scene->createEntity();
@@ -1126,13 +1141,29 @@ void NetworkHandlerGame::createOtherPlayers(int playerMesh)
 
 		// Set Position
 		Transform& t = scene->getComponent<Transform>(this->playerEntities[i]);
-		t.position = playerTrans.position = SMath::rotateVector(glm::vec3(0.0f, angle * (this->otherPlayersServerId[i] % (size + 1)), 0.0f), glm::vec3(10.0f, 12.0f, 0.0f));
+		t.position = SMath::rotateVector(glm::vec3(0.0f, angle * (indices[this->otherPlayersServerId[i]] % (size + 1)), 0.0f), glm::vec3(15.0f, 0.0f, 0.0f));
+		this->playerPosLast[i] = t.position;
+		this->playerPosCurrent[i] = t.position;
 
 		// Set tint color
 		MeshComponent& mesh = scene->getComponent<MeshComponent>(this->playerEntities[i]);
 		this->resourceManger->makeUniqueMaterials(mesh);
 		mesh.overrideMaterials[0].tintColor = this->playerColors[i + 1];
 	}
+}
+
+int NetworkHandlerGame::checkOtherPlayersCollision(Transform& transform, Collider& col)
+{
+	int count = 0;
+
+	for (const auto& player : this->playerEntities)
+	{
+		Collider& playerCol = this->sceneHandler->getScene()->getComponent<Collider>(player);
+		Transform& playerTransform = this->sceneHandler->getScene()->getComponent<Transform>(player);
+		count += this->sceneHandler->getPhysicsEngine()->testContactPair(col, transform.position, transform.rotation, playerCol, playerTransform.position, playerTransform.rotation);
+	}
+
+	return count;
 }
 
 void NetworkHandlerGame::updatePlayer()

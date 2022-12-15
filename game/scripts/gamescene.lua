@@ -59,25 +59,3 @@ scene.getComponent(uiID, CompType.Script).pauseBackgroundTexID =
 	resources.addTexture("assets/textures/UI/frame.png")
 scene.getComponent(uiID, CompType.Script).buttonTexID = 
 	resources.addTexture("assets/textures/UI/button.jpg")
-
---[[local p = scene.createPrefab("scripts/prefabs/prefab.lua")
-
-local prefab = {
-	Transform = {
-		position = vector(3, 0, 5),
-		rotation = vector(0, 45, -90),
-		scale = vector.fill(1)
-	},
-	Mesh = 0,
-	Script = "scripts/script.lua"
-}
-scene.createPrefab(prefab)
-
-prefab.Transform = {
-	position = vector(-3, 0, 5),
-	rotation = vector(0, -45, -90),
-	scale = vector.fill(1)
-}
-scene.createPrefab(prefab)]]
-
---scene.createSystem("scripts/system.lua")

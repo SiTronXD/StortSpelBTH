@@ -23,8 +23,8 @@ void RoomLayout::clear()
 
 void RoomLayout::generate()
 {
-	this->numMainRooms = this->random.rand() % ((MAX_MAIN_ROOMS - MIN_MAIN_ROOMS) + 1) + MIN_MAIN_ROOMS;
-	this->numBranches = this->random.rand() % ((MAX_NUM_BRANCHES - MIN_NUM_BRANCHES) + 1) + MIN_NUM_BRANCHES;
+	this->numMainRooms = std::abs(int(this->random.rand())) % ((MAX_MAIN_ROOMS - MIN_MAIN_ROOMS) + 1) + MIN_MAIN_ROOMS;
+	this->numBranches = std::abs(int(this->random.rand())) % ((MAX_NUM_BRANCHES - MIN_NUM_BRANCHES) + 1) + MIN_NUM_BRANCHES;
 
 	this->connections.reserve(size_t(this->numMainRooms + this->numBranches) - 1ull);
 
@@ -67,7 +67,7 @@ void RoomLayout::setUpRooms(int numRooms)
 			}
 
 			//one in five to become a hard room
-			if (this->random.rand() % 5 == 0)
+			if (std::abs(int(this->random.rand())) % 5 == 0)
 			{
 				curRoom.type = RoomData::Type::HARD_ROOM;
 			}
@@ -81,7 +81,7 @@ void RoomLayout::setUpRooms(int numRooms)
 
 bool RoomLayout::setRandomBranch(int numRooms)
 {
-	int branchSize = this->random.rand() % ((MAX_BRANCH_SIZE - MIN_BRANCH_SIZE) + 1) + MIN_BRANCH_SIZE;
+	int branchSize = std::abs(int(this->random.rand())) % ((MAX_BRANCH_SIZE - MIN_BRANCH_SIZE) + 1) + MIN_BRANCH_SIZE;
 
 	if (branchSize > this->largestBranchSize)
 	{
@@ -91,7 +91,7 @@ bool RoomLayout::setRandomBranch(int numRooms)
 	int spot = 0;
 	if (numRooms > 1)
 	{
-		spot = this->random.rand() % (numRooms - 1);
+		spot = std::abs(int(this->random.rand())) % (numRooms - 1);
 	}
 
 	bool foundSpot = false;
@@ -118,7 +118,7 @@ bool RoomLayout::setRandomBranch(int numRooms)
 	}
 	if (this->rooms[spot].left == -1 && this->rooms[spot].right == -1)
 	{
-		if (this->random.rand() % 2 == 0)
+		if (std::abs(int(this->random.rand())) % 2 == 0)
 		{
 			this->setBranch(spot, true, branchSize);
 		}
@@ -143,7 +143,7 @@ void RoomLayout::setBranch(int index, bool left, int size)
 {
 	RoomData::Type roomType = RoomData::Type::NORMAL_ROOM;
 
-	if (this->random.rand() % 5 == 0)
+	if (std::abs(int(this->random.rand())) % 5 == 0)
 	{
 		roomType = RoomData::Type::HARD_ROOM;
 	}
@@ -199,7 +199,7 @@ void RoomLayout::setBranch(int index, bool left, int size)
 
 bool RoomLayout::setExit()
 {
-	int exitIndex = this->random.rand() % (this->rooms.size() - 1) + 1;
+	int exitIndex = std::abs(int(this->random.rand())) % (this->rooms.size() - 1) + 1;
 	int numTests = 0;
 	while (this->rooms[exitIndex].type == RoomData::Type::BOSS_ROOM || this->rooms[exitIndex].type == RoomData::Type::START_ROOM)
 	{

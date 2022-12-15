@@ -179,6 +179,12 @@ void SpawnHandler::spawnTank(
         {
             ((NetworkScene*)currScene)
                 ->addEvent({(int)GameEvent::ACTIVATE, this->tankIDs[tankIdx]});
+            ((NetworkScene*)currScene)
+                ->addEvent(
+                    { (int)GameEvent::ENTITY_SET_HP,
+                     (int)static_cast<int>(this->tankIDs[tankIdx]),
+                     (int)tankComp.life }
+            );
         }
 }
 
@@ -276,6 +282,12 @@ uint32_t SpawnHandler::spawnLich(
                              graveTransform.position.y,
                              graveTransform.position.z}
                         );
+                    ((NetworkScene*)currScene)
+                        ->addEvent(
+                            { (int)GameEvent::ENTITY_SET_HP,
+                             (int)static_cast<int>(this->lichIDs[lichIdx]),
+                             (int)lichComp.life }
+                    );
                 }
 
             debugRays.push_back({alterPos->getPos(), {1.f, 0.f, 1.f}});
