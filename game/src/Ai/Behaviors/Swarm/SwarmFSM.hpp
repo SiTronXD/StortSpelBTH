@@ -37,6 +37,7 @@ struct SwarmComponent
     float alert_top;
 	float idleRotSpeed			= 100.0f;
 	float attackRotSpeed		= 200.0f;
+	float escapeRotSpeed		= 300.0f;
 	float tempRotAngle			= 0.0f;//Dont touch!
 	float lightHit              = 15.f;
 	float lightAttackTime       = 2.0f;
