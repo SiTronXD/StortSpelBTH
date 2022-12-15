@@ -104,11 +104,15 @@ void MainMenu::init()
 			"uvwxyz+-.'",
 			"0123456789",
 			"!?,<>:()#^",
-			"@%        "
+			"@%/       "
 		},
 		fontTextureId,
 		glm::uvec2(50, 50)
 	);
+
+	// Logo
+	this->logoTextureId =
+		this->getResourceManager()->addTexture("assets/textures/logo.png");
 }
 
 void MainMenu::start()
@@ -264,6 +268,13 @@ void MainMenu::update()
 		this->getSceneHandler()->getWindow()->close();
 		break;
 	}
+
+	// Render logo
+	this->getUIRenderer()->setTexture(this->logoTextureId);
+	this->getUIRenderer()->renderTexture(
+		glm::vec2(550.0f, 330), 
+		glm::vec2(1921.0f, 1079.0f) * 0.45f
+	);
 }
 
 void MainMenu::settings()

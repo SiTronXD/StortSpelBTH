@@ -5,23 +5,263 @@
 LobbyScene::LobbyScene(const std::string& serverIP) : serverIP(serverIP) {}
 LobbyScene::~LobbyScene() {}
 
+void LobbyScene::preloadAssets()
+{
+    // ----------------------- Main menu -----------------------
+    this->getResourceManager()->addMesh("assets/models/Menu/scene.obj");
+    this->getResourceManager()->addMesh("assets/models/Menu/signpost.obj");
+
+    this->getResourceManager()->addTexture("assets/textures/firefliesParticle.png");
+    this->getResourceManager()->addTexture("assets/textures/leafParticle.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/settings.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/howToPlay.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/button.jpg");
+    this->getResourceManager()->addTexture("assets/textures/UI/Presumed Dead QR.png");
+
+    this->getResourceManager()->addSound("assets/Sounds/buttonClick.ogg");
+
+    TextureSamplerSettings samplerSettings{};
+    samplerSettings.filterMode = vk::Filter::eNearest;
+    samplerSettings.unnormalizedCoordinates = VK_TRUE;
+    uint32_t fontTextureId = Scene::getResourceManager()->addTexture("assets/textures/UI/font.png", { samplerSettings, true });
+    Scene::getUIRenderer()->setBitmapFont(
+        {
+            "abcdefghij",
+            "klmnopqrst",
+            "uvwxyz+-.'",
+            "0123456789",
+            "!?,<>:()#^",
+            "@%/       "
+        },
+        fontTextureId,
+        glm::uvec2(50, 50)
+    );
+
+
+    // ----------------------- Game scene -----------------------
+    int playerMesh = this->getResourceManager()->addAnimations(
+        {
+            "assets/models/Character/CharIdle.fbx",
+            "assets/models/Character/CharRun2.fbx",
+            "assets/models/Character/CharDodge.fbx",
+            "assets/models/Character/CharOutwardAttack.fbx",
+            "assets/models/Character/CharHeavyAttack.fbx",
+            "assets/models/Character/CharSpinAttack.fbx",
+            "assets/models/Character/CharKnockbackAttack.fbx",
+            "assets/models/Character/CharInwardAttack.fbx",
+            "assets/models/Character/CharSlashAttack.fbx",
+            "assets/models/Character/DeathAnim.fbx"
+        },
+        "assets/textures/playerMesh"
+    );
+    this->getResourceManager()->mapAnimations(
+        playerMesh,
+        {
+            "idle",
+            "run",
+            "dodge",
+            "lightAttack",
+            "heavyAttack",
+            "spinAttack",
+            "knockback",
+            "mixAttack",
+            "slashAttack",
+            "dead"
+        }
+    );
+    this->getResourceManager()->createAnimationSlot(
+        playerMesh, "LowerBody", "mixamorig:Hips"
+    );
+    this->getResourceManager()->createAnimationSlot(
+        playerMesh, "UpperBody", "mixamorig:Spine1"
+    );
+
+    int swarm =
+        this->getResourceManager()->addMesh("assets/models/Swarm_RotTest.obj");
+    int tank = this->getResourceManager()->addAnimations(
+        {
+            "assets/models/Tank/TankWalk.fbx",
+            "assets/models/Tank/TankCharge.fbx",
+            "assets/models/Tank/TankGroundHump.fbx",
+            "assets/models/Tank/TankRaiseShield.fbx"
+        },
+        "assets/textures/"
+    );
+    this->getResourceManager()->mapAnimations(tank, {
+        "Walk",
+        "Charge",
+        "GroundHump",
+        "RaiseShield",
+        }
+    );
+    this->getResourceManager()->createAnimationSlot(tank, "LowerBody", "Character1_Hips");
+    this->getResourceManager()->createAnimationSlot(tank, "UpperBody", "Character1_Spine");
+    int lich = this->getResourceManager()->addAnimations(
+        {
+            "assets/models/Lich/Lich_Walk.fbx",
+            "assets/models/Lich/Lich_Attack.fbx",
+        },
+        "assets/textures/Lich/"
+    );
+    this->getResourceManager()->mapAnimations(lich, 
+        {
+        "Walk",
+        "Attack"
+        }
+    );
+    this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
+    this->getResourceManager()->addMesh("assets/models/Ability_Healing.obj");
+    this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
+    this->getResourceManager()->addMesh("assets/models/Perk_Dmg.obj");
+    this->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");
+    this->getResourceManager()->addMesh("assets/models/Perk_Movement.obj");
+    this->getResourceManager()->addMesh("assets/models/Perk_Stamina.obj");
+    this->getResourceManager()->addTexture("assets/textures/UI/knockbackAbility.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/HealingAbility.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/empty.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/hpUp.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/dmgUp.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/atkSpeedUp.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/moveUp.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/staminaUp.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/empty.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/hpBarBackground.jpg");
+    this->getResourceManager()->addTexture("assets/textures/UI/hpBar.jpg");
+    this->getResourceManager()->addTexture("vengine_assets/textures/Black.jpg");
+    this->getResourceManager()->addTexture("assets/textures/UI/GhostUI.png");
+    this->getResourceManager()->addSound("assets/Sounds/buttonClick.ogg");
+
+    this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhost.jpg");
+    this->getResourceManager()->addTexture("assets/textures/playerMesh/CharacterTextureGhostGlow.jpg");
+
+    this->getResourceManager()->addMesh("assets/models/PortalOff.obj");
+    this->getResourceManager()->addMesh("assets/models/PortalOn.obj");
+    this->getResourceManager()->addCollisionShapeFromMesh("assets/models/portal.fbx");
+    this->getResourceManager()->addMesh("assets/models/fire_orb.obj");
+    this->getResourceManager()->addMesh("assets/models/light_orb.obj");
+    this->getResourceManager()->addMesh("assets/models/ice_orb.obj");
+
+    this->getResourceManager()->addTexture("assets/textures/UI/HealingAbilityParticle.png");
+    this->getResourceManager()->addTexture("assets/textures/bloodParticle.png");
+    this->getResourceManager()->addTexture("assets/textures/slimeParticle.png");        
+    this->getResourceManager()->addTexture("assets/textures/grassDustParticle.png");
+    this->getResourceManager()->addTexture("assets/textures/portalParticle.png");
+    this->getResourceManager()->addTexture("assets/textures/orbParticle.png");
+
+    // ----------------------- Lua game scene -----------------------
+    TextureSettings pixelArtSettings{};
+    pixelArtSettings.samplerSettings.filterMode = vk::Filter::eNearest;
+
+    this->getResourceManager()->addTexture("assets/textures/UI/hpBarBackground.jpg");
+    this->getResourceManager()->addTexture("assets/textures/UI/staminaBar.jpg");
+    this->getResourceManager()->addTexture("assets/textures/UI/perkSlot.png", pixelArtSettings);
+    this->getResourceManager()->addTexture("assets/textures/UI/UIBarMid.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/UIBarSide.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/UIBarMid.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/UIBarSide.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/UIBorder.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/frame.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/button.jpg");
+
+    // ----------------------- Room handler -----------------------
+    for (uint32_t i = 0; i < RoomHandler::NUM_BORDER; i++)
+    {
+        this->getResourceManager()->addMesh("assets/models/Tiles/Border/" + std::to_string(i + 1u) + ".obj");
+    }
+    this->getResourceManager()->addMesh("assets/models/Tiles/Border/innerBorder.obj");
+
+    for (uint32_t i = 0; i < RoomHandler::NUM_ONE_X_ONE; i++)
+    {
+        this->getResourceManager()->addMesh("assets/models/Tiles/OneXOne/" + std::to_string(i + 1u) + ".obj");
+    }
+
+    for (uint32_t i = 0; i < RoomHandler::NUM_ONE_X_TWO; i++)
+    {
+        this->getResourceManager()->addMesh("assets/models/Tiles/OneXTwo/" + std::to_string(i + 1u) + ".obj");
+        const int collId = (int) this->getResourceManager()->addCollisionShapeFromMesh("assets/models/Tiles/OneXTwo/" + std::to_string(i + 1u) + ".obj");
+        this->getResourceManager()->getCollisionShapeFromMesh(collId).size() ? collId : ~0u;
+    }
+
+    for (uint32_t i = 0; i < RoomHandler::NUM_TWO_X_TWO; i++)
+    {
+        this->getResourceManager()->addMesh("assets/models/Tiles/TwoXTwo/" + std::to_string(i + 1u) + ".obj");
+        const int collId = this->getResourceManager()->addCollisionShapeFromMesh("assets/models/Tiles/TwoXTwo/" + std::to_string(i + 1u) + ".obj");
+        this->getResourceManager()->getCollisionShapeFromMesh(collId).size() ? collId : ~0u;
+
+    }
+
+    this->getResourceManager()->addMesh("assets/models/door.obj");
+    this->getResourceManager()->addMesh("assets/models/tempRock.obj");
+    this->getResourceManager()->addMesh("assets/models/rockFence.obj");
+    this->getResourceManager()->addMesh("assets/models/Tiles/Floor.obj");
+    this->getResourceManager()->addMesh("assets/models/Tiles/OneXTwo/lamp.obj");
+
+    this->getResourceManager()->addTexture("assets/textures/lampTex.jpg");
+    this->getResourceManager()->addTexture("assets/textures/Perk_HpTex.jpg");
+
+    // ----------------------- Log in scene -----------------------
+    this->getResourceManager()->addTexture("assets/textures/blackTex.jpg");
+    this->getResourceManager()->addTexture("assets/textures/UI/button.jpg");
+
+    this->buttonSound = this->getResourceManager()->addSound("assets/Sounds/buttonClick.ogg");
+
+    // ----------------------- Game over scene -----------------------
+    this->getResourceManager()->addMesh("assets/models/GameOverScene/GraveStone.obj");
+    this->getResourceManager()->addMesh("assets/models/GameOverScene/LightPillar.obj");
+    this->getResourceManager()->addMesh("assets/models/Tiles/Floor.obj");
+    this->getResourceManager()->addMesh("assets/models/Tiles/Border/1.obj");
+    this->getResourceManager()->addMesh("assets/models/Tiles/OneXOne/1.obj");
+    this->getResourceManager()->addMesh("assets/models/GameOverScene/GroundTop.obj");
+    this->getResourceManager()->addMesh("assets/models/GameOverScene/Crystal.obj");
+
+    this->getResourceManager()->addTexture("vengine_assets/textures/DefaultEmission.jpg");
+
+    // ----------------------- Network handler game -----------------------
+    this->getResourceManager()->addSound("assets/Sounds/PlayerSounds/RunningSound.ogg");
+    this->getResourceManager()->addMesh("assets/models/Perk_Hp.obj");
+    this->getResourceManager()->addMesh("assets/models/Perk_Dmg.obj");
+    this->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");
+    this->getResourceManager()->addMesh("assets/models/Perk_Movement.obj");
+    this->getResourceManager()->addMesh("assets/models/Perk_Stamina.obj");
+    this->getResourceManager()->addMesh("assets/models/KnockbackAbility.obj");
+    this->getResourceManager()->addMesh("assets/models/Ability_Healing.obj");
+    this->getResourceManager()->addMesh("assets/models/HealingAbility.obj");
+    this->getResourceManager()->addMesh("assets/models/MainSword.fbx", "assets/textures");
+
+    this->getResourceManager()->addMesh("assets/models/grave.obj");
+    this->getResourceManager()->addMesh("assets/models/alter.obj");
+    this->getResourceManager()->addMesh("assets/models/hump.obj");
+
+    this->getResourceManager()->addSound("assets/Sounds/Enemysounds/Golem/GolemTakeDmg.ogg");
+    this->getResourceManager()->addSound("assets/Sounds/Enemysounds/Golem/Shockwave.ogg");
+    this->getResourceManager()->addSound("assets/Sounds/Enemysounds/Golem/GolemCharge.ogg");
+    this->getResourceManager()->addSound("assets/Sounds/EnemySounds/Lich/LichTakeDmg.ogg");
+    this->getResourceManager()->addSound("assets/Sounds/EnemySounds/Lich/ChargeLightning.ogg");
+    this->getResourceManager()->addSound("assets/Sounds/EnemySounds/Lich/ChargeFire.ogg");
+    this->getResourceManager()->addSound("assets/Sounds/EnemySounds/Lich/ChargeIce.ogg");
+    this->getResourceManager()->addSound("assets/Sounds/EnemySounds/Swarm/SwarmTakeDmg.ogg");
+    this->getResourceManager()->addSound("assets/Sounds/EnemySounds/Swarm/SwarmAttack.ogg");
+}
+
 void LobbyScene::init()
 {
-  this->playerModel = this->getResourceManager()->addAnimations(
+    this->preloadAssets();
+
+    this->playerModel = this->getResourceManager()->addAnimations(
         std::vector<std::string>(
             {"assets/models/Character/CharIdle.fbx",
-             "assets/models/Character/CharRun2.fbx",
-             "assets/models/Character/CharDodge.fbx",
-             "assets/models/Character/CharOutwardAttack.fbx",
-             "assets/models/Character/CharHeavyAttack.fbx",
-             "assets/models/Character/CharSpinAttack.fbx",
-             "assets/models/Character/CharKnockbackAttack.fbx",
-             "assets/models/Character/CharInwardAttack.fbx",
-             "assets/models/Character/CharSlashAttack.fbx",
-             "assets/models/Character/DeathAnim.fbx"}
+                "assets/models/Character/CharRun2.fbx",
+                "assets/models/Character/CharDodge.fbx",
+                "assets/models/Character/CharOutwardAttack.fbx",
+                "assets/models/Character/CharHeavyAttack.fbx",
+                "assets/models/Character/CharSpinAttack.fbx",
+                "assets/models/Character/CharKnockbackAttack.fbx",
+                "assets/models/Character/CharInwardAttack.fbx",
+                "assets/models/Character/CharSlashAttack.fbx",
+                "assets/models/Character/DeathAnim.fbx"}
         ), 
-      "assets/textures/playerMesh"
-  );
+        "assets/textures/playerMesh"
+    );
     this->getResourceManager()->mapAnimations(
         playerModel,
         std::vector<std::string>(
@@ -60,7 +300,7 @@ void LobbyScene::init()
         "uvwxyz+-.'",
         "0123456789",
         "!?,<>:()#^",
-        "@%        "},
+        "@%/       "},
         this->fontTextureId,
         glm::vec2(50,50)
     );

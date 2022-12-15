@@ -205,19 +205,21 @@ public:
 
 #ifdef _CONSOLE
 	void imgui(DebugRenderer* dr);
-	const std::vector<Room>& getRooms() const;
 #endif //  _CONSOLE
+
+	const std::vector<Room>& getRooms() const;
+	const std::vector<Pathway>& getPaths() const;
 
 	void roomCompleted();
 
 	// Multiplayer
-	int serverGetNextRoomIndex() const;
 	bool playersInPathway(const std::vector<Entity>& players);
 	bool playersInsideNewRoom(const std::vector<Entity>& players);
-	void multiplayerToggleCurrentDoors(int nextRoom);
-	void mutliplayerCloseDoors();
+	int serverGetNextRoomIndex() const;
 	void serverActivateCurrentRoom();
-	void serverToggleCurrentPaths(bool active);
+	void serverDeactivateSurrounding();
+	void multiplayerToggleCurrentDoors(int nextRoom); // Event
+	void mutliplayerCloseDoors(); // Event
 
 	bool playerNewRoom(Entity player);
 
@@ -228,9 +230,11 @@ public:
 	const std::vector<glm::vec3>& getFreeTiles();
 	const std::vector<TileInfo>& getFreeTileInfos();
 	const Room& getExitRoom() const;
+	glm::vec3 getPortalPosition() const;
 	bool isPortalRoomDone() const;
 	int getNumRooms() const;
 	bool inExitRoom() const;
+	bool isActiveRoomCompleted() const;
 
     const glm::vec3& getRoomPos() const;
 	int getActiveIndex() const;

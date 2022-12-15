@@ -1,7 +1,7 @@
 #include "ServerGameMode.h"
 #include "../Components/HealthComp.h"
 
-//#define ROOMDEBUG false
+//#define ROOMDEBUG
 
 ServerGameMode::ServerGameMode(int level) {
     this->level = level;
@@ -64,12 +64,11 @@ void ServerGameMode::update(float dt)
         addEvent({(int)GameEvent::CLOSE_OLD_DOORS}, {roomHandler.serverGetNextRoomIndex()});
 
 #ifdef _CONSOLE
-        printf("Server Active: %d\n", roomHandler.getActiveIndex());
+        printf("Server Active Room: %d\n", roomHandler.getActiveIndex());
         std::cout << "Server: player in new room" << std::endl;
 #endif
         
         roomHandler.serverActivateCurrentRoom();
-        roomHandler.serverToggleCurrentPaths(true);
         spawnHandler.spawnEnemiesIntoRoom(this->level);
 
         this->newRoomFrame = true;
@@ -82,7 +81,7 @@ void ServerGameMode::update(float dt)
         {
             addEvent({(int)GameEvent::CLOSE_NEW_DOORS});
             this->doorsClosed = true;
-            roomHandler.serverToggleCurrentPaths(false);
+            roomHandler.serverDeactivateSurrounding();
         }
     }
 
@@ -105,10 +104,11 @@ void ServerGameMode::update(float dt)
         // Call when a room is cleared
         roomHandler.roomCompleted();
         this->doorsClosed = false;
-        if (this->roomHandler.isPortalRoomDone())
+        if (this->roomHandler.isPortalRoomDone() && !this->portalActivated)
         {
             std::cout << "Server: Spawn portal" << std::endl;
             this->addEvent({(int)GameEvent::SPAWN_PORTAL});
+            this->portalActivated = true;
         }
     }
     //check if all players are at portal
@@ -149,14 +149,14 @@ void ServerGameMode::update(float dt)
     const auto& rooms = roomHandler.getRooms();
     for (int i = 0; i <rooms.size(); i++)
     {
-        for (int d = 0; d < 4; d++)
+        /*for (int d = 0; d < 4; d++)
         {
             if (rooms[i].doors[d] != -1)
             {
                 glm::vec3 dp = this->getComponent<Transform>(rooms[i].doors[d]).position;
                  addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {dp.x, dp.y, dp.z, 0.f, 0.f, 0.f, 10.f, 10.f, 10.f});
             }    
-        }
+        }*/
 		
         for (auto ent : rooms[i].objects)
         {
@@ -179,27 +179,56 @@ void ServerGameMode::update(float dt)
             }
         }
 
-        /*for (auto ent : spawnHandler.allEntityIDs)
+        for (auto ent : rooms[i].doors)
         {
-            if (hasComponents<Collider>(ent))
+            if (ent != -1 && isActive(ent))
+            {
+                if (this->hasComponents<Collider>(ent))
+                {
+                    glm::vec3 dp = this->getComponent<Transform>(ent).position;
+                    auto& col = getComponent<Collider>(ent);
+                    auto ex = col.extents * 2.f;
+                    addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {dp.x, dp.y, dp.z, 0.f, 0.f, 0.f, ex.x, ex.y, ex.z});
+                }
+            }
+        }
+    }
+    auto& paths = this->roomHandler.getPaths();
+    for (size_t i = 0; i < paths.size(); i++)
+    {
+        for (auto ent : paths[i].entities)
+        {
+            if (hasComponents<Collider>(ent) && isActive(ent))
             {
                 glm::vec3 dp = this->getComponent<Transform>(ent).position;
                 auto& col = getComponent<Collider>(ent);
                 auto ex = col.extents * 2.f;
-                switch (col.type)
-                {
-                default:
-                    break;
-                case ColType::BOX:
-                    addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {dp.x, dp.y, dp.z, 0.f, 0.f, 0.f, ex.x, ex.y, ex.z});
-                    break;
-                case ColType::SPHERE:
-                    addEvent({(int)NetworkEvent::DEBUG_DRAW_SPHERE}, {dp.x, dp.y, dp.z, col.radius});
-                    break;
-                }
+                addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {dp.x, dp.y, dp.z, 0.f, 0.f, 0.f, ex.x, ex.y, ex.z});
+                
             }
-        }*/
+        }
     }
+    // Don't remove, used for debug
+    /*for (auto ent : spawnHandler.allEntityIDs)
+    {
+        if (hasComponents<Collider>(ent))
+        {
+            glm::vec3 dp = this->getComponent<Transform>(ent).position;
+            auto& col = getComponent<Collider>(ent);
+            auto ex = col.extents * 2.f;
+            switch (col.type)
+            {
+            default:
+                break;
+            case ColType::BOX:
+                addEvent({(int)NetworkEvent::DEBUG_DRAW_BOX}, {dp.x, dp.y, dp.z, 0.f, 0.f, 0.f, ex.x, ex.y, ex.z});
+                break;
+            case ColType::SPHERE:
+                addEvent({(int)NetworkEvent::DEBUG_DRAW_SPHERE}, {dp.x, dp.y, dp.z, col.radius});
+                break;
+            }
+        }
+    }*/
     for (int i = 0; i < this->getPlayerSize(); i++)
     {
 		glm::vec3 p = this->getComponent<Transform>(this->getPlayer(i)).position;
@@ -346,20 +375,18 @@ void ServerGameMode::makeDataSendToClient()
 
 void ServerGameMode::createPortal() 
 {
-    glm::vec3 portalTriggerDims(11.f, 27.f, 6.f);
-
     int colliderID = (int)this->getResourceManager()->addCollisionShapeFromMesh("assets/models/portal.fbx");
     std::vector<ColliderDataRes> colliders = this->getResourceManager()->getCollisionShapeFromMesh(colliderID);
 
 
     portal = this->createEntity();
     Transform& portalTransform = this->getComponent<Transform>(portal);
-    portalTransform.position = this->roomHandler.getExitRoom().position;
+    portalTransform.position = this->roomHandler.getPortalPosition();
     this->setComponent<Collider>(
-        portal, Collider::createBox(portalTriggerDims, glm::vec3(0, 0, 0), true)
-        );
+        portal, Collider::createSphere(18.f, glm::vec3(0.f, 15.f, 0.f), true)
+    );
 
-        Entity collisionEntity;
+    Entity collisionEntity;
 
     for (size_t i = 0; i < colliders.size(); i++)
     {

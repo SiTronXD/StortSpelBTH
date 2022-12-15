@@ -39,7 +39,7 @@ void GameSceneNetwork::init()
        "uvwxyz+-.'",
        "0123456789",
        "!?,<>:()#^",
-       "@%        "},
+       "@%/       "},
       fontTextureId,
       glm::uvec2(50, 50)
   );
@@ -402,7 +402,7 @@ void GameSceneNetwork::createPortal()
 
   portal = this->createEntity();
   this->getComponent<Transform>(portal).position =
-      this->roomHandler.getExitRoom().position;
+      this->roomHandler.getPortalPosition();
   this->setComponent<Collider>(
       portal, Collider::createBox(portalTriggerDims, glm::vec3(0, 0, 0), true)
   );

@@ -67,6 +67,7 @@ private:
 
     float levelTimer;
     float portalTimer;
+    float inPortalTimer;
     float fadeTimer;
     float deathTimer;
     bool isDead;
@@ -89,7 +90,8 @@ private:
 
     Entity dirLightEntity;
 
-    bool newRoomFrame;
+	bool newRoomFrame;
+	bool portalActivated = false;
 
     int abilityMeshes[2];
     int perkMeshes[5];
