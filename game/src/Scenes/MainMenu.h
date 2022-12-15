@@ -31,6 +31,9 @@ private:
     uint32_t buttonTexture;
 	uint32_t qrCodeID;
     uint32_t logoTextureId;
+    uint32_t fogGradientVerticalTextureId;
+    uint32_t fogGradientHorizontalTextureId;
+    uint32_t fogTextureId;
 
     uint32_t buttonSound;
 
@@ -52,6 +55,10 @@ private:
 
     //general button
     int backButton;
+
+    void renderUiFogs(
+        const float& gradientHorizontalPos,
+        const float& gradientVerticalPos);
 
 public:
     // Inherited via Scene
