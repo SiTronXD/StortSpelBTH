@@ -357,3 +357,4 @@ _vengine_assets
 CMakeFiles/cmake.check_cache
 valgrind-out.txt
 CMakeCache.txt
+*.mayaSwatches
