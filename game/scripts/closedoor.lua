@@ -3,7 +3,6 @@ local script = {}
 function script:init(dt) 
 	self.speed = 7.5
 	self.transform.position.y = -25
-	self.remove = false
 end
 
 function script:update(dt)
