@@ -1,6 +1,5 @@
 #include "NetworkLobbyScene.h"
-#include "NetworkGameScene.h"
-#include "../Network/ServerGameMode.h"
+#include "ServerGameMode.h"
 
 NetworkLobbyScene::NetworkLobbyScene() {}
 

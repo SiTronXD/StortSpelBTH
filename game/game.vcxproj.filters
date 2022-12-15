@@ -5,7 +5,6 @@
     <ClCompile Include="src\Scenes\GameScene.cpp" />
     <ClCompile Include="src\World Handling\Room Handler.cpp" />
     <ClCompile Include="src\World Handling\Room Layout.cpp" />
-    <ClCompile Include="src\ServerGameModes\TheServerGame.cpp" />
     <ClCompile Include="src\Scenes\MainMenu.cpp" />
     <ClCompile Include="src\Scenes\GameOverScene.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Swarm\SwarmBTs.cpp" />
@@ -17,7 +16,6 @@
     <ClCompile Include="src\Scenes\RoomTesting.cpp" />
     <ClCompile Include="src\Scenes\LobbyScene.cpp" />
     <ClCompile Include="src\Scenes\logInScene.cpp" />
-    <ClCompile Include="src\Scenes\GameSceneNetwork.cpp" />
     <ClCompile Include="src\Network\NetworkHandlerGame.cpp" />
     <ClCompile Include="src\Network\ServerGameMode.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Lich\LichBTs.cpp" />
@@ -25,8 +23,7 @@
     <ClCompile Include="src\Ai\Behaviors\Tank\TankFSM.cpp" />
     <ClCompile Include="src\Ai\Behaviors\Tank\TankBTs.cpp" />
     <ClCompile Include="src\World Handling\SpawnHandler.cpp" />
-    <ClCompile Include="src\ServerGameModes\NetworkLobbyScene.cpp" />
-    <ClCompile Include="src\ServerGameModes\NetworkGameScene.cpp" />
+    <ClCompile Include="src\Network\NetworkLobbyScene.cpp" />
     <ClCompile Include="src\World Handling\SpawnHandler.cpp" />
     <ClCompile Include="src\Settings\Settings.cpp" />
     <ClCompile Include="src\Scenes\LoadingScene.cpp" />
@@ -42,7 +39,6 @@
     <ClInclude Include="src\Scenes\GameScene.h" />
     <ClInclude Include="src\Systems\AiCombatSystem.hpp" />
     <ClInclude Include="src\Systems\AiMovementSystem.hpp" />
-    <ClInclude Include="src\ServerGameModes\TheServerGame.h" />
     <ClInclude Include="src\Systems\CameraMovementSystem.hpp" />
     <ClInclude Include="src\Systems\CombatSystem.hpp" />
     <ClInclude Include="src\Systems\MovementSystem.hpp" />
@@ -63,7 +59,6 @@
     <ClInclude Include="src\Systems\HealthBarSystem.hpp" />
     <ClInclude Include="src\Scenes\LobbyScene.h" />
     <ClInclude Include="src\Scenes\logInScene.h" />
-    <ClInclude Include="src\Scenes\GameSceneNetwork.h" />
     <ClInclude Include="src\Network\NetworkHandlerGame.h" />
     <ClInclude Include="src\Network\ServerGameMode.h" />
     <ClInclude Include="src\Ai\Behaviors\Lich\LichBTs.hpp" />
@@ -74,8 +69,7 @@
     <ClInclude Include="src\Network\NetworkDataFetcher.hpp" />
     <ClInclude Include="src\World Handling\SpawnHandler.hpp" />
     <ClInclude Include="src\Components\AiElite.hpp" />
-    <ClInclude Include="src\ServerGameModes\NetworkLobbyScene.h" />
-    <ClInclude Include="src\ServerGameModes\NetworkGameScene.h" />
+    <ClInclude Include="src\Network\NetworkLobbyScene.h" />
     <ClInclude Include="src\World Handling\SpawnHandler.hpp" />
     <ClInclude Include="src\Components\HealthComp.h" />
     <ClInclude Include="src\Components\HealArea.h" />
@@ -90,8 +84,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
-    <None Include="src\Scripts\Prefab.lua" />
-    <None Include="src\Scripts\Prefabs.lua" />
     <None Include="scripts\moveRock.lua" />
   </ItemGroup>
 </Project>
