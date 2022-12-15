@@ -5,7 +5,6 @@
 #include "vengine.h"
 
 #include "../HelperFuncs.hpp"
-#include "../../../Components/AICombatTank.hpp"
 #include "../../../Components/Combat.h"
 
 class TankBT : public BehaviorTree

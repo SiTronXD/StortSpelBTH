@@ -566,7 +566,6 @@ void SpawnHandler::createTank()
         }
     this->allEntityIDs.push_back(this->tankIDs.back());
 
-    this->currScene->setComponent<AiCombatTank>(this->tankIDs.back());
     this->currScene->setComponent<Rigidbody>(this->tankIDs.back());
     Rigidbody& rb =
         this->currScene->getComponent<Rigidbody>(this->tankIDs.back());

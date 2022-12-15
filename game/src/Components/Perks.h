@@ -17,12 +17,6 @@ const static std::vector<std::string> PERK_NAMES
 	"attack speed",
 	"movement speed",
 	"stamina",
-	"empty",
-	"empty",
-	"empty",
-	"empty",
-	"empty",
-	"empty",
 }; // Just in case of future perks (no runtime errors during development)
 
 struct Perks

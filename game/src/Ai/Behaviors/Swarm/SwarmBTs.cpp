@@ -1,6 +1,5 @@
 #include "SwarmBTs.hpp"
 #include "../../../Components/Abilities.h"
-#include "../../../Components/AiCombatSwarm.h"
 #include "../../../Components/Combat.h"
 #include "../../../Components/Perks.h"
 #include "SwarmFSM.hpp"
