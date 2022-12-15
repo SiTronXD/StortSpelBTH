@@ -234,6 +234,7 @@ public:
 	bool isPortalRoomDone() const;
 	int getNumRooms() const;
 	bool inExitRoom() const;
+	bool isActiveRoomCompleted() const;
 
     const glm::vec3& getRoomPos() const;
 	int getActiveIndex() const;
