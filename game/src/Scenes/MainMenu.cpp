@@ -118,11 +118,11 @@ void MainMenu::init()
 	TextureSettings fogSettings{};
 	fogSettings.samplerSettings.addressMode = vk::SamplerAddressMode::eClampToEdge;
 	this->fogGradientVerticalTextureId =
-		this->getResourceManager()->addTexture("assets/textures/UI/fogGradientVertical.png", fogSettings);
+		this->getResourceManager()->addTexture("assets/textures/UI/menuFogGradientVertical.png", fogSettings);
 	this->fogGradientHorizontalTextureId =
-		this->getResourceManager()->addTexture("assets/textures/UI/fogGradientHorizontal.png", fogSettings);
+		this->getResourceManager()->addTexture("assets/textures/UI/menuFogGradientHorizontal.png", fogSettings);
 	this->fogTextureId = 
-		this->getResourceManager()->addTexture("assets/textures/UI/fog.jpg", fogSettings);
+		this->getResourceManager()->addTexture("assets/textures/UI/menuFog.jpg", fogSettings);
 }
 
 void MainMenu::start()
