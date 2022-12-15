@@ -418,7 +418,7 @@ void GameScene::update()
                 healthComp.health = healthComp.maxHealth;
 
                 this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = *this->ghostMat;
-                if (this->roomHandler.isActiveRoomCompleted())
+                if (!this->roomHandler.isActiveRoomCompleted())
                 {
                     this->getComponent<Transform>(this->playerID).position = this->roomHandler.getRespawnPos();
                     this->getComponent<Transform>(this->playerID).rotation = this->roomHandler.getRespawnRot();
