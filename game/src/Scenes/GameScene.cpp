@@ -1,12 +1,8 @@
 #include "GameScene.h"
 
-#include "../Systems/AiCombatSystem.hpp"
-#include "../Systems/AiMovementSystem.hpp"
-#include "../Systems/CameraMovementSystem.hpp"
 #include "../Systems/CombatSystem.hpp"
 #include "../Systems/HealthBarSystem.hpp"
 #include "../Systems/HealSystem.hpp"
-#include "../Systems/MovementSystem.hpp"
 #include "../Systems/ParticleRemoveEntity.hpp"
 #include "../Systems/ParticleRemoveComponent.hpp"
 #include "../Systems/PerkAbilityOutsideRangeSystem.hpp"
