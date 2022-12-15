@@ -20,7 +20,8 @@ void LobbyScene::preloadAssets()
 
     TextureSettings fogSettings{};
     fogSettings.samplerSettings.addressMode = vk::SamplerAddressMode::eClampToEdge;
-    this->getResourceManager()->addTexture("assets/textures/UI/fogGradient.png", fogSettings);
+    this->getResourceManager()->addTexture("assets/textures/UI/fogGradientVertical.png", fogSettings);
+    this->getResourceManager()->addTexture("assets/textures/UI/fogGradientHorizontal.png", fogSettings);
     this->getResourceManager()->addTexture("assets/textures/UI/fog.jpg", fogSettings);
 
     this->getResourceManager()->addSound("assets/Sounds/buttonClick.ogg");
