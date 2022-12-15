@@ -113,6 +113,14 @@ void MainMenu::init()
 	// Logo
 	this->logoTextureId =
 		this->getResourceManager()->addTexture("assets/textures/logo.png");
+
+	// Fog gradient textures
+	TextureSettings fogSettings{};
+	fogSettings.samplerSettings.addressMode = vk::SamplerAddressMode::eClampToEdge;
+	this->fogGradientTextureId =
+		this->getResourceManager()->addTexture("assets/textures/UI/fogGradient.png", fogSettings);
+	this->fogTextureId = 
+		this->getResourceManager()->addTexture("assets/textures/UI/fog.jpg", fogSettings);
 }
 
 void MainMenu::start()
@@ -195,6 +203,58 @@ void MainMenu::start()
 
 void MainMenu::update()
 {
+	// Render fog gradients
+	glm::vec2 internalSize = ResTranslator::getInternalDimensions();
+	float gradientPos = 750.0f;
+	float gradientHeight = 400.0f;
+	this->getUIRenderer()->setTexture(this->fogGradientTextureId);
+	this->getUIRenderer()->renderTexture(
+		glm::vec2(0.0f, gradientPos),
+		glm::vec2(
+			internalSize.x,
+			gradientHeight
+		)
+	);
+	this->getUIRenderer()->renderTexture(
+		glm::vec2(0.0f, -gradientPos),
+		glm::vec2(
+			internalSize.x,
+			-gradientHeight
+		)
+	);
+
+	// Render filled fog textures
+	this->getUIRenderer()->setTexture(this->fogTextureId);
+	this->getUIRenderer()->renderTexture(
+		glm::vec2(
+			0.0f, 
+			(gradientPos + gradientHeight * 0.5f) +
+			(internalSize.y * 0.5f - (gradientPos + gradientHeight * 0.5f)) * 0.5f
+		),
+		glm::vec2(
+			internalSize.x, 
+			internalSize.y * 0.5f - (gradientPos + gradientHeight * 0.5f)
+		)
+	);
+	this->getUIRenderer()->renderTexture(
+		glm::vec2(
+			0.0f,
+			-((gradientPos + gradientHeight * 0.5f) +
+			(internalSize.y * 0.5f - (gradientPos + gradientHeight * 0.5f)) * 0.5f)
+		),
+		glm::vec2(
+			internalSize.x,
+			-(internalSize.y * 0.5f - (gradientPos + gradientHeight * 0.5f))
+		)
+	);
+
+	// Render logo
+	this->getUIRenderer()->setTexture(this->logoTextureId);
+	this->getUIRenderer()->renderTexture(
+		glm::vec2(550.0f, 330),
+		glm::vec2(1921.0f, 1079.0f) * 0.45f
+	);
+
 	this->setInactive(this->settingsEntity);
 
 	switch (this->state)
@@ -269,13 +329,6 @@ void MainMenu::update()
 		this->getSceneHandler()->getWindow()->close();
 		break;
 	}
-
-	// Render logo
-	this->getUIRenderer()->setTexture(this->logoTextureId);
-	this->getUIRenderer()->renderTexture(
-		glm::vec2(550.0f, 330), 
-		glm::vec2(1921.0f, 1079.0f) * 0.45f
-	);
 }
 
 void MainMenu::settings()

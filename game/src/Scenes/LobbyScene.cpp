@@ -18,6 +18,11 @@ void LobbyScene::preloadAssets()
     this->getResourceManager()->addTexture("assets/textures/UI/button.jpg");
     this->getResourceManager()->addTexture("assets/textures/UI/Presumed Dead QR.png");
 
+    TextureSettings fogSettings{};
+    fogSettings.samplerSettings.addressMode = vk::SamplerAddressMode::eClampToEdge;
+    this->getResourceManager()->addTexture("assets/textures/UI/fogGradient.png", fogSettings);
+    this->getResourceManager()->addTexture("assets/textures/UI/fog.jpg", fogSettings);
+
     this->getResourceManager()->addSound("assets/Sounds/buttonClick.ogg");
 
     TextureSamplerSettings samplerSettings{};

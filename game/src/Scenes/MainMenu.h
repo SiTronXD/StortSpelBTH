@@ -31,6 +31,8 @@ private:
     uint32_t buttonTexture;
 	uint32_t qrCodeID;
     uint32_t logoTextureId;
+    uint32_t fogGradientTextureId;
+    uint32_t fogTextureId;
 
     uint32_t buttonSound;
 
