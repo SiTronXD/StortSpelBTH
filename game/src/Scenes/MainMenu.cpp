@@ -119,6 +119,7 @@ void MainMenu::start()
 {
 	camera = this->createEntity();
 	this->setComponent<Camera>(camera);
+	this->getComponent<Camera>(camera).flipCameraAspectScale();
 	this->setMainCamera(camera);
 	this->getComponent<Transform>(camera).position = glm::vec3(10, 10, -20);
 	this->getComponent<Transform>(camera).rotation = glm::vec3(0, 11, -0);
