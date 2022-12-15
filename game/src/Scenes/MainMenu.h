@@ -56,6 +56,10 @@ private:
     //general button
     int backButton;
 
+    void renderUiFogs(
+        const float& gradientHorizontalPos,
+        const float& gradientVerticalPos);
+
 public:
     // Inherited via Scene
     virtual void init() override;

@@ -8,6 +8,95 @@
 #include "../Network/ServerGameMode.h"
 #include "../Settings/Settings.h"
 
+void MainMenu::renderUiFogs(
+	const float& gradientHorizontalPos, 
+	const float& gradientVerticalPos)
+{
+	// Render 2 vertical fog gradients
+	glm::vec2 internalSize = ResTranslator::getInternalDimensions();
+	float gradientHeight = 400.0f;
+	this->getUIRenderer()->setTexture(this->fogGradientVerticalTextureId);
+	this->getUIRenderer()->renderTexture(
+		glm::vec2(0.0f, gradientVerticalPos),
+		glm::vec2(
+			internalSize.x,
+			gradientHeight
+		)
+	);
+	this->getUIRenderer()->renderTexture(
+		glm::vec2(0.0f, -gradientVerticalPos),
+		glm::vec2(
+			internalSize.x,
+			-gradientHeight
+		)
+	);
+
+	// Render 2 horizontal fog gradients
+	float gradientWidth = 400.0f;
+	this->getUIRenderer()->setTexture(this->fogGradientHorizontalTextureId);
+	this->getUIRenderer()->renderTexture(
+		glm::vec2(gradientHorizontalPos, 0.0f),
+		glm::vec2(
+			gradientWidth,
+			internalSize.y
+		)
+	);
+	this->getUIRenderer()->renderTexture(
+		glm::vec2(-gradientHorizontalPos, 0.0f),
+		glm::vec2(
+			-gradientHeight,
+			internalSize.y
+		)
+	);
+
+	// Render 4 filled fog textures
+	this->getUIRenderer()->setTexture(this->fogTextureId);
+	this->getUIRenderer()->renderTexture(
+		glm::vec2(
+			0.0f,
+			(gradientVerticalPos + gradientHeight * 0.5f) +
+			(internalSize.y * 0.5f - (gradientVerticalPos + gradientHeight * 0.5f)) * 0.5f
+		),
+		glm::vec2(
+			internalSize.x,
+			internalSize.y * 0.5f - (gradientVerticalPos + gradientHeight * 0.5f)
+		)
+	);
+	this->getUIRenderer()->renderTexture(
+		glm::vec2(
+			0.0f,
+			-((gradientVerticalPos + gradientHeight * 0.5f) +
+				(internalSize.y * 0.5f - (gradientVerticalPos + gradientHeight * 0.5f)) * 0.5f)
+		),
+		glm::vec2(
+			internalSize.x,
+			-(internalSize.y * 0.5f - (gradientVerticalPos + gradientHeight * 0.5f))
+		)
+	);
+	this->getUIRenderer()->renderTexture(
+		glm::vec2(
+			(gradientHorizontalPos + gradientWidth * 0.5f) +
+			(internalSize.x * 0.5f - (gradientHorizontalPos + gradientWidth * 0.5f)) * 0.5f,
+			0.0f
+		),
+		glm::vec2(
+			internalSize.x * 0.5f - (gradientHorizontalPos + gradientWidth * 0.5f),
+			internalSize.y
+		)
+	);
+	this->getUIRenderer()->renderTexture(
+		glm::vec2(
+			-((gradientHorizontalPos + gradientWidth * 0.5f) +
+				(internalSize.x * 0.5f - (gradientHorizontalPos + gradientWidth * 0.5f)) * 0.5f),
+			0.0f
+		),
+		glm::vec2(
+			-(internalSize.x * 0.5f - (gradientHorizontalPos + gradientWidth * 0.5f)),
+			internalSize.y
+		)
+	);
+}
+
 void MainMenu::init()
 {
 	this->state = State::Menu;
@@ -205,91 +294,7 @@ void MainMenu::start()
 
 void MainMenu::update()
 {
-	// Render 2 vertical fog gradients
-	glm::vec2 internalSize = ResTranslator::getInternalDimensions();
-	float gradientVerticalPos = 750.0f;
-	float gradientHeight = 400.0f;
-	this->getUIRenderer()->setTexture(this->fogGradientVerticalTextureId);
-	this->getUIRenderer()->renderTexture(
-		glm::vec2(0.0f, gradientVerticalPos),
-		glm::vec2(
-			internalSize.x,
-			gradientHeight
-		)
-	);
-	this->getUIRenderer()->renderTexture(
-		glm::vec2(0.0f, -gradientVerticalPos),
-		glm::vec2(
-			internalSize.x,
-			-gradientHeight
-		)
-	);
-
-	// Render 2 horizontal fog gradients
-	float gradientHorizontalPos = 2000.0f;
-	float gradientWidth = 400.0f;
-	this->getUIRenderer()->setTexture(this->fogGradientHorizontalTextureId);
-	this->getUIRenderer()->renderTexture(
-		glm::vec2(gradientHorizontalPos, 0.0f),
-		glm::vec2(
-			gradientWidth,
-			internalSize.y
-		)
-	);
-	this->getUIRenderer()->renderTexture(
-		glm::vec2(-gradientHorizontalPos, 0.0f),
-		glm::vec2(
-			-gradientHeight,
-			internalSize.y
-		)
-	);
-
-	// Render 4 filled fog textures
-	this->getUIRenderer()->setTexture(this->fogTextureId);
-	this->getUIRenderer()->renderTexture(
-		glm::vec2(
-			0.0f, 
-			(gradientVerticalPos + gradientHeight * 0.5f) +
-			(internalSize.y * 0.5f - (gradientVerticalPos + gradientHeight * 0.5f)) * 0.5f
-		),
-		glm::vec2(
-			internalSize.x, 
-			internalSize.y * 0.5f - (gradientVerticalPos + gradientHeight * 0.5f)
-		)
-	);
-	this->getUIRenderer()->renderTexture(
-		glm::vec2(
-			0.0f,
-			-((gradientVerticalPos + gradientHeight * 0.5f) +
-			(internalSize.y * 0.5f - (gradientVerticalPos + gradientHeight * 0.5f)) * 0.5f)
-		),
-		glm::vec2(
-			internalSize.x,
-			-(internalSize.y * 0.5f - (gradientVerticalPos + gradientHeight * 0.5f))
-		)
-	);
-	this->getUIRenderer()->renderTexture(
-		glm::vec2(
-			(gradientHorizontalPos + gradientWidth * 0.5f) +
-			(internalSize.x * 0.5f - (gradientHorizontalPos + gradientWidth * 0.5f)) * 0.5f,
-			0.0f
-		),
-		glm::vec2(
-			internalSize.x * 0.5f - (gradientHorizontalPos + gradientWidth * 0.5f),
-			internalSize.y
-		)
-	);
-	this->getUIRenderer()->renderTexture(
-		glm::vec2(
-			-((gradientHorizontalPos + gradientWidth * 0.5f) +
-			(internalSize.x * 0.5f - (gradientHorizontalPos + gradientWidth * 0.5f)) * 0.5f),
-			0.0f
-		),
-		glm::vec2(
-			-(internalSize.x * 0.5f - (gradientHorizontalPos + gradientWidth * 0.5f)),
-			internalSize.y
-		)
-	);
+	this->renderUiFogs(2000.0f, 750.0f);
 
 	// Render logo
 	this->getUIRenderer()->setTexture(this->logoTextureId);
