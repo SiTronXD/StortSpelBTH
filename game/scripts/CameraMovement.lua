@@ -35,7 +35,7 @@ function script:update(dt)
     rotInput.y = -input.getMouseDelta().x
 
     -- Rotate camera
-    local camRot = self.transform.rotation + vector.fill(self.sens) * rotInput * core.btoi(not paused) * dt
+    local camRot = self.transform.rotation + vector.fill(self.sens) * rotInput * core.btoi(not paused) * 0.01
 
     -- Limit camera angle
     camRot.x = math.min(camRot.x, self.maxXRot)

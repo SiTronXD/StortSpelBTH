@@ -191,7 +191,7 @@ void LobbyScene::preloadAssets()
     }
 
     this->getResourceManager()->addMesh("assets/models/door.obj");
-    this->getResourceManager()->addMesh("assets/models/tempRock.obj");
+    this->getResourceManager()->addMesh("assets/models/rock.obj");
     this->getResourceManager()->addMesh("assets/models/rockFence.obj");
     this->getResourceManager()->addMesh("assets/models/Tiles/Floor.obj");
     this->getResourceManager()->addMesh("assets/models/Tiles/OneXTwo/lamp.obj");
