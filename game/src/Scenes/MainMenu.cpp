@@ -4,7 +4,7 @@
 #include "LevelEditor.h"
 #endif 
 #include "logInScene.h"
-#include "../ServerGameModes/NetworkLobbyScene.h"
+#include "../Network/NetworkLobbyScene.h"
 #include "../Network/ServerGameMode.h"
 #include "../Settings/Settings.h"
 

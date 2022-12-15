@@ -85,7 +85,7 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan,PhysicsEngine*
 	if (this->useMeshes)
 	{
 		this->doorMeshID = (int)resourceMan->addMesh("assets/models/door.obj");
-		this->rockMeshId = (int)resourceMan->addMesh("assets/models/tempRock.obj");
+		this->rockMeshId = (int)resourceMan->addMesh("assets/models/rock.obj");
 		this->rockFenceMeshId = (int)resourceMan->addMesh("assets/models/rockFence.obj");
 		this->tileFloorMeshId = (int)resourceMan->addMesh("assets/models/Tiles/Floor.obj");
 		this->lampMeshId = (int)resourceMan->addMesh("assets/models/Tiles/OneXTwo/lamp.obj");
@@ -951,6 +951,11 @@ int RoomHandler::getNumRooms() const
 bool RoomHandler::inExitRoom() const
 {
 	return this->rooms[this->activeIndex].type == RoomData::Type::EXIT_ROOM;
+}
+
+bool RoomHandler::isActiveRoomCompleted() const
+{
+	return this->rooms[this->activeIndex].finished;
 }
 
 bool TileInfo::checkValidTileInfoVector(const std::vector<TileInfo>& tileInfos, int roomIndex)

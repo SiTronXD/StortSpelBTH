@@ -1,13 +1,5 @@
 local script = {}
 
--- Active perks and their effect values
-script.perkProperties = 
-{
-    -- Speed
-    speedPerkActive = 0,
-    speedPerkValue = 2.0
-}
-
 function script:init()
 	print("init with ID: " .. self.ID)
 
@@ -66,6 +58,7 @@ function script:update(dt)
         self.currentAnimation = 1
         scene.blendToAnimation(self.ID, "idle", "", 0.25, 1)
     end
+
     -- Dead change to death animation
     if self.isDead
     then
@@ -309,50 +302,11 @@ function script:update(dt)
 
     if (scene.getComponent(self.ID, CompType.Mesh).meshID == self.playerMesh)
     then
-        self:rotate2(dt)
+        self:rotate(dt)
     end
 end
 
-function script:move2(deltaTime)
-    local camTransform = scene.getComponent(self.camID, CompType.Transform)
-
-    -- Move dir
-    self.moveDir.y = (core.btoi(input.isKeyDown(Keys.W)) - core.btoi(input.isKeyDown(Keys.S)))
-    self.moveDir.x = (core.btoi(input.isKeyDown(Keys.A)) - core.btoi(input.isKeyDown(Keys.D)))
-
-    -- Speed
-    self.currentSpeed.x = self.moveDir.x
-    self.currentSpeed.y = self.moveDir.y
-
-    -- Normalize speed
-    self.currentSpeed = vector.normalize(self.currentSpeed) * 
-        self.maxSpeed * 
-        math.max(
-            1.0, 
-            self.perkProperties.speedPerkActive * 
-                self.perkProperties.speedPerkValue)
-
-    -- Forward vector
-    local camFwd = camTransform:forward()
-    local forwardVec = camFwd
-    forwardVec.y = 0
-    forwardVec = vector.normalize(forwardVec)
-
-    -- Right vector
-    local rightVec = camTransform:up()
-    rightVec = rightVec:cross(camFwd)
-    rightVec = vector.normalize(rightVec)
-
-    -- Apply position
-    self.transform.position = self.transform.position + 
-        (forwardVec * self.currentSpeed.y +
-        rightVec * self.currentSpeed.x) * deltaTime
-    
-    -- Handle animation speed and timing
-
-end
-
-function script:rotate2(deltaTime)
+function script:rotate(deltaTime)
     local camTransform = scene.getComponent(self.camID, CompType.Transform)
 
     -- Rotate towards movement direction

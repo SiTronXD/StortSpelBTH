@@ -1,6 +1,5 @@
 #include "SwarmBTs.hpp"
 #include "../../../Components/Abilities.h"
-#include "../../../Components/AiCombatSwarm.h"
 #include "../../../Components/Combat.h"
 #include "../../../Components/Perks.h"
 #include "SwarmFSM.hpp"
@@ -78,7 +77,7 @@ void SwarmBT::rotateTowards(Entity entityID, glm::vec3 target, float rotSpeed, f
 	swarmpos				= glm::vec2(swarmTrans.position.x, swarmTrans.position.z);
 	curRot				= safeNormalize(glm::vec2(swarmTrans.forward().x, swarmTrans.forward().z));
 	swarm_to_friend		= safeNormalize(targetPos - swarmpos);
-	angle_between		= glm::degrees(glm::acos(glm::dot(swarm_to_friend, curRot)));
+	angle_between		= glm::degrees(glm::acos(glm::dot(swarm_to_friend, curRot))); 
 	//If angle got bigger, then change direction
 	if(swarmComp.tempRotAngle < angle_between)
 	{
@@ -452,7 +451,7 @@ BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 
 	glm::vec3 direction = safeNormalize(thisTransform.position - playerTransform.position);
 	glm::vec3 target = thisTransform.position + direction * 2.0f;
-	rotateTowards(entityID, target, swarmComp.attackRotSpeed, 5.0f);
+    rotateTowards(entityID, target, swarmComp.escapeRotSpeed, 5.0f);
     thisTransform.updateMatrix();
 
     glm::vec3 dir = safeNormalize(thisTransform.position - playerTransform.position);

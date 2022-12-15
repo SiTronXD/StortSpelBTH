@@ -28,13 +28,14 @@ function script:update(dt)
     -- Limit total zoom
     self.camDist = math.min(self.camDist, self.maxZoom)
     self.camDist = math.max(self.camDist, self.minZoom)
+
     -- Camera input controls
     local rotInput = vector()
     rotInput.x = input.getMouseDelta().y
     rotInput.y = -input.getMouseDelta().x
 
     -- Rotate camera
-    local camRot = self.transform.rotation + vector.fill(self.sens) * rotInput * core.btoi(not paused) * dt
+    local camRot = self.transform.rotation + vector.fill(self.sens) * rotInput * core.btoi(not paused) * 0.01
 
     -- Limit camera angle
     camRot.x = math.min(camRot.x, self.maxXRot)
@@ -74,6 +75,7 @@ function script:update(dt)
             actualDist = vector.length(payload.hitPoint - targetPos)
         end
     end
+
     -- Apply position
     local scaledFwd = forward * (actualDist - self.distMargin)
     self.transform.position = targetPos - scaledFwd

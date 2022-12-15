@@ -11,16 +11,7 @@ const static std::vector<std::string> ABILITY_NAMES
 {
 	"knockback",
 	"heal",
-	"empty",
-	"empty",
-	"empty",
-	"empty",
-	"empty",
-	"empty",
-	"empty",
-	"empty",
-	"empty",
-}; // Just in case of future abilities (no runtime errors during development)
+};
 
 struct Abilities
 {

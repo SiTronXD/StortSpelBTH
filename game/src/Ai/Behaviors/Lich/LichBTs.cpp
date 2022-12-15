@@ -327,6 +327,7 @@ void LichBT::registerEntityComponents(Entity entityId)
 BTStatus LichBT::plunder(Entity entityID)
 {
     BTStatus ret = BTStatus::Running;
+    LichBT::setAnimation(entityID, LichAnim::Walking, LichBT::plunder);
 
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     
@@ -343,6 +344,8 @@ BTStatus LichBT::plunder(Entity entityID)
 BTStatus LichBT::goToGrave(Entity entityID)
 {
     BTStatus ret = BTStatus::Running;
+    LichBT::setAnimation(entityID, LichAnim::Walking, LichBT::goToGrave);
+
     Transform& lichTrans    = getTheScene()->getComponent<Transform>(entityID);
     Rigidbody& lichRb       = getTheScene()->getComponent<Rigidbody>(entityID);
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
@@ -367,6 +370,8 @@ BTStatus LichBT::goToGrave(Entity entityID)
 BTStatus LichBT::goToAlter(Entity entityID)
 {
     BTStatus ret = BTStatus::Running;
+    LichBT::setAnimation(entityID, LichAnim::Walking, LichBT::goToAlter);
+
     Transform& lichTrans    = getTheScene()->getComponent<Transform>(entityID);
     Rigidbody& lichRb       = getTheScene()->getComponent<Rigidbody>(entityID);
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
@@ -387,6 +392,7 @@ BTStatus LichBT::dropOffBones(Entity entityID)
     BTStatus ret = BTStatus::Success;    
     //TODO: Visualise the boes dropping
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    LichBT::setAnimation(entityID, LichAnim::Walking, LichBT::dropOffBones);
     
     if(lichComp.timeSinceAlterWaitBegin + lichComp.DropOffDuration < Time::getTimeSinceStart())
     {
@@ -828,6 +834,7 @@ BTStatus LichBT::attack(Entity entityID)
 BTStatus LichBT::selfHeal(Entity entityID)
 {
     BTStatus ret =  BTStatus::Running;
+    LichBT::setAnimation(entityID, LichAnim::Walking, LichBT::selfHeal);
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     if(lichComp.life < lichComp.FULL_HEALTH)
     {
@@ -891,6 +898,7 @@ BTStatus LichBT::playerNotVisible(Entity entityID)
 BTStatus LichBT::runAwayFromPlayer(Entity entityID)
 {
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    LichBT::setAnimation(entityID, LichAnim::Walking, LichBT::runAwayFromPlayer);
 
     BTStatus ret = BTStatus::Running;
     int playerID = getPlayerID(entityID);
@@ -917,6 +925,8 @@ BTStatus LichBT::playDeathAnim(Entity entityID)
 {
     BTStatus ret = BTStatus::Failure;
 	LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    LichBT::setAnimation(entityID, LichAnim::Walking, LichBT::playDeathAnim);
+
 	Transform& lichTrans = sceneHandler->getScene()->getComponent<Transform>(entityID);
 	if(lichTrans.scale.y <= 0.0f)
 	{
@@ -1076,6 +1086,7 @@ BTStatus LichBT::die(Entity entityID)
 BTStatus LichBT::alerted(Entity entityID)
 {
 	LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
+    LichBT::setAnimation(entityID, LichAnim::Walking, LichBT::alerted);
     lichComp.alertDone = true;
     return BTStatus::Success; // No scale 
 

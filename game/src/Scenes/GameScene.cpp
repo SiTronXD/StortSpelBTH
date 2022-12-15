@@ -1,12 +1,8 @@
 #include "GameScene.h"
 
-#include "../Systems/AiCombatSystem.hpp"
-#include "../Systems/AiMovementSystem.hpp"
-#include "../Systems/CameraMovementSystem.hpp"
 #include "../Systems/CombatSystem.hpp"
 #include "../Systems/HealthBarSystem.hpp"
 #include "../Systems/HealSystem.hpp"
-#include "../Systems/MovementSystem.hpp"
 #include "../Systems/ParticleRemoveEntity.hpp"
 #include "../Systems/ParticleRemoveComponent.hpp"
 #include "../Systems/PerkAbilityOutsideRangeSystem.hpp"
@@ -418,14 +414,16 @@ void GameScene::update()
                 healthComp.health = healthComp.maxHealth;
 
                 this->getComponent<MeshComponent>(this->playerID).overrideMaterials[0] = *this->ghostMat;
-                this->getComponent<Transform>(this->playerID).position = this->roomHandler.getRespawnPos();
-                this->getComponent<Transform>(this->playerID).rotation = this->roomHandler.getRespawnRot();
-                this->getComponent<Rigidbody>(this->playerID).assigned = false; // For some reason this is needed, otherwise the position isn't changed
-                this->getComponent<Transform>(this->getMainCameraID()).rotation = this->roomHandler.getRespawnRot();
-
-                this->roomHandler.startOver();
-                this->spawnHandler.resetEnemies();
-                this->newRoomFrame = false;
+                if (!this->roomHandler.isActiveRoomCompleted())
+                {
+                    this->getComponent<Transform>(this->playerID).position = this->roomHandler.getRespawnPos();
+                    this->getComponent<Transform>(this->playerID).rotation = this->roomHandler.getRespawnRot();
+                    this->getComponent<Rigidbody>(this->playerID).assigned = false; // This is needed to change position
+                    this->getComponent<Transform>(this->getMainCameraID()).rotation = this->roomHandler.getRespawnRot();
+                    this->roomHandler.startOver();
+                    this->spawnHandler.resetEnemies();
+                    this->newRoomFrame = false;
+                }
             }
 
             if (this->ghostTransitionTimer > 1.0f && !this->isDead)

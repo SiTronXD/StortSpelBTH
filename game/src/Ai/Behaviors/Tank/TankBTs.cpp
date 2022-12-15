@@ -393,7 +393,6 @@ bool TankBT::rotationDone(Entity entityID, glm::vec3 target, float rotSpeed, flo
 void TankBT::registerEntityComponents(Entity entityId)
 {
 	addRequiredComponent<TankComponent>(entityId);
-	addRequiredComponent<AiCombatTank>(entityId);
 }
 
 
