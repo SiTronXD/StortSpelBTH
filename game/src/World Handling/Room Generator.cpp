@@ -145,7 +145,6 @@ void RoomGenerator::setBigTiles()
 
 		while (searchCounter++ < MAX_SEARCH)
 		{
-			// TODO: Verify results of pos
 			pos.x = std::abs(int(this->random.rand())) % this->size.x + this->minMaxPos[RIGHT_P].x;
 			pos.y = std::abs(int(this->random.rand())) % this->size.y + this->minMaxPos[LOWER_P].y;
 			
@@ -331,7 +330,7 @@ void RoomGenerator::setBorders()
 			Tile::Type& currTile = this->getType(position);
 			if (currTile == Tile::Unused)
 			{
-				for (uint32_t i = 0; i < NUM; i++)
+				for (int i = 0; i < NUM; i++)
 				{
 					for (int j = 1; j < (int)BORDER_SIZE + 1; j++)
 					{

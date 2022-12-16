@@ -240,6 +240,4 @@ public:
 	int getActiveIndex() const;
 
 	Entity getFloor() const;
-
-	std::vector<std::vector<glm::vec3>> getPathFindingPoints();
 };

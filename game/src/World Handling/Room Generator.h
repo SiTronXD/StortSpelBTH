@@ -36,8 +36,6 @@ struct Tile
     glm::vec2 position = glm::vec2(0.f);
 };
 
-// TODO: Fix room when it generates to edges (can't happen with these settings)
-
 class RoomGenerator
 {
 public:
