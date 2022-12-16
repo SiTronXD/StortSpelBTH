@@ -16,7 +16,7 @@
         "Entry"
         {
         "MsmKey" = "8:_00636D7DBE1DC61D4DC06373BFBF3B84"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -112,7 +112,7 @@
         "Entry"
         {
         "MsmKey" = "8:_0CC641B547050F6E2D5C11CAB08FBA85"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -232,7 +232,7 @@
         "Entry"
         {
         "MsmKey" = "8:_1987D8D96A06AE4B28D8A57F70C5D47C"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -250,13 +250,13 @@
         "Entry"
         {
         "MsmKey" = "8:_1A0A1C4F5578292A3B34508027CB05F3"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_1A3C783711B60463FED68BCF2CF74057"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -309,12 +309,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_1EE47BCAF30944BF8A950398C28B51F5"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_2004D3F57BCB4C3CAD7635167252E0DB"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -340,12 +334,6 @@
         "Entry"
         {
         "MsmKey" = "8:_21D889E3F5694CDAAA4187EA6E8FA9BC"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_22E86BAF79F2486A90B427F039E78977"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -520,13 +508,13 @@
         "Entry"
         {
         "MsmKey" = "8:_32D451254E6427AF5F0C3789AE7DE62D"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_33E3C67F91F2E6028089DCE50E44F385"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -568,7 +556,7 @@
         "Entry"
         {
         "MsmKey" = "8:_37FB37F8470CF46AF21D843281CA57ED"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -604,7 +592,7 @@
         "Entry"
         {
         "MsmKey" = "8:_3A5B4181C089E19F37FB213ED007AE82"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -771,6 +759,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_4BC35EE79FA2491B9FC2D07364003BFD"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_4C4C79BB2FAA4EA3A9797F1960D802D9"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -838,13 +832,13 @@
         "Entry"
         {
         "MsmKey" = "8:_552961166752EE9726F7CE041278FC3E"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_567399BEB72C391FFA6D14909C104BCA"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -910,7 +904,7 @@
         "Entry"
         {
         "MsmKey" = "8:_5E27D81E0EB9D94C96243392138282DA"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -946,7 +940,7 @@
         "Entry"
         {
         "MsmKey" = "8:_5FF3657A274382F2E61776026F3B8AF6"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -1060,7 +1054,7 @@
         "Entry"
         {
         "MsmKey" = "8:_6B139F800DCB14B6F420E7DDDFF0FBD4"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -1245,6 +1239,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_7E93DF32C9B94F1993D122D83459ADBD"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_7FEB80F0076C4EEEA3B7F64277E29D1D"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -1324,7 +1324,7 @@
         "Entry"
         {
         "MsmKey" = "8:_887FB68F85D109C095D289CEDB1D77DB"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -1360,7 +1360,7 @@
         "Entry"
         {
         "MsmKey" = "8:_8AEE6A55146B29E932B368DBED155337"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -1432,7 +1432,7 @@
         "Entry"
         {
         "MsmKey" = "8:_9438EE87B85B1F403909B0694F806ECE"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -1450,12 +1450,6 @@
         "Entry"
         {
         "MsmKey" = "8:_94B969406CDB42E5BDDE85B9AF02AC24"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_962FFC7A00BC4418909C8EEB249D62F6"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -1624,7 +1618,7 @@
         "Entry"
         {
         "MsmKey" = "8:_A4DB24DA81D6505DCE3AE3583A89B943"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -2068,7 +2062,7 @@
         "Entry"
         {
         "MsmKey" = "8:_CB8669215A3953796266B34E17C029EF"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -2086,7 +2080,7 @@
         "Entry"
         {
         "MsmKey" = "8:_CC116CA78E1FA995ADD2D41B5E0C5751"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -2140,7 +2134,7 @@
         "Entry"
         {
         "MsmKey" = "8:_D2F51DBF851707CFAC92725DD3C50A15"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -2242,7 +2236,7 @@
         "Entry"
         {
         "MsmKey" = "8:_E2D5FD5370703A1D9437C4049DBCE955"
-        "OwnerKey" = "8:_22E86BAF79F2486A90B427F039E78977"
+        "OwnerKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -2421,6 +2415,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_F8B45ADC55EF44B5954D2711FA449289"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_F93CA380D0574B76ABB001B3ECD7D51D"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -2531,6 +2531,142 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.5.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.5.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.5.2"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.6"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.6 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.6"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.6.1"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.6.1 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.6.1"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.6.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.6.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.6.2"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.1"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.1 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.1"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.8"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.8 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.8"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.8.1"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.8.1 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.8.1"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Net.Framework.3.5.SP1"
+                    {
+                    "Name" = "8:.NET Framework 3.5 SP1"
+                    "ProductCode" = "8:Microsoft.Net.Framework.3.5.SP1"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.CoreRuntime.3.1.x64"
+                    {
+                    "Name" = "8:.NET Core Runtime 3.1.28 (x64)"
+                    "ProductCode" = "8:Microsoft.NetCore.CoreRuntime.3.1.x64"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.CoreRuntime.3.1.x86"
+                    {
+                    "Name" = "8:.NET Core Runtime 3.1.28 (x86)"
+                    "ProductCode" = "8:Microsoft.NetCore.CoreRuntime.3.1.x86"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.CoreRuntime.5.0.x64"
+                    {
+                    "Name" = "8:.NET Runtime 5.0.17 (x64)"
+                    "ProductCode" = "8:Microsoft.NetCore.CoreRuntime.5.0.x64"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.CoreRuntime.5.0.x86"
+                    {
+                    "Name" = "8:.NET Runtime 5.0.17 (x86)"
+                    "ProductCode" = "8:Microsoft.NetCore.CoreRuntime.5.0.x86"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.CoreRuntime.6.0.x64"
+                    {
+                    "Name" = "8:.NET Runtime 6.0.8 (x64)"
+                    "ProductCode" = "8:Microsoft.NetCore.CoreRuntime.6.0.x64"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.CoreRuntime.6.0.x86"
+                    {
+                    "Name" = "8:.NET Runtime 6.0.8 (x86)"
+                    "ProductCode" = "8:Microsoft.NetCore.CoreRuntime.6.0.x86"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.DesktopRuntime.3.1.x64"
+                    {
+                    "Name" = "8:.NET Desktop Runtime 3.1.28 (x64)"
+                    "ProductCode" = "8:Microsoft.NetCore.DesktopRuntime.3.1.x64"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.DesktopRuntime.3.1.x86"
+                    {
+                    "Name" = "8:.NET Desktop Runtime 3.1.28 (x86)"
+                    "ProductCode" = "8:Microsoft.NetCore.DesktopRuntime.3.1.x86"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.DesktopRuntime.5.0.x64"
+                    {
+                    "Name" = "8:.NET Desktop Runtime 5.0.17 (x64)"
+                    "ProductCode" = "8:Microsoft.NetCore.DesktopRuntime.5.0.x64"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.DesktopRuntime.5.0.x86"
+                    {
+                    "Name" = "8:.NET Desktop Runtime 5.0.17 (x86)"
+                    "ProductCode" = "8:Microsoft.NetCore.DesktopRuntime.5.0.x86"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.DesktopRuntime.6.0.x64"
+                    {
+                    "Name" = "8:.NET Desktop Runtime 6.0.8 (x64)"
+                    "ProductCode" = "8:Microsoft.NetCore.DesktopRuntime.6.0.x64"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.DesktopRuntime.6.0.x86"
+                    {
+                    "Name" = "8:.NET Desktop Runtime 6.0.8 (x86)"
+                    "ProductCode" = "8:Microsoft.NetCore.DesktopRuntime.6.0.x86"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.SqlServer.SqlLocalDB.14.0"
+                    {
+                    "Name" = "8:SQL Server 2017 Express LocalDB"
+                    "ProductCode" = "8:Microsoft.SqlServer.SqlLocalDB.14.0"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Visual.C++.14.0.x64"
+                    {
+                    "Name" = "8:Visual C++ \"14\" Runtime Libraries (x64)"
+                    "ProductCode" = "8:Microsoft.Visual.C++.14.0.x64"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Visual.C++.14.0.x86"
+                    {
+                    "Name" = "8:Visual C++ \"14\" Runtime Libraries (x86)"
+                    "ProductCode" = "8:Microsoft.Visual.C++.14.0.x86"
+                    }
+                }
+            }
         }
     }
     "Deployable"
@@ -3518,26 +3654,6 @@
             "TargetName" = "8:shader.vert"
             "Tag" = "8:"
             "Folder" = "8:_D000156A99ED48328733714D39606920"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_1EE47BCAF30944BF8A950398C28B51F5"
-            {
-            "SourcePath" = "8:..\\ico.ico"
-            "TargetName" = "8:ico.ico"
-            "Tag" = "8:"
-            "Folder" = "8:_D6AF0470056A4642A426923E6D683920"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -5038,6 +5154,26 @@
             "TargetName" = "8:Ability_Healing.jpg"
             "Tag" = "8:"
             "Folder" = "8:_3CBE003F405544D2B1B27C0BE9A0AAC7"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4BC35EE79FA2491B9FC2D07364003BFD"
+            {
+            "SourcePath" = "8:..\\favicon.ico"
+            "TargetName" = "8:favicon.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_D6AF0470056A4642A426923E6D683920"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -6632,6 +6768,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7E93DF32C9B94F1993D122D83459ADBD"
+            {
+            "SourcePath" = "8:..\\favicon_setup.ico"
+            "TargetName" = "8:favicon_setup.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_D6AF0470056A4642A426923E6D683920"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7FEB80F0076C4EEEA3B7F64277E29D1D"
             {
             "SourcePath" = "8:..\\game\\assets\\models\\Tiles\\Border\\innerBorder_old.obj"
@@ -7318,26 +7474,6 @@
             "TargetName" = "8:blender_sponza.mtl"
             "Tag" = "8:"
             "Folder" = "8:_2DC3F8AFA81140C0AD675D8949467939"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_962FFC7A00BC4418909C8EEB249D62F6"
-            {
-            "SourcePath" = "8:..\\ico_setup.ico"
-            "TargetName" = "8:ico_setup.ico"
-            "Tag" = "8:"
-            "Folder" = "8:_D6AF0470056A4642A426923E6D683920"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -10833,7 +10969,7 @@
             {
             "DefaultLocation" = "8:[ProgramFiles64Folder][Manufacturer]\\[ProductName]"
             "Name" = "8:#1925"
-            "AlwaysCreate" = "11:FALSE"
+            "AlwaysCreate" = "11:TRUE"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Property" = "8:TARGETDIR"
@@ -11320,7 +11456,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Presumed Dead"
         "ProductCode" = "8:{00024C24-8A72-496D-A43D-6283F69D6758}"
-        "PackageCode" = "8:{A622AB0F-CB09-4ED3-BA04-54086055E8DB}"
+        "PackageCode" = "8:{9D4C9E73-CD97-439A-9242-F811424F6CB5}"
         "UpgradeCode" = "8:{08A89AFB-D165-44E3-9743-8F0B4673CBE1}"
         "AspNetVersion" = "8:"
         "RestartWWWService" = "11:FALSE"
@@ -11337,7 +11473,7 @@
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:Installer for Presumed Dead"
         "ARPURLINFOABOUT" = "8:https://fetknoppen.itch.io/presumed-dead"
-        "ARPPRODUCTICON" = "8:_1EE47BCAF30944BF8A950398C28B51F5"
+        "ARPPRODUCTICON" = "8:_7E93DF32C9B94F1993D122D83459ADBD"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
@@ -11440,32 +11576,32 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_A5D195516EC64355A5D5F5670D2C0917"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_DE60DA618E544A68A85352F1FA7B454C"
             {
             "Name" = "8:Presumed Dead"
             "Arguments" = "8:"
-            "Description" = "8:Start Presumed Dead"
+            "Description" = "8:"
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_22E86BAF79F2486A90B427F039E78977"
-            "Folder" = "8:_C2480976AD8540A0AC1407B3E4E53E86"
-            "WorkingFolder" = "8:_D6AF0470056A4642A426923E6D683920"
-            "Icon" = "8:_1EE47BCAF30944BF8A950398C28B51F5"
-            "Feature" = "8:"
-            }
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_E44A82E275AF47AA979EFADA0E9BF4FE"
-            {
-            "Name" = "8:Presumed Dead"
-            "Arguments" = "8:"
-            "Description" = "8:Start Presumed Dead"
-            "ShowCmd" = "3:1"
-            "IconIndex" = "3:0"
-            "Transitive" = "11:FALSE"
-            "Target" = "8:_22E86BAF79F2486A90B427F039E78977"
+            "Target" = "8:_F8B45ADC55EF44B5954D2711FA449289"
             "Folder" = "8:_FBBACC2DEBD04AD5A9989EE70E978DE7"
             "WorkingFolder" = "8:_D6AF0470056A4642A426923E6D683920"
-            "Icon" = "8:_1EE47BCAF30944BF8A950398C28B51F5"
+            "Icon" = "8:_4BC35EE79FA2491B9FC2D07364003BFD"
+            "Feature" = "8:"
+            }
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_FF69508BEECE4766BE80A5FC61457E90"
+            {
+            "Name" = "8:Presumed Dead"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_F8B45ADC55EF44B5954D2711FA449289"
+            "Folder" = "8:_C2480976AD8540A0AC1407B3E4E53E86"
+            "WorkingFolder" = "8:_D6AF0470056A4642A426923E6D683920"
+            "Icon" = "8:_4BC35EE79FA2491B9FC2D07364003BFD"
             "Feature" = "8:"
             }
         }
@@ -11922,35 +12058,7 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_22E86BAF79F2486A90B427F039E78977"
-            {
-            "SourcePath" = "8:..\\build\\Distribution\\game.exe"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_D6AF0470056A4642A426923E6D683920"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
-            "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{A1E9C0A8-F205-47CE-B99A-A1D3C6B72C06}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_C415CB9A3C3344A0BA44EDA982456910"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_6A548F41E8014300B6C6C42C91D3E9AF"
             {
             "SourcePath" = "8:"
             "TargetName" = "8:"
@@ -11970,9 +12078,65 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
+            "OutputConfiguration" = "8:Distribution|x64"
             "OutputGroupCanonicalName" = "8:Built"
             "OutputProjectGuid" = "8:{5183ABAD-3D6D-4833-8316-9E2D1DC83D1F}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_88D3FD63C8244BF39C18DA800172289A"
+            {
+            "SourcePath" = "8:"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_D6AF0470056A4642A426923E6D683920"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:Distribution|x64"
+            "OutputGroupCanonicalName" = "8:LocalizedResourceDlls"
+            "OutputProjectGuid" = "8:{A1E9C0A8-F205-47CE-B99A-A1D3C6B72C06}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_F8B45ADC55EF44B5954D2711FA449289"
+            {
+            "SourcePath" = "8:..\\build\\Distribution\\game.exe"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_D6AF0470056A4642A426923E6D683920"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:Distribution|x64"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{A1E9C0A8-F205-47CE-B99A-A1D3C6B72C06}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {
