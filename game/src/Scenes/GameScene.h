@@ -11,7 +11,6 @@
 #include "../Ai/Behaviors/Swarm/SwarmFSM.hpp"
 #include "../Ai/Behaviors/Tank/TankFSM.hpp"
 #include "../Ai/Behaviors/Lich/LichFSM.hpp"
-#include "../Components/AICombatTank.hpp"
 
 struct GameSceneLevel
 {

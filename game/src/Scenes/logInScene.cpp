@@ -94,7 +94,7 @@ void logInScene::update()
         }
         else
         {
-            std::string startAddress = (ipAddress.find(".") != std::string::npos) ? "" : "192.168.1.";
+            std::string startAddress = (ipAddress.find(".") != std::string::npos) ? "" : sf::IpAddress::getLocalAddress().toString().substr(0, 10);
             if (this->getNetworkHandler()->connectClient(startAddress + ipAddress))
             {
                 this->getSceneHandler()->setScene(new LobbyScene(ipAddress));

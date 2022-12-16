@@ -11,6 +11,9 @@ class LobbyScene : public Scene
 private:
 	uint32_t fontTextureId;
 	uint32_t backgroundId;
+	uint32_t fogGradientVerticalTextureId;
+	uint32_t fogGradientHorizontalTextureId;
+	uint32_t fogTextureId;
 	uint32_t buttonId;
 	uint32_t buttonSound;
 	std::string serverIP;
@@ -37,6 +40,9 @@ private:
 	NetworkHandlerGame* networkHandler;
 
 	void addCandle(glm::vec3 position);
+	void renderUiFogs(
+		const float& gradientHorizontalPos,
+		const float& gradientVerticalPos);
 
 	void preloadAssets();
 

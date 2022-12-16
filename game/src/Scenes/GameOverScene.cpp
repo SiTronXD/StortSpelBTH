@@ -52,6 +52,7 @@ void GameOverScene::init()
 	Transform& camTrans = this->getComponent<Transform>(this->cam);
 	camTrans.rotation.x = (40.f);
 	this->setComponent<Camera>(this->cam);
+	this->getComponent<Camera>(this->cam).flipCameraAspectScale();
 	this->setMainCamera(this->cam);
 
 	int graveStoneMesh = this->getResourceManager()->addMesh("assets/models/GameOverScene/GraveStone.obj");

@@ -18,6 +18,12 @@ void LobbyScene::preloadAssets()
     this->getResourceManager()->addTexture("assets/textures/UI/button.jpg");
     this->getResourceManager()->addTexture("assets/textures/UI/Presumed Dead QR.png");
 
+    TextureSettings fogSettings{};
+    fogSettings.samplerSettings.addressMode = vk::SamplerAddressMode::eClampToEdge;
+    this->getResourceManager()->addTexture("assets/textures/UI/menuFogGradientVertical.png", fogSettings);
+    this->getResourceManager()->addTexture("assets/textures/UI/menuFogGradientHorizontal.png", fogSettings);
+    this->getResourceManager()->addTexture("assets/textures/UI/menuFog.jpg", fogSettings);
+
     this->getResourceManager()->addSound("assets/Sounds/buttonClick.ogg");
 
     TextureSamplerSettings samplerSettings{};
@@ -191,7 +197,7 @@ void LobbyScene::preloadAssets()
     }
 
     this->getResourceManager()->addMesh("assets/models/door.obj");
-    this->getResourceManager()->addMesh("assets/models/tempRock.obj");
+    this->getResourceManager()->addMesh("assets/models/rock.obj");
     this->getResourceManager()->addMesh("assets/models/rockFence.obj");
     this->getResourceManager()->addMesh("assets/models/Tiles/Floor.obj");
     this->getResourceManager()->addMesh("assets/models/Tiles/OneXTwo/lamp.obj");
@@ -307,6 +313,7 @@ void LobbyScene::init()
 
     int camEntity = this->createEntity();
     this->setComponent<Camera>(camEntity, 55.f);
+    this->getComponent<Camera>(camEntity).flipCameraAspectScale();
     this->setMainCamera(camEntity);
     this->getComponent<Transform>(camEntity).position = glm::vec3(0, 0, -20);
     this->getComponent<Transform>(camEntity).rotation = glm::vec3(0, 0, 0);
@@ -354,6 +361,16 @@ void LobbyScene::init()
 
     disconnectButton.position = glm::vec2(-800.f, -450.f);
     disconnectButton.dimension = glm::vec2(225.0f, 75.0f);
+
+    // Fog gradient textures
+    TextureSettings fogSettings{};
+    fogSettings.samplerSettings.addressMode = vk::SamplerAddressMode::eClampToEdge;
+    this->fogGradientVerticalTextureId =
+        this->getResourceManager()->addTexture("assets/textures/UI/menuFogGradientVertical.png", fogSettings);
+    this->fogGradientHorizontalTextureId =
+        this->getResourceManager()->addTexture("assets/textures/UI/menuFogGradientHorizontal.png", fogSettings);
+    this->fogTextureId =
+        this->getResourceManager()->addTexture("assets/textures/UI/menuFog.jpg", fogSettings);
 }
 
 void LobbyScene::start() 
@@ -402,8 +419,99 @@ void LobbyScene::addCandle(glm::vec3 position)
     firefliesPS.coneSpawnVolume.localPosition = glm::vec3(0.5f, -8.2f, 26.5f);
 }
 
+void LobbyScene::renderUiFogs(
+    const float& gradientHorizontalPos, 
+    const float& gradientVerticalPos)
+{
+    // Render 2 vertical fog gradients
+    glm::vec2 internalSize = ResTranslator::getInternalDimensions();
+    float gradientHeight = 400.0f;
+    this->getUIRenderer()->setTexture(this->fogGradientVerticalTextureId);
+    this->getUIRenderer()->renderTexture(
+        glm::vec2(0.0f, gradientVerticalPos),
+        glm::vec2(
+            internalSize.x,
+            gradientHeight
+        )
+    );
+    this->getUIRenderer()->renderTexture(
+        glm::vec2(0.0f, -gradientVerticalPos),
+        glm::vec2(
+            internalSize.x,
+            -gradientHeight
+        )
+    );
+
+    // Render 2 horizontal fog gradients
+    float gradientWidth = 400.0f;
+    this->getUIRenderer()->setTexture(this->fogGradientHorizontalTextureId);
+    this->getUIRenderer()->renderTexture(
+        glm::vec2(gradientHorizontalPos, 0.0f),
+        glm::vec2(
+            gradientWidth,
+            internalSize.y
+        )
+    );
+    this->getUIRenderer()->renderTexture(
+        glm::vec2(-gradientHorizontalPos, 0.0f),
+        glm::vec2(
+            -gradientHeight,
+            internalSize.y
+        )
+    );
+
+    // Render 4 filled fog textures
+    this->getUIRenderer()->setTexture(this->fogTextureId);
+    this->getUIRenderer()->renderTexture(
+        glm::vec2(
+            0.0f,
+            (gradientVerticalPos + gradientHeight * 0.5f) +
+            (internalSize.y * 0.5f - (gradientVerticalPos + gradientHeight * 0.5f)) * 0.5f
+        ),
+        glm::vec2(
+            internalSize.x,
+            internalSize.y * 0.5f - (gradientVerticalPos + gradientHeight * 0.5f)
+        )
+    );
+    this->getUIRenderer()->renderTexture(
+        glm::vec2(
+            0.0f,
+            -((gradientVerticalPos + gradientHeight * 0.5f) +
+                (internalSize.y * 0.5f - (gradientVerticalPos + gradientHeight * 0.5f)) * 0.5f)
+        ),
+        glm::vec2(
+            internalSize.x,
+            -(internalSize.y * 0.5f - (gradientVerticalPos + gradientHeight * 0.5f))
+        )
+    );
+    this->getUIRenderer()->renderTexture(
+        glm::vec2(
+            (gradientHorizontalPos + gradientWidth * 0.5f) +
+            (internalSize.x * 0.5f - (gradientHorizontalPos + gradientWidth * 0.5f)) * 0.5f,
+            0.0f
+        ),
+        glm::vec2(
+            internalSize.x * 0.5f - (gradientHorizontalPos + gradientWidth * 0.5f),
+            internalSize.y
+        )
+    );
+    this->getUIRenderer()->renderTexture(
+        glm::vec2(
+            -((gradientHorizontalPos + gradientWidth * 0.5f) +
+                (internalSize.x * 0.5f - (gradientHorizontalPos + gradientWidth * 0.5f)) * 0.5f),
+            0.0f
+        ),
+        glm::vec2(
+            -(internalSize.x * 0.5f - (gradientHorizontalPos + gradientWidth * 0.5f)),
+            internalSize.y
+        )
+    );
+}
+
 void LobbyScene::update()
 {
+    this->renderUiFogs(1500.0f, 650.0f);
+
     // Set model position and player names
     auto netPlayers = this->networkHandler->getPlayers();
     if (netPlayers.size() != this->activePlayers - 1)

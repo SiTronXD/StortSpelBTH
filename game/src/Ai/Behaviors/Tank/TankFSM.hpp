@@ -253,7 +253,6 @@ protected:
 	virtual void registerEntityComponents(Entity entityId) override
 	{
 		addRequiredComponent<TankComponent>(entityId);
-		addRequiredComponent<AiCombatTank>(entityId);
 	}
 
 	virtual void real_init() override
