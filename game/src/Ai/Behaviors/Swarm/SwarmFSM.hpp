@@ -239,7 +239,6 @@ protected:
 			{"dead", new Swarm_dead}
         });
 
-		//TODO: Cehck transitions (Only one should be possible).
 		addEntityTransition("idle", SwarmFSM::idle_to_escape, "escape");
 		addEntityTransition("idle", SwarmFSM::idle_to_alerted, "alerted");
 		addEntityTransition("alerted", SwarmFSM::alerted_to_combat, "combat");

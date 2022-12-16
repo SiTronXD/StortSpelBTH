@@ -296,7 +296,7 @@ void NetworkHandlerGame::init()
 
     this->graveMesh = this->resourceManger->addMesh("assets/models/grave.obj");
     this->alterMesh = this->resourceManger->addMesh("assets/models/alter.obj");
-    this->humpMesh = this->resourceManger->addMesh("assets/models/hump.obj");//TODO : ADD THE humpMesh!!!
+    this->humpMesh = this->resourceManger->addMesh("assets/models/hump.obj");
 
 	if (!TankComponent::s_initialized)
 	{
