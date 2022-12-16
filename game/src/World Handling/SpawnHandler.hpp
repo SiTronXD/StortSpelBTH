@@ -36,7 +36,7 @@ private:
     void updateFreeTiles();
 
 public:
-    TilePicker() : randomDev(69){} //TODO: Use same seed as game...
+    TilePicker() : randomDev(69){}
         
     void   init(const std::vector<TileInfo>& freeTileInfos);
     size_t size() const;
@@ -113,7 +113,7 @@ private:
 
     void        spawnTank        (const int tankIdx         , const glm::vec3& pos                  , int level, bool elite = false);
     uint32_t    spawnLich        (const int lichIdx         , std::vector<const TileInfo*> tileInfos, int level, bool elite = false);
-    uint32_t    spawnSwarmGroup  (const int swarmStartIdx   , std::vector<const TileInfo*> tileInfo , int level, bool elite = false); //TODO: Do we need to have a vector of pos; say 2 to let a swarm spawn over two tiles?
+    uint32_t    spawnSwarmGroup  (const int swarmStartIdx   , std::vector<const TileInfo*> tileInfo , int level, bool elite = false);
     void        spawnSwarm       (const int swarmIdx        , const glm::vec3& pos                  , int level, bool elite = false);
     void        initTanks        ();
 

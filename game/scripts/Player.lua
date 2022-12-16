@@ -35,7 +35,6 @@ function script:init()
     self.pushTimer = 0.0
 
     self.animTimer = -1.0
-    self.wholeBody = false
     self.isAttacking = false
     self.isMoving = false
     self.canMove = true

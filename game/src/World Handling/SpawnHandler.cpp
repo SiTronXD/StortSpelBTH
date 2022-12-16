@@ -400,7 +400,6 @@ void SpawnHandler::createEntities()
     this->aiHandler->addFSM<LichFSM>("lichFSM");
     this->aiHandler->addFSM<TankFSM>("tankFSM");
 
-    //TODO: Cause crash on second run, therefore disabled in distribution...
 #ifdef _CONSOLE
     if (dynamic_cast<NetworkScene*>(currScene) == nullptr)
         {
@@ -620,7 +619,6 @@ void SpawnHandler::createLich()
     if (netScene == nullptr)
         {
             this->lichIDs.push_back(this->currScene->createEntity());
-            //TODO :  Move createEntities stuff in here
         }
     else
         {
@@ -882,7 +880,7 @@ void SpawnHandler::createSwarmGroup()
 {
     ServerGameMode* netScene = dynamic_cast<ServerGameMode*>(currScene);
     this->swarmGroups.push_back(new SwarmGroup
-    );  //TODO: Does this work as expected? Do we need to clear (delete contents) this on every init?
+    );
     for (size_t i = 0; i < SpawnHandler::NR_BLOBS_IN_GROUP; i++)
         {
             if (netScene == nullptr)
@@ -1337,7 +1335,6 @@ std::vector<const TileInfo*>
 TilePicker::getRandomEmptyNeighbouringTiles(const int nr)
 {
 
-    //TODO do not use while loop here...
     std::vector<const TileInfo*> neigbhourhood;
     std::vector<const TileInfo*> newPossibleNeighbours;
     std::unordered_map<const TileInfo*, bool> possibleNeigbhours;
