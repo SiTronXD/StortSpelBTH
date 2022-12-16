@@ -856,18 +856,6 @@ public:
 	void setDefaultMovementSpeed(Combat& combat)
 	{
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		//int maxSpeed = 0;
-		//int sprintSpeed = 0;
-		//int dodgeSpeed = 0;
-		//this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
-		//this->script->getScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
-		//this->script->getScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
-		//float tempMaxSpeed = (float)maxSpeed / combat.movementMultiplier;
-		//float tempSprintSpeed = (float)sprintSpeed / combat.movementMultiplier;
-		//float tempDodgeSpeed = (float)dodgeSpeed / combat.movementMultiplier;
-		//maxSpeed = (int)tempMaxSpeed;
-		//sprintSpeed = (int)tempSprintSpeed;
-		//dodgeSpeed = (int)tempDodgeSpeed;
 		this->script->setScriptComponentValue(playerScript, 30, "maxSpeed");
 		this->script->setScriptComponentValue(playerScript, 60, "sprintSpeed");
 		this->script->setScriptComponentValue(playerScript, 100, "dodgeSpeed");
