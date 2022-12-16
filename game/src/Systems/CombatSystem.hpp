@@ -456,17 +456,14 @@ public:
 
 			if (animIdx == 6)
 			{
-				this->script->setScriptComponentValue(playerScript, true, "wholeBody");
 				this->script->setScriptComponentValue(playerScript, false, "canMove");
 				this->scene->blendToAnimation(this->playerID, animName, "", 0.18f, animMultiplier);
 			}
 			else
 			{
-				this->script->setScriptComponentValue(playerScript, false, "wholeBody");
 				this->scene->blendToAnimation(this->playerID, animName, "UpperBody", 0.18f, animMultiplier);
 			}
 			this->script->setScriptComponentValue(playerScript, true, "isAttacking");
-			//this->script->setScriptComponentValue(playerScript, animIdx, "currentAnimation");
 			this->script->setScriptComponentValue(playerScript, cdValue, "animTimer");
 
 			if (animName == "knockback")
