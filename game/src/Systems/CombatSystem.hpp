@@ -373,7 +373,9 @@ public:
 			            break;
 					}
 				}
-				if (this->canHit)
+				if (this->canHit && (this->scene->hasComponents<SwarmComponent>(hitID[i]) || 
+					this->scene->hasComponents<TankComponent>(hitID[i]) || 
+					this->scene->hasComponents<LichComponent>(hitID[i])))
 				{
 					this->networkHandler->sendHitOn(hitID[i], (int)combat.dmgArr[combat.activeAttack], combat.knockbackArr[combat.activeAttack]);
 					this->hitEnemies.emplace_back(hitID[i]);
