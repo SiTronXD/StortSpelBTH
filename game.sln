@@ -10,6 +10,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "game", "game\game.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vengine", "deps\vengine\src\vengine\vengine.vcxproj", "{5183ABAD-3D6D-4833-8316-9E2D1DC83D1F}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Presumed Dead setup", "Presumed Dead setup\Presumed Dead setup.vdproj", "{F562ABBB-EDE7-446D-9325-8B0DF3051A07}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -44,6 +46,12 @@ Global
 		{5183ABAD-3D6D-4833-8316-9E2D1DC83D1F}.Release|x64.Build.0 = Release|x64
 		{5183ABAD-3D6D-4833-8316-9E2D1DC83D1F}.Release|x86.ActiveCfg = Release|Win32
 		{5183ABAD-3D6D-4833-8316-9E2D1DC83D1F}.Release|x86.Build.0 = Release|Win32
+		{F562ABBB-EDE7-446D-9325-8B0DF3051A07}.Debug|x64.ActiveCfg = Debug
+		{F562ABBB-EDE7-446D-9325-8B0DF3051A07}.Debug|x86.ActiveCfg = Debug
+		{F562ABBB-EDE7-446D-9325-8B0DF3051A07}.Distribution|x64.ActiveCfg = Debug
+		{F562ABBB-EDE7-446D-9325-8B0DF3051A07}.Distribution|x86.ActiveCfg = Debug
+		{F562ABBB-EDE7-446D-9325-8B0DF3051A07}.Release|x64.ActiveCfg = Release
+		{F562ABBB-EDE7-446D-9325-8B0DF3051A07}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
