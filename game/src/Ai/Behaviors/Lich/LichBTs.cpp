@@ -390,7 +390,6 @@ BTStatus LichBT::goToAlter(Entity entityID)
 BTStatus LichBT::dropOffBones(Entity entityID)
 {
     BTStatus ret = BTStatus::Success;    
-    //TODO: Visualise the boes dropping
     LichComponent& lichComp = getTheScene()->getComponent<LichComponent>(entityID);
     LichBT::setAnimation(entityID, LichAnim::Walking, LichBT::dropOffBones);
     
@@ -909,7 +908,7 @@ BTStatus LichBT::runAwayFromPlayer(Entity entityID)
     glm::vec3 moveDir		= getDir(lichTrans.position, playerTrans.position);
     lichTrans.updateMatrix();
     glm::vec3 target = lichTrans.position + lichTrans.forward()*2.0f;
-    avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, target, moveDir); //TODO: Check if this improves or not
+    avoidStuff(entityID, BehaviorTree::sceneHandler, lichComp.attackGoRight, target, moveDir);
 	moveDir = safeNormalize(moveDir);
     lichRb.velocity = moveDir * lichComp.speed;
 
@@ -947,7 +946,6 @@ BTStatus LichBT::die(Entity entityID)
 
 	int playerID = getPlayerID(entityID);
     if(playerID == -1){return ret;}
-   //TODO : this was changed from combat to networkCombat see if it works
 	HealthComp& playerHealth = sceneHandler->getScene()->getComponent<HealthComp>(playerID);
 	if (playerHealth.health <= (playerHealth.maxHealth - 10))
 	{
@@ -1311,8 +1309,6 @@ void LichBT::activateAnim(Entity entityID, LichAnim anim, const std::string& ble
         else
         {
             getTheScene()->blendToAnimation(entityID, blendTo, extra.slotName,extra.transitionTime,extra.nextAniTimeScale);
-            //AnimationStatus status = getTheScene()->getAnimationStatus(entityID);
-            //printf("Current: %s\n", status.animationName);
         }
         
     }

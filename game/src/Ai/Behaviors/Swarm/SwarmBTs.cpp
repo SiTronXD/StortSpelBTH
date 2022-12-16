@@ -26,7 +26,6 @@ int SwarmBT::getPlayerID(Entity entityID)
                 playerID = p;
             }
         }
-        //return s->getNearestPlayer(entityID);
     }
     // else find player from script
     else
@@ -194,18 +193,6 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 	RayPayload rpLeft = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayForwardLeft, maxDist);
 	RayPayload rpRight = BehaviorTree::sceneHandler->getPhysicsEngine()->raycast(rayForwardRight, maxDist);
 
-	////Draw ray
-	
-	//glm::vec3 red = glm::vec3(1.0f, 0.0f, 0.0f);
-	//glm::vec3 green = glm::vec3(0.0f, 1.0f, 0.0f);
-	//glm::vec3 blue = glm::vec3(0.0f, 0.0f, 1.0f);
-	//BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(rayForward.pos,
-	//	rayForward.pos + rayForward.dir * maxDist, red);
-	//BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(rayForwardLeft.pos,
-	//	rayForwardLeft.pos + rayForwardLeft.dir * maxDist, green);
-	//BehaviorTree::sceneHandler->getDebugRenderer()->renderLine(rayForwardRight.pos,
-	//	rayForwardRight.pos + rayForwardRight.dir * maxDist, blue);
-
 
 	if(swarmComp.dir == glm::vec3(0.0f, 0.0f, 0.0f))
 	{
@@ -323,7 +310,6 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 BTStatus SwarmBT::lookingForGroup(Entity entityID)
 {
     BTStatus ret = BTStatus::Running;
-    //TODO: Make blob jump around and look for friends!
 
     if (hasFriends(entityID) == BTStatus::Failure)
         {
@@ -334,7 +320,6 @@ BTStatus SwarmBT::lookingForGroup(Entity entityID)
 BTStatus SwarmBT::JoinGroup(Entity entityID)
 {
     BTStatus ret = BTStatus::Running;
-    //TODO: Make blob jump in circle!
 
 	SwarmComponent& thisSwarmComp =
 	    getTheScene()->getComponent<SwarmComponent>(entityID);
@@ -350,7 +335,6 @@ BTStatus SwarmBT::JoinGroup(Entity entityID)
 			    if ((thisTransform.position - trans.position).length() <=
 			        thisSwarmComp.sightRadius)
 			    {
-				    //TODO: Join group
 
                                 return BTStatus::Success;
                             }
@@ -367,7 +351,6 @@ BTStatus SwarmBT::seesNewFriends(Entity entityID)
 	SwarmComponent& thisSwarmComp = getTheScene()->getComponent<SwarmComponent>(entityID);
 	Transform& thisTransform      = getTheScene()->getComponent<Transform>(entityID);
 
-    //TODO perf: Define size of vecor from start to avoid push_back
     thisSwarmComp.groupsInSight.clear();
 
     sceneHandler->getScene()
@@ -378,11 +361,9 @@ BTStatus SwarmBT::seesNewFriends(Entity entityID)
             {
                 if (static_cast<int>(entity) != entityID)
                     {
-                        //TODO: use cone(frustum) to detect friends
                         if ((thisTransform.position - trans.position)
                                 .length() <= thisSwarmComp.sightRadius)
                             {
-                                //TODO: store all visable friends
                                 thisSwarmComp.groupsInSight.push_back(
                                     swComp.group
                                 );
@@ -405,13 +386,11 @@ BTStatus SwarmBT::escapeToFriends(Entity entityID)
         {
             nearestGroup = f;
             break;
-            //TODO: find the nearest friend group
         }
 
 	Transform& thisTransform =
 	    getTheScene()->getComponent<Transform>(entityID);
 
-	//TODO: find nearset blob instead.
 	glm::vec3 swarmMidPoint;
 	for (auto& blob : nearestGroup->members)
 	{
@@ -422,12 +401,10 @@ BTStatus SwarmBT::escapeToFriends(Entity entityID)
 	 if ((thisTransform.position - swarmMidPoint).length() <=
 	    thisSwarmComp.sightRadius)
 	{
-		//TODO: Join group
 
             return BTStatus::Success;
         }
 
-    //Move towards player
 
     return ret;
 }
@@ -794,9 +771,6 @@ BTStatus SwarmBT::die(Entity entityID)
 		}
     }
 
-    //TODO: Sometgin goes wrong when we remove from group.
-    //SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
-    //sceneHandler->getScene()->getComponent<Transform>(entityID).position = glm::vec3(0,-300,0);
     SwarmGroup* swarmGroup = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID).group;
     swarmGroup->aliveMembers.pop();
 
@@ -971,16 +945,6 @@ void Swarm_escape::start()
 
 void Swarm_dead::start()
 {
-    //ResourceManager* resourceMng = sceneHandler->getResourceManager();
-    //this->perkMeshes[0] = resourceMng->addMesh("assets/models/Perk_Hp.obj");
-    //this->perkMeshes[1] = resourceMng->addMesh("assets/models/Perk_Dmg.obj");
-    //this->perkMeshes[2] =
-    //    resourceMng->addMesh("assets/models/Perk_AtkSpeed.obj");
-    //this->abilityMeshes[0] =
-    //    resourceMng->addMesh("assets/models/KnockbackAbility.obj");
-    //this->abilityMeshes[1] =
-    //    resourceMng->addMesh("assets/models/KnockbackAbility.obj");
-
     Sequence* root = c.c.sequence();
 
     Task* playDeathAnimTask =
