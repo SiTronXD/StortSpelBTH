@@ -336,6 +336,7 @@ void NetworkHandlerGame::init()
 
 void NetworkHandlerGame::cleanUp()
 {
+    this->roomHandler = nullptr;
     playerEntities.clear();
     swords.clear();
     playerPosLast.clear();
