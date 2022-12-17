@@ -761,10 +761,16 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		break;
 	case GameEvent::CLOSE_OLD_DOORS:
 		tcpPacket >> i0;
-		roomHandler->multiplayerToggleCurrentDoors(i0);
+		if (roomHandler)
+		{
+			roomHandler->multiplayerToggleCurrentDoors(i0);
+		}
 		break;
 	case GameEvent::CLOSE_NEW_DOORS:
-		roomHandler->mutliplayerCloseDoors();
+		if (roomHandler)
+		{
+			roomHandler->mutliplayerCloseDoors();
+		}
 		break;
 	default:
 		break;
