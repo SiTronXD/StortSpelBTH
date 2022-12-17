@@ -55,8 +55,10 @@ void ServerGameMode::init()
     lastTankHp.resize(this->aiHandler.FSMsEntities[tankFSM].size());
 }
 
+static float tempTimer = 0.0f;
 void ServerGameMode::update(float dt)
 {
+    tempTimer += dt;
     aiHandler.update(dt);
 
     if (!this->newRoomFrame && roomHandler.playersInPathway(this->players))
@@ -141,6 +143,21 @@ void ServerGameMode::update(float dt)
             }
         }
     }
+
+    {
+        if (tempTimer >= 5.0f)
+        {
+            tempTimer = 0.0f;
+
+            std::cout << "r:" << 2 << std::endl;
+            std::cout << "To a new World" << std::endl;
+            addEvent({ (int)GameEvent::NEXT_LEVEL });
+            ((NetworkSceneHandler*)this->getSceneHandler())->sendPacketNow();
+            ((NetworkSceneHandler*)this->getSceneHandler())->setScene(new ServerGameMode(++this->level));
+        }
+    }
+
+
 	// Send data to player
     makeDataSendToClient();
 
