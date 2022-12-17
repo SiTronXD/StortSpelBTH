@@ -204,44 +204,44 @@ public:
 				healthComp.srcDmgEntity = -1;
 			}
 
-//#ifdef _CONSOLE
-//			float animMultis[6] = { combat.animationMultiplier[0], combat.animationMultiplier[1], combat.animationMultiplier[2],
-//			combat.animationMultiplier[3], combat.animationMultiplier[4], combat.animationMultiplier[5] };
-//
-//			ImGui::Begin("AnimationMultipliers");
-//			ImGui::SliderFloat("Light Anim", &this->walkTime, 0.f, 10.f);
-//			ImGui::SliderFloat("Light Anim", &animMultis[0], 0.f, 10.f);
-//			ImGui::SliderFloat("Heavy Anim", &animMultis[1], 0.f, 10.f);
-//			ImGui::SliderFloat("Combo1 Anim", &animMultis[2], 0.f, 10.f);
-//			ImGui::SliderFloat("Combo2 Anim", &animMultis[3], 0.f, 10.f);
-//			ImGui::SliderFloat("Combo3 Anim", &animMultis[4], 0.f, 10.f);
-//			ImGui::SliderFloat("Knockback Anim", &animMultis[5], 0.f, 10.f);
-//			ImGui::End();
-//			for (size_t i = 0; i < 6; i++)
-//			{
-//				combat.animationMultiplier[i] = animMultis[i];
-//			}
-//
-//			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-//			float runAnim = 0.f;
-//            this->script->getScriptComponentValue(
-//                playerScript, runAnim, "runAnimTime"
-//            );
-//			float sprintAnim = 0.f;
-//            this->script->getScriptComponentValue(
-//                playerScript, sprintAnim, "sprintAnimTime"
-//            );
-//			ImGui::Begin("Running Animation");
-//            ImGui::SliderFloat("Running Anim", &runAnim, 0.f, 10.f);
-//            ImGui::SliderFloat("Running Anim", &sprintAnim, 0.f, 10.f);
-//            ImGui::End();
-//            this->script->setScriptComponentValue(
-//                playerScript, runAnim, "runAnimTime"
-//            );
-//            this->script->setScriptComponentValue(
-//                playerScript, sprintAnim, "sprintAnimTime"
-//            );
-//#endif
+#ifdef _CONSOLE
+			float animMultis[6] = { combat.animationMultiplier[0], combat.animationMultiplier[1], combat.animationMultiplier[2],
+			combat.animationMultiplier[3], combat.animationMultiplier[4], combat.animationMultiplier[5] };
+
+			ImGui::Begin("AnimationMultipliers");
+			ImGui::SliderFloat("Light Anim", &this->walkTime, 0.f, 10.f);
+			ImGui::SliderFloat("Light Anim", &animMultis[0], 0.f, 10.f);
+			ImGui::SliderFloat("Heavy Anim", &animMultis[1], 0.f, 10.f);
+			ImGui::SliderFloat("Combo1 Anim", &animMultis[2], 0.f, 10.f);
+			ImGui::SliderFloat("Combo2 Anim", &animMultis[3], 0.f, 10.f);
+			ImGui::SliderFloat("Combo3 Anim", &animMultis[4], 0.f, 10.f);
+			ImGui::SliderFloat("Knockback Anim", &animMultis[5], 0.f, 10.f);
+			ImGui::End();
+			for (size_t i = 0; i < 6; i++)
+			{
+				combat.animationMultiplier[i] = animMultis[i];
+			}
+
+			Script& playerScript = this->scene->getComponent<Script>(this->playerID);
+			float runAnim = 0.f;
+            this->script->getScriptComponentValue(
+                playerScript, runAnim, "runAnimTime"
+            );
+			float sprintAnim = 0.f;
+            this->script->getScriptComponentValue(
+                playerScript, sprintAnim, "sprintAnimTime"
+            );
+			ImGui::Begin("Running Animation");
+            ImGui::SliderFloat("Running Anim", &runAnim, 0.f, 10.f);
+            ImGui::SliderFloat("Running Anim", &sprintAnim, 0.f, 10.f);
+            ImGui::End();
+            this->script->setScriptComponentValue(
+                playerScript, runAnim, "runAnimTime"
+            );
+            this->script->setScriptComponentValue(
+                playerScript, sprintAnim, "sprintAnimTime"
+            );
+#endif
 		};
 		view.each(foo);
 
@@ -373,7 +373,9 @@ public:
 			            break;
 					}
 				}
-				if (this->canHit)
+				if (this->canHit && (this->scene->hasComponents<SwarmComponent>(hitID[i]) || 
+					this->scene->hasComponents<TankComponent>(hitID[i]) || 
+					this->scene->hasComponents<LichComponent>(hitID[i])))
 				{
 					this->networkHandler->sendHitOn(hitID[i], (int)combat.dmgArr[combat.activeAttack], combat.knockbackArr[combat.activeAttack]);
 					this->hitEnemies.emplace_back(hitID[i]);
@@ -456,17 +458,14 @@ public:
 
 			if (animIdx == 6)
 			{
-				this->script->setScriptComponentValue(playerScript, true, "wholeBody");
 				this->script->setScriptComponentValue(playerScript, false, "canMove");
 				this->scene->blendToAnimation(this->playerID, animName, "", 0.18f, animMultiplier);
 			}
 			else
 			{
-				this->script->setScriptComponentValue(playerScript, false, "wholeBody");
 				this->scene->blendToAnimation(this->playerID, animName, "UpperBody", 0.18f, animMultiplier);
 			}
 			this->script->setScriptComponentValue(playerScript, true, "isAttacking");
-			//this->script->setScriptComponentValue(playerScript, animIdx, "currentAnimation");
 			this->script->setScriptComponentValue(playerScript, cdValue, "animTimer");
 
 			if (animName == "knockback")
@@ -856,18 +855,6 @@ public:
 	void setDefaultMovementSpeed(Combat& combat)
 	{
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
-		//int maxSpeed = 0;
-		//int sprintSpeed = 0;
-		//int dodgeSpeed = 0;
-		//this->script->getScriptComponentValue(playerScript, maxSpeed, "maxSpeed");
-		//this->script->getScriptComponentValue(playerScript, sprintSpeed, "sprintSpeed");
-		//this->script->getScriptComponentValue(playerScript, dodgeSpeed, "dodgeSpeed");
-		//float tempMaxSpeed = (float)maxSpeed / combat.movementMultiplier;
-		//float tempSprintSpeed = (float)sprintSpeed / combat.movementMultiplier;
-		//float tempDodgeSpeed = (float)dodgeSpeed / combat.movementMultiplier;
-		//maxSpeed = (int)tempMaxSpeed;
-		//sprintSpeed = (int)tempSprintSpeed;
-		//dodgeSpeed = (int)tempDodgeSpeed;
 		this->script->setScriptComponentValue(playerScript, 30, "maxSpeed");
 		this->script->setScriptComponentValue(playerScript, 60, "sprintSpeed");
 		this->script->setScriptComponentValue(playerScript, 100, "dodgeSpeed");

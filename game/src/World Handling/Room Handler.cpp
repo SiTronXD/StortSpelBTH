@@ -673,7 +673,7 @@ void RoomHandler::generate(uint32_t seed, uint16_t level)
 	this->createFloor();
 	delete this->random;
 
-	// Offset everything so origo is in the middle of spawn tile
+	// Offset everything so origo is in the middle of the 2x2 spawn area
 	for (Pathway& path : this->paths)
 	{
 		for (Entity entity : path.entities)
@@ -681,21 +681,13 @@ void RoomHandler::generate(uint32_t seed, uint16_t level)
 			this->scene->getComponent<Transform>(entity).position += glm::vec3(TILE_WIDTH * -0.5f, 0.f, TILE_WIDTH * -0.5f);
 		}
 	}
-	// Keep for testing
-	//printf("Num Rooms: %zd | numPathsEntities: %zd\n", rooms.size(), pathEntities.size());
+
 	for (int i = 0; i < numTotRooms; i++)
 	{
 		this->moveRoom(i, glm::vec3(TILE_WIDTH * -0.5f, 0.f, TILE_WIDTH * -0.5f));
 
 		this->rooms[i].mainTiles.shrink_to_fit();
 		this->rooms[i].objects.shrink_to_fit();
-
-		// Keep for testing
-		//printf("Room: %d\n", i);
-		//printf("Num mainTiles: %zd | numObjects: %zd\n", rooms[i].mainTiles.size(), rooms[i].objects.size());
-		//printf("Connecting idx: 0: %d, 1: %d, 2: %d, 3: %d\n", rooms[i].connectingIndex[0], rooms[i].connectingIndex[1], rooms[i].connectingIndex[2], rooms[i].connectingIndex[3]);
-		//printf("Type: %d | pos: (%d, %d, %d)\n----------\n", (int)rooms[i].type, (int)rooms[i].position.x, (int)rooms[i].position.y, (int)rooms[i].position.z);
-
 	}
 
 	roomLayout.clear();
@@ -971,8 +963,13 @@ bool TileInfo::checkValidTileInfoVector(const std::vector<TileInfo>& tileInfos, 
     }
 
     if(!tileInfosValid)
-    {Log::error("RoomHandler has invalid TileInfos for room["+std::to_string(roomIndex)+"], se warning/s above!");}
-    else{Log::write("RoomHandlers TileInfos are correct for room["+std::to_string(roomIndex)+"]!");}
+    {
+		Log::error("RoomHandler has invalid TileInfos for room["+std::to_string(roomIndex)+"], se warning/s above!");
+	}
+    else
+	{
+		Log::write("RoomHandlers TileInfos are correct for room["+std::to_string(roomIndex)+"]!");
+	}
 
     return tileInfosValid;
 }
@@ -998,15 +995,7 @@ bool TileInfo::amIMyNeighboursNeighbour(int myID, const std::vector<TileInfo>& a
         goodNeighbour = false;
     }
 
-	//NOTE: Without this check we will be able to spawn on tiles without neighbours, if this is a problem we should do something about it later... 
-    // if( this->idUpOf() == TileInfo::NONE  && this->idDownOf() == TileInfo::NONE  && this->idLeftOf() == TileInfo::NONE && this->idRightOf() == TileInfo::NONE) 
-    // {
-    //     assert(false);
-    //     return false; 
-    // }
-
     return goodNeighbour;
-
 }
 
 Entity RoomHandler::getFloor() const
@@ -1107,7 +1096,6 @@ void RoomHandler::createDoors(int roomIndex, const glm::ivec2* doorTilePos)
                 this->resourceMan->makeUniqueMaterials(meshComp);
                 meshComp.numOverrideMaterials = 1;
                 meshComp.overrideMaterials[0].diffuseTextureIndex = this->lampDiffuseId;
-                //meshComp.overrideMaterials[0].glowMapTextureIndex = this->lampGlowId;
                 meshComp.overrideMaterials[0].emissionIntensity = 1.f;
             }
 
@@ -1248,7 +1236,7 @@ void RoomHandler::generatePathways()
 		}
 
 		// Go through the path and generate a border around it
-		for (int l = 1; l <= 3; l++) // Thiccness off border around paths
+		for (int l = 1; l <= 3; l++) // Thickness off border around paths
 		{
 			this->surroundPaths(i, pathPositions, p0, p1, (float)l, this->verticalConnection[i], l == 1);
 		}
@@ -1422,10 +1410,6 @@ void RoomHandler::createObjectEntities(const Tile& tile, Room& room)
 	transform.position = glm::vec3(tile.position.x, 0.f, tile.position.y);
 	transform.position *= TILE_WIDTH;
 
-	// Offset removed for now due to AI possible spawning too close and flying away
-	//transform.position.x += float(std::abs(int(this->random->rand())) % 10 - 5); 
-	//transform.position.z += float(std::abs(int(this->random->rand())) % 10 - 5);
-
 	if (tile.type == Tile::TwoXOne || tile.type == Tile::OneXTwo)
 	{
 		if (tile.type == Tile::OneXTwo)
@@ -1579,12 +1563,12 @@ void RoomHandler::toggleDoors(int index, bool open, int ignore)
 	{
 		if (room.doors[i] != -1)
 		{
-			if (open/* && this->scene->hasComponents<Collider>(room.doors[i])*/)
+			if (open)
 			{
 				this->scene->setScriptComponent(room.doors[i], "scripts/opendoor.lua");
 				this->scene->removeComponent<Collider>(room.doors[i]);
 			}
-			else// if (!this->scene->hasComponents<Collider>(room.doors[i]))
+			else
 			{
 				this->scene->setScriptComponent(room.doors[i], "scripts/closedoor.lua");
 				this->scene->setComponent<Collider>(room.doors[i], Collider::createBox(
@@ -1611,12 +1595,12 @@ void RoomHandler::forceToggleDoors(int index, bool open, int ignore)
 	{
 		if (room.doors[i] != -1)
 		{
-			if (open/* && this->scene->hasComponents<Collider>(room.doors[i])*/)
+			if (open)
 			{
 				this->scene->getComponent<Transform>(room.doors[i]).position.y = -25.f;
 				this->scene->removeComponent<Collider>(room.doors[i]);
 			}
-			else// if (!this->scene->hasComponents<Collider>(room.doors[i]))
+			else
 			{
 				this->scene->getComponent<Transform>(room.doors[i]).position.y = 0.f;
 				this->scene->setComponent<Collider>(room.doors[i], Collider::createBox(
@@ -1863,7 +1847,3 @@ void RoomHandler::imgui(DebugRenderer* dr)
 	ImGui::End();
 }
 #endif // _CONSOLE
-
-std::vector<std::vector<glm::vec3>> RoomHandler::getPathFindingPoints() {
-	return std::vector<std::vector<glm::vec3>>();
-}
