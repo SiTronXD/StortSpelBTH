@@ -86,7 +86,7 @@ void RoomHandler::init(Scene* scene, ResourceManager* resourceMan,PhysicsEngine*
 	{
 		this->doorMeshID = (int)resourceMan->addMesh("assets/models/door.obj");
 		this->rockMeshId = (int)resourceMan->addMesh("assets/models/rock.obj");
-		this->rockFenceMeshId = (int)resourceMan->addMesh("assets/models/rockFence.obj");
+		this->rockFenceMeshId = (int)resourceMan->addMesh("assets/models/RockFence.obj");
 		this->tileFloorMeshId = (int)resourceMan->addMesh("assets/models/Tiles/Floor.obj");
 		this->lampMeshId = (int)resourceMan->addMesh("assets/models/Tiles/OneXTwo/lamp.obj");
 

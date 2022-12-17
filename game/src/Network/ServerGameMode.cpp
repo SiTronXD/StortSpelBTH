@@ -392,7 +392,7 @@ void ServerGameMode::makeDataSendToClient()
 
 void ServerGameMode::createPortal() 
 {
-    int colliderID = (int)this->getResourceManager()->addCollisionShapeFromMesh("assets/models/portal.fbx");
+    int colliderID = (int)this->getResourceManager()->addCollisionShapeFromMesh("assets/models/Portal.fbx");
     std::vector<ColliderDataRes> colliders = this->getResourceManager()->getCollisionShapeFromMesh(colliderID);
 
 

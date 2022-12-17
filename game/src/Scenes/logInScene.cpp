@@ -14,7 +14,7 @@ void logInScene::start()
     samplerSettings.unnormalizedCoordinates = VK_TRUE;
 
     this->backgroundId =
-        this->getResourceManager()->addTexture("assets/textures/blackTex.jpg"
+        this->getResourceManager()->addTexture("assets/textures/BlackTex.jpg"
         );
     this->buttonId =
         this->getResourceManager()->addTexture("assets/textures/UI/button.jpg");

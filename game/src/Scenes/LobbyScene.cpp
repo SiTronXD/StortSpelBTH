@@ -122,7 +122,7 @@ void LobbyScene::preloadAssets()
     this->getResourceManager()->addMesh("assets/models/Perk_AtkSpeed.obj");
     this->getResourceManager()->addMesh("assets/models/Perk_Movement.obj");
     this->getResourceManager()->addMesh("assets/models/Perk_Stamina.obj");
-    this->getResourceManager()->addTexture("assets/textures/UI/knockbackAbility.png");
+    this->getResourceManager()->addTexture("assets/textures/UI/KnockbackAbility.png");
     this->getResourceManager()->addTexture("assets/textures/UI/HealingAbility.png");
     this->getResourceManager()->addTexture("assets/textures/UI/empty.png");
     this->getResourceManager()->addTexture("assets/textures/UI/hpUp.png");
@@ -142,7 +142,7 @@ void LobbyScene::preloadAssets()
 
     this->getResourceManager()->addMesh("assets/models/PortalOff.obj");
     this->getResourceManager()->addMesh("assets/models/PortalOn.obj");
-    this->getResourceManager()->addCollisionShapeFromMesh("assets/models/portal.fbx");
+    this->getResourceManager()->addCollisionShapeFromMesh("assets/models/Portal.fbx");
     this->getResourceManager()->addMesh("assets/models/fire_orb.obj");
     this->getResourceManager()->addMesh("assets/models/light_orb.obj");
     this->getResourceManager()->addMesh("assets/models/ice_orb.obj");
@@ -198,7 +198,7 @@ void LobbyScene::preloadAssets()
 
     this->getResourceManager()->addMesh("assets/models/door.obj");
     this->getResourceManager()->addMesh("assets/models/rock.obj");
-    this->getResourceManager()->addMesh("assets/models/rockFence.obj");
+    this->getResourceManager()->addMesh("assets/models/RockFence.obj");
     this->getResourceManager()->addMesh("assets/models/Tiles/Floor.obj");
     this->getResourceManager()->addMesh("assets/models/Tiles/OneXTwo/lamp.obj");
 
@@ -206,7 +206,7 @@ void LobbyScene::preloadAssets()
     this->getResourceManager()->addTexture("assets/textures/Perk_HpTex.jpg");
 
     // ----------------------- Log in scene -----------------------
-    this->getResourceManager()->addTexture("assets/textures/blackTex.jpg");
+    this->getResourceManager()->addTexture("assets/textures/BlackTex.jpg");
     this->getResourceManager()->addTexture("assets/textures/UI/button.jpg");
 
     this->buttonSound = this->getResourceManager()->addSound("assets/Sounds/buttonClick.ogg");
@@ -238,9 +238,9 @@ void LobbyScene::preloadAssets()
     this->getResourceManager()->addMesh("assets/models/alter.obj");
     this->getResourceManager()->addMesh("assets/models/hump.obj");
 
-    this->getResourceManager()->addSound("assets/Sounds/Enemysounds/Golem/GolemTakeDmg.ogg");
-    this->getResourceManager()->addSound("assets/Sounds/Enemysounds/Golem/Shockwave.ogg");
-    this->getResourceManager()->addSound("assets/Sounds/Enemysounds/Golem/GolemCharge.ogg");
+    this->getResourceManager()->addSound("assets/Sounds/EnemySounds/Golem/GolemTakeDmg.ogg");
+    this->getResourceManager()->addSound("assets/Sounds/EnemySounds/Golem/Shockwave.ogg");
+    this->getResourceManager()->addSound("assets/Sounds/EnemySounds/Golem/GolemCharge.ogg");
     this->getResourceManager()->addSound("assets/Sounds/EnemySounds/Lich/LichTakeDmg.ogg");
     this->getResourceManager()->addSound("assets/Sounds/EnemySounds/Lich/ChargeLightning.ogg");
     this->getResourceManager()->addSound("assets/Sounds/EnemySounds/Lich/ChargeFire.ogg");
@@ -290,7 +290,7 @@ void LobbyScene::init()
     this->networkHandler = dynamic_cast<NetworkHandlerGame*>(this->getNetworkHandler());
 
     this->backgroundId =
-        this->getResourceManager()->addTexture("assets/textures/blackTex.jpg"
+        this->getResourceManager()->addTexture("assets/textures/BlackTex.jpg"
         );
     this->buttonId =
         this->getResourceManager()->addTexture("assets/textures/UI/button.jpg");
