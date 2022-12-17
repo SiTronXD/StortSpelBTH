@@ -149,7 +149,7 @@ private:
 	// RoomHandler
     bool newRoomFrame;
     bool gettingSeed;
-    RoomHandler* roomHandler;
+    RoomHandler* roomHandler = nullptr;
 
     static LichAttack lich_fire;
     static LichAttack lich_ice;
