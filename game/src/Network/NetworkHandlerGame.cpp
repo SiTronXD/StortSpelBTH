@@ -301,11 +301,11 @@ void NetworkHandlerGame::init()
 	if (!TankComponent::s_initialized)
 	{
 		TankComponent::s_takeDmg =
-			this->resourceManger->addSound("assets/Sounds/Enemysounds/Golem/GolemTakeDmg.ogg");
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Golem/GolemTakeDmg.ogg");
 		TankComponent::s_shockwave =
-			this->resourceManger->addSound("assets/Sounds/Enemysounds/Golem/Shockwave.ogg");
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Golem/Shockwave.ogg");
 		TankComponent::s_charge =
-			this->resourceManger->addSound("assets/Sounds/Enemysounds/Golem/GolemCharge.ogg");
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Golem/GolemCharge.ogg");
 		TankComponent::s_initialized = true;
 	}
 	if (!LichComponent::s_initialized)
