@@ -178,6 +178,7 @@ private:
 	void setGhostMat(Material* ghostMat);
 	int getSeed();
     void setRoomHandler(RoomHandler& roomHandler);
+    void setRoomHandler(RoomHandler* roomHandler);
 
 	virtual void handleTCPEventClient(sf::Packet& tcpPacket, int event) override;
 	virtual void handleUDPEventClient(sf::Packet& udpPacket, int event) override;

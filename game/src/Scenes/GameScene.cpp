@@ -204,6 +204,8 @@ void GameScene::start()
 
     if (networkHandler->isConnected())
     {
+        this->networkHandler->setRoomHandler(nullptr);
+
         int seed = this->networkHandler->getSeed();
         Log::write("Seed from server: " + std::to_string(seed));
 		roomHandler.generate(seed, this->currentLevel.level);

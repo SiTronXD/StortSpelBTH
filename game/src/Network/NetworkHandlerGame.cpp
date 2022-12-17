@@ -336,7 +336,6 @@ void NetworkHandlerGame::init()
 
 void NetworkHandlerGame::cleanUp()
 {
-    this->roomHandler = nullptr;
     playerEntities.clear();
     swords.clear();
     playerPosLast.clear();
@@ -643,16 +642,23 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		break;
     case GameEvent::ROOM_CLEAR:
         this->newRoomFrame = false;
-        roomHandler->roomCompleted();
-		
-		dynamic_cast<GameScene*>(scene)->revivePlayer();
-		for (int i = 0; i < (int)this->playerEntities.size(); i++)
-		{
-			MeshComponent& mesh = scene->getComponent<MeshComponent>(this->playerEntities[i]);
-			mesh.overrideMaterials[0] = this->origMat;
-			mesh.overrideMaterials[0].tintColor = this->playerColors[i + 1];
-			scene->setActive(this->swords[i]);
-		}
+        if(this->roomHandler != nullptr)
+        {
+            roomHandler->roomCompleted();
+            
+            dynamic_cast<GameScene*>(scene)->revivePlayer();
+            for (int i = 0; i < (int)this->playerEntities.size(); i++)
+            {
+                MeshComponent& mesh = scene->getComponent<MeshComponent>(this->playerEntities[i]);
+                mesh.overrideMaterials[0] = this->origMat;
+                mesh.overrideMaterials[0].tintColor = this->playerColors[i + 1];
+                scene->setActive(this->swords[i]);
+            }
+        }
+        else
+        {
+            Log::warning("RoomHandler was nullptr in ROOM_CLEAR!");
+        }
         break;
     case GameEvent::NEXT_LEVEL:
         if (!this->gettingSeed)
@@ -766,12 +772,20 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		{
 			roomHandler->multiplayerToggleCurrentDoors(i0);
 		}
+        else
+        {
+            Log::warning("RoomHandler was nullptr in CLOSE_OLD_DOORS!");
+        }
 		break;
 	case GameEvent::CLOSE_NEW_DOORS:
 		if (roomHandler)
 		{
 			roomHandler->mutliplayerCloseDoors();
 		}
+        else
+        {
+            Log::warning("RoomHandler was nullptr in CLOSE_NEW_DOORS!");
+        }
 		break;
 	default:
 		break;
@@ -989,6 +1003,11 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientIndex, s
 void NetworkHandlerGame::setRoomHandler(RoomHandler& roomHandler)
 {
     this->roomHandler = &roomHandler;
+    newRoomFrame = false;
+}
+void NetworkHandlerGame::setRoomHandler(RoomHandler* roomHandler)
+{
+    this->roomHandler = roomHandler;
     newRoomFrame = false;
 }
 
