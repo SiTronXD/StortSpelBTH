@@ -7,7 +7,7 @@
 #include "../Systems/ParticleRemoveComponent.hpp"
 #include "../Systems/PerkAbilityOutsideRangeSystem.hpp"
 #include "../Systems/FollowEntitySystem.hpp"
-#include "../Network/NetworkHandlerGame.h"
+//#include "../Network/NetworkHandlerGame.h"
 #include "vengine/application/Time.hpp"
 #include "GameOverScene.h"
 #include "MainMenu.h"
@@ -242,7 +242,7 @@ void GameScene::start()
     this->createSystem<PerkAbilityOutsideRangeSystem>(this, &this->getComponent<Transform>(this->playerID));
     this->createSystem<FollowEntitySystem>(this);
 
-#if defined(_DEBUG) || defined(DEBUG)
+//#if defined(_DEBUG) || defined(DEBUG)
     if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {
         this->networkHandler->spawnItemRequest(knockbackAbility, glm::vec3(50.0f, 10.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
@@ -253,7 +253,7 @@ void GameScene::start()
         this->networkHandler->spawnItemRequest(movementUpPerk, 1.f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
         this->networkHandler->spawnItemRequest(staminaUpPerk, 1.f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
     }
-#endif
+//#endif
 
     this->levelString = "level: " + std::to_string(currentLevel.level);
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vengine.h>
+#include "CombatFunctionProfiler.h"
 #include "../Components/Combat.h"
 #include "../Components/HealthComp.h"
 #include "../Components/HealArea.h"
@@ -356,6 +357,7 @@ public:
 
 	void dealDamage(Combat& combat)
 	{
+        LOG_FUNCTION();
 		if (this->scene->hasComponents<Collider>(this->swordCollID))
 		{
 			Transform& swordTrans = scene->getComponent<Transform>(this->swordCollID);
@@ -491,6 +493,7 @@ public:
 
 	bool lightAttack(Combat& combat)
 	{
+        LOG_FUNCTION();
 		if (checkActiveAttack(combat) == noActive)
 		{
 			combat.attackTimer = combat.lightAttackCd;
@@ -525,6 +528,7 @@ public:
 
 	bool heavyAttack(Combat& combat)
 	{
+        LOG_FUNCTION();
 		if (checkActiveAttack(combat) == noActive)
 		{
 			combat.attackTimer = combat.heavyAttackCd;
@@ -556,6 +560,7 @@ public:
 
 	bool useAbility(Combat& combat)
 	{
+        LOG_FUNCTION();
 		if (combat.ability.abilityType == knockbackAbility)
 		{
 			useKnockbackAbility(combat);
@@ -571,6 +576,7 @@ public:
 
 	bool useKnockbackAbility(Combat& combat)
 	{
+        LOG_FUNCTION();
 		if (combat.ability.abilityType == knockbackAbility)
 		{
 			if (checkActiveAttack(combat) == noActive)
@@ -592,6 +598,7 @@ public:
 
 	bool useHealingAbility(Combat& combat)
 	{
+        LOG_FUNCTION();
 		if (combat.ability.abilityType == healAbility)
 		{
 			if (checkActiveAttack(combat) == noActive)
@@ -611,6 +618,7 @@ public:
 	// Executes combo attack.
 	void comboAttack(Combat& combat, int idx)
 	{
+        LOG_FUNCTION();
 		if (idx == 0)
 		{
 			if (this->scene->hasComponents<Collider>(this->swordCollID))
@@ -652,6 +660,7 @@ public:
 	// Check if there is a combo and if it is, execute the combo.
 	bool checkCombo(Combat& combat)
 	{
+        LOG_FUNCTION();
 		for (int i = 0; i < combat.combos.size(); i++)
 		{
 			if (combat.comboOrder.c_str() == combat.combos[i])
@@ -665,6 +674,7 @@ public:
 
 	void updateHealth(Combat& combat, HealthComp& healthComp, Perks& perk, bool doUpgrade = true)
 	{
+        LOG_FUNCTION();
 		if (doUpgrade)
 		{
 			setDefaultHp(combat, healthComp);
@@ -679,6 +689,7 @@ public:
 
 	void updateDmg(Combat& combat, Perks& perk, bool doUpgrade = true)
 	{
+        LOG_FUNCTION();
 		if (doUpgrade)
 		{
 			setDefaultDmg(combat);
@@ -692,6 +703,7 @@ public:
 
 	void updateAttackSpeed(Combat& combat, Perks& perk, bool doUpgrade = true)
 	{
+        LOG_FUNCTION();
 		if (doUpgrade)
 		{
 			setDefaultAtttackSpeed(combat);
@@ -725,6 +737,7 @@ public:
 
 	void updateMovementSpeed(Combat& combat, Perks& perk, bool doUpgrade = true)
 	{
+        LOG_FUNCTION();
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 		int currentAnimation = 0;
 		this->script->getScriptComponentValue(playerScript, currentAnimation, "currentAnimation");
@@ -803,6 +816,7 @@ public:
 
 	void updateStamina(Combat& combat, Perks& perk, bool doUpgrade = true)
 	{
+        LOG_FUNCTION();
 		if (doUpgrade)
 		{
 			setDefaultStamina(combat);
@@ -822,6 +836,7 @@ public:
 
 	void setDefaultHp(Combat& combat, HealthComp& healthComp)
 	{
+        LOG_FUNCTION();
 		float tempHp = healthComp.maxHealth / combat.hpMultiplier;
 		healthComp.maxHealth = (tempHp + 0.5f);
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
@@ -830,6 +845,7 @@ public:
 
 	void setDefaultDmg(Combat& combat)
 	{
+        LOG_FUNCTION();
 		for (size_t i = 0; i < 6; i++)
 		{
 			combat.dmgArr[i] /= combat.dmgMultiplier;
@@ -838,6 +854,7 @@ public:
 
 	void setDefaultAtttackSpeed(Combat& combat)
 	{
+        LOG_FUNCTION();
 		combat.lightAttackCd = 0.6f;
 		combat.heavyAttackCd = 1.5f;
 		combat.comboLightCd = 1.f;
@@ -854,6 +871,7 @@ public:
 
 	void setDefaultMovementSpeed(Combat& combat)
 	{
+        LOG_FUNCTION();
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 		this->script->setScriptComponentValue(playerScript, 30, "maxSpeed");
 		this->script->setScriptComponentValue(playerScript, 60, "sprintSpeed");
@@ -868,6 +886,7 @@ public:
 
 	void setDefaultStamina(Combat& combat)
 	{
+        LOG_FUNCTION();
 		Script& playerScript = this->scene->getComponent<Script>(this->playerID);
 		int maxStam = 0;
 		this->script->getScriptComponentValue(playerScript, maxStam, "maxStamina");
@@ -878,6 +897,7 @@ public:
 
 	void setupPerkSpawn(Entity& entity, Perks& perk)
 	{
+        LOG_FUNCTION();
 		this->scene->setComponent<Collider>(entity, Collider::createSphere(2.f, glm::vec3(0, 0, 0), true));
 		this->scene->setComponent<Rigidbody>(entity);
 		this->scene->setComponent<Perks>(entity, perk);
@@ -895,6 +915,7 @@ public:
 
 	void spawnPerk(Perks& perk)
 	{
+        LOG_FUNCTION();
 		Entity newPerk = this->scene->createEntity();
 		this->scene->setComponent<MeshComponent>(newPerk, this->perkMeshes[perk.perkType]);
 		setupPerkSpawn(newPerk, perk);
@@ -902,6 +923,7 @@ public:
 
 	void removePerk(Combat& combat, Perks& perk)
 	{
+        LOG_FUNCTION();
 		if (perk.perkType != emptyPerk)
 		{
 			Transform& t = this->scene->getComponent<Transform>(this->playerID);
@@ -945,6 +967,7 @@ public:
 
 	void setupAbilitySpawn(Entity& entity, Abilities& ability)
 	{
+        LOG_FUNCTION();
 		this->scene->setComponent<Collider>(entity, Collider::createSphere(4.f, glm::vec3(0, 0, 0), true));
 		this->scene->setComponent<Rigidbody>(entity);
 		this->scene->setComponent<Abilities>(entity, ability);
@@ -961,6 +984,7 @@ public:
 
 	void spawnAbility(Abilities& ability)
 	{
+        LOG_FUNCTION();
 		switch (ability.abilityType)
 		{
 		case knockbackAbility:
@@ -982,6 +1006,7 @@ public:
 
 	void removeAbility(Combat& combat, Abilities& ability)
 	{
+        LOG_FUNCTION();
 		if (ability.abilityType != emptyAbility)
 		{
 			Transform& t = this->scene->getComponent<Transform>(this->playerID);
@@ -1045,6 +1070,7 @@ public:
 
 	bool canPickupPerk()
 	{
+        LOG_FUNCTION();
 		Combat& combat = this->scene->getComponent<Combat>(this->playerID);
 		for (size_t i = 0; i < 4; i++)
 		{
@@ -1058,6 +1084,7 @@ public:
 
 	void pickupPerk(Entity entity)
 	{
+        LOG_FUNCTION();
 		if (this->scene->hasComponents<Perks>(entity))
 		{
 			Combat& combat = this->scene->getComponent<Combat>(this->playerID);
@@ -1129,6 +1156,7 @@ public:
 
 	void playerEffectSound(int soundIdx, float volume)
 	{
+        LOG_FUNCTION();
 		this->audio->playSound(this->playerID, soundIdx, volume);
         if (soundIdx != this->moveSound && networkHandler->isConnected())
         {
@@ -1140,6 +1168,7 @@ public:
 	
 	void pickUpAbility(Entity entity)
 	{
+        LOG_FUNCTION();
 		Combat& combat = this->scene->getComponent<Combat>(this->playerID);
 		if (this->scene->hasComponents<Abilities>(entity) && combat.ability.abilityType == emptyAbility)
 		{

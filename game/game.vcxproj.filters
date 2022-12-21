@@ -27,6 +27,7 @@
     <ClCompile Include="src\World Handling\SpawnHandler.cpp" />
     <ClCompile Include="src\Settings\Settings.cpp" />
     <ClCompile Include="src\Scenes\LoadingScene.cpp" />
+    <ClCompile Include="src\Systems\CombatFunctionProfiler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Components\Combat.h" />
@@ -74,6 +75,8 @@
     <ClInclude Include="src\Systems\PerkAbilityOutsideRangeSystem.hpp" />
     <ClInclude Include="src\Systems\FollowEntitySystem.hpp" />
     <ClInclude Include="src\Scenes\LoadingScene.h" />
+    <ClInclude Include="src\Systems\CombatLogger.h" />
+    <ClInclude Include="src\Systems\CombatFunctionProfiler.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
