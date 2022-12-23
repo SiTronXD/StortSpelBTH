@@ -213,7 +213,9 @@ void GameScene::start()
     }
     else
     {
-        roomHandler.generate(rand(), this->currentLevel.level);
+        int testSeed = 1;
+        roomHandler.generate(testSeed, this->currentLevel.level);
+        //roomHandler.generate(rand(), this->currentLevel.level);
     }
     
     createPortal();

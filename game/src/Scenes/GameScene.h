@@ -20,7 +20,7 @@ struct GameSceneLevel
     float hp;
 
     GameSceneLevel() {
-        this->level = 0;
+        this->level = 10;
         Perks noPerk;
         noPerk.multiplier = 0.0;
         noPerk.perkType = PerkType::emptyPerk;
