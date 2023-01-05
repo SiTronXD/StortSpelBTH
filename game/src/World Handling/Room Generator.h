@@ -50,11 +50,11 @@ public:
         uint32_t maxOneXTwo = 6u;
 
         uint32_t bigTileMinDist = 1u;
-        uint32_t radius = 4u;
+        uint32_t radius = 10u;
 
-        uint32_t numBranches = 6u;
-        uint32_t branchDepth = 3u;
-        uint32_t branchDist = 3u;
+        uint32_t numBranches = 0u;//6u;
+        uint32_t branchDepth = 0u;//3u;
+        uint32_t branchDist = 0u;//3u;
 
         uint32_t maxAngle = 45u;
     };

@@ -192,7 +192,8 @@ private:
 	bool playersOnCollider(Collider& col, const glm::vec3& pos, const std::vector<Entity>& players);
 
 #ifdef _CONSOLE
-	bool overrideLevel = false;
+	// bool overrideLevel = false;
+	bool overrideLevel = true;
 	RoomGenerator::RoomDescription desc;
 #endif
 

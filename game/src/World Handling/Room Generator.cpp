@@ -84,7 +84,7 @@ void RoomGenerator::generate(bool* doors)
 	getType(this->middle + glm::ivec2(0, 1)) = Tile::Reserved;
 	getType(this->middle + glm::ivec2(1, 1)) = Tile::Reserved;
 
-	this->setBigTiles();		// Select spots for 1x2/2x1/2x2
+	// this->setBigTiles();		// Select spots for 1x2/2x1/2x2
 	this->setExits(doors);		// Set doors and make room for them
 	this->setBorders();			// Surround the room with borders
 	this->findAITiles(doors);	// Find tiles that the AI can spawn on
