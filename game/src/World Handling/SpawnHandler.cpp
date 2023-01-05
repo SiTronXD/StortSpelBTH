@@ -45,6 +45,8 @@ void SpawnHandler::spawnEnemiesIntoRoom(int level)
     this->nrOfSwarms_inRoom  = nrOfGroups_inRoom * SpawnHandler::NR_BLOBS_IN_GROUP;
     this->nrOfEnemiesPerRoom = (float)(this->nrOfSwarms_inRoom + this->nrOfLichs_inRoom + this->nrOfTanks_inRoom);
 
+    static int spawnEnemiesIntoRoom_counter = 1;
+
     // Imgui data...
     this->nrOfTilesInRoom = (int)this->tilePicker.size();
 
@@ -63,11 +65,14 @@ void SpawnHandler::spawnEnemiesIntoRoom(int level)
                 lichIdx += this->spawnLich(lichIdx,this->tilePicker.getRandomEmptyNeighbouringTiles(2), level-1);
             }
 
+            SpawnHandler::NR_SWARM_GROUPS_DBG_PERF = spawnEnemiesIntoRoom_counter;
             // Spawn Swarms
-            for (size_t i = 0; i < NR_SWARM_GROUPS_DBG; i++)
+            // for (size_t i = 0; i < NR_SWARM_GROUPS_DBG; i++)
+            for (size_t i = 0; i < NR_SWARM_GROUPS_DBG_PERF; i++)
             {
                 swarmIdx += this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP), level-1);
             }
+            spawnEnemiesIntoRoom_counter++;
         }
     else if (this->roomHandler->inExitRoom())
         {
@@ -1283,7 +1288,7 @@ ImguiLambda SpawnHandler::SwarmImgui()
 
 void TilePicker::init(const std::vector<TileInfo>& freeTileInfos)
 {
-    static auto randomEngine = std::default_random_engine{};
+    static auto randomEngine = std::default_random_engine{69};
     std::deque<const TileInfo*> tempTilePtrs;
 
     // Store temp ptrs to free Tiles, store old array structure
@@ -1294,7 +1299,8 @@ void TilePicker::init(const std::vector<TileInfo>& freeTileInfos)
         }
 
     // Randomize order of temp ptrs
-    std::shuffle(tempTilePtrs.begin(), tempTilePtrs.end(), randomEngine);
+    // std::shuffle(tempTilePtrs.begin(), tempTilePtrs.end(), randomEngine);
+    std::shuffle(tempTilePtrs.begin(), tempTilePtrs.end(), this->randomDev);
 
     // Store randomized ptrs to unusedTileInfos
     for (auto& tileInfo : tempTilePtrs)
@@ -1361,7 +1367,7 @@ TilePicker::getRandomEmptyNeighbouringTiles(const int nr)
                             );
                             break;
                         }
-
+                    
                     currNeighbour = newPossibleNeighbours
                         [rand() % newPossibleNeighbours.size()];
                     possibleNeigbhours[currNeighbour] = true;

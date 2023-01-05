@@ -38,6 +38,7 @@ class NetworkHandlerGame;
 class GameScene : public Scene
 {
 private:
+    bool justSpawned;
     RoomHandler roomHandler;
     SpawnHandler spawnHandler;
     AIHandler* aiHandler = nullptr;

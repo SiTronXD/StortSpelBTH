@@ -193,6 +193,8 @@ void GameScene::init()
 
 void GameScene::start()
 {
+    std::srand(69);
+    
     this->getSceneHandler()->getScriptHandler()->getGlobal(playerID, "playerID");
 
     this->networkHandler = dynamic_cast<NetworkHandlerGame*>(this->getNetworkHandler());
@@ -291,6 +293,8 @@ void GameScene::start()
     // Create particle systems for this scene
     networkHandler->initParticleSystems();
     this->setCurrentLevel(currentLevel);
+    justSpawned = true; 
+    
 }
 
 void GameScene::update()
@@ -338,7 +342,7 @@ void GameScene::update()
         
         if(ai_profiling)
         {
-            if(ai_profiling_first)
+            if(ai_profiling_first || justSpawned)
             {
                 this->newRoomFrame = true;
                 this->timeWhenEnteredRoom = (uint32_t)Time::getTimeSinceStart();
@@ -347,6 +351,7 @@ void GameScene::update()
                 this->spawnHandler.spawnEnemiesIntoRoom(this->currentLevel.level);
 
                 ai_profiling_first = false;
+                justSpawned = false;
             }
         }
 
