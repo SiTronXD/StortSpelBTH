@@ -245,13 +245,13 @@ void GameScene::start()
 #if defined(_DEBUG) || defined(DEBUG)
     if (this->networkHandler->hasServer() || !this->networkHandler->isConnected())
     {
-        this->networkHandler->spawnItemRequest(knockbackAbility, glm::vec3(50.0f, 10.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(healAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(hpUpPerk, 1.f, glm::vec3(30.0f, 7.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.4f, glm::vec3(30.0f, 7.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(movementUpPerk, 1.f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
-        this->networkHandler->spawnItemRequest(staminaUpPerk, 1.f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        // this->networkHandler->spawnItemRequest(knockbackAbility, glm::vec3(50.0f, 10.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        // this->networkHandler->spawnItemRequest(healAbility, glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        // this->networkHandler->spawnItemRequest(hpUpPerk, 1.f, glm::vec3(30.0f, 7.0f, 20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        // this->networkHandler->spawnItemRequest(dmgUpPerk, 0.5f, glm::vec3(30.0f, 7.0f, -20.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        // this->networkHandler->spawnItemRequest(attackSpeedUpPerk, 0.4f, glm::vec3(30.0f, 7.0f, 0.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        // this->networkHandler->spawnItemRequest(movementUpPerk, 1.f, glm::vec3(30.0f, 5.0f, -40.0f), glm::vec3(0.0f, 0.25f, 0.0f));
+        // this->networkHandler->spawnItemRequest(staminaUpPerk, 1.f, glm::vec3(30.0f, 5.0f, -60.0f), glm::vec3(0.0f, 0.25f, 0.0f));
     }
 #endif
 
@@ -333,7 +333,25 @@ void GameScene::update()
     {   
         this->aiHandler->update(Time::getDT());
 
-        if (this->roomHandler.playerNewRoom(this->playerID))
+        static bool ai_profiling = true; 
+        static bool ai_profiling_first = true; 
+        
+        if(ai_profiling)
+        {
+            if(ai_profiling_first)
+            {
+                this->newRoomFrame = true;
+                this->timeWhenEnteredRoom = (uint32_t)Time::getTimeSinceStart();
+                this->safetyCleanDone = false;
+
+                this->spawnHandler.spawnEnemiesIntoRoom(this->currentLevel.level);
+
+                ai_profiling_first = false;
+            }
+        }
+
+
+        if (this->roomHandler.playerNewRoom(this->playerID) && !ai_profiling)
         {
             this->newRoomFrame = true;
             this->timeWhenEnteredRoom = (uint32_t)Time::getTimeSinceStart();
