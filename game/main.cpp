@@ -23,6 +23,8 @@
 
 #include "src/Scenes/RoomTesting.h"
 
+#include "vengine/performance_checker.hpp"
+
 int main(int argc, char* argv[])
 {
     // Set flags for tracking CPU memory leaks
@@ -54,5 +56,10 @@ int main(int argc, char* argv[])
         //engine.run("Presumed Dead", "scripts/MainMenu.lua", new MainMenu());
     }
 
+
+    perfChecker.addParentFunc(TIME_ID::BT_EXECUTE, TIME_ID::FSM_UPDATE);
+    perfChecker.addParentFunc(TIME_ID::FSM_UPDATE, TIME_ID::AI_HANDLER_UPDATE);
+    perfChecker.addParentFunc(TIME_ID::EVENT_UPDATE, TIME_ID::AI_HANDLER_UPDATE);
+    perfChecker.exportStats("stats");
     return EXIT_SUCCESS;
 }
