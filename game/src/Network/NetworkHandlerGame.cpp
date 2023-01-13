@@ -301,11 +301,11 @@ void NetworkHandlerGame::init()
 	if (!TankComponent::s_initialized)
 	{
 		TankComponent::s_takeDmg =
-			this->resourceManger->addSound("assets/Sounds/Enemysounds/Golem/GolemTakeDmg.ogg");
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Golem/GolemTakeDmg.ogg");
 		TankComponent::s_shockwave =
-			this->resourceManger->addSound("assets/Sounds/Enemysounds/Golem/Shockwave.ogg");
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Golem/Shockwave.ogg");
 		TankComponent::s_charge =
-			this->resourceManger->addSound("assets/Sounds/Enemysounds/Golem/GolemCharge.ogg");
+			this->resourceManger->addSound("assets/Sounds/EnemySounds/Golem/GolemCharge.ogg");
 		TankComponent::s_initialized = true;
 	}
 	if (!LichComponent::s_initialized)
@@ -642,16 +642,23 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		break;
     case GameEvent::ROOM_CLEAR:
         this->newRoomFrame = false;
-        roomHandler->roomCompleted();
-		
-		dynamic_cast<GameScene*>(scene)->revivePlayer();
-		for (int i = 0; i < (int)this->playerEntities.size(); i++)
-		{
-			MeshComponent& mesh = scene->getComponent<MeshComponent>(this->playerEntities[i]);
-			mesh.overrideMaterials[0] = this->origMat;
-			mesh.overrideMaterials[0].tintColor = this->playerColors[i + 1];
-			scene->setActive(this->swords[i]);
-		}
+        if(this->roomHandler != nullptr)
+        {
+            roomHandler->roomCompleted();
+            
+            dynamic_cast<GameScene*>(scene)->revivePlayer();
+            for (int i = 0; i < (int)this->playerEntities.size(); i++)
+            {
+                MeshComponent& mesh = scene->getComponent<MeshComponent>(this->playerEntities[i]);
+                mesh.overrideMaterials[0] = this->origMat;
+                mesh.overrideMaterials[0].tintColor = this->playerColors[i + 1];
+                scene->setActive(this->swords[i]);
+            }
+        }
+        else
+        {
+            Log::warning("RoomHandler was nullptr in ROOM_CLEAR!");
+        }
         break;
     case GameEvent::NEXT_LEVEL:
         if (!this->gettingSeed)
@@ -761,10 +768,24 @@ void NetworkHandlerGame::handleTCPEventClient(sf::Packet& tcpPacket, int event)
 		break;
 	case GameEvent::CLOSE_OLD_DOORS:
 		tcpPacket >> i0;
-		roomHandler->multiplayerToggleCurrentDoors(i0);
+		if (roomHandler)
+		{
+			roomHandler->multiplayerToggleCurrentDoors(i0);
+		}
+        else
+        {
+            Log::warning("RoomHandler was nullptr in CLOSE_OLD_DOORS!");
+        }
 		break;
 	case GameEvent::CLOSE_NEW_DOORS:
-		roomHandler->mutliplayerCloseDoors();
+		if (roomHandler)
+		{
+			roomHandler->mutliplayerCloseDoors();
+		}
+        else
+        {
+            Log::warning("RoomHandler was nullptr in CLOSE_NEW_DOORS!");
+        }
 		break;
 	default:
 		break;
@@ -982,6 +1003,11 @@ void NetworkHandlerGame::handleTCPEventServer(Server* server, int clientIndex, s
 void NetworkHandlerGame::setRoomHandler(RoomHandler& roomHandler)
 {
     this->roomHandler = &roomHandler;
+    newRoomFrame = false;
+}
+void NetworkHandlerGame::setRoomHandler(RoomHandler* roomHandler)
+{
+    this->roomHandler = roomHandler;
     newRoomFrame = false;
 }
 

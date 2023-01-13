@@ -141,7 +141,7 @@ void GameScene::init()
     this->perkMeshes[3] = resourceMng->addMesh("assets/models/Perk_Movement.obj");
     this->perkMeshes[4] = resourceMng->addMesh("assets/models/Perk_Stamina.obj");
 
-    this->abilityTextures[0] = resourceMng->addTexture("assets/textures/UI/knockbackAbility.png");
+    this->abilityTextures[0] = resourceMng->addTexture("assets/textures/UI/KnockbackAbility.png");
     this->abilityTextures[1] = resourceMng->addTexture("assets/textures/UI/HealingAbility.png");
     this->abilityTextures[2] = resourceMng->addTexture("assets/textures/UI/empty.png");
     this->perkTextures[0] = resourceMng->addTexture("assets/textures/UI/hpUp.png");
@@ -204,6 +204,8 @@ void GameScene::start()
 
     if (networkHandler->isConnected())
     {
+        this->networkHandler->setRoomHandler(nullptr);
+
         int seed = this->networkHandler->getSeed();
         Log::write("Seed from server: " + std::to_string(seed));
 		roomHandler.generate(seed, this->currentLevel.level);
@@ -976,7 +978,7 @@ void GameScene::createPortal()
     portalOffMesh = this->getResourceManager()->addMesh("assets/models/PortalOff.obj");
     portalOnMesh = this->getResourceManager()->addMesh("assets/models/PortalOn.obj");
 
-    int colliderID = (int)this->getResourceManager()->addCollisionShapeFromMesh("assets/models/portal.fbx");
+    int colliderID = (int)this->getResourceManager()->addCollisionShapeFromMesh("assets/models/Portal.fbx");
     std::vector<ColliderDataRes> colliders = this->getResourceManager()->getCollisionShapeFromMesh(colliderID);
 
 

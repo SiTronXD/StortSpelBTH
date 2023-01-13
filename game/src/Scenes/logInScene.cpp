@@ -14,7 +14,7 @@ void logInScene::start()
     samplerSettings.unnormalizedCoordinates = VK_TRUE;
 
     this->backgroundId =
-        this->getResourceManager()->addTexture("assets/textures/blackTex.jpg"
+        this->getResourceManager()->addTexture("assets/textures/BlackTex.jpg"
         );
     this->buttonId =
         this->getResourceManager()->addTexture("assets/textures/UI/button.jpg");
@@ -206,7 +206,7 @@ void logInScene::write()
     {
         selected->pop_back();
     }
-    if (orig.length() <= 12)
+    if (orig.length() <= 16)
     {
         for (int i = 97; i < 123; i++)
         {
