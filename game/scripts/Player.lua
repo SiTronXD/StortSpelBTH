@@ -15,8 +15,8 @@ function script:init()
     self.transform.position = vector(0, 12, 0)
     self.transform.rotation = vector(0, 0, 0)
 
-    self.maxHealth = 100
-    self.currentHealth = 100
+    self.maxHealth = 10000000
+    self.currentHealth = 10000000
     self.maxStamina = 100
     self.currentStamina = 100
     self.sprintStamDrain = 10.0

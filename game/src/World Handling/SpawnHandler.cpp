@@ -45,7 +45,8 @@ void SpawnHandler::spawnEnemiesIntoRoom(int level)
     this->nrOfSwarms_inRoom  = nrOfGroups_inRoom * SpawnHandler::NR_BLOBS_IN_GROUP;
     this->nrOfEnemiesPerRoom = (float)(this->nrOfSwarms_inRoom + this->nrOfLichs_inRoom + this->nrOfTanks_inRoom);
 
-    static int spawnEnemiesIntoRoom_counter = 1;
+    static int spawnEnemiesIntoRoom_counter = 0;    
+    this->spawned_swarms = 0;
 
     // Imgui data...
     this->nrOfTilesInRoom = (int)this->tilePicker.size();
@@ -68,10 +69,17 @@ void SpawnHandler::spawnEnemiesIntoRoom(int level)
             SpawnHandler::NR_SWARM_GROUPS_DBG_PERF = spawnEnemiesIntoRoom_counter;
             // Spawn Swarms
             // for (size_t i = 0; i < NR_SWARM_GROUPS_DBG; i++)
-            for (size_t i = 0; i < NR_SWARM_GROUPS_DBG_PERF; i++)
+            for (size_t i = 0; i < NR_SWARM_GROUPS_DBG_PERF * 5; i++)
             {
                 swarmIdx += this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP), level-1);
             }
+            // for (size_t i = 0; i < NR_SWARM_GROUPS_DBG_PERF * 10; i++)
+            // {
+            //     // swarmIdx += this->spawnSwarmGroup(swarmIdx, this->tilePicker.getRandomEmptyNeighbouringTiles(SpawnHandler::NR_BLOBS_IN_GROUP), level-1);
+            //     spawnSwarm(swarmIdx, this->tilePicker.getRandomEmptyTile()->getPos(), level -1);
+            //     swarmIdx++;
+            // }
+            this->spawned_swarms = swarmIdx;
             spawnEnemiesIntoRoom_counter++;
         }
     else if (this->roomHandler->inExitRoom())
@@ -1345,6 +1353,15 @@ TilePicker::getRandomEmptyNeighbouringTiles(const int nr)
     std::vector<const TileInfo*> newPossibleNeighbours;
     std::unordered_map<const TileInfo*, bool> possibleNeigbhours;
 
+    
+    bool redo = false;
+    do
+    {
+    redo = false;
+    neigbhourhood.clear();
+    newPossibleNeighbours.clear();
+    possibleNeigbhours.clear();
+    
     const TileInfo* currNeighbour = getSpreadTile();
     if (currNeighbour != nullptr)
         {
@@ -1362,6 +1379,7 @@ TilePicker::getRandomEmptyNeighbouringTiles(const int nr)
                     // abort if no possible neigbhour exists...
                     if (newPossibleNeighbours.size() == 0)
                         {
+                            redo = true;
                             Log::warning(
                                 "Could not retrieve required amount of tiles..."
                             );
@@ -1374,12 +1392,18 @@ TilePicker::getRandomEmptyNeighbouringTiles(const int nr)
                     neigbhourhood.push_back(currNeighbour);
                     unusedTileInfos.remove(currNeighbour);
                 }
-            usedTiles.insert(
-                usedTiles.end(), neigbhourhood.begin(), neigbhourhood.end()
-            );
+
+            if(redo == false)
+            {
+                usedTiles.insert(
+                    usedTiles.end(), neigbhourhood.begin(), neigbhourhood.end()
+                );
+            }
 
             this->updateFreeTiles();
         }
+    }
+    while(redo == true);
 
     return neigbhourhood;
 }

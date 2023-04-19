@@ -77,7 +77,7 @@ public:
 			uiRenderer->renderTexture(transform.position + glm::vec3(0.0f, 10.0f, 0.0f), glm::vec2(1500.0f, 150.0f), backgroundRects[counter++],
 				glm::uvec4(0, 0, 1, 1), glm::vec4(1.0f, 1.0f, 1.0f, alpha));
 		};
-		swarmView.each(swarmBackground);
+		// swarmView.each(swarmBackground);
 
 		counter = 0;
 		uiRenderer->setTexture(healthBarID);
@@ -101,7 +101,7 @@ public:
 			this->renderHealth(transform, camTransform, counter, percentage);
 			counter++;
 		};
-		swarmView.each(swarmHealthBar);
+		// swarmView.each(swarmHealthBar);
 
 		//backgroundRects.assign(counter, glm::vec4(0.0f));
 		std::fill(backgroundRects.begin(),backgroundRects.end(), glm::vec4(0.0f));

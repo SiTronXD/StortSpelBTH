@@ -39,6 +39,9 @@ class GameScene : public Scene
 {
 private:
     bool justSpawned;
+    bool spawn_timer_started;
+    bool changed_swarm_attack_radius;
+    uint32_t nrOfFrames;
     RoomHandler roomHandler;
     SpawnHandler spawnHandler;
     AIHandler* aiHandler = nullptr;

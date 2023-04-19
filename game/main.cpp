@@ -57,6 +57,7 @@ int main(int argc, char* argv[])
     }
 
 
+    perfChecker.addParentFunc(TIME_ID::BT_TASKS, TIME_ID::BT_EXECUTE);
     perfChecker.addParentFunc(TIME_ID::BT_EXECUTE, TIME_ID::FSM_UPDATE);
     perfChecker.addParentFunc(TIME_ID::FSM_UPDATE, TIME_ID::AI_HANDLER_UPDATE);
     perfChecker.addParentFunc(TIME_ID::EVENT_UPDATE, TIME_ID::AI_HANDLER_UPDATE);

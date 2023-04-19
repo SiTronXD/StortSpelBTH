@@ -144,6 +144,8 @@ void SwarmBT::registerEntityComponents(Entity entityId)
 
 BTStatus SwarmBT::hasFriends(Entity entityID)
 {
+    perfChecker.start(TIME_ID::BT_TASKS);  
+
     BTStatus ret = BTStatus::Success;
 
 	SwarmGroup* groupPtr =
@@ -152,13 +154,18 @@ BTStatus SwarmBT::hasFriends(Entity entityID)
 	{
 		return BTStatus::Failure;
 	}
+
+    perfChecker.stop(TIME_ID::BT_TASKS);
 	return ret;
 }
 BTStatus SwarmBT::jumpInCircle(Entity entityID)
 {
+    perfChecker.start(TIME_ID::BT_TASKS);    
     BTStatus ret = BTStatus::Running;
     if (hasFriends(entityID) == BTStatus::Failure)
     {
+        
+        perfChecker.stop(TIME_ID::BT_TASKS);
         return BTStatus::Failure;
     }
 
@@ -305,12 +312,15 @@ BTStatus SwarmBT::jumpInCircle(Entity entityID)
 	glm::vec3 targetRot = swarmTransform.position - swarmComp.forward;
 	rotateTowards(entityID, targetRot, swarmComp.idleRotSpeed, 5.0f);
 
+    perfChecker.stop(TIME_ID::BT_TASKS);
 	return ret;
 }
 BTStatus SwarmBT::lookingForGroup(Entity entityID)
 {
+    perfChecker.start(TIME_ID::BT_TASKS);    
     BTStatus ret = BTStatus::Running;
 
+    perfChecker.stop(TIME_ID::BT_TASKS);
     if (hasFriends(entityID) == BTStatus::Failure)
         {
             return BTStatus::Failure;
@@ -319,6 +329,7 @@ BTStatus SwarmBT::lookingForGroup(Entity entityID)
 }
 BTStatus SwarmBT::JoinGroup(Entity entityID)
 {
+    perfChecker.start(TIME_ID::BT_TASKS);    
     BTStatus ret = BTStatus::Running;
 
 	SwarmComponent& thisSwarmComp =
@@ -335,17 +346,20 @@ BTStatus SwarmBT::JoinGroup(Entity entityID)
 			    if ((thisTransform.position - trans.position).length() <=
 			        thisSwarmComp.sightRadius)
 			    {
-
-                                return BTStatus::Success;
-                            }
-                    }
+                    perfChecker.stop(TIME_ID::BT_TASKS);
+                    return BTStatus::Success;
+                }
             }
-        );
+        }
+    );
+
+    perfChecker.stop(TIME_ID::BT_TASKS);
     return ret;
 }
 
 BTStatus SwarmBT::seesNewFriends(Entity entityID)
 {
+    perfChecker.start(TIME_ID::BT_TASKS);    
     BTStatus ret = BTStatus::Failure;
 
 	SwarmComponent& thisSwarmComp = getTheScene()->getComponent<SwarmComponent>(entityID);
@@ -372,10 +386,12 @@ BTStatus SwarmBT::seesNewFriends(Entity entityID)
             }
         );
 
+    perfChecker.stop(TIME_ID::BT_TASKS);
     return ret;
 }
 BTStatus SwarmBT::escapeToFriends(Entity entityID)
 {
+    perfChecker.start(TIME_ID::BT_TASKS);    
 	BTStatus ret = BTStatus::Running;
 	
 	SwarmComponent& thisSwarmComp =
@@ -398,21 +414,28 @@ BTStatus SwarmBT::escapeToFriends(Entity entityID)
 	}
 	swarmMidPoint /= nearestGroup->members.size();
 	
-	 if ((thisTransform.position - swarmMidPoint).length() <=
+    perfChecker.stop(TIME_ID::BT_TASKS);
+
+    if ((thisTransform.position - swarmMidPoint).length() <=
 	    thisSwarmComp.sightRadius)
 	{
 
-            return BTStatus::Success;
-        }
+        return BTStatus::Success;
+    }
 
 
     return ret;
 }
 BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 {
+    perfChecker.start(TIME_ID::BT_TASKS);    
 	BTStatus ret = BTStatus::Running;
     int player = getPlayerID(entityID);
-	if(player == -1){return ret;}
+	if(player == -1){
+        
+        perfChecker.stop(TIME_ID::BT_TASKS);
+        return ret;
+    }
 
 	Transform& thisTransform = getTheScene()->getComponent<Transform>(entityID);
 	SwarmComponent& thisSwarmComp = getTheScene()->getComponent<SwarmComponent>(entityID);
@@ -423,6 +446,8 @@ BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
     if (glm::length((thisTransform.position - playerTransform.position)) >
         thisSwarmComp.sightRadius)
     {
+        
+        perfChecker.stop(TIME_ID::BT_TASKS);
         return BTStatus::Success;
     }
 
@@ -440,11 +465,13 @@ BTStatus SwarmBT::escapeFromPlayer(Entity entityID)
 
 
 
+    perfChecker.stop(TIME_ID::BT_TASKS);
 	return ret;
 }
 
 BTStatus SwarmBT::informFriends(Entity entityID)
 {
+    perfChecker.start(TIME_ID::BT_TASKS);    
     BTStatus ret = BTStatus::Success;
 
 	SwarmComponent& thisSwarmComp = getTheScene()->getComponent<SwarmComponent>(entityID);
@@ -461,16 +488,20 @@ BTStatus SwarmBT::informFriends(Entity entityID)
 		ret = BTStatus::Failure;
 	}
 
+    perfChecker.stop(TIME_ID::BT_TASKS);
     return ret;
 }
 BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 {
-
+    perfChecker.start(TIME_ID::BT_TASKS);    
     BTStatus ret = BTStatus::Running;
 
 	
 	int player_id = getPlayerID(entityID);
-	if(player_id == -1){return ret;}
+	if(player_id == -1){
+        perfChecker.stop(TIME_ID::BT_TASKS);
+        return ret;
+    }
 	Collider& entityCollider = getTheScene()->getComponent<Collider>(entityID);
 	Collider& playerCollider = getTheScene()->getComponent<Collider>(player_id);
 	Transform& entityTransform = getTheScene()->getComponent<Transform>(entityID);
@@ -532,7 +563,8 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
     float tempYvel =  rigidbody.velocity.y;
     rigidbody.velocity = -dir * swarmComp.speed;
     rigidbody.velocity.y = tempYvel;
-
+    
+    perfChecker.stop(TIME_ID::BT_TASKS);
     if (closeEnoughToPlayer(entityID) == BTStatus::Success)
     {
         return BTStatus::Success;
@@ -542,14 +574,21 @@ BTStatus SwarmBT::jumpTowardsPlayer(Entity entityID)
 }
 BTStatus SwarmBT::closeEnoughToPlayer(Entity entityID)
 {
+    perfChecker.start(TIME_ID::BT_TASKS);    
     BTStatus ret = BTStatus::Failure;
 	int playerID = getPlayerID(entityID);
-	if(playerID == -1){return ret;}
+	if(playerID == -1){
+        
+        perfChecker.stop(TIME_ID::BT_TASKS);
+        return ret;
+    }
 	SwarmComponent& thisSwarmComp = getTheScene()->getComponent<SwarmComponent>(entityID);
 	Transform& thisTransform = getTheScene()->getComponent<Transform>(entityID);
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 
     float dist = glm::length(thisTransform.position - playerTransform.position);
+        
+    perfChecker.stop(TIME_ID::BT_TASKS);
     if (dist <= thisSwarmComp.attackRange)
         {
             return BTStatus::Success;
@@ -560,10 +599,15 @@ BTStatus SwarmBT::closeEnoughToPlayer(Entity entityID)
 
 BTStatus SwarmBT::attack(Entity entityID)
 {
+    perfChecker.start(TIME_ID::BT_TASKS);    
     BTStatus ret = BTStatus::Running;
 
 	int playerID = getPlayerID(entityID);
-	if(playerID == -1){return ret;}
+	if(playerID == -1){
+        
+        perfChecker.stop(TIME_ID::BT_TASKS);
+        return ret;
+    }
 	Transform& thisTransform = getTheScene()->getComponent<Transform>(entityID);
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 	SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(entityID);
@@ -626,35 +670,42 @@ BTStatus SwarmBT::attack(Entity entityID)
 		rigidbody.friction = initialFriction;
 		swarmComp.timer = swarmComp.lightAttackTime;
     }
-
+ 
+    perfChecker.stop(TIME_ID::BT_TASKS);
 	return ret;
 }
 
 BTStatus SwarmBT::playDeathAnim(Entity entityID)
 {
+    perfChecker.start(TIME_ID::BT_TASKS);    
     BTStatus ret = BTStatus::Running;
     SwarmComponent& swarmComp =
         sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
     Transform& swarmTrans =
         sceneHandler->getScene()->getComponent<Transform>(entityID);
     if (swarmTrans.scale.y <= 0.0f)
-        {
-            ret = BTStatus::Success;
-        }
+    {
+        ret = BTStatus::Success;
+    }
     else
-        {
-            swarmTrans.rotation.y += 1000 * swarmComp.deathAnimSpeed * get_dt();
-            swarmTrans.scale.y -= swarmComp.deathAnimSpeed * get_dt();
-        }
+    {
+        swarmTrans.rotation.y += 1000 * swarmComp.deathAnimSpeed * get_dt();
+        swarmTrans.scale.y -= swarmComp.deathAnimSpeed * get_dt();
+    }
 
+    perfChecker.stop(TIME_ID::BT_TASKS);
     return ret;
 }
 
 BTStatus SwarmBT::die(Entity entityID)
 {
+    perfChecker.start(TIME_ID::BT_TASKS);    
     BTStatus ret = BTStatus::Success;
 	int playerID = getPlayerID(entityID);
-	if(playerID == -1){return ret;}
+	if(playerID == -1){
+        perfChecker.stop(TIME_ID::BT_TASKS);
+        return ret;
+    }
     HealthComp& playerHealth = sceneHandler->getScene()->getComponent<HealthComp>(playerID);
     if (playerHealth.health <= (playerHealth.maxHealth - 10))
     {
@@ -789,14 +840,20 @@ BTStatus SwarmBT::die(Entity entityID)
 		}
 	}
 
+    perfChecker.stop(TIME_ID::BT_TASKS);
+
     return ret;
 }
 
 BTStatus SwarmBT::alerted(Entity entityID)
 {
+    perfChecker.start(TIME_ID::BT_TASKS);    
 	BTStatus ret = BTStatus::Running;
 	int playerID = getPlayerID(entityID);
-	if(playerID == -1){return ret;}
+	if(playerID == -1){
+        perfChecker.stop(TIME_ID::BT_TASKS);
+        return ret;
+    }
 	SwarmComponent& swarmComp = getTheScene()->getComponent<SwarmComponent>(entityID);
 	Transform& playerTransform = getTheScene()->getComponent<Transform>(playerID);
 	Transform& swarmTrans = getTheScene()->getComponent<Transform>(entityID);
@@ -848,7 +905,8 @@ BTStatus SwarmBT::alerted(Entity entityID)
                         }
                 }
         }
-
+    
+    perfChecker.stop(TIME_ID::BT_TASKS);
     return ret;
 }
 

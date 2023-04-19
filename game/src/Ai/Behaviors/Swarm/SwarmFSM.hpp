@@ -21,9 +21,9 @@ struct SwarmComponent
 	float LOW_HEALTH			= 30.0f;
 	float FULL_HEALTH			= 100.0f;
 	float life					= FULL_HEALTH;
-    float speed					= 17.0f;
+    float speed					= 140.0f;
 	float jumpForce				= 70.0f;
-	float idleSpeed				= 10.0f;
+	float idleSpeed				= 30.0f;
 	float jumpY					= 10.0f;
 	float deathAnimSpeed		= 1.0f;
 	float alertAnimSpeed		= 2.0f;

@@ -57,7 +57,7 @@ class SpawnHandler
 {
 public:
     inline static const int MAX_NR_OF_ENEMIES = 100;
-    inline static const int NR_BLOBS_IN_GROUP = 3;
+    inline static const int NR_BLOBS_IN_GROUP = 2;
 
 
     inline static const float PERCENTAGE_TANKS   = 0.35f;
@@ -69,7 +69,7 @@ public:
 
     inline static const int MAX_NR_TANKS        = (int)(MAX_NR_OF_ENEMIES * PERCENTAGE_TANKS);
     inline static const int MAX_NR_LICHS        = (int)(MAX_NR_OF_ENEMIES * PERCENTAGE_LICHS);
-    inline static const int MAX_NR_SWARMGROUPS  = (int)((MAX_NR_OF_ENEMIES * PERCENTAGE_SWARMS)/NR_BLOBS_IN_GROUP/NR_BLOBS_IN_GROUP);
+    inline static const int MAX_NR_SWARMGROUPS  = 10001;//(int)((MAX_NR_OF_ENEMIES * PERCENTAGE_SWARMS)/NR_BLOBS_IN_GROUP/NR_BLOBS_IN_GROUP);
 
     inline static const bool USE_DEBUG = true;
     inline static const int NR_TANK_DBG         = 0;
@@ -90,13 +90,16 @@ private:
     // Data for imgui
     int nrOfTilesInRoom = 0;
 
+public:
     // Enemies in current Room
     int nrOfTanks_inRoom  = 0;
     int nrOfLichs_inRoom  = 0;
     int nrOfSwarms_inRoom = 0;
     int nrOfGroups_inRoom = 0;
 
+    int spawned_swarms = 0;
 
+private:
     std::vector<int> allEntityIDs;
     std::vector<int> swarmIDs;
     std::vector<int> lichIDs;

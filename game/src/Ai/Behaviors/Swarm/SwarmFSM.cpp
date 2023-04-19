@@ -42,6 +42,7 @@ float SwarmFSM::getEntityDist(Entity one, Entity two)
 
 bool SwarmFSM::idle_alerted(Entity entityID)
 {
+    perfChecker.start(TIME_ID::EVENT_CHECK);    
 	bool ret = false;
 	updateSwarmGrounded(entityID);
 
@@ -49,10 +50,13 @@ bool SwarmFSM::idle_alerted(Entity entityID)
 	float groupHealth = enemySwarmComp.getGroupHealth(FSM::sceneHandler->getScene());
 	if(enemySwarmComp.life <= 0 || groupHealth < enemySwarmComp.LOW_HEALTH || !FSM::sceneHandler->getScene()->isActive(entityID))
 	{
+        perfChecker.stop(TIME_ID::EVENT_CHECK);
 		return false;
 	}
 	int playerID = getPlayerID(entityID);
-	if(playerID == -1){return ret;}
+	if(playerID == -1){
+        perfChecker.stop(TIME_ID::EVENT_CHECK);
+        return ret;}
     float swarmPlayerLen = getEntityDist(entityID, playerID);
 
 	if (swarmPlayerLen <= enemySwarmComp.sightRadius || 
@@ -68,17 +72,19 @@ bool SwarmFSM::idle_alerted(Entity entityID)
 		enemySwarmComp.alertDone = false;
 		enemySwarmComp.alertAtTop = false;
 	}
-
+    perfChecker.stop(TIME_ID::EVENT_CHECK);
 	return ret;
 }
 
 bool SwarmFSM::alerted_combat(Entity entityID)
 {
+    perfChecker.start(TIME_ID::EVENT_CHECK);    
 	bool ret = false;
 	updateSwarmGrounded(entityID);
 	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	if(enemySwarmComp.life <= 0 || !FSM::sceneHandler->getScene()->isActive(entityID))
 	{
+        perfChecker.stop(TIME_ID::EVENT_CHECK);
 		return false;
 	}
 
@@ -88,19 +94,25 @@ bool SwarmFSM::alerted_combat(Entity entityID)
 		enemySwarmComp.group->inCombat = true;
 		ret = true;
 	}
+    perfChecker.stop(TIME_ID::EVENT_CHECK);
 	return ret;
 }
 
 bool SwarmFSM::idle_escape(Entity entityID)
 {
+    perfChecker.start(TIME_ID::EVENT_CHECK);    
 	bool ret = false;
 	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	if(enemySwarmComp.life <= 0 || !FSM::sceneHandler->getScene()->isActive(entityID) || enemySwarmComp.isElite)
 	{
+        perfChecker.stop(TIME_ID::EVENT_CHECK);
 		return false;
 	}
     int playerID = getPlayerID(entityID);
-	if(playerID == -1){return ret;}
+	if(playerID == -1){
+        
+        perfChecker.stop(TIME_ID::EVENT_CHECK);
+        return ret;}
 	float swarmPlayerLen = getEntityDist(entityID, playerID);
 	float groupHealth = enemySwarmComp.getGroupHealth(FSM::sceneHandler->getScene());
 
@@ -110,20 +122,26 @@ bool SwarmFSM::idle_escape(Entity entityID)
 		ret = true;
     }
 
+    perfChecker.stop(TIME_ID::EVENT_CHECK);
 	return ret;
 }
 
 bool SwarmFSM::combat_idle(Entity entityID)
 {
+    perfChecker.start(TIME_ID::EVENT_CHECK);   
+
 	bool ret = false;
 	updateSwarmGrounded(entityID);
 	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	if(enemySwarmComp.life <= 0 || !FSM::sceneHandler->getScene()->isActive(entityID))
 	{
+        perfChecker.stop(TIME_ID::EVENT_CHECK);
 		return false;
 	}
 	Entity playerID = getPlayerID(entityID);
-	if(playerID == -1){return ret;}
+	if(playerID == -1){
+        perfChecker.stop(TIME_ID::EVENT_CHECK);        
+        return ret;}
 
 	Transform& playerTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(playerID);
 	Transform& enemyTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(entityID);
@@ -201,20 +219,24 @@ bool SwarmFSM::combat_idle(Entity entityID)
 		//Reset scale
 		FSM::sceneHandler->getScene()->getComponent<Transform>(entityID).scale.y = enemySwarmComp.origScaleY;
 	}
-
+    perfChecker.stop(TIME_ID::EVENT_CHECK);
 	return ret;
 }
 
 bool SwarmFSM::combat_escape(Entity entityID)
 {
+    perfChecker.start(TIME_ID::EVENT_CHECK);    
 	bool ret = false;
 	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	if(enemySwarmComp.life <= 0 || !FSM::sceneHandler->getScene()->isActive(entityID) || enemySwarmComp.isElite)
 	{
+        perfChecker.stop(TIME_ID::EVENT_CHECK);
 		return false;
 	}
 	Entity playerID = getPlayerID(entityID);
-	if(playerID == -1){return ret;}
+	if(playerID == -1){
+        perfChecker.stop(TIME_ID::EVENT_CHECK);        
+        return ret;}
 	bool ShouldEscape = false;
 	float swarmPlayerLen = getEntityDist(entityID, playerID);
 	if (swarmPlayerLen <= enemySwarmComp.sightRadius || enemySwarmComp.group->inCombat)
@@ -240,22 +262,27 @@ bool SwarmFSM::combat_escape(Entity entityID)
 		FSM::sceneHandler->getScene()->getComponent<Transform>(entityID).scale.y = enemySwarmComp.origScaleY;
 	}
 
+    perfChecker.stop(TIME_ID::EVENT_CHECK);
 	return ret;
 }
 
 bool SwarmFSM::escape_idle(Entity entityID)
 {
+    perfChecker.start(TIME_ID::EVENT_CHECK);    
 	bool ret = false;
 	updateSwarmGrounded(entityID);
 	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	if(enemySwarmComp.life <= 0 || !FSM::sceneHandler->getScene()->isActive(entityID))
 	{
+        perfChecker.stop(TIME_ID::EVENT_CHECK);
 		return false;
 	}
 
 	Rigidbody& enemyRb = FSM::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
 	int playerID = getPlayerID(entityID);
-	if(playerID == -1){return ret;}
+	if(playerID == -1){
+        perfChecker.stop(TIME_ID::EVENT_CHECK);
+        return ret;}
 
     float velAbs = abs(glm::length(enemyRb.velocity));
     float swarmPlayerDist = getEntityDist(entityID, playerID);
@@ -296,19 +323,24 @@ bool SwarmFSM::escape_idle(Entity entityID)
 		FSM::sceneHandler->getScene()->getComponent<Transform>(entityID).scale.x = 1.0f;
 	}
 
+    perfChecker.stop(TIME_ID::EVENT_CHECK);
 	return ret;
 }
 
 bool SwarmFSM::escape_combat(Entity entityID)
 {
+    perfChecker.start(TIME_ID::EVENT_CHECK);    
 	bool ret = false;
 	SwarmComponent& enemySwarmComp = FSM::sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
 	if(enemySwarmComp.life <= 0 || !FSM::sceneHandler->getScene()->isActive(entityID))
 	{
+        perfChecker.stop(TIME_ID::EVENT_CHECK);
 		return ret;
 	}
 	int playerID = getPlayerID(entityID);
-	if(playerID == -1){return ret;}
+	if(playerID == -1){
+        perfChecker.stop(TIME_ID::EVENT_CHECK);
+        return ret;}
 	Rigidbody& enemyRb = FSM::sceneHandler->getScene()->getComponent<Rigidbody>(entityID);
 	Transform& enemyTransform = FSM::sceneHandler->getScene()->getComponent<Transform>(entityID);
     Transform& playerTransform =FSM::sceneHandler->getScene()->getComponent<Transform>(playerID);
@@ -332,11 +364,13 @@ bool SwarmFSM::escape_combat(Entity entityID)
 		enemyTransform.scale.x = 1.0f;
 	}
 
+    perfChecker.stop(TIME_ID::EVENT_CHECK);
 	return ret;
 }
 
 bool SwarmFSM::dead(Entity entityID)
 {
+    perfChecker.start(TIME_ID::EVENT_CHECK);    
 	bool ret = false;
 
 	SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
@@ -352,11 +386,13 @@ bool SwarmFSM::dead(Entity entityID)
 		swarmComp.timer = swarmComp.lightAttackTime;
 	}
 
+    perfChecker.stop(TIME_ID::EVENT_CHECK);
 	return ret;
 }
 
 bool SwarmFSM::revive(Entity entityID)
 {
+    perfChecker.start(TIME_ID::EVENT_CHECK);    
 	bool ret = false;
 
 	SwarmComponent& swarmComp = sceneHandler->getScene()->getComponent<SwarmComponent>(entityID);
@@ -365,6 +401,7 @@ bool SwarmFSM::revive(Entity entityID)
 		ret = true;
 	}
 
+    perfChecker.stop(TIME_ID::EVENT_CHECK);
 	return ret;
 }
 

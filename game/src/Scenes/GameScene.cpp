@@ -293,7 +293,10 @@ void GameScene::start()
     // Create particle systems for this scene
     networkHandler->initParticleSystems();
     this->setCurrentLevel(currentLevel);
-    justSpawned = true; 
+    justSpawned = true;
+    spawn_timer_started = false;
+    changed_swarm_attack_radius = false;
+    nrOfFrames = 0;
     
 }
 
@@ -716,6 +719,56 @@ void GameScene::update()
     decreaseFps();
 #endif
 
+    static std::chrono::system_clock::time_point initialTime;
+    if(!spawn_timer_started)
+    {        
+        initialTime = std::chrono::high_resolution_clock::now();
+        spawn_timer_started = true;
+    }
+
+    //changed_swarm_attack_radius = true;
+
+    //if(!changed_swarm_attack_radius && initialTime + std::chrono::seconds(3) < std::chrono::high_resolution_clock::now())
+    if(!changed_swarm_attack_radius && initialTime + std::chrono::seconds(TimeStruct::totalTimePerTest_ms /2/1000) < std::chrono::high_resolution_clock::now())
+    {
+        
+        this->getSceneReg().view<SwarmComponent>(entt::exclude<Inactive>).each(
+            [](SwarmComponent& sc){
+                sc.sightRadius = 100000;//70
+            }
+        );
+        changed_swarm_attack_radius = true;
+    } 
+        
+    //if(initialTime + std::chrono::seconds(6) < std::chrono::high_resolution_clock::now())    
+    if(initialTime + std::chrono::seconds(TimeStruct::totalTimePerTest_ms/1000) < std::chrono::high_resolution_clock::now())    
+    {
+        static int counter = 0; 
+        
+        perfChecker.startNextRun(this->spawnHandler.spawned_swarms,nrOfFrames);
+        perfChecker.exportStats("stats_");
+        networkHandler->cleanUp();
+        this->getSceneReg().view<SwarmComponent>().each(
+            [](SwarmComponent& sc){
+                sc.sightRadius = 70;//10000
+            }
+        );
+        if(counter == 1000)
+        {
+            this->getAudioHandler()->playSound(this->getMainCameraID(), this->buttonSound);
+            this->networkHandler->disconnectClient();
+            this->networkHandler->deleteServer();
+            this->switchScene(new MainMenu(), "scripts/MainMenu.lua");
+        }else{
+            perfChecker.exportStats("stats");
+            this->switchScene(new GameScene(this->setNewLevel()), "scripts/gamescene.lua");
+        }
+        counter++;
+    }
+
+    HealthComp& healthComp = this->getComponent<HealthComp>(this->playerID);
+    healthComp.health = 10000;
+    nrOfFrames++;
 }
 
 void GameScene::onTriggerStay(Entity e1, Entity e2)
